@@ -14,16 +14,16 @@ pub enum SpringError {
     #[error("I/O error")]
     Io(#[from] io::Error),
 
-    #[error("invalid option (key `{key:?}`, value `{value:?}`) - {cause}")]
+    #[error("invalid option (key `{key:?}`, value `{value:?}`)")]
     InvalidOption {
         key: String,
         value: String,
-        cause: anyhow::Error,
+        source: anyhow::Error,
     },
 
-    #[error(r#"invalid format ("{s}") - {cause}"#)]
+    #[error(r#"invalid format ("{s}")"#)]
     InvalidFormat {
         s: String,
-        cause: anyhow::Error,
+        source: anyhow::Error,
     },
 }
