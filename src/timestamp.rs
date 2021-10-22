@@ -1,17 +1,38 @@
 //! Timestamp.
 
+use anyhow::Context;
 use chrono::NaiveDateTime;
 use serde::{Deserialize, Serialize};
+use std::str::FromStr;
+
+use crate::error::SpringError;
+
+const FORMAT: &str = "%Y-%m-%d %H:%M:%S%.9f";
 
 /// Timestamp in UTC. Serializable.
-#[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Serialize, Deserialize, new)]
+#[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Serialize, Deserialize)]
 pub struct Timestamp(#[serde(with = "datetime_format")] NaiveDateTime);
+
+impl FromStr for Timestamp {
+    type Err = SpringError;
+
+    /// Parse as `"%Y-%m-%d %H:%M:%S%.9f"` format.
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let ndt = NaiveDateTime::parse_from_str(s, FORMAT)
+            .with_context(|| format!(r#"failed to parse as {}"#, FORMAT))
+            .map_err(|e| SpringError::InvalidFormat {
+                s: s.to_string(),
+                cause: e,
+            })?;
+        Ok(Self(ndt))
+    }
+}
 
 mod datetime_format {
     use chrono::NaiveDateTime;
     use serde::{self, Deserialize, Deserializer, Serializer};
 
-    const FORMAT: &str = "%Y-%m-%d %H:%M:%S%.9f";
+    use crate::timestamp::FORMAT;
 
     // The signature of a serialize_with function must follow the pattern:
     //
