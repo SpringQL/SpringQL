@@ -4,7 +4,6 @@ pub(in crate::stream_engine) mod format;
 
 use self::format::json::JsonObject;
 
-use super::row::Row;
 use crate::{
     error::Result, stream_engine::model::option::foreign_stream::parsing::ParseJsonOption,
 };
@@ -12,7 +11,7 @@ use crate::{
 /// Input row from foreign systems (retrieved from InputServer).
 ///
 /// Immediately converted into Row on stream-engine boundary.
-#[derive(Debug)]
+#[derive(Eq, PartialEq, Debug)]
 pub(super) struct ForeignInputRow(JsonObject);
 
 impl ForeignInputRow {
@@ -20,7 +19,7 @@ impl ForeignInputRow {
         Self(json)
     }
 
-    pub(super) fn into_row(self, option: ParseJsonOption) -> Result<Row> {
+    pub(super) fn into_row(self, option: ParseJsonOption) -> Result<ForeignInputRow> {
         todo!()
     }
 }

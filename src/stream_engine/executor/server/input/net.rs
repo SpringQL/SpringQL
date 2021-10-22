@@ -36,12 +36,10 @@ impl InputServerActive for NetInputServerActive {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::stream_engine::{
-        executor::row::Row,
-        model::{
-            option::options_builder::OptionsBuilder,
-            server_model::{server_type::ServerType, ServerModel},
-        },
+    use crate::stream_engine::executor::foreign_input_row::ForeignInputRow;
+    use crate::stream_engine::model::{
+        option::options_builder::OptionsBuilder,
+        server_model::{server_type::ServerType, ServerModel},
     };
 
     const REMOTE_PORT: u16 = 17890;
@@ -62,10 +60,10 @@ mod tests {
         let server = NetInputServerStandby::new(model)?;
         let server = server.start()?;
 
-        let row_chunk = server.next_chunk()?;
-        assert_eq!(row_chunk.next(), Some(Row::fx_tokyo()));
-        assert_eq!(row_chunk.next(), Some(Row::fx_osaka()));
-        assert_eq!(row_chunk.next(), Some(Row::fx_london()));
+        let mut row_chunk = server.next_chunk()?;
+        assert_eq!(row_chunk.next(), Some(ForeignInputRow::fx_tokyo()));
+        assert_eq!(row_chunk.next(), Some(ForeignInputRow::fx_osaka()));
+        assert_eq!(row_chunk.next(), Some(ForeignInputRow::fx_london()));
         assert_eq!(row_chunk.next(), None);
 
         Ok(())

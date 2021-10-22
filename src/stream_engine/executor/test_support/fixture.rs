@@ -1,6 +1,6 @@
-use crate::stream_engine::executor::row::Row;
+use crate::stream_engine::executor::foreign_input_row::ForeignInputRow;
 
-impl Row {
+impl ForeignInputRow {
     pub fn fx_tokyo() -> Self {
         todo!()
     }

@@ -1,6 +1,6 @@
 mod server;
 
-mod foreign_input_row;
+pub(self) mod foreign_input_row;
 mod row;
 
 #[cfg(test)]
