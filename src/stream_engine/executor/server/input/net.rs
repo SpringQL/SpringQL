@@ -1,3 +1,38 @@
+use crate::{
+    error::{Result, SpringError},
+    stream_engine::{
+        executor::foreign_input_row::foreign_input_row_chunk::ForeignInputRowChunk,
+        model::server_model::ServerModel,
+    },
+};
+
+use super::{InputServerActive, InputServerStandby};
+
+#[derive(Debug)]
+pub(in crate::stream_engine::executor) struct NetInputServerStandby {}
+
+#[derive(Debug)]
+pub(in crate::stream_engine::executor) struct NetInputServerActive {}
+
+impl InputServerStandby<NetInputServerActive> for NetInputServerStandby {
+    fn new(model: ServerModel) -> Result<Self>
+    where
+        Self: Sized,
+    {
+        todo!()
+    }
+
+    fn start(self) -> Result<NetInputServerActive> {
+        todo!()
+    }
+}
+
+impl InputServerActive for NetInputServerActive {
+    fn next_chunk(&self) -> Result<ForeignInputRowChunk> {
+        todo!()
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -24,10 +59,10 @@ mod tests {
                 .build(),
         );
 
-        let server = InputNetServer::new(model)?;
-        server.start()?;
+        let server = NetInputServerStandby::new(model)?;
+        let server = server.start()?;
 
-        let row_chunk = server.next()?;
+        let row_chunk = server.next_chunk()?;
         assert_eq!(row_chunk.next(), Some(Row::fx_tokyo()));
         assert_eq!(row_chunk.next(), Some(Row::fx_osaka()));
         assert_eq!(row_chunk.next(), Some(Row::fx_london()));
