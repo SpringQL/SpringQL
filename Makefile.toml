@@ -1,0 +1,68 @@
+[config]
+skip_core_tasks = true
+
+[env]
+PROJ_NAME = "SpringQL-core"
+
+[tasks.format]
+script = ['''
+#!/usr/bin/env bash -eux
+cargo fmt --all
+''']
+
+[tasks.lint]
+script = ['''
+#!/usr/bin/env bash -eux
+RUSTFLAGS='-D warnings' cargo clippy --all-targets --all-features
+''']
+
+[tasks.build]
+script = ['''
+#!/usr/bin/env bash -eux
+RUSTFLAGS='-D warnings' cargo build --all-targets --all-features
+''']
+
+[tasks.test]
+script = ['''
+#!/usr/bin/env bash -eux
+cargo test --all-targets --all-features
+''']
+
+[tasks.doc]
+script = ['''
+#!/usr/bin/env bash -eux
+cargo clean --doc
+cargo doc --no-deps --all-features
+''']
+
+[tasks.deadlink]
+script = ['''
+#!/usr/bin/env bash -eux
+cargo deadlinks --check-http
+mlc --ignore-path target
+''']
+
+[tasks.publish]
+script = [
+  '''
+#!/usr/bin/env bash -eux
+cargo publish
+''',
+]
+
+[tasks.lcov]
+script = [
+  '''
+#!/usr/bin/env bash -eux
+rm -rf target/debug/deps/${PROJ_NAME}-*
+
+export CARGO_INCREMENTAL=0
+export RUSTFLAGS="-Zinstrument-coverage"
+export LLVM_PROFILE_FILE="${PROJ_NAME}-%p-%m.profraw"
+
+cargo +nightly build --verbose
+cargo +nightly test --verbose
+
+grcov . -s . --binary-path ./target/debug/ -t lcov --branch --ignore-not-existing -o lcov.info
+''',
+]
