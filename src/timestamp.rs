@@ -28,6 +28,12 @@ impl FromStr for Timestamp {
     }
 }
 
+impl ToString for Timestamp {
+    fn to_string(&self) -> String {
+        self.0.format(FORMAT).to_string()
+    }
+}
+
 mod datetime_format {
     use chrono::NaiveDateTime;
     use serde::{self, Deserialize, Deserializer, Serializer};
