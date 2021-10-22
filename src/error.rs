@@ -20,4 +20,10 @@ pub enum SpringError {
         value: String,
         cause: anyhow::Error,
     },
+
+    #[error(r#"invalid format ("{s}") - {cause}"#)]
+    InvalidFormat {
+        s: String,
+        cause: anyhow::Error,
+    },
 }

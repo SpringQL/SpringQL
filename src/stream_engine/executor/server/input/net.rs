@@ -74,6 +74,7 @@ mod tests {
     use super::*;
     use crate::stream_engine::executor::foreign_input_row::ForeignInputRow;
     use crate::stream_engine::model::option::options_builder::OptionsBuilder;
+    use crate::timestamp::Timestamp;
 
     const REMOTE_PORT: u16 = 17890;
 
@@ -90,10 +91,29 @@ mod tests {
         let server = NetInputServerStandby::new(options)?;
         let server = server.start()?;
 
+        // // TODO start thread, and stop it on drop
+        // let agent = TestInputAgent::start(
+        //     REMOTE_PORT,
+        //     vec![
+        //         ForeignInputRow::fx_osaka(Timestamp::fx_ts2()),
+        //         ForeignInputRow::fx_london(Timestamp::fx_ts3()),
+        //         ForeignInputRow::fx_tokyo(Timestamp::fx_ts1()),
+        //     ],
+        // );
+
         let mut row_chunk = server.next_chunk()?;
-        assert_eq!(row_chunk.next(), Some(ForeignInputRow::fx_tokyo()));
-        assert_eq!(row_chunk.next(), Some(ForeignInputRow::fx_osaka()));
-        assert_eq!(row_chunk.next(), Some(ForeignInputRow::fx_london()));
+        assert_eq!(
+            row_chunk.next(),
+            Some(ForeignInputRow::fx_tokyo(Timestamp::fx_ts1()))
+        );
+        assert_eq!(
+            row_chunk.next(),
+            Some(ForeignInputRow::fx_osaka(Timestamp::fx_ts2()))
+        );
+        assert_eq!(
+            row_chunk.next(),
+            Some(ForeignInputRow::fx_london(Timestamp::fx_ts3()))
+        );
         assert_eq!(row_chunk.next(), None);
 
         Ok(())
