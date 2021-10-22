@@ -1,0 +1,171 @@
+name: ci
+
+on:
+  pull_request:
+    types:
+      - opened
+      - synchronize
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  job-matrix:
+    name: ${{ matrix.make.name }} (${{ matrix.rust }}; ${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-latest
+        rust:
+          - nightly
+          - stable
+          - 1.56.0  # MSRV
+        make:
+          - name: format
+            task: format
+          - name: lint
+            task: lint
+          - name: test
+            task: build test
+          - name: doc
+            task: doc
+          - name: deadlink
+            task: deadlink
+            rust-free: true
+            install-cargo-deadlinks: true
+            install-mlc: true
+          - name: codecov
+            task: lcov
+            install-grcov: true
+        exclude:
+          - rust: nightly
+            make:
+              name: format
+          - rust: 1.56.0
+            make:
+              name: format
+          - rust: nightly
+            make:
+              name: lint
+          - rust: 1.56.0
+            make:
+              name: lint
+          - rust: nightly
+            make:
+              name: doc
+          - rust: 1.56.0
+            make:
+              name: doc
+          - rust: nightly
+            make:
+              name: deadlink
+          - rust: 1.56.0
+            make:
+              name: deadlink
+          - rust: stable
+            make:
+              name: codecov
+          - rust: 1.56.0
+            make:
+              name: codecov
+    env:
+      RUST_BACKTRACE: full
+      CACHE_RESET_KEY: 20211022-01
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Install Rust ${{ matrix.rust }}
+        if: ${{ ! matrix.make.rust-free }}
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: ${{ matrix.rust }}
+          profile: minimal
+          components: rustfmt, clippy, llvm-tools-preview
+          override: true
+
+      - name: Cache cargo registry
+        if: ${{ ! matrix.make.rust-free }}
+        uses: actions/cache@v2
+        continue-on-error: false
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+          key: ${{ env.CACHE_RESET_KEY }}-${{ runner.os }}-${{ matrix.rust }}-cargo-${{ matrix.make.name }}-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ env.CACHE_RESET_KEY }}-${{ runner.os }}-${{ matrix.rust }}-cargo-${{ matrix.make.name }}-
+            ${{ env.CACHE_RESET_KEY }}-${{ runner.os }}-${{ matrix.rust }}-cargo-
+
+      - name: Install cargo-make
+        env:
+          BASE_URL: https://github.com/sagiegurari/cargo-make/releases/download
+          VERSION: 0.35.2
+        run: |
+          FILE_BASE=cargo-make-v${VERSION}-x86_64-unknown-linux-musl
+          mkdir -p ${HOME}/.local/bin
+          curl -L "${BASE_URL}/${VERSION}/${FILE_BASE}.zip" --output /tmp/cargo-make.zip
+          unzip /tmp/cargo-make.zip -d /tmp/cargo-make
+          mv -f /tmp/cargo-make/${FILE_BASE}/cargo-make $HOME/.local/bin/cargo-make
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
+
+      - name: Install cargo-deadlinks
+        if: ${{ matrix.make.install-cargo-deadlinks }}
+        env:
+          BASE_URL: https://github.com/deadlinks/cargo-deadlinks/releases/download
+          VERSION: 0.8.1
+        run: |
+          FILE_BASE=cargo-deadlinks-linux
+          curl -L "${BASE_URL}/${VERSION}/${FILE_BASE}" --output $HOME/.local/bin/cargo-deadlinks
+          chmod +x $HOME/.local/bin/cargo-deadlinks
+          cargo deadlinks --version
+          rustup override set 1.52.1  # FIXME: https://github.com/deadlinks/cargo-deadlinks/issues/147
+
+      - name: Install mlc
+        if: ${{ matrix.make.install-mlc }}
+        env:
+          BASE_URL: https://github.com/becheran/mlc/releases/download
+          VERSION: 0.14.3
+        run: |
+          FILE_BASE=mlc-x86_64-linux
+          curl -L "${BASE_URL}/v${VERSION}/${FILE_BASE}" --output $HOME/.local/bin/mlc
+          chmod +x $HOME/.local/bin/mlc
+          mlc --version
+
+      - name: Install grcov
+        if: ${{ matrix.make.install-grcov }}
+        env:
+          BASE_URL: https://github.com/mozilla/grcov/releases/download
+          VERSION: 0.8.2
+        run: |
+          FILE_BASE=grcov-linux-x86_64
+          curl -L "${BASE_URL}/v${VERSION}/${FILE_BASE}.tar.bz2" --output /tmp/grcov.tar.bz2
+          tar xvf /tmp/grcov.tar.bz2 --directory=$HOME/.local/bin/
+          grcov --version
+
+      - name: ${{ matrix.make.name }}
+        run: |
+          for task in ${{ matrix.make.task }} ; do
+            cargo make ${task}
+          done
+
+      # - name: Upload lcov to codecov
+      #   if: ${{ matrix.make.install-grcov }}
+      #   uses: codecov/codecov-action@v1
+      #   with:
+      #     token: ${{ secrets.CODECOV_SECRET }}
+      #     files: ./lcov.info
+
+  slack-notify:
+    if: always()
+    needs:
+      - job-matrix
+    name: workflow notification to slack
+    runs-on: ubuntu-latest
+    steps:
+      - uses: Gamesight/slack-workflow-status@master
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          slack_webhook_url: ${{ secrets.SLACK_WEBHOOK_URL }}
