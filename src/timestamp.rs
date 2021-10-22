@@ -4,7 +4,7 @@ use chrono::NaiveDateTime;
 use serde::{Deserialize, Serialize};
 
 /// Timestamp in UTC. Serializable.
-#[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Serialize, Deserialize)]
+#[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Serialize, Deserialize, new)]
 pub struct Timestamp(#[serde(with = "datetime_format")] NaiveDateTime);
 
 mod datetime_format {
