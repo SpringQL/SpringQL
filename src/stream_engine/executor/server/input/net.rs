@@ -6,7 +6,7 @@ use std::{
 use anyhow::Context;
 
 use crate::{
-    error::{Result, SpringError},
+    error::Result,
     stream_engine::{
         executor::foreign_input_row::foreign_input_row_chunk::ForeignInputRowChunk,
         model::option::Options,
@@ -72,48 +72,33 @@ impl InputServerActive for NetInputServerActive {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::stream_engine::executor::foreign_input_row::format::json::JsonObject;
     use crate::stream_engine::executor::foreign_input_row::ForeignInputRow;
+    use crate::stream_engine::executor::test_support::foreign::source::TestSource;
     use crate::stream_engine::model::option::options_builder::OptionsBuilder;
     use crate::timestamp::Timestamp;
 
-    const REMOTE_PORT: u16 = 17890;
-
-    // TODO JSON to socket
-
     #[test]
     fn test_input_server_tcp() -> crate::error::Result<()> {
+        let j1 = JsonObject::fx_tokyo(Timestamp::fx_ts1());
+        let j2 = JsonObject::fx_osaka(Timestamp::fx_ts2());
+        let j3 = JsonObject::fx_london(Timestamp::fx_ts3());
+
+        let source = TestSource::start(vec![j2.clone(), j3.clone(), j1.clone()])?;
+
         let options = OptionsBuilder::default()
             .add("PROTOCOL", "TCP")
             .add("REMOTE_HOST", "127.0.0.1")
-            .add("REMOTE_PORT", REMOTE_PORT.to_string())
+            .add("REMOTE_PORT", source.port().to_string())
             .build();
 
         let server = NetInputServerStandby::new(options)?;
         let server = server.start()?;
 
-        // // TODO start thread, and stop it on drop
-        // let agent = TestInputAgent::start(
-        //     REMOTE_PORT,
-        //     vec![
-        //         ForeignInputRow::fx_osaka(Timestamp::fx_ts2()),
-        //         ForeignInputRow::fx_london(Timestamp::fx_ts3()),
-        //         ForeignInputRow::fx_tokyo(Timestamp::fx_ts1()),
-        //     ],
-        // );
-
         let mut row_chunk = server.next_chunk()?;
-        assert_eq!(
-            row_chunk.next(),
-            Some(ForeignInputRow::fx_tokyo(Timestamp::fx_ts1()))
-        );
-        assert_eq!(
-            row_chunk.next(),
-            Some(ForeignInputRow::fx_osaka(Timestamp::fx_ts2()))
-        );
-        assert_eq!(
-            row_chunk.next(),
-            Some(ForeignInputRow::fx_london(Timestamp::fx_ts3()))
-        );
+        assert_eq!(row_chunk.next(), Some(ForeignInputRow::from_json(j1)));
+        assert_eq!(row_chunk.next(), Some(ForeignInputRow::from_json(j2)));
+        assert_eq!(row_chunk.next(), Some(ForeignInputRow::from_json(j3)));
         assert_eq!(row_chunk.next(), None);
 
         Ok(())

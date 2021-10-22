@@ -9,6 +9,3 @@ pub mod error;
 pub mod timestamp;
 
 pub(crate) mod stream_engine;
-
-#[cfg(test)]
-pub mod test_support;
