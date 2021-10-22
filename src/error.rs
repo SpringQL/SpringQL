@@ -13,4 +13,11 @@ pub type Result<T> = std::result::Result<T, SpringError>;
 pub enum SpringError {
     #[error("I/O error")]
     Io(#[from] io::Error),
+
+    #[error("invalid option (key `{key:?}`, value `{value:?}`) - {cause}")]
+    InvalidOption {
+        key: String,
+        value: String,
+        cause: anyhow::Error,
+    },
 }

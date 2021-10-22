@@ -1,25 +1,50 @@
+use std::net::IpAddr;
+
+use anyhow::Context;
+
 use crate::{
     error::{Result, SpringError},
     stream_engine::{
         executor::foreign_input_row::foreign_input_row_chunk::ForeignInputRowChunk,
-        model::server_model::ServerModel,
+        model::{option::Options, server_model::ServerModel},
     },
 };
 
 use super::{InputServerActive, InputServerStandby};
 
 #[derive(Debug)]
-pub(in crate::stream_engine::executor) struct NetInputServerStandby {}
+enum Protocol {
+    Tcp,
+}
+
+#[derive(Debug)]
+pub(in crate::stream_engine::executor) struct NetInputServerStandby {
+    protocol: Protocol,
+    remote_host: IpAddr,
+    remote_port: u16,
+}
 
 #[derive(Debug)]
 pub(in crate::stream_engine::executor) struct NetInputServerActive {}
 
 impl InputServerStandby<NetInputServerActive> for NetInputServerStandby {
-    fn new(model: ServerModel) -> Result<Self>
+    fn new(options: Options) -> Result<Self>
     where
         Self: Sized,
     {
-        todo!()
+        Ok(Self {
+            protocol: options.get("PROTOCOL", |protocol_str| {
+                (protocol_str == "TCP")
+                    .then(|| Protocol::Tcp)
+                    .context("unsupported protocol")
+            })?,
+            remote_host: options.get("REMOTE_HOST", |remote_host_str| {
+                remote_host_str.parse().context("invalid remote host")
+            })?,
+            remote_port: options.get("REMOTE_PORT", |remote_port_str| {
+                remote_port_str.parse().context("invalid remote port")
+            })?,
+        })
     }
 
     fn start(self) -> Result<NetInputServerActive> {
@@ -48,16 +73,13 @@ mod tests {
 
     #[test]
     fn test_input_server_tcp() -> crate::error::Result<()> {
-        let model = ServerModel::new(
-            ServerType::InputNet,
-            OptionsBuilder::default()
-                .add("PROTOCOL", "TCP")
-                .add("REMOTE_HOST", "127.0.0.1")
-                .add("REMOTE_PORT", REMOTE_PORT.to_string())
-                .build(),
-        );
+        let options = OptionsBuilder::default()
+            .add("PROTOCOL", "TCP")
+            .add("REMOTE_HOST", "127.0.0.1")
+            .add("REMOTE_PORT", REMOTE_PORT.to_string())
+            .build();
 
-        let server = NetInputServerStandby::new(model)?;
+        let server = NetInputServerStandby::new(options)?;
         let server = server.start()?;
 
         let mut row_chunk = server.next_chunk()?;

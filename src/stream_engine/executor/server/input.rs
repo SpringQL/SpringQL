@@ -2,14 +2,14 @@ use crate::{
     error::Result,
     stream_engine::{
         executor::foreign_input_row::foreign_input_row_chunk::ForeignInputRowChunk,
-        model::server_model::ServerModel,
+        model::option::Options,
     },
 };
 
 mod net;
 
 trait InputServerStandby<A: InputServerActive> {
-    fn new(model: ServerModel) -> Result<Self>
+    fn new(options: Options) -> Result<Self>
     where
         Self: Sized;
 
