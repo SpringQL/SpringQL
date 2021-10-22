@@ -1,7 +1,7 @@
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::stream_engine::executor::row::Row;
+    use crate::stream_engine::{executor::row::Row, model::option::options_builder::OptionsBuilder};
 
     const REMOTE_PORT: u16 = 17890;
 
@@ -11,7 +11,7 @@ mod tests {
     fn test_input_server_tcp() -> crate::error::Result<()> {
         let model = ServerModel::new(
             ServerType::InputNet,
-            OptionBuilder::new()
+            OptionsBuilder::default()
                 .add("PROTOCOL", "TCP")
                 .add("REMOTE_HOST", "127.0.0.1")
                 .add("REMOTE_PORT", REMOTE_PORT.to_string())
