@@ -1,4 +1,7 @@
-use std::net::IpAddr;
+use std::{
+    net::{IpAddr, SocketAddr, TcpStream},
+    time::Duration,
+};
 
 use anyhow::Context;
 
@@ -6,7 +9,7 @@ use crate::{
     error::{Result, SpringError},
     stream_engine::{
         executor::foreign_input_row::foreign_input_row_chunk::ForeignInputRowChunk,
-        model::{option::Options, server_model::ServerModel},
+        model::option::Options,
     },
 };
 
@@ -17,6 +20,9 @@ enum Protocol {
     Tcp,
 }
 
+// TODO config
+const CONNECT_TIMEOUT_SECS: u64 = 1;
+
 #[derive(Debug)]
 pub(in crate::stream_engine::executor) struct NetInputServerStandby {
     protocol: Protocol,
@@ -25,7 +31,9 @@ pub(in crate::stream_engine::executor) struct NetInputServerStandby {
 }
 
 #[derive(Debug)]
-pub(in crate::stream_engine::executor) struct NetInputServerActive {}
+pub(in crate::stream_engine::executor) struct NetInputServerActive {
+    conn_stream: TcpStream, // TODO UDP
+}
 
 impl InputServerStandby<NetInputServerActive> for NetInputServerStandby {
     fn new(options: Options) -> Result<Self>
@@ -48,7 +56,10 @@ impl InputServerStandby<NetInputServerActive> for NetInputServerStandby {
     }
 
     fn start(self) -> Result<NetInputServerActive> {
-        todo!()
+        let sock_addr = SocketAddr::new(self.remote_host, self.remote_port);
+        let conn_stream =
+            TcpStream::connect_timeout(&sock_addr, Duration::from_secs(CONNECT_TIMEOUT_SECS))?;
+        Ok(NetInputServerActive { conn_stream })
     }
 }
 
@@ -62,10 +73,7 @@ impl InputServerActive for NetInputServerActive {
 mod tests {
     use super::*;
     use crate::stream_engine::executor::foreign_input_row::ForeignInputRow;
-    use crate::stream_engine::model::{
-        option::options_builder::OptionsBuilder,
-        server_model::{server_type::ServerType, ServerModel},
-    };
+    use crate::stream_engine::model::option::options_builder::OptionsBuilder;
 
     const REMOTE_PORT: u16 = 17890;
 
