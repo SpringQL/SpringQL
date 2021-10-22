@@ -1,7 +1,7 @@
 mod server;
 
+mod foreign_input_row;
 mod row;
-mod row_reader;
 
 #[cfg(test)]
 pub mod test_support;

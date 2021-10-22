@@ -8,7 +8,7 @@ pub(in crate::stream_engine::executor) mod row_chunk;
 /// - Immutable. Modification (adding / removing any column or updating column value) leads to new Row.
 /// - Mandatory `timestamp` column.
 #[derive(Debug)]
-struct Row {
+pub(super) struct Row {
     /// Timestamp
     ts: Timestamp,
 }
