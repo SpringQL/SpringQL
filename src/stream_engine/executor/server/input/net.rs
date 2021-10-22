@@ -3,7 +3,10 @@ mod tests {
     use super::*;
     use crate::stream_engine::{
         executor::row::Row,
-        model::{option::options_builder::OptionsBuilder, server::server_type::ServerType},
+        model::{
+            option::options_builder::OptionsBuilder,
+            server_model::{server_type::ServerType, ServerModel},
+        },
     };
 
     const REMOTE_PORT: u16 = 17890;
