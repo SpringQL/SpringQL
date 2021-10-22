@@ -1,3 +1,7 @@
-pub(in crate::stream_engine::executor) trait RowReader {
-    fn next() -> Result<Rows>;
+use crate::error::Result;
+
+use super::row::row_chunk::RowChunk;
+
+trait RowReader {
+    fn next() -> Result<RowChunk>;
 }

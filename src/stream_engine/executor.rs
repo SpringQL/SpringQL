@@ -1,3 +1,4 @@
 mod server;
 
-pub(in crate::stream_engine::executor) mod row_reader;
+mod row;
+mod row_reader;
