@@ -1,7 +1,5 @@
 use crate::timestamp::Timestamp;
 
-pub(in crate::stream_engine::executor) mod row_chunk;
-
 /// Row that enables "zero-copy stream".
 ///
 /// - Clone/Copy is disabled.
