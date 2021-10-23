@@ -1,5 +1,6 @@
 mod server;
 
+pub(self) mod column;
 pub(self) mod foreign_input_row;
 mod row;
 pub(self) mod value;
