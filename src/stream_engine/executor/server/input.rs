@@ -10,9 +10,11 @@ trait InputServerStandby<A: InputServerActive> {
     where
         Self: Sized;
 
+    /// Blocks until the server is ready to provide ForeignInputRow.
     fn start(self) -> Result<A>;
 }
 
+/// Active: ready to provide ForeignInputRow.
 trait InputServerActive {
     /// Returns currently available foreign row.
     fn next_row(&mut self) -> Result<ForeignInputRow>;
