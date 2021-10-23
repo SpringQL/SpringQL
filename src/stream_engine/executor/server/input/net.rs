@@ -16,14 +16,14 @@ use crate::{
 
 use super::{InputServerActive, InputServerStandby};
 
+// TODO config
+const CONNECT_TIMEOUT_SECS: u64 = 1;
+const READ_TIMEOUT_MSECS: u64 = 100;
+
 #[derive(Debug)]
 enum Protocol {
     Tcp,
 }
-
-// TODO config
-const CONNECT_TIMEOUT_SECS: u64 = 1;
-const READ_TIMEOUT_MSECS: u64 = 100;
 
 #[derive(Debug)]
 pub(in crate::stream_engine::executor) struct NetInputServerStandby {
@@ -58,6 +58,9 @@ impl InputServerStandby<NetInputServerActive> for NetInputServerStandby {
         })
     }
 
+    /// # Failure
+    ///
+    /// - [SpringError::ForeignIo](crate::error::SpringError::ForeignIo)
     fn start(self) -> Result<NetInputServerActive> {
         let sock_addr = SocketAddr::new(self.remote_host, self.remote_port);
 
@@ -90,6 +93,9 @@ impl InputServerActive for NetInputServerActive {
     ///
     /// - [SpringError::ForeignInputTimeout](crate::error::SpringError::ForeignInputTimeout) when:
     ///   - Remote source does not provide row within timeout.
+    /// - [SpringError::ForeignIo](crate::error::SpringError::ForeignIo) when:
+    ///   - Failed to parse response from remote source.
+    ///   - Unknown foreign error.
     fn next_row(&mut self) -> Result<ForeignInputRow> {
         let mut json_s = String::new();
 
