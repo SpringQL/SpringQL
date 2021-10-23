@@ -1,6 +1,9 @@
 mod repository;
 
-struct StreamModelRef;
+use serde::{Deserialize, Serialize};
+
+#[derive(Debug, Serialize, Deserialize)]
+pub(in crate::stream_engine) struct StreamModelRef;
 
 impl StreamModelRef {
     fn get(&self) -> &StreamModel {
@@ -8,4 +11,5 @@ impl StreamModelRef {
     }
 }
 
-struct StreamModel;
+#[derive(Debug, Serialize, Deserialize)]
+pub(in crate::stream_engine) struct StreamModel;
