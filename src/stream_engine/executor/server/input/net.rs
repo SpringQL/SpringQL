@@ -165,9 +165,9 @@ mod tests {
         let server = NetInputServerStandby::new(options)?;
         let server = server.start()?;
 
-        assert_eq!(server.next_row()?, ForeignInputRow::from_json(j1));
         assert_eq!(server.next_row()?, ForeignInputRow::from_json(j2));
         assert_eq!(server.next_row()?, ForeignInputRow::from_json(j3));
+        assert_eq!(server.next_row()?, ForeignInputRow::from_json(j1));
         assert!(matches!(
             server.next_row().unwrap_err(),
             SpringError::ForeignInputTimeout { .. },
