@@ -10,3 +10,4 @@
 pub(super) mod column;
 pub(super) mod option;
 pub(super) mod server_model;
+pub(super) mod stream_model;
