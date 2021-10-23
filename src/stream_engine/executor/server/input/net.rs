@@ -23,6 +23,7 @@ enum Protocol {
 
 // TODO config
 const CONNECT_TIMEOUT_SECS: u64 = 1;
+const READ_TIMEOUT_MSECS: u64 = 100;
 
 #[derive(Debug)]
 pub(in crate::stream_engine::executor) struct NetInputServerStandby {
@@ -59,6 +60,7 @@ impl InputServerStandby<NetInputServerActive> for NetInputServerStandby {
 
     fn start(self) -> Result<NetInputServerActive> {
         let sock_addr = SocketAddr::new(self.remote_host, self.remote_port);
+
         let tcp_stream =
             TcpStream::connect_timeout(&sock_addr, Duration::from_secs(CONNECT_TIMEOUT_SECS))
                 .context("failed to connect to remote host")
@@ -66,6 +68,14 @@ impl InputServerStandby<NetInputServerActive> for NetInputServerStandby {
                     source: e,
                     foreign_info: format!("{:?}", sock_addr),
                 })?;
+        tcp_stream
+            .set_read_timeout(Some(Duration::from_millis(READ_TIMEOUT_MSECS)))
+            .context("failed to set timeout to remote host")
+            .map_err(|e| SpringError::ForeignIo {
+                source: e,
+                foreign_info: format!("{:?}", sock_addr),
+            })?;
+
         let tcp_stream_reader = BufReader::new(tcp_stream);
 
         Ok(NetInputServerActive {
@@ -76,17 +86,27 @@ impl InputServerStandby<NetInputServerActive> for NetInputServerStandby {
 }
 
 impl InputServerActive for NetInputServerActive {
-    /// # TODO
+    /// # Failure
     ///
-    /// Non-blocking read and [SpringError::ForeignInputTimeout](crate::error::SpringError::ForeignInputTimeout) error.
+    /// - [SpringError::ForeignInputTimeout](crate::error::SpringError::ForeignInputTimeout) when:
+    ///   - Remote source does not provide row within timeout.
     fn next_row(&mut self) -> Result<ForeignInputRow> {
         let mut json_s = String::new();
 
         self.tcp_stream_reader
             .read_line(&mut json_s)
-            .map_err(|io_err| SpringError::ForeignIo {
-                source: anyhow::Error::from(io_err),
-                foreign_info: format!("{:?}", self.foreign_addr),
+            .map_err(|io_err| {
+                if let io::ErrorKind::TimedOut | io::ErrorKind::WouldBlock = io_err.kind() {
+                    SpringError::ForeignInputTimeout {
+                        source: anyhow::Error::from(io_err),
+                        foreign_info: format!("{:?}", self.foreign_addr),
+                    }
+                } else {
+                    SpringError::ForeignIo {
+                        source: anyhow::Error::from(io_err),
+                        foreign_info: format!("{:?}", self.foreign_addr),
+                    }
+                }
             })?;
 
         self.parse_resp(&json_s)
@@ -144,6 +164,10 @@ mod tests {
         assert_eq!(server.next_row()?, ForeignInputRow::from_json(j2));
         assert_eq!(server.next_row()?, ForeignInputRow::from_json(j3));
         assert_eq!(server.next_row()?, ForeignInputRow::from_json(j1));
+        assert!(matches!(
+            server.next_row().unwrap_err(),
+            SpringError::ForeignInputTimeout { .. }
+        ));
 
         Ok(())
     }
