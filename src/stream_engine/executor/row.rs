@@ -1,3 +1,5 @@
+mod repository;
+
 use crate::timestamp::Timestamp;
 
 /// Row that enables "zero-copy stream".
