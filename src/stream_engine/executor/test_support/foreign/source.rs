@@ -32,7 +32,9 @@ impl TestSource {
         println!("Connection from {}", stream.peer_addr().unwrap());
 
         for input in inputs {
-            stream.write_all(input.to_string().as_bytes()).unwrap();
+            let mut json_s = input.to_string();
+            json_s.push('\n');
+            stream.write_all(json_s.as_bytes()).unwrap();
         }
 
         Ok(())
