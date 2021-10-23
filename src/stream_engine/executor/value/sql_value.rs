@@ -45,32 +45,7 @@ use std::{fmt::Display, hash::Hash};
 ///
 /// # Examples
 ///
-/// ```
-/// use std::collections::HashSet;
-/// use apllodb_shared_components::{Result, NnSqlValue, SqlType, SqlValue, SqlValueHashKey};
-///
-/// fn main() -> Result<()> {
-///     let v_integer = SqlValue::NotNull(NnSqlValue::Integer(42));
-///     let v_smallint = SqlValue::NotNull(NnSqlValue::SmallInt(42));
-///     let v_bigint = SqlValue::NotNull(NnSqlValue::BigInt(42));
-///     let v_null = SqlValue::Null;
-///
-///     assert_eq!(v_integer, v_integer);
-///     assert_eq!(v_smallint, v_bigint, "Comparing SmallInt with BigInt is valid");
-///     assert_ne!(v_null, v_null, "NULL != NULL");
-///
-///     let mut hash_set = HashSet::<SqlValueHashKey>::new();
-///     assert_eq!(hash_set.insert(SqlValueHashKey::from(&v_integer)), true);
-///     assert_eq!(hash_set.insert(SqlValueHashKey::from(&v_integer)), false, "same value is already inserted");
-///     assert_eq!(hash_set.insert(SqlValueHashKey::from(&v_smallint)), false, "same hash values are generated from both SmallInt and Integer");
-///     assert_eq!(hash_set.insert(SqlValueHashKey::from(&v_null)), true);
-///     assert_eq!(hash_set.insert(SqlValueHashKey::from(&v_null)), true, "two NULL values are different");
-///
-///     assert_ne!(SqlValueHashKey::from(&v_null), SqlValueHashKey::from(&v_null), "two NULL values generates different Hash value");
-///
-///     Ok(())
-/// }
-/// ```
+/// See: [test_sql_value_example()](self::tests::test_sql_value_example).
 #[derive(Clone, Serialize, Deserialize, Debug)]
 pub enum SqlValue {
     /// NULL value.
@@ -118,35 +93,7 @@ impl SqlValue {
     ///
     /// # Examples
     ///
-    /// ```
-    /// use std::collections::HashSet;
-    /// use apllodb_shared_components::{SqlState, Result, NnSqlValue, SqlCompareResult, SqlType, SqlValue};
-    ///
-    /// fn main() -> Result<()> {
-    ///     let v_integer = SqlValue::NotNull(NnSqlValue::Integer(42));
-    ///     let v_smallint = SqlValue::NotNull(NnSqlValue::SmallInt(42));
-    ///     let v_bigint = SqlValue::NotNull(NnSqlValue::BigInt(42));
-    ///     let v_integer_minus = SqlValue::NotNull(NnSqlValue::Integer(-42));
-    ///     let v_text = SqlValue::NotNull(NnSqlValue::Text("abc".to_string()));
-    ///     let v_null = SqlValue::Null;
-    ///
-    ///     matches!(v_integer.sql_compare(&v_integer)?, SqlCompareResult::Eq);
-    ///     matches!(v_smallint.sql_compare(&v_bigint)?, SqlCompareResult::Eq);
-    ///     matches!(v_integer.sql_compare(&v_integer_minus)?, SqlCompareResult::GreaterThan);
-    ///     matches!(v_integer_minus.sql_compare(&v_integer)?, SqlCompareResult::LessThan);
-    ///     matches!(v_null.sql_compare(&v_integer)?, SqlCompareResult::Null);
-    ///     matches!(v_integer.sql_compare(&v_null)?, SqlCompareResult::Null);
-    ///     matches!(v_null.sql_compare(&v_null)?, SqlCompareResult::Null);
-    ///
-    ///     matches!(
-    ///         v_integer.sql_compare(&v_text)
-    ///             .expect_err("comparing totally different types").kind(),
-    ///         SqlState::DataExceptionIllegalComparison
-    ///     );
-    ///
-    ///     Ok(())
-    /// }
-    /// ```
+    /// See: [test_sql_compare_example()](self::tests::test_sql_compare_example).
     pub fn sql_compare(&self, other: &Self) -> Result<SqlCompareResult> {
         match (self, other) {
             (SqlValue::Null, _) | (_, SqlValue::Null) => Ok(SqlCompareResult::Null),
@@ -173,5 +120,100 @@ impl SqlValue {
                 ))),
             },
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use std::collections::HashSet;
+
+    use crate::stream_engine::executor::value::sql_value::sql_value_hash_key::SqlValueHashKey;
+
+    use super::*;
+
+    #[allow(clippy::eq_op)]
+    #[test]
+    fn test_sql_value_example() {
+        let v_integer = SqlValue::NotNull(NnSqlValue::Integer(42));
+        let v_smallint = SqlValue::NotNull(NnSqlValue::SmallInt(42));
+        let v_bigint = SqlValue::NotNull(NnSqlValue::BigInt(42));
+        let v_null = SqlValue::Null;
+
+        assert_eq!(v_integer, v_integer);
+        assert_eq!(
+            v_smallint, v_bigint,
+            "Comparing SmallInt with BigInt is valid"
+        );
+        assert_ne!(v_null, v_null, "NULL != NULL");
+
+        let mut hash_set = HashSet::<SqlValueHashKey>::new();
+        assert!(hash_set.insert(SqlValueHashKey::from(&v_integer)));
+        assert!(
+            !hash_set.insert(SqlValueHashKey::from(&v_integer)),
+            "same value is already inserted"
+        );
+        assert!(
+            !hash_set.insert(SqlValueHashKey::from(&v_smallint)),
+            "same hash values are generated from both SmallInt and Integer"
+        );
+        assert!(hash_set.insert(SqlValueHashKey::from(&v_null)),);
+        assert!(
+            hash_set.insert(SqlValueHashKey::from(&v_null)),
+            "two NULL values are different"
+        );
+
+        assert_ne!(
+            SqlValueHashKey::from(&v_null),
+            SqlValueHashKey::from(&v_null),
+            "two NULL values generates different Hash value"
+        );
+    }
+
+    #[test]
+    fn test_sql_compare_example() -> Result<()> {
+        let v_integer = SqlValue::NotNull(NnSqlValue::Integer(42));
+        let v_smallint = SqlValue::NotNull(NnSqlValue::SmallInt(42));
+        let v_bigint = SqlValue::NotNull(NnSqlValue::BigInt(42));
+        let v_integer_minus = SqlValue::NotNull(NnSqlValue::Integer(-42));
+        let v_text = SqlValue::NotNull(NnSqlValue::Text("abc".to_string()));
+        let v_null = SqlValue::Null;
+
+        assert!(matches!(
+            v_integer.sql_compare(&v_integer)?,
+            SqlCompareResult::Eq
+        ));
+        assert!(matches!(
+            v_smallint.sql_compare(&v_bigint)?,
+            SqlCompareResult::Eq
+        ));
+        assert!(matches!(
+            v_integer.sql_compare(&v_integer_minus)?,
+            SqlCompareResult::GreaterThan
+        ));
+        assert!(matches!(
+            v_integer_minus.sql_compare(&v_integer)?,
+            SqlCompareResult::LessThan
+        ));
+        assert!(matches!(
+            v_null.sql_compare(&v_integer)?,
+            SqlCompareResult::Null
+        ));
+        assert!(matches!(
+            v_integer.sql_compare(&v_null)?,
+            SqlCompareResult::Null
+        ));
+        assert!(matches!(
+            v_null.sql_compare(&v_null)?,
+            SqlCompareResult::Null
+        ));
+
+        assert!(matches!(
+            v_integer
+                .sql_compare(&v_text)
+                .expect_err("comparing totally different types"),
+            SpringError::Sql(_),
+        ));
+
+        Ok(())
     }
 }

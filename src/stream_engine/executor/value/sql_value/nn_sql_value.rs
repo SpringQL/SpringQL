@@ -194,10 +194,6 @@ mod tests {
             NnSqlValue::BigInt(-1).unpack::<i32>().unwrap_err(),
             SpringError::Sql(_),
         ));
-        assert!(matches!(
-            NnSqlValue::BigInt(-1).unpack::<i64>().unwrap_err(),
-            SpringError::Sql(_),
-        ));
         assert_eq!(NnSqlValue::BigInt(-1).unpack::<i64>()?, -1);
 
         assert_eq!(
