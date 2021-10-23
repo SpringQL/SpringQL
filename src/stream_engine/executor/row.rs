@@ -2,7 +2,7 @@ mod repository;
 
 use crate::timestamp::Timestamp;
 
-use super::column::stream_column::StreamColumn;
+use super::column::stream_column::StreamColumns;
 
 /// Row that enables "zero-copy stream".
 ///
@@ -16,7 +16,7 @@ pub(super) struct Row {
     arrival_rowtime: Option<Timestamp>,
 
     /// Columns
-    cols: StreamColumn,
+    cols: StreamColumns,
 }
 
 impl Row {
