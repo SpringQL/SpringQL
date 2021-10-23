@@ -15,5 +15,5 @@ trait InputServerStandby<A: InputServerActive> {
 
 trait InputServerActive {
     /// Returns currently available foreign row.
-    fn next_row(&self) -> Result<ForeignInputRow>;
+    fn next_row(&mut self) -> Result<ForeignInputRow>;
 }

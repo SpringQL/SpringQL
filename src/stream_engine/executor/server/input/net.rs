@@ -23,7 +23,6 @@ enum Protocol {
 
 // TODO config
 const CONNECT_TIMEOUT_SECS: u64 = 1;
-const READ_TIMEOUT_MSECS: u64 = 100;
 
 #[derive(Debug)]
 pub(in crate::stream_engine::executor) struct NetInputServerStandby {
@@ -34,7 +33,8 @@ pub(in crate::stream_engine::executor) struct NetInputServerStandby {
 
 #[derive(Debug)]
 pub(in crate::stream_engine::executor) struct NetInputServerActive {
-    conn_stream: TcpStream, // TODO UDP
+    foreign_addr: SocketAddr,
+    tcp_stream_reader: BufReader<TcpStream>, // TODO UDP
 }
 
 impl InputServerStandby<NetInputServerActive> for NetInputServerStandby {
@@ -59,66 +59,42 @@ impl InputServerStandby<NetInputServerActive> for NetInputServerStandby {
 
     fn start(self) -> Result<NetInputServerActive> {
         let sock_addr = SocketAddr::new(self.remote_host, self.remote_port);
-        let conn_stream =
+        let tcp_stream =
             TcpStream::connect_timeout(&sock_addr, Duration::from_secs(CONNECT_TIMEOUT_SECS))
                 .context("failed to connect to remote host")
                 .map_err(|e| SpringError::ForeignIo {
                     source: e,
                     foreign_info: format!("{:?}", sock_addr),
                 })?;
+        let tcp_stream_reader = BufReader::new(tcp_stream);
 
-        conn_stream
-            .set_read_timeout(Some(Duration::from_millis(READ_TIMEOUT_MSECS)))
-            .context("failed to set read timeout to remote host")
-            .map_err(|e| SpringError::ForeignIo {
-                source: e,
-                foreign_info: format!("{:?}", sock_addr),
-            })?;
-
-        Ok(NetInputServerActive { conn_stream })
+        Ok(NetInputServerActive {
+            tcp_stream_reader,
+            foreign_addr: sock_addr,
+        })
     }
 }
 
 impl InputServerActive for NetInputServerActive {
-    /// # Failure
+    /// # TODO
     ///
-    /// - [SpringError::ForeignInputTimeout](crate::error::SpringError::ForeignInputTimeout) when:
-    ///   - foreign server is not available
-    fn next_row(&self) -> Result<ForeignInputRow> {
-        let mut json_buf = Vec::new();
-        let mut reader = BufReader::new(&self.conn_stream);
-        reader.read_until(b'\n', &mut json_buf).map_err(|io_err| {
-            if let io::ErrorKind::TimedOut = io_err.kind() {
-                SpringError::ForeignInputTimeout {
-                    source: anyhow::Error::from(io_err),
-                    foreign_info: format!("{:?}", self.conn_stream.peer_addr()),
-                }
-            } else {
-                SpringError::ForeignIo {
-                    source: anyhow::Error::from(io_err),
-                    foreign_info: format!("{:?}", self.conn_stream),
-                }
-            }
-        })?;
+    /// Non-blocking read and [SpringError::ForeignInputTimeout](crate::error::SpringError::ForeignInputTimeout) error.
+    fn next_row(&mut self) -> Result<ForeignInputRow> {
+        let mut json_s = String::new();
 
-        self.parse_resp(json_buf)
+        self.tcp_stream_reader
+            .read_line(&mut json_s)
+            .map_err(|io_err| SpringError::ForeignIo {
+                source: anyhow::Error::from(io_err),
+                foreign_info: format!("{:?}", self.foreign_addr),
+            })?;
+
+        self.parse_resp(&json_s)
     }
 }
 
 impl NetInputServerActive {
-    fn parse_resp(&self, json_buf: Vec<u8>) -> Result<ForeignInputRow> {
-        let json_s = std::str::from_utf8(&json_buf)
-            .with_context(|| {
-                format!(
-                    r#"failed to parse message from foreign stream as UTF-8 ("{}")"#,
-                    String::from_utf8_lossy(&json_buf),
-                )
-            })
-            .map_err(|e| SpringError::ForeignIo {
-                source: e,
-                foreign_info: format!("{:?}", self.conn_stream),
-            })?;
-
+    fn parse_resp(&self, json_s: &str) -> Result<ForeignInputRow> {
         let json_v = serde_json::from_str(json_s)
             .with_context(|| {
                 format!(
@@ -128,7 +104,7 @@ impl NetInputServerActive {
             })
             .map_err(|e| SpringError::ForeignIo {
                 source: e,
-                foreign_info: format!("{:?}", self.conn_stream),
+                foreign_info: format!("{:?}", self.foreign_addr),
             })?;
 
         let json_obj = JsonObject::new(json_v);
@@ -163,15 +139,11 @@ mod tests {
             .build();
 
         let server = NetInputServerStandby::new(options)?;
-        let server = server.start()?;
+        let mut server = server.start()?;
 
         assert_eq!(server.next_row()?, ForeignInputRow::from_json(j2));
         assert_eq!(server.next_row()?, ForeignInputRow::from_json(j3));
         assert_eq!(server.next_row()?, ForeignInputRow::from_json(j1));
-        assert!(matches!(
-            server.next_row().unwrap_err(),
-            SpringError::ForeignInputTimeout { .. },
-        ));
 
         Ok(())
     }
