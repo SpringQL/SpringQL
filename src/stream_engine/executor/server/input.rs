@@ -1,9 +1,6 @@
 use crate::{
     error::Result,
-    stream_engine::{
-        executor::foreign_input_row::foreign_input_row_chunk::ForeignInputRowChunk,
-        model::option::Options,
-    },
+    stream_engine::{executor::foreign_input_row::ForeignInputRow, model::option::Options},
 };
 
 mod net;
@@ -17,6 +14,6 @@ trait InputServerStandby<A: InputServerActive> {
 }
 
 trait InputServerActive {
-    /// Returns currently available foreign rows. Can be empty.
-    fn next_chunk(&self) -> Result<ForeignInputRowChunk>;
+    /// Returns currently available foreign row.
+    fn next_row(&self) -> Result<ForeignInputRow>;
 }

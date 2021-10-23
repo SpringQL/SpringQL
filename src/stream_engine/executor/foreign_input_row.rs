@@ -1,5 +1,3 @@
-pub(in crate::stream_engine::executor) mod foreign_input_row_chunk;
-
 pub(in crate::stream_engine) mod format;
 
 use self::format::json::JsonObject;

@@ -11,8 +11,8 @@ pub struct TestSource {
 
 impl TestSource {
     pub(in crate::stream_engine::executor) fn start(inputs: Vec<JsonObject>) -> Result<Self> {
-        let listener = TcpListener::bind("127.0.0.1:0")?;
-        let port = listener.local_addr()?.port();
+        let listener = TcpListener::bind("127.0.0.1:0").unwrap();
+        let port = listener.local_addr().unwrap().port();
 
         let conn_thread = thread::spawn(move || {
             for stream in listener.incoming() {
@@ -29,10 +29,10 @@ impl TestSource {
     }
 
     fn stream_handler(mut stream: TcpStream, inputs: Vec<JsonObject>) -> Result<()> {
-        println!("Connection from {}", stream.peer_addr()?);
+        println!("Connection from {}", stream.peer_addr().unwrap());
 
         for input in inputs {
-            stream.write_all(input.to_string().as_bytes())?;
+            stream.write_all(input.to_string().as_bytes()).unwrap();
         }
 
         Ok(())

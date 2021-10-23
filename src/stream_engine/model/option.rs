@@ -29,7 +29,7 @@ impl Options {
             .map_err(|e| SpringError::InvalidOption {
                 key: key.to_string(),
                 value: "".to_string(),
-                cause: e,
+                source: e,
             })
     }
 }

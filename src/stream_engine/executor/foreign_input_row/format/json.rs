@@ -8,7 +8,6 @@ impl ToString for JsonObject {
 }
 
 impl JsonObject {
-    #[cfg(test)]
     pub(in crate::stream_engine) fn new(value: serde_json::Value) -> Self {
         Self(value)
     }

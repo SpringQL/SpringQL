@@ -22,7 +22,7 @@ impl FromStr for Timestamp {
             .with_context(|| format!(r#"failed to parse as {}"#, FORMAT))
             .map_err(|e| SpringError::InvalidFormat {
                 s: s.to_string(),
-                cause: e,
+                source: e,
             })?;
         Ok(Self(ndt))
     }
