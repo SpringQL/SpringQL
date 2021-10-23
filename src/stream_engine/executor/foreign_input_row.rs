@@ -17,7 +17,7 @@ impl ForeignInputRow {
         Self(json)
     }
 
-    pub(super) fn into_row(self, option: ParseJsonOption) -> Result<ForeignInputRow> {
+    pub(super) fn _into_row(self, _option: ParseJsonOption) -> Result<ForeignInputRow> {
         todo!()
     }
 }
