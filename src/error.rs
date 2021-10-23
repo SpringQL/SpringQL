@@ -37,6 +37,9 @@ pub enum SpringError {
 
     #[error(r#"invalid format ("{s}")"#)]
     InvalidFormat { s: String, source: anyhow::Error },
+
+    #[error("SQL error")]
+    Sql(anyhow::Error),
 }
 
 impl SpringError {
@@ -49,6 +52,7 @@ impl SpringError {
             SpringError::ForeignInputTimeout { .. } => SpringErrorResponsibility::SpringQlCore,
             SpringError::InvalidOption { .. } => SpringErrorResponsibility::Client,
             SpringError::InvalidFormat { .. } => SpringErrorResponsibility::Client,
+            SpringError::Sql(_) => SpringErrorResponsibility::Client,
         }
     }
 }
