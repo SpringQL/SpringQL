@@ -1,6 +1,10 @@
 //! Error type.
 
+pub mod responsibility;
+
 use thiserror::Error;
+
+use self::responsibility::SpringErrorResponsibility;
 
 /// Result type
 pub type Result<T> = std::result::Result<T, SpringError>;
@@ -32,19 +36,6 @@ pub enum SpringError {
 
     #[error(r#"invalid format ("{s}")"#)]
     InvalidFormat { s: String, source: anyhow::Error },
-}
-
-/// Who should recover the error?
-#[derive(Eq, PartialEq, Debug)]
-pub enum SpringErrorResponsibility {
-    /// Client should.
-    Client,
-
-    /// Foreign source/sink should.
-    Foreign,
-
-    /// SpringQL-core should.
-    SpringQlCore,
 }
 
 impl SpringError {
