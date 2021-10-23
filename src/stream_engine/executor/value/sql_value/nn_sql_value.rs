@@ -96,7 +96,7 @@ impl NnSqlValue {
     ///
     /// # Failures
     ///
-    /// - [DataExceptionIllegalConversion](crate::SqlState::DataExceptionIllegalConversion) when:
+    /// - [SpringError::Sql](crate::error::SpringError::Sql) when:
     ///   - Any value of `T` cannot be typed as this SqlValue's SqlType (E.g. `T = i64`, `SqlType = SmallInt`).
     pub fn unpack<T>(&self) -> Result<T>
     where

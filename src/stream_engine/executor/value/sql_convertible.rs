@@ -15,7 +15,7 @@ pub trait SqlConvertible: Sized {
 
     /// # Failures
     ///
-    /// - [DataExceptionIllegalConversion](crate::SqlState::DataExceptionIllegalConversion) when:
+    /// - [SpringError::Sql](crate::error::SpringError::Sql) when:
     ///   - the type implementing SqlConvertible is not convertible from i16
     fn try_from_i16(_: &i16) -> Result<Self> {
         Self::default_err("i16")
@@ -23,7 +23,7 @@ pub trait SqlConvertible: Sized {
 
     /// # Failures
     ///
-    /// - [DataExceptionIllegalConversion](crate::SqlState::DataExceptionIllegalConversion) when:
+    /// - [SpringError::Sql](crate::error::SpringError::Sql) when:
     ///   - the type implementing SqlConvertible is not convertible from i32
     fn try_from_i32(_: &i32) -> Result<Self> {
         Self::default_err("i32")
@@ -31,7 +31,7 @@ pub trait SqlConvertible: Sized {
 
     /// # Failures
     ///
-    /// - [DataExceptionIllegalConversion](crate::SqlState::DataExceptionIllegalConversion) when:
+    /// - [SpringError::Sql](crate::error::SpringError::Sql) when:
     ///   - the type implementing SqlConvertible is not convertible from i64
     fn try_from_i64(_: &i64) -> Result<Self> {
         Self::default_err("i64")
@@ -39,7 +39,7 @@ pub trait SqlConvertible: Sized {
 
     /// # Failures
     ///
-    /// - [DataExceptionIllegalConversion](crate::SqlState::DataExceptionIllegalConversion) when:
+    /// - [SpringError::Sql](crate::error::SpringError::Sql) when:
     ///   - the type implementing SqlConvertible is not convertible from String
     fn try_from_string(_: &str) -> Result<Self> {
         Self::default_err("String")
@@ -47,7 +47,7 @@ pub trait SqlConvertible: Sized {
 
     /// # Failures
     ///
-    /// - [DataExceptionIllegalConversion](crate::SqlState::DataExceptionIllegalConversion) when:
+    /// - [SpringError::Sql](crate::error::SpringError::Sql) when:
     ///   - the type implementing SqlConvertible is not convertible from bool
     fn try_from_bool(_: &bool) -> Result<Self> {
         Self::default_err("bool")
