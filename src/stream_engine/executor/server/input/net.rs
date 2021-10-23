@@ -7,7 +7,7 @@ use std::{
 use anyhow::Context;
 
 use crate::{
-    error::{Result, SpringError},
+    error::{foreign_info::ForeignInfo, Result, SpringError},
     stream_engine::{
         executor::foreign_input_row::{format::json::JsonObject, ForeignInputRow},
         model::option::Options,
@@ -66,14 +66,14 @@ impl InputServerStandby<NetInputServerActive> for NetInputServerStandby {
                 .context("failed to connect to remote host")
                 .map_err(|e| SpringError::ForeignIo {
                     source: e,
-                    foreign_info: format!("{:?}", sock_addr),
+                    foreign_info: ForeignInfo::GenericTcp(sock_addr),
                 })?;
         tcp_stream
             .set_read_timeout(Some(Duration::from_millis(READ_TIMEOUT_MSECS)))
             .context("failed to set timeout to remote host")
             .map_err(|e| SpringError::ForeignIo {
                 source: e,
-                foreign_info: format!("{:?}", sock_addr),
+                foreign_info: ForeignInfo::GenericTcp(sock_addr),
             })?;
 
         let tcp_stream_reader = BufReader::new(tcp_stream);
@@ -99,12 +99,12 @@ impl InputServerActive for NetInputServerActive {
                 if let io::ErrorKind::TimedOut | io::ErrorKind::WouldBlock = io_err.kind() {
                     SpringError::ForeignInputTimeout {
                         source: anyhow::Error::from(io_err),
-                        foreign_info: format!("{:?}", self.foreign_addr),
+                        foreign_info: ForeignInfo::GenericTcp(self.foreign_addr),
                     }
                 } else {
                     SpringError::ForeignIo {
                         source: anyhow::Error::from(io_err),
-                        foreign_info: format!("{:?}", self.foreign_addr),
+                        foreign_info: ForeignInfo::GenericTcp(self.foreign_addr),
                     }
                 }
             })?;
@@ -124,7 +124,7 @@ impl NetInputServerActive {
             })
             .map_err(|e| SpringError::ForeignIo {
                 source: e,
-                foreign_info: format!("{:?}", self.foreign_addr),
+                foreign_info: ForeignInfo::GenericTcp(self.foreign_addr),
             })?;
 
         let json_obj = JsonObject::new(json_v);

@@ -1,10 +1,11 @@
 //! Error type.
 
+pub mod foreign_info;
 pub mod responsibility;
 
 use thiserror::Error;
 
-use self::responsibility::SpringErrorResponsibility;
+use self::{foreign_info::ForeignInfo, responsibility::SpringErrorResponsibility};
 
 /// Result type
 pub type Result<T> = std::result::Result<T, SpringError>;
@@ -15,7 +16,7 @@ pub type Result<T> = std::result::Result<T, SpringError>;
 pub enum SpringError {
     #[error("I/O error related to foreign system")]
     ForeignIo {
-        foreign_info: String,
+        foreign_info: ForeignInfo,
         source: anyhow::Error,
     },
     #[error("I/O error inside SpringQL-core")]
@@ -23,7 +24,7 @@ pub enum SpringError {
 
     #[error("I/O error in foreign system")]
     ForeignInputTimeout {
-        foreign_info: String,
+        foreign_info: ForeignInfo,
         source: anyhow::Error,
     },
 
