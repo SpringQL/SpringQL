@@ -23,12 +23,6 @@ pub enum SqlCompareResult {
     /// Either of v1 or v2 is NULL.
     Null,
 }
-impl SqlCompareResult {
-    /// Whether self is Self::Eq
-    pub fn is_equal(&self) -> bool {
-        matches!(self, SqlCompareResult::Eq)
-    }
-}
 
 impl From<Ordering> for SqlCompareResult {
     fn from(ord: Ordering) -> Self {
