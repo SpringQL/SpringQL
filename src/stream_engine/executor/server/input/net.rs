@@ -160,7 +160,7 @@ mod tests {
 
         let options = OptionsBuilder::default()
             .add("PROTOCOL", "TCP")
-            .add("REMOTE_HOST", "127.0.0.1")
+            .add("REMOTE_HOST", source.host_ip().to_string())
             .add("REMOTE_PORT", source.port().to_string())
             .build();
 

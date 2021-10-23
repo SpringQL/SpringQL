@@ -1,19 +1,19 @@
 use crate::error::Result;
 use crate::stream_engine::executor::foreign_input_row::format::json::JsonObject;
 use std::io::Write;
-use std::net::{Shutdown, TcpListener, TcpStream};
+use std::net::{IpAddr, Shutdown, SocketAddr, TcpListener, TcpStream};
 use std::thread::{self, JoinHandle};
 use std::time::Duration;
 
 pub struct TestSource {
-    port: u16,
+    my_addr: SocketAddr,
     conn_thread: JoinHandle<()>,
 }
 
 impl TestSource {
     pub(in crate::stream_engine::executor) fn start(inputs: Vec<JsonObject>) -> Result<Self> {
         let listener = TcpListener::bind("127.0.0.1:0").unwrap();
-        let port = listener.local_addr().unwrap().port();
+        let my_addr = listener.local_addr().unwrap();
 
         let conn_thread = thread::spawn(move || {
             for stream in listener.incoming() {
@@ -23,11 +23,18 @@ impl TestSource {
             }
         });
 
-        Ok(Self { port, conn_thread })
+        Ok(Self {
+            my_addr,
+            conn_thread,
+        })
+    }
+
+    pub fn host_ip(&self) -> IpAddr {
+        self.my_addr.ip()
     }
 
     pub fn port(&self) -> u16 {
-        self.port
+        self.my_addr.port()
     }
 
     fn stream_handler(mut stream: TcpStream, inputs: Vec<JsonObject>) -> Result<()> {
