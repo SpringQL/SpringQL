@@ -88,7 +88,7 @@ impl SqlValue {
     ///
     /// # Failures
     ///
-    /// - [DataExceptionIllegalComparison](crate::SqlState::DataExceptionIllegalComparison) when:
+    /// - [SpringError::Sql](crate::error::SpringError::Sql) when:
     ///   - `self` and `other` have different top-level variant of [SqlType](crate::SqlType).
     ///
     /// # Examples
