@@ -8,7 +8,8 @@ use crate::{
         stream_model::StreamModel,
     },
     stream_engine::executor::data::{
-        foreign_input_row::format::json::JsonObject, timestamp::Timestamp,
+        column::stream_column::StreamColumns, foreign_input_row::format::json::JsonObject,
+        row::Row, timestamp::Timestamp,
     },
 };
 
@@ -97,5 +98,11 @@ impl ColumnDataType {
             SqlType::integer(),
             false,
         )
+    }
+}
+
+impl Row {
+    pub fn fx_tokyo(ts: Timestamp) -> Self {
+        Self::new(StreamColumns::fx_tokyo)
     }
 }

@@ -1,10 +1,18 @@
-use crate::{error::Result, model::name::ColumnName, stream_engine::executor::data::{timestamp::Timestamp, value::sql_value::SqlValue}};
+use crate::{
+    error::Result,
+    model::{name::ColumnName, stream_model::StreamModel},
+    stream_engine::executor::data::{timestamp::Timestamp, value::sql_value::SqlValue},
+};
 
 /// Column values in a stream.
 #[derive(Eq, PartialEq, Debug, Default)]
 pub(in crate::stream_engine::executor) struct StreamColumns;
 
 impl StreamColumns {
+    pub(in crate::stream_engine::executor) fn stream(&self) -> &StreamModel {
+        todo!()
+    }
+
     pub(in crate::stream_engine::executor) fn promoted_rowtime(&self) -> Option<&Timestamp> {
         todo!()
     }

@@ -18,6 +18,19 @@ pub(in crate::stream_engine::executor) struct Row {
 }
 
 impl Row {
+    pub(in crate::stream_engine::executor) fn new(cols: StreamColumns) -> Self {
+        let arrival_rowtime = if cols.promoted_rowtime().is_some() {
+            None
+        } else {
+            Some(Timestamp::now()) // TODO mock?
+        };
+
+        Row {
+            arrival_rowtime,
+            cols,
+        }
+    }
+
     /// ROWTIME. See: <https://docs.sqlstream.com/glossary/rowtime-gl/>
     ///
     /// ROWTIME is a:
