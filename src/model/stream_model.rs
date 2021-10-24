@@ -124,7 +124,7 @@ mod tests {
                 vec![ColumnDefinition::new(ColumnDataType::new(
                     ColumnName::new("timestamp".to_string()),
                     SqlType::timestamp(),
-                    false // nullable
+                    true // nullable
                 ))],
                 Some(ColumnName::new("timestamp".to_string()))
             )
