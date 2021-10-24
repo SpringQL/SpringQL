@@ -1,4 +1,4 @@
-mod repository;
+pub(in crate::stream_engine::executor) mod repository;
 
 use crate::timestamp::Timestamp;
 
@@ -12,7 +12,7 @@ use super::column::stream_column::StreamColumns;
 /// - Ord by timestamp.
 /// - Eq by all columns.
 #[derive(Eq, PartialEq, Debug)]
-pub(super) struct Row {
+pub(in crate::stream_engine::executor) struct Row {
     arrival_rowtime: Option<Timestamp>,
 
     /// Columns
@@ -26,7 +26,7 @@ impl Row {
     ///
     /// - (default) Arrival time to a stream.
     /// - Promoted from a column in a stream.
-    pub(super) fn rowtime(&self) -> Timestamp {
+    pub(in crate::stream_engine::executor) fn rowtime(&self) -> Timestamp {
         self.arrival_rowtime.unwrap_or_else(|| {
             *self
                 .cols
