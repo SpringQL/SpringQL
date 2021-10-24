@@ -9,6 +9,7 @@ use crate::{
 use super::{
     column::column_definition::ColumnDefinition,
     name::{ColumnName, StreamName},
+    option::Options,
 };
 
 #[derive(Eq, PartialEq, Debug, Serialize, Deserialize)]
@@ -16,6 +17,7 @@ pub(crate) struct StreamModel {
     name: StreamName,
     cols: Vec<ColumnDefinition>,
     rowtime: Option<ColumnName>,
+    options: Options,
 }
 
 impl StreamModel {
@@ -28,6 +30,7 @@ impl StreamModel {
         name: StreamName,
         cols: Vec<ColumnDefinition>,
         rowtime: Option<ColumnName>,
+        options: Options,
     ) -> Result<Self> {
         let _ = if let Some(rowtime_col) = &rowtime {
             let rowtime_coldef = cols
@@ -68,6 +71,7 @@ impl StreamModel {
             name,
             cols,
             rowtime,
+            options,
         })
     }
 
@@ -82,7 +86,9 @@ impl StreamModel {
 
 #[cfg(test)]
 mod tests {
-    use crate::model::column::column_data_type::ColumnDataType;
+    use crate::model::{
+        column::column_data_type::ColumnDataType, option::options_builder::OptionsBuilder,
+    };
 
     use super::*;
 
@@ -92,7 +98,8 @@ mod tests {
             StreamModel::_new(
                 StreamName::new("s".to_string()),
                 vec![ColumnDefinition::fx_timestamp(),],
-                Some(ColumnName::new("invalid_ts_name".to_string()))
+                Some(ColumnName::new("invalid_ts_name".to_string())),
+                OptionsBuilder::default().build(),
             )
             .unwrap_err(),
             SpringError::Sql(_)
@@ -109,7 +116,8 @@ mod tests {
                     SqlType::integer(), // not a timestamp type
                     false
                 ))],
-                Some(ColumnName::new("timestamp".to_string()))
+                Some(ColumnName::new("timestamp".to_string())),
+                OptionsBuilder::default().build(),
             )
             .unwrap_err(),
             SpringError::Sql(_)
@@ -126,7 +134,8 @@ mod tests {
                     SqlType::timestamp(),
                     true // nullable
                 ))],
-                Some(ColumnName::new("timestamp".to_string()))
+                Some(ColumnName::new("timestamp".to_string())),
+                OptionsBuilder::default().build(),
             )
             .unwrap_err(),
             SpringError::Sql(_)
