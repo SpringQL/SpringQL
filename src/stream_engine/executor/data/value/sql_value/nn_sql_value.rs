@@ -110,7 +110,7 @@ impl NnSqlValue {
     }
 
     /// SqlType of this value
-    pub fn sql_type(&self) -> SqlType {
+    pub(crate) fn sql_type(&self) -> SqlType {
         match self {
             NnSqlValue::SmallInt(_) => SqlType::small_int(),
             NnSqlValue::Integer(_) => SqlType::integer(),

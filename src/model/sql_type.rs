@@ -8,7 +8,7 @@ use serde::{Deserialize, Serialize};
 ///   - Loose types: values can be typed as 1 specific Rust type.
 ///     - SQL types: corresponds to an SQL type.
 #[derive(Clone, Eq, PartialEq, Hash, Debug, Serialize, Deserialize)]
-pub enum SqlType {
+pub(crate) enum SqlType {
     /// Numeric types
     NumericComparable(NumericComparableType),
 
@@ -17,6 +17,9 @@ pub enum SqlType {
 
     /// Boolean types
     BooleanComparable,
+
+    /// Timestamp types
+    TimestampComparable,
 }
 
 impl SqlType {
@@ -41,6 +44,11 @@ impl SqlType {
     /// Constructor of Boolean
     pub fn boolean() -> SqlType {
         SqlType::BooleanComparable
+    }
+
+    /// Constructor of Timestamp
+    pub fn timestamp() -> SqlType {
+        SqlType::TimestampComparable
     }
 }
 
