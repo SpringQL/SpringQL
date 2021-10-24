@@ -45,7 +45,7 @@ impl Row {
     /// - Promoted from a column in a stream.
     pub(in crate::stream_engine::executor) fn rowtime(&self) -> Timestamp {
         self.arrival_rowtime.unwrap_or_else(|| {
-            *self
+            self
                 .cols
                 .promoted_rowtime()
                 .expect("Either arrival ROWTIME or promoted ROWTIME must be enabled")

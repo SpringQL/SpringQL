@@ -1,6 +1,7 @@
 use serde_json::json;
 
 use crate::{
+    dependency_injection::test_di::TestDI,
     model::{
         column::{column_data_type::ColumnDataType, column_definition::ColumnDefinition},
         name::{ColumnName, StreamName},
@@ -14,6 +15,10 @@ use crate::{
 };
 
 impl Timestamp {
+    pub fn fx_now() -> Self {
+        "2000-01-01 12:00:00.123456789".parse().unwrap()
+    }
+
     pub fn fx_ts1() -> Self {
         "2021-01-01 13:00:00.000000001".parse().unwrap()
     }
@@ -103,6 +108,10 @@ impl ColumnDataType {
 
 impl Row {
     pub fn fx_tokyo(ts: Timestamp) -> Self {
-        Self::new(StreamColumns::fx_tokyo())
+        Self::new::<TestDI>(StreamColumns::fx_tokyo())
     }
+}
+
+impl StreamColumns {
+    pub fn fx_tokyo() -> Self {}
 }

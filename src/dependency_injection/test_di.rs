@@ -14,6 +14,6 @@ pub(crate) struct TestCurrentTimestamp;
 
 impl CurrentTimestamp for TestCurrentTimestamp {
     fn now() -> Timestamp {
-        "2000-01-01 12:00:00.123456789".parse().unwrap()
+        Timestamp::fx_now()
     }
 }
