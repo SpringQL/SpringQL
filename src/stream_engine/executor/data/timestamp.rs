@@ -1,5 +1,7 @@
 //! Timestamp.
 
+pub(crate) mod current_timestamp;
+
 use anyhow::Context;
 use chrono::NaiveDateTime;
 use serde::{Deserialize, Serialize};

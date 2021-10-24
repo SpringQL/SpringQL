@@ -3,3 +3,5 @@
 //! Responsible for pipeline management and execution.
 
 mod executor;
+
+pub(crate) use executor::CurrentTimestamp;

@@ -1,6 +1,7 @@
 pub(in crate::stream_engine::executor) mod repository;
 
 use super::{column::stream_column::StreamColumns, timestamp::Timestamp};
+use crate::dependency_injection::DependencyInjection;
 
 /// Row that enables "zero-copy stream".
 ///
@@ -18,11 +19,16 @@ pub(in crate::stream_engine::executor) struct Row {
 }
 
 impl Row {
-    pub(in crate::stream_engine::executor) fn new(cols: StreamColumns) -> Self {
+    pub(in crate::stream_engine::executor) fn new<DI>(cols: StreamColumns) -> Self
+    where
+        DI: DependencyInjection,
+    {
+        use crate::stream_engine::executor::data::timestamp::current_timestamp::CurrentTimestamp;
+
         let arrival_rowtime = if cols.promoted_rowtime().is_some() {
             None
         } else {
-            Some(Timestamp::now()) // TODO mock?
+            Some(DI::CurrentTimestampType::now())
         };
 
         Row {
