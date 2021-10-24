@@ -1,9 +1,5 @@
-mod server;
-
-pub(self) mod column;
-pub(self) mod foreign_input_row;
-mod row;
-pub(self) mod value;
+pub(self) mod data;
+pub(self) mod server;
 
 #[cfg(test)]
 pub mod test_support;

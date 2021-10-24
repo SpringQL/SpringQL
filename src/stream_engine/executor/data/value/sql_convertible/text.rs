@@ -1,4 +1,6 @@
-use crate::{error::Result, stream_engine::executor::value::sql_value::nn_sql_value::NnSqlValue};
+use crate::{
+    error::Result, stream_engine::executor::data::value::sql_value::nn_sql_value::NnSqlValue,
+};
 
 use super::SqlConvertible;
 

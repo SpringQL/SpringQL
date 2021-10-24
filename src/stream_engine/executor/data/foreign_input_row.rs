@@ -8,14 +8,17 @@ use crate::{error::Result, stream_engine::model::stream_model::StreamModel};
 ///
 /// Immediately converted into Row on stream-engine boundary.
 #[derive(Eq, PartialEq, Debug)]
-pub(super) struct ForeignInputRow(JsonObject);
+pub(in crate::stream_engine::executor) struct ForeignInputRow(JsonObject);
 
 impl ForeignInputRow {
-    pub(super) fn from_json(json: JsonObject) -> Self {
+    pub(in crate::stream_engine::executor) fn from_json(json: JsonObject) -> Self {
         Self(json)
     }
 
-    pub(super) fn into_row(self, stream: StreamModel) -> Result<ForeignInputRow> {
+    pub(in crate::stream_engine::executor) fn into_row(
+        self,
+        stream: StreamModel,
+    ) -> Result<ForeignInputRow> {
         todo!()
     }
 }

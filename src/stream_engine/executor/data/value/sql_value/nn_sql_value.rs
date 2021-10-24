@@ -2,10 +2,12 @@ use std::{fmt::Display, hash::Hash};
 
 use super::sql_compare_result::SqlCompareResult;
 use crate::error::{Result, SpringError};
-use crate::stream_engine::executor::value::sql_type::{
+use crate::stream_engine::executor::data::value::sql_type::{
     NumericComparableType, StringComparableLoseType,
 };
-use crate::stream_engine::executor::value::{sql_convertible::SqlConvertible, sql_type::SqlType};
+use crate::stream_engine::executor::data::value::{
+    sql_convertible::SqlConvertible, sql_type::SqlType,
+};
 use anyhow::anyhow;
 use serde::{Deserialize, Serialize};
 

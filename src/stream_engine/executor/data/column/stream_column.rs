@@ -1,6 +1,8 @@
 use crate::{
     error::Result,
-    stream_engine::{executor::value::sql_value::SqlValue, model::column::column_name::ColumnName},
+    stream_engine::{
+        executor::data::value::sql_value::SqlValue, model::column::column_name::ColumnName,
+    },
     timestamp::Timestamp,
 };
 
@@ -14,7 +16,7 @@ impl StreamColumns {
     }
 
     /// # Failure
-    /// 
+    ///
     /// - [SpringError::Sql](crate::error::SpringError::Sql) when:
     ///   - No column named `column_name` is found from this stream.
     pub(in crate::stream_engine::executor) fn get(

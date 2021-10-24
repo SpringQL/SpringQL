@@ -1,7 +1,8 @@
 use serde_json::json;
 
 use crate::{
-    stream_engine::executor::foreign_input_row::format::json::JsonObject, timestamp::Timestamp,
+    stream_engine::executor::data::foreign_input_row::format::json::JsonObject,
+    timestamp::Timestamp,
 };
 
 impl JsonObject {

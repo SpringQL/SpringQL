@@ -127,7 +127,7 @@ impl SqlValue {
 mod tests {
     use std::collections::HashSet;
 
-    use crate::stream_engine::executor::value::sql_value::sql_value_hash_key::SqlValueHashKey;
+    use crate::stream_engine::executor::data::value::sql_value::sql_value_hash_key::SqlValueHashKey;
 
     use super::*;
 

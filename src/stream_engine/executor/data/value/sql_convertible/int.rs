@@ -1,6 +1,6 @@
 use super::SqlConvertible;
 use crate::error::Result;
-use crate::stream_engine::executor::value::sql_value::nn_sql_value::NnSqlValue;
+use crate::stream_engine::executor::data::value::sql_value::nn_sql_value::NnSqlValue;
 
 impl SqlConvertible for i16 {
     fn into_sql_value(self) -> NnSqlValue {
@@ -46,7 +46,9 @@ impl SqlConvertible for i64 {
 
 #[cfg(test)]
 mod tests_i32 {
-    use crate::{error::Result, stream_engine::executor::value::sql_value::nn_sql_value::NnSqlValue};
+    use crate::{
+        error::Result, stream_engine::executor::data::value::sql_value::nn_sql_value::NnSqlValue,
+    };
 
     #[test]
     fn test_pack_unpack() -> Result<()> {
