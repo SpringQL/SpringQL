@@ -1,9 +1,6 @@
 use crate::{
-    error::Result,
-    stream_engine::{
-        executor::data::value::sql_value::SqlValue, model::column::column_name::ColumnName,
-    },
-    timestamp::Timestamp,
+    error::Result, model::name::ColumnName,
+    stream_engine::executor::data::value::sql_value::SqlValue, timestamp::Timestamp,
 };
 
 /// Column values in a stream.

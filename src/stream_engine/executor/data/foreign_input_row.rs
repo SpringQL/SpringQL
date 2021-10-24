@@ -2,7 +2,7 @@ pub(in crate::stream_engine) mod format;
 
 use self::format::json::JsonObject;
 
-use crate::{error::Result, stream_engine::model::stream_model::StreamModel};
+use crate::{error::Result, model::stream_model::StreamModel};
 
 use super::row::Row;
 
@@ -17,10 +17,7 @@ impl ForeignInputRow {
         Self(json)
     }
 
-    pub(in crate::stream_engine::executor) fn into_row(
-        self,
-        stream: &StreamModel,
-    ) -> Result<Row> {
+    pub(in crate::stream_engine::executor) fn into_row(self, stream: &StreamModel) -> Result<Row> {
         todo!()
     }
 }

@@ -5,9 +5,9 @@ use std::sync::Mutex;
 use anyhow::Context;
 
 use crate::error::{Result, SpringError};
+use crate::model::stream_model::StreamModel;
 use crate::stream_engine::executor::data::row::{repository::RowRepository, Row};
 use crate::stream_engine::executor::server::input::InputServerActive;
-use crate::stream_engine::model::stream_model::StreamModel;
 
 #[derive(Debug, new)]
 pub(in crate::stream_engine::executor::exec) struct ForeignInputPump<S>
@@ -37,5 +37,36 @@ impl<S: InputServerActive + Debug> ForeignInputPump<S> {
 
     fn row_repository(&self) -> &dyn RowRepository {
         todo!()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::{
+        error::Result,
+        stream_engine::executor::{
+            data::foreign_input_row::format::json::JsonObject,
+            server::input::net::NetInputServerActive,
+        },
+        timestamp::Timestamp,
+    };
+
+    use super::*;
+
+    #[test]
+    fn test_foreign_input_pump() -> Result<()> {
+        let j1 = JsonObject::fx_tokyo(Timestamp::fx_ts1());
+        let j2 = JsonObject::fx_osaka(Timestamp::fx_ts2());
+        let j3 = JsonObject::fx_london(Timestamp::fx_ts3());
+
+        let mut server = NetInputServerActive::factory_with_test_source(vec![j2, j3, j1]);
+
+        let stream = StreamModel::new();
+
+        let pump = ForeignInputPump::new(Rc::new(Mutex::new(server)), Rc::new(stream));
+        let row = pump.collect_next()?;
+        assert_eq!(row, Row::fx_tokyo(Timestamp::fx_ts1()));
+
+        Ok(())
     }
 }

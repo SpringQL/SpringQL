@@ -1,4 +1,4 @@
-use crate::{error::Result, stream_engine::model::stream_model::StreamModel};
+use crate::{error::Result, model::stream_model::StreamModel};
 
 use super::Row;
 

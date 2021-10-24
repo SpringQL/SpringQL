@@ -1,6 +1,5 @@
-pub(in crate::stream_engine) mod options_builder;
-
-pub(in crate::stream_engine) mod foreign_stream;
+pub(crate) mod foreign_stream;
+pub(crate) mod options_builder;
 
 use crate::error::{Result, SpringError};
 use anyhow::Context;
@@ -11,14 +10,14 @@ use self::options_builder::OptionsBuilder;
 
 /// Options in CREATE statement.
 #[derive(Debug, Serialize, Deserialize)]
-pub(in crate::stream_engine) struct Options(HashMap<String, String>);
+pub(crate) struct Options(HashMap<String, String>);
 
 impl Options {
     /// # Failure
     ///
     /// - [SpringError::InvalidOption](crate SpringError::InvalidOption) when:
     ///   - key is not found in this Options.
-    pub(in crate::stream_engine) fn get<V, F>(&self, key: &str, value_parser: F) -> Result<V>
+    pub(crate) fn get<V, F>(&self, key: &str, value_parser: F) -> Result<V>
     where
         F: FnOnce(&String) -> std::result::Result<V, anyhow::Error>,
     {
