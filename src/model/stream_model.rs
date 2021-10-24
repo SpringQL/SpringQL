@@ -29,7 +29,7 @@ impl StreamModel {
         cols: Vec<ColumnDefinition>,
         rowtime: Option<ColumnName>,
     ) -> Result<Self> {
-        let _ = if let Some(rowtime_col) = rowtime {
+        let _ = if let Some(rowtime_col) = &rowtime {
             let rowtime_coldef = cols
                 .iter()
                 .find(|coldef| coldef.column_data_type().column_name() == rowtime_col)

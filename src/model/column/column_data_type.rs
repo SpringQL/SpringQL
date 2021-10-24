@@ -14,4 +14,12 @@ impl ColumnDataType {
     pub(crate) fn column_name(&self) -> &ColumnName {
         &self.column
     }
+
+    pub(crate) fn sql_type(&self) -> &SqlType {
+        &self.sql_type
+    }
+
+    pub(crate) fn nullable(&self) -> bool {
+        self.nullable
+    }
 }

@@ -67,6 +67,7 @@ impl StreamModel {
             ],
             Some(ColumnName::new("timestamp".to_string())),
         )
+        .unwrap()
     }
 }
 
