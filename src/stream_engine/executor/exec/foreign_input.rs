@@ -61,6 +61,8 @@ mod tests {
         let pump = ForeignInputPump::new(Rc::new(Mutex::new(server)), Rc::new(stream));
 
         let row = pump._collect_next()?;
+        assert_eq!(row, Row::fx_osaka(Timestamp::fx_ts2()));
+        assert_eq!(row, Row::fx_london(Timestamp::fx_ts3()));
         assert_eq!(row, Row::fx_tokyo(Timestamp::fx_ts1()));
 
         Ok(())

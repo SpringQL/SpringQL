@@ -116,6 +116,13 @@ impl Row {
     pub fn fx_tokyo(ts: Timestamp) -> Self {
         Self::_new::<TestDI>(StreamColumns::fx_tokyo(ts))
     }
+    pub fn fx_osaka(ts: Timestamp) -> Self {
+        Self::_new::<TestDI>(StreamColumns::fx_osaka(ts))
+    }
+    pub fn fx_london(ts: Timestamp) -> Self {
+        Self::_new::<TestDI>(StreamColumns::fx_london(ts))
+    }
+
 }
 
 impl StreamColumns {
@@ -132,6 +139,40 @@ impl StreamColumns {
         column_values.insert(
             ColumnName::new("temperature".to_string()),
             SqlValue::NotNull(NnSqlValue::Integer(21)),
+        );
+
+        Self::_new(Rc::new(StreamModel::fx_city_temperature()), column_values).unwrap()
+    }
+    pub fn fx_osaka(ts: Timestamp) -> Self {
+        let mut column_values = HashMap::new();
+        column_values.insert(
+            ColumnName::new("timestamp".to_string()),
+            SqlValue::NotNull(NnSqlValue::Timestamp(ts)),
+        );
+        column_values.insert(
+            ColumnName::new("city".to_string()),
+            SqlValue::NotNull(NnSqlValue::Text("Osaka".to_string())),
+        );
+        column_values.insert(
+            ColumnName::new("temperature".to_string()),
+            SqlValue::NotNull(NnSqlValue::Integer(23)),
+        );
+
+        Self::_new(Rc::new(StreamModel::fx_city_temperature()), column_values).unwrap()
+    }
+    pub fn fx_london(ts: Timestamp) -> Self {
+        let mut column_values = HashMap::new();
+        column_values.insert(
+            ColumnName::new("timestamp".to_string()),
+            SqlValue::NotNull(NnSqlValue::Timestamp(ts)),
+        );
+        column_values.insert(
+            ColumnName::new("city".to_string()),
+            SqlValue::NotNull(NnSqlValue::Text("London".to_string())),
+        );
+        column_values.insert(
+            ColumnName::new("temperature".to_string()),
+            SqlValue::NotNull(NnSqlValue::Integer(13)),
         );
 
         Self::_new(Rc::new(StreamModel::fx_city_temperature()), column_values).unwrap()
