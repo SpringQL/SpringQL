@@ -2,7 +2,7 @@ mod repository;
 
 use serde::{Deserialize, Serialize};
 
-use super::{column::column_definition::ColumnDefinition, name::StreamName};
+use super::{column::column_definition::ColumnDefinition, name::{ColumnName, StreamName}};
 
 /// Small enough to be held by each row.
 #[derive(Debug, Serialize, Deserialize)]
@@ -14,8 +14,9 @@ impl StreamModelRef {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, new)]
 pub(crate) struct StreamModel {
     name: StreamName,
     cols: Vec<ColumnDefinition>,
+    rowtime: Option<ColumnName>,
 }

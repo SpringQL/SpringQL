@@ -60,7 +60,7 @@ mod tests {
 
         let mut server = NetInputServerActive::factory_with_test_source(vec![j2, j3, j1]);
 
-        let stream = StreamModel::new();
+        let stream = StreamModel::fx_city_temperature();
 
         let pump = ForeignInputPump::new(Rc::new(Mutex::new(server)), Rc::new(stream));
         let row = pump.collect_next()?;
