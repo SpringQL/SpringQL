@@ -10,7 +10,7 @@ use serde::{Deserialize, Serialize};
 
 /// NOT NULL value.
 #[derive(Clone, Debug, Serialize, Deserialize)]
-pub enum NnSqlValue {
+pub(crate) enum NnSqlValue {
     /// SMALLINT
     SmallInt(i16),
     /// INTEGER

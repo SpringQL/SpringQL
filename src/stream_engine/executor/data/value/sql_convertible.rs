@@ -13,7 +13,7 @@ use std::any::type_name;
 use super::sql_value::nn_sql_value::NnSqlValue;
 
 /// Rust values which can have bidirectional mapping to/from SQL [NnSqlValue](crate::NnSqlValue).
-pub trait SqlConvertible: Sized {
+pub(crate) trait SqlConvertible: Sized {
     /// Convert Rust type into strictly-matching SQL type.
     fn into_sql_value(self) -> NnSqlValue;
 

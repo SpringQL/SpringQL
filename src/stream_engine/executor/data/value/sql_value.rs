@@ -47,7 +47,7 @@ use std::{fmt::Display, hash::Hash};
 ///
 /// See: [test_sql_value_example()](self::tests::test_sql_value_example).
 #[derive(Clone, Serialize, Deserialize, Debug)]
-pub enum SqlValue {
+pub(crate) enum SqlValue {
     /// NULL value.
     Null,
     /// NOT NULL value.
