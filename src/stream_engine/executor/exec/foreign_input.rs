@@ -2,6 +2,7 @@ use std::fmt::Debug;
 use std::rc::Rc;
 use std::sync::Mutex;
 
+use crate::dependency_injection::DependencyInjection;
 use crate::error::Result;
 use crate::model::stream_model::StreamModel;
 use crate::stream_engine::executor::data::row::{repository::RowRepository, Row};
@@ -19,13 +20,13 @@ where
 }
 
 impl<S: InputServerActive + Debug> ForeignInputPump<S> {
-    fn _collect_next(&self) -> Result<Row> {
+    fn _collect_next<DI: DependencyInjection>(&self) -> Result<Row> {
         let foreign_row = self
             .in_server
             .lock()
             .unwrap_or_else(|e| panic!("failed to lock input foreign server ({:?}) because another thread sharing the same server got poisoned: {:?}", self.in_server, e))
             .next_row()?;
-        foreign_row._into_row(&self.dest_stream)
+        foreign_row._into_row::<DI>(self.dest_stream.clone())
     }
 
     fn _emit(&self, row: Row) -> Result<()> {
@@ -41,6 +42,7 @@ impl<S: InputServerActive + Debug> ForeignInputPump<S> {
 #[cfg(test)]
 mod tests {
     use crate::{
+        dependency_injection::test_di::TestDI,
         error::Result,
         stream_engine::executor::{
             data::{foreign_input_row::format::json::JsonObject, timestamp::Timestamp},
@@ -60,7 +62,7 @@ mod tests {
         let stream = StreamModel::fx_city_temperature();
         let pump = ForeignInputPump::new(Rc::new(Mutex::new(server)), Rc::new(stream));
 
-        let row = pump._collect_next()?;
+        let row = pump._collect_next::<TestDI>()?;
         assert_eq!(row, Row::fx_osaka(Timestamp::fx_ts2()));
         assert_eq!(row, Row::fx_london(Timestamp::fx_ts3()));
         assert_eq!(row, Row::fx_tokyo(Timestamp::fx_ts1()));

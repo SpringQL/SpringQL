@@ -7,12 +7,13 @@ use crate::{
     model::{
         column::{column_data_type::ColumnDataType, column_definition::ColumnDefinition},
         name::{ColumnName, StreamName},
+        option::{options_builder::OptionsBuilder, Options},
         sql_type::SqlType,
         stream_model::StreamModel,
     },
     stream_engine::executor::data::{
         column::stream_column::StreamColumns,
-        foreign_input_row::format::json::JsonObject,
+        foreign_input_row::{format::json::JsonObject, ForeignInputRow},
         row::Row,
         timestamp::Timestamp,
         value::sql_value::{nn_sql_value::NnSqlValue, SqlValue},
@@ -61,6 +62,18 @@ impl JsonObject {
     }
 }
 
+impl ForeignInputRow {
+    pub fn fx_tokyo(ts: Timestamp) -> Self {
+        Self::from_json(JsonObject::fx_tokyo(ts))
+    }
+    pub fn fx_osaka(ts: Timestamp) -> Self {
+        Self::from_json(JsonObject::fx_osaka(ts))
+    }
+    pub fn fx_london(ts: Timestamp) -> Self {
+        Self::from_json(JsonObject::fx_london(ts))
+    }
+}
+
 impl StreamModel {
     pub fn fx_city_temperature() -> Self {
         Self::_new(
@@ -71,8 +84,15 @@ impl StreamModel {
                 ColumnDefinition::fx_temperature(),
             ],
             Some(ColumnName::new("timestamp".to_string())),
+            Options::empty(),
         )
         .unwrap()
+    }
+}
+
+impl Options {
+    pub fn empty() -> Self {
+        OptionsBuilder::default().build()
     }
 }
 
@@ -114,15 +134,14 @@ impl ColumnDataType {
 
 impl Row {
     pub fn fx_tokyo(ts: Timestamp) -> Self {
-        Self::_new::<TestDI>(StreamColumns::fx_tokyo(ts))
+        Self::new::<TestDI>(StreamColumns::fx_tokyo(ts))
     }
     pub fn fx_osaka(ts: Timestamp) -> Self {
-        Self::_new::<TestDI>(StreamColumns::fx_osaka(ts))
+        Self::new::<TestDI>(StreamColumns::fx_osaka(ts))
     }
     pub fn fx_london(ts: Timestamp) -> Self {
-        Self::_new::<TestDI>(StreamColumns::fx_london(ts))
+        Self::new::<TestDI>(StreamColumns::fx_london(ts))
     }
-
 }
 
 impl StreamColumns {
@@ -141,7 +160,7 @@ impl StreamColumns {
             SqlValue::NotNull(NnSqlValue::Integer(21)),
         );
 
-        Self::_new(Rc::new(StreamModel::fx_city_temperature()), column_values).unwrap()
+        Self::new(Rc::new(StreamModel::fx_city_temperature()), column_values).unwrap()
     }
     pub fn fx_osaka(ts: Timestamp) -> Self {
         let mut column_values = HashMap::new();
@@ -158,7 +177,7 @@ impl StreamColumns {
             SqlValue::NotNull(NnSqlValue::Integer(23)),
         );
 
-        Self::_new(Rc::new(StreamModel::fx_city_temperature()), column_values).unwrap()
+        Self::new(Rc::new(StreamModel::fx_city_temperature()), column_values).unwrap()
     }
     pub fn fx_london(ts: Timestamp) -> Self {
         let mut column_values = HashMap::new();
@@ -175,6 +194,6 @@ impl StreamColumns {
             SqlValue::NotNull(NnSqlValue::Integer(13)),
         );
 
-        Self::_new(Rc::new(StreamModel::fx_city_temperature()), column_values).unwrap()
+        Self::new(Rc::new(StreamModel::fx_city_temperature()), column_values).unwrap()
     }
 }

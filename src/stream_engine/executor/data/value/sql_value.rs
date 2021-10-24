@@ -4,7 +4,7 @@ pub(in crate::stream_engine::executor) mod sql_value_hash_key;
 
 use self::{nn_sql_value::NnSqlValue, sql_compare_result::SqlCompareResult};
 use crate::error::{Result, SpringError};
-use anyhow::anyhow;
+use anyhow::{anyhow, Context};
 use serde::{Deserialize, Serialize};
 use std::{fmt::Display, hash::Hash};
 
@@ -119,6 +119,34 @@ impl SqlValue {
                     nn_sql_value.sql_type()
                 ))),
             },
+        }
+    }
+}
+
+impl TryFrom<&serde_json::Value> for SqlValue {
+    type Error = SpringError;
+
+    fn try_from(value: &serde_json::Value) -> Result<Self> {
+        match value {
+            serde_json::Value::Null => Ok(SqlValue::Null),
+            serde_json::Value::Bool(b) => Ok(SqlValue::NotNull(NnSqlValue::Boolean(*b))),
+
+            serde_json::Value::Number(n) => n
+                .as_i64()
+                .map(|i| SqlValue::NotNull(NnSqlValue::BigInt(i)))
+                .context("unsigned integer or float are not supported as SQL type")
+                .map_err(|e| SpringError::InvalidFormat {
+                    source: e,
+                    s: format!("{:?}", value),
+                }),
+
+            serde_json::Value::String(s) => Ok(SqlValue::NotNull(NnSqlValue::Text(s.clone()))),
+            serde_json::Value::Array(_) | serde_json::Value::Object(_) => {
+                Err(SpringError::InvalidFormat {
+                    source: anyhow!("JSON array or object are not supported as SQL type"),
+                    s: format!("{:?}", value),
+                })
+            }
         }
     }
 }

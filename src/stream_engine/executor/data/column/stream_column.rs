@@ -24,7 +24,7 @@ impl StreamColumns {
     /// - [SpringError::Sql](crate::error::SpringError::Sql) when:
     ///   - `column_values` lacks any of `stream.columns()`.
     ///   - Type mismatch with `stream` and `column_values`.
-    pub(in crate::stream_engine::executor) fn _new(
+    pub(in crate::stream_engine::executor) fn new(
         stream: Rc<StreamModel>,
         mut column_values: HashMap<ColumnName, SqlValue>,
     ) -> Result<Self> {
@@ -135,7 +135,7 @@ mod tests {
         // lacks "temperature" column
 
         assert!(matches!(
-            StreamColumns::_new(Rc::new(StreamModel::fx_city_temperature()), column_values)
+            StreamColumns::new(Rc::new(StreamModel::fx_city_temperature()), column_values)
                 .unwrap_err(),
             SpringError::Sql(_)
         ));
@@ -158,7 +158,7 @@ mod tests {
         );
 
         assert!(matches!(
-            StreamColumns::_new(Rc::new(StreamModel::fx_city_temperature()), column_values)
+            StreamColumns::new(Rc::new(StreamModel::fx_city_temperature()), column_values)
                 .unwrap_err(),
             SpringError::Sql(_)
         ));
@@ -181,7 +181,7 @@ mod tests {
         );
 
         assert!(matches!(
-            StreamColumns::_new(Rc::new(StreamModel::fx_city_temperature()), column_values)
+            StreamColumns::new(Rc::new(StreamModel::fx_city_temperature()), column_values)
                 .unwrap_err(),
             SpringError::Sql(_)
         ));

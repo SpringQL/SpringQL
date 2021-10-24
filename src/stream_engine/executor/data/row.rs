@@ -19,7 +19,7 @@ pub(in crate::stream_engine::executor) struct Row {
 }
 
 impl Row {
-    pub(in crate::stream_engine::executor) fn _new<DI>(cols: StreamColumns) -> Self
+    pub(in crate::stream_engine::executor) fn new<DI>(cols: StreamColumns) -> Self
     where
         DI: DependencyInjection,
     {
