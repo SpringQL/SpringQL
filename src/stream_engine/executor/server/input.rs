@@ -15,7 +15,7 @@ trait InputServerStandby<A: InputServerActive> {
 }
 
 /// Active: ready to provide ForeignInputRow.
-trait InputServerActive {
+pub(in crate::stream_engine::executor) trait InputServerActive {
     /// Returns currently available foreign row.
     fn next_row(&mut self) -> Result<ForeignInputRow>;
 }

@@ -4,6 +4,8 @@ use self::format::json::JsonObject;
 
 use crate::{error::Result, stream_engine::model::stream_model::StreamModel};
 
+use super::row::Row;
+
 /// Input row from foreign systems (retrieved from InputServer).
 ///
 /// Immediately converted into Row on stream-engine boundary.
@@ -17,8 +19,8 @@ impl ForeignInputRow {
 
     pub(in crate::stream_engine::executor) fn into_row(
         self,
-        stream: StreamModel,
-    ) -> Result<ForeignInputRow> {
+        stream: &StreamModel,
+    ) -> Result<Row> {
         todo!()
     }
 }
