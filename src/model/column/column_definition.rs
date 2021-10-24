@@ -8,3 +8,9 @@ pub(crate) struct ColumnDefinition {
     column_data_type: ColumnDataType,
     // TODO column_constraints like DEFAULT
 }
+
+impl ColumnDefinition {
+    pub(crate) fn column_data_type(&self) -> &ColumnDataType {
+        &self.column_data_type
+    }
+}

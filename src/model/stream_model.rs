@@ -16,4 +16,8 @@ impl StreamModel {
     pub(crate) fn rowtime(&self) -> Option<&ColumnName> {
         self.rowtime.as_ref()
     }
+
+    pub(crate) fn columns(&self) -> &[ColumnDefinition] {
+        &self.cols
+    }
 }

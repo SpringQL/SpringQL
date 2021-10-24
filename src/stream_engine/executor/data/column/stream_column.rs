@@ -1,14 +1,19 @@
+use anyhow::Context;
+
 use crate::{
-    error::Result,
+    error::{Result, SpringError},
     model::{name::ColumnName, stream_model::StreamModel},
     stream_engine::executor::data::{timestamp::Timestamp, value::sql_value::SqlValue},
 };
 use std::rc::Rc;
 
 /// Column values in a stream.
-#[derive(Eq, PartialEq, Debug)]
+#[derive(PartialEq, Debug)]
 pub(in crate::stream_engine::executor) struct StreamColumns {
     stream: Rc<StreamModel>,
+
+    /// sorted to the same order as `stream.columns()`.
+    values: Vec<SqlValue>,
 }
 
 impl StreamColumns {
@@ -36,6 +41,17 @@ impl StreamColumns {
         &self,
         column_name: &ColumnName,
     ) -> Result<&SqlValue> {
-        todo!()
+        let pos = self
+            .stream
+            .columns()
+            .iter()
+            .position(|coldef| coldef.column_data_type().column_name() == column_name)
+            .with_context(|| format!(r#"column "{}" not found"#, column_name))
+            .map_err(SpringError::Sql)?;
+
+        Ok(self
+            .values
+            .get(pos)
+            .expect("self.values must be sorted to the same as self.stream.columns()"))
     }
 }

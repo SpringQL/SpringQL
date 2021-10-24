@@ -9,3 +9,9 @@ pub(crate) struct ColumnDataType {
     sql_type: SqlType,
     nullable: bool,
 }
+
+impl ColumnDataType {
+    pub(crate) fn column_name(&self) -> &ColumnName {
+        &self.column
+    }
+}
