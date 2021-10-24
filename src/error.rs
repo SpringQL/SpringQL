@@ -3,8 +3,6 @@
 pub mod foreign_info;
 pub mod responsibility;
 
-use std::sync::{MutexGuard, PoisonError};
-
 use thiserror::Error;
 
 use self::{foreign_info::ForeignInfo, responsibility::SpringErrorResponsibility};

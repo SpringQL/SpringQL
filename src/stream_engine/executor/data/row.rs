@@ -1,8 +1,6 @@
 pub(in crate::stream_engine::executor) mod repository;
 
-use crate::timestamp::Timestamp;
-
-use super::column::stream_column::StreamColumns;
+use super::{column::stream_column::StreamColumns, timestamp::Timestamp};
 
 /// Row that enables "zero-copy stream".
 ///

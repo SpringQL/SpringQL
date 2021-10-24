@@ -6,7 +6,6 @@
 extern crate derive_new;
 
 pub mod error;
-pub mod timestamp;
 
 pub(crate) mod model;
 pub(crate) mod stream_engine;

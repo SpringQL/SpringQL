@@ -45,10 +45,9 @@ mod tests {
     use crate::{
         error::Result,
         stream_engine::executor::{
-            data::foreign_input_row::format::json::JsonObject,
+            data::{foreign_input_row::format::json::JsonObject, timestamp::Timestamp},
             server::input::net::NetInputServerActive,
         },
-        timestamp::Timestamp,
     };
 
     use super::*;

@@ -36,10 +36,9 @@ impl ToString for Timestamp {
 
 /// See: <https://serde.rs/custom-date-format.html>
 mod datetime_format {
+    use super::FORMAT;
     use chrono::NaiveDateTime;
     use serde::{self, Deserialize, Deserializer, Serializer};
-
-    use crate::timestamp::FORMAT;
 
     pub fn serialize<S>(date: &NaiveDateTime, serializer: S) -> Result<S::Ok, S::Error>
     where
@@ -55,5 +54,30 @@ mod datetime_format {
     {
         let s = String::deserialize(deserializer)?;
         NaiveDateTime::parse_from_str(&s, FORMAT).map_err(serde::de::Error::custom)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::error::Result;
+
+    #[test]
+    fn test_timestamp_ser_de() -> Result<()> {
+        let ts = vec![
+            "2021-10-22 14:00:14.000000000",
+            "2021-10-22 14:00:14.000000009",
+        ]
+        .into_iter()
+        .map(|s| s.parse())
+        .collect::<Result<Vec<_>>>()?;
+
+        for t in ts {
+            let ser = serde_json::to_string(&t).unwrap();
+            let de: Timestamp = serde_json::from_str(&ser).unwrap();
+            assert_eq!(de, t);
+        }
+
+        Ok(())
     }
 }

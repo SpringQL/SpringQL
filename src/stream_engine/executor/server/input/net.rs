@@ -145,8 +145,8 @@ mod tests {
     use crate::model::option::options_builder::OptionsBuilder;
     use crate::stream_engine::executor::data::foreign_input_row::format::json::JsonObject;
     use crate::stream_engine::executor::data::foreign_input_row::ForeignInputRow;
+    use crate::stream_engine::executor::data::timestamp::Timestamp;
     use crate::stream_engine::executor::test_support::foreign::source::TestSource;
-    use crate::timestamp::Timestamp;
 
     #[test]
     fn test_input_server_tcp() -> crate::error::Result<()> {

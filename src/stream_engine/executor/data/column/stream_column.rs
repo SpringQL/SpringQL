@@ -1,7 +1,4 @@
-use crate::{
-    error::Result, model::name::ColumnName,
-    stream_engine::executor::data::value::sql_value::SqlValue, timestamp::Timestamp,
-};
+use crate::{error::Result, model::name::ColumnName, stream_engine::executor::data::{timestamp::Timestamp, value::sql_value::SqlValue}};
 
 /// Column values in a stream.
 #[derive(Eq, PartialEq, Debug, Default)]
