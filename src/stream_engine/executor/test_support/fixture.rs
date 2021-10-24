@@ -1,3 +1,5 @@
+use std::{collections::HashMap, rc::Rc};
+
 use serde_json::json;
 
 use crate::{
@@ -9,8 +11,11 @@ use crate::{
         stream_model::StreamModel,
     },
     stream_engine::executor::data::{
-        column::stream_column::StreamColumns, foreign_input_row::format::json::JsonObject,
-        row::Row, timestamp::Timestamp,
+        column::stream_column::StreamColumns,
+        foreign_input_row::format::json::JsonObject,
+        row::Row,
+        timestamp::Timestamp,
+        value::sql_value::{nn_sql_value::NnSqlValue, SqlValue},
     },
 };
 
@@ -114,5 +119,21 @@ impl Row {
 }
 
 impl StreamColumns {
-    pub fn fx_tokyo() -> Self {}
+    pub fn fx_tokyo() -> Self {
+        let mut column_values = HashMap::new();
+        column_values.insert(
+            ColumnName::new("timestamp".to_string()),
+            SqlValue::NotNull(NnSqlValue::Timestamp(Timestamp::fx_ts1())),
+        );
+        column_values.insert(
+            ColumnName::new("city".to_string()),
+            SqlValue::NotNull(NnSqlValue::Text("Tokyo".to_string())),
+        );
+        column_values.insert(
+            ColumnName::new("temperature".to_string()),
+            SqlValue::NotNull(NnSqlValue::Integer(21)),
+        );
+
+        Self::new(Rc::new(StreamModel::fx_city_temperature()), column_values).unwrap()
+    }
 }
