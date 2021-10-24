@@ -15,11 +15,11 @@ impl ColumnDataType {
         &self.column
     }
 
-    pub(crate) fn sql_type(&self) -> &SqlType {
+    pub(crate) fn _sql_type(&self) -> &SqlType {
         &self.sql_type
     }
 
-    pub(crate) fn nullable(&self) -> bool {
+    pub(crate) fn _nullable(&self) -> bool {
         self.nullable
     }
 }

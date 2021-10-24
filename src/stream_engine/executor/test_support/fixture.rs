@@ -63,7 +63,7 @@ impl JsonObject {
 
 impl StreamModel {
     pub fn fx_city_temperature() -> Self {
-        Self::new(
+        Self::_new(
             StreamName::new("city_temperature".to_string()),
             vec![
                 ColumnDefinition::fx_timestamp(),
@@ -114,16 +114,16 @@ impl ColumnDataType {
 
 impl Row {
     pub fn fx_tokyo(ts: Timestamp) -> Self {
-        Self::new::<TestDI>(StreamColumns::fx_tokyo())
+        Self::_new::<TestDI>(StreamColumns::fx_tokyo(ts))
     }
 }
 
 impl StreamColumns {
-    pub fn fx_tokyo() -> Self {
+    pub fn fx_tokyo(ts: Timestamp) -> Self {
         let mut column_values = HashMap::new();
         column_values.insert(
             ColumnName::new("timestamp".to_string()),
-            SqlValue::NotNull(NnSqlValue::Timestamp(Timestamp::fx_ts1())),
+            SqlValue::NotNull(NnSqlValue::Timestamp(ts)),
         );
         column_values.insert(
             ColumnName::new("city".to_string()),
@@ -134,6 +134,6 @@ impl StreamColumns {
             SqlValue::NotNull(NnSqlValue::Integer(21)),
         );
 
-        Self::new(Rc::new(StreamModel::fx_city_temperature()), column_values).unwrap()
+        Self::_new(Rc::new(StreamModel::fx_city_temperature()), column_values).unwrap()
     }
 }

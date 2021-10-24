@@ -24,7 +24,7 @@ impl StreamColumns {
     /// - [SpringError::Sql](crate::error::SpringError::Sql) when:
     ///   - `column_values` lacks any of `stream.columns()`.
     ///   - Type mismatch with `stream` and `column_values`.
-    pub(in crate::stream_engine::executor) fn new(
+    pub(in crate::stream_engine::executor) fn _new(
         stream: Rc<StreamModel>,
         mut column_values: HashMap<ColumnName, SqlValue>,
     ) -> Result<Self> {
@@ -49,7 +49,7 @@ impl StreamColumns {
         Ok(Self { stream, values })
     }
 
-    pub(in crate::stream_engine::executor) fn stream(&self) -> &StreamModel {
+    pub(in crate::stream_engine::executor) fn _stream(&self) -> &StreamModel {
         self.stream.as_ref()
     }
 
@@ -90,19 +90,19 @@ impl StreamColumns {
     fn validate_value_with_type(value: SqlValue, coldef: &ColumnDefinition) -> Result<SqlValue> {
         match &value {
             SqlValue::NotNull(nn_value) => {
-                if &nn_value.sql_type() == coldef.column_data_type().sql_type() {
+                if &nn_value.sql_type() == coldef.column_data_type()._sql_type() {
                     Ok(value)
                 } else {
                     Err(SpringError::Sql(anyhow!(
                         r#"SQL type `{:?}` is expected for column "{}" from stream definition, while the value is {}"#,
-                        coldef.column_data_type().sql_type(),
+                        coldef.column_data_type()._sql_type(),
                         coldef.column_data_type().column_name(),
                         nn_value
                     )))
                 }
             }
             SqlValue::Null => {
-                if coldef.column_data_type().nullable() {
+                if coldef.column_data_type()._nullable() {
                     Ok(value)
                 } else {
                     Err(SpringError::Sql(anyhow!(
@@ -135,7 +135,7 @@ mod tests {
         // lacks "temperature" column
 
         assert!(matches!(
-            StreamColumns::new(Rc::new(StreamModel::fx_city_temperature()), column_values)
+            StreamColumns::_new(Rc::new(StreamModel::fx_city_temperature()), column_values)
                 .unwrap_err(),
             SpringError::Sql(_)
         ));
@@ -158,7 +158,7 @@ mod tests {
         );
 
         assert!(matches!(
-            StreamColumns::new(Rc::new(StreamModel::fx_city_temperature()), column_values)
+            StreamColumns::_new(Rc::new(StreamModel::fx_city_temperature()), column_values)
                 .unwrap_err(),
             SpringError::Sql(_)
         ));
@@ -181,7 +181,7 @@ mod tests {
         );
 
         assert!(matches!(
-            StreamColumns::new(Rc::new(StreamModel::fx_city_temperature()), column_values)
+            StreamColumns::_new(Rc::new(StreamModel::fx_city_temperature()), column_values)
                 .unwrap_err(),
             SpringError::Sql(_)
         ));

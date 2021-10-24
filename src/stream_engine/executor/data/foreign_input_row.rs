@@ -17,7 +17,7 @@ impl ForeignInputRow {
         Self(json)
     }
 
-    pub(in crate::stream_engine::executor) fn into_row(self, stream: &StreamModel) -> Result<Row> {
+    pub(in crate::stream_engine::executor) fn _into_row(self, _stream: &StreamModel) -> Result<Row> {
         todo!()
     }
 }

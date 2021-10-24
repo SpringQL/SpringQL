@@ -15,9 +15,9 @@ impl NetInputServerActive {
         let source = TestSource::start(inputs).unwrap();
 
         let options = OptionsBuilder::default()
-            .add("PROTOCOL", "TCP")
-            .add("REMOTE_HOST", source.host_ip().to_string())
-            .add("REMOTE_PORT", source.port().to_string())
+            ._add("PROTOCOL", "TCP")
+            ._add("REMOTE_HOST", source.host_ip().to_string())
+            ._add("REMOTE_PORT", source.port().to_string())
             .build();
 
         let server = NetInputServerStandby::new(options).unwrap();

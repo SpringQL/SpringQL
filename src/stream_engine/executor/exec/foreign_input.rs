@@ -2,9 +2,7 @@ use std::fmt::Debug;
 use std::rc::Rc;
 use std::sync::Mutex;
 
-use anyhow::Context;
-
-use crate::error::{Result, SpringError};
+use crate::error::Result;
 use crate::model::stream_model::StreamModel;
 use crate::stream_engine::executor::data::row::{repository::RowRepository, Row};
 use crate::stream_engine::executor::server::input::InputServerActive;
@@ -21,21 +19,21 @@ where
 }
 
 impl<S: InputServerActive + Debug> ForeignInputPump<S> {
-    fn collect_next(&self) -> Result<Row> {
+    fn _collect_next(&self) -> Result<Row> {
         let foreign_row = self
             .in_server
             .lock()
             .unwrap_or_else(|e| panic!("failed to lock input foreign server ({:?}) because another thread sharing the same server got poisoned: {:?}", self.in_server, e))
             .next_row()?;
-        foreign_row.into_row(&self.dest_stream)
+        foreign_row._into_row(&self.dest_stream)
     }
 
-    fn emit(&self, row: Row) -> Result<()> {
-        let repo = self.row_repository();
+    fn _emit(&self, row: Row) -> Result<()> {
+        let repo = self._row_repository();
         repo.emit(row)
     }
 
-    fn row_repository(&self) -> &dyn RowRepository {
+    fn _row_repository(&self) -> &dyn RowRepository {
         todo!()
     }
 }
@@ -58,12 +56,11 @@ mod tests {
         let j2 = JsonObject::fx_osaka(Timestamp::fx_ts2());
         let j3 = JsonObject::fx_london(Timestamp::fx_ts3());
 
-        let mut server = NetInputServerActive::factory_with_test_source(vec![j2, j3, j1]);
-
+        let server = NetInputServerActive::factory_with_test_source(vec![j2, j3, j1]);
         let stream = StreamModel::fx_city_temperature();
-
         let pump = ForeignInputPump::new(Rc::new(Mutex::new(server)), Rc::new(stream));
-        let row = pump.collect_next()?;
+
+        let row = pump._collect_next()?;
         assert_eq!(row, Row::fx_tokyo(Timestamp::fx_ts1()));
 
         Ok(())
