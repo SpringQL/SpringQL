@@ -1,8 +1,12 @@
 mod boolean;
 mod int;
 mod text;
+mod timestamp;
 
-use crate::error::{Result, SpringError};
+use crate::{
+    error::{Result, SpringError},
+    stream_engine::Timestamp,
+};
 use anyhow::anyhow;
 use std::any::type_name;
 
@@ -51,6 +55,14 @@ pub trait SqlConvertible: Sized {
     ///   - the type implementing SqlConvertible is not convertible from bool
     fn try_from_bool(_: &bool) -> Result<Self> {
         Self::default_err("bool")
+    }
+
+    /// # Failures
+    ///
+    /// - [SpringError::Sql](crate::error::SpringError::Sql) when:
+    ///   - the type implementing SqlConvertible is not convertible from Timestamp
+    fn try_from_timestamp(_: &Timestamp) -> Result<Self> {
+        Self::default_err("Timestamp")
     }
 
     #[doc(hidden)]

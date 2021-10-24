@@ -4,6 +4,7 @@ use super::sql_compare_result::SqlCompareResult;
 use crate::error::{Result, SpringError};
 use crate::model::sql_type::{NumericComparableType, SqlType, StringComparableLoseType};
 use crate::stream_engine::executor::data::value::sql_convertible::SqlConvertible;
+use crate::stream_engine::Timestamp;
 use anyhow::anyhow;
 use serde::{Deserialize, Serialize};
 
@@ -22,6 +23,9 @@ pub enum NnSqlValue {
 
     /// BOOLEAN
     Boolean(bool),
+
+    /// TIMESTAMP
+    Timestamp(Timestamp),
 }
 
 /// Although function is better to use,
@@ -39,7 +43,7 @@ pub enum NnSqlValue {
 ///
 /// does not work properly with closures which capture &mut environments.
 macro_rules! for_all_loose_types {
-    ( $nn_sql_value:expr, $closure_i64:expr, $closure_string:expr, $closure_bool:expr ) => {{
+    ( $nn_sql_value:expr, $closure_i64:expr, $closure_string:expr, $closure_bool:expr, $closure_timestamp:expr ) => {{
         match &$nn_sql_value {
             NnSqlValue::SmallInt(_) | NnSqlValue::Integer(_) | NnSqlValue::BigInt(_) => {
                 let v = $nn_sql_value.unpack::<i64>().unwrap();
@@ -47,6 +51,7 @@ macro_rules! for_all_loose_types {
             }
             NnSqlValue::Text(s) => $closure_string(s.to_string()),
             NnSqlValue::Boolean(b) => $closure_bool(b.clone()),
+            NnSqlValue::Timestamp(t) => $closure_timestamp(*t),
         }
     }};
 }
@@ -69,7 +74,8 @@ impl Hash for NnSqlValue {
             |s: String| {
                 s.hash(state);
             },
-            |b: bool| { b.hash(state) }
+            |b: bool| { b.hash(state) },
+            |t: Timestamp| { t.hash(state) }
         )
     }
 }
@@ -80,7 +86,8 @@ impl Display for NnSqlValue {
             self,
             |i: i64| i.to_string(),
             |s: String| format!(r#""{}""#, s),
-            |b: bool| (if b { "TRUE" } else { "FALSE" }).to_string()
+            |b: bool| (if b { "TRUE" } else { "FALSE" }).to_string(),
+            |t: Timestamp| t.to_string()
         );
         write!(f, "{}", s)
     }
@@ -106,6 +113,7 @@ impl NnSqlValue {
             NnSqlValue::BigInt(i64_) => T::try_from_i64(i64_),
             NnSqlValue::Text(string) => T::try_from_string(string),
             NnSqlValue::Boolean(b) => T::try_from_bool(b),
+            NnSqlValue::Timestamp(t) => T::try_from_timestamp(t),
         }
     }
 
@@ -117,6 +125,7 @@ impl NnSqlValue {
             NnSqlValue::BigInt(_) => SqlType::big_int(),
             NnSqlValue::Text(_) => SqlType::text(),
             NnSqlValue::Boolean(_) => SqlType::boolean(),
+            NnSqlValue::Timestamp(_) => SqlType::timestamp(),
         }
     }
 
@@ -143,6 +152,10 @@ impl NnSqlValue {
                 let (self_b, other_b) = (self.unpack::<bool>()?, other.unpack::<bool>()?);
                 Ok(SqlCompareResult::from(self_b.cmp(&other_b)))
             }
+            (SqlType::TimestampComparable, SqlType::TimestampComparable) => {
+                let (self_t, other_t) = (self.unpack::<Timestamp>()?, other.unpack::<Timestamp>()?);
+                Ok(SqlCompareResult::from(self_t.cmp(&other_t)))
+            }
             (_, _) => Err(SpringError::Sql(anyhow!(
                 "`self` and `other` are not in comparable type - self: {:?}, other: {:?}",
                 self,
@@ -160,7 +173,7 @@ impl NnSqlValue {
             NnSqlValue::SmallInt(v) => Ok(Self::SmallInt(-v)),
             NnSqlValue::Integer(v) => Ok(Self::Integer(-v)),
             NnSqlValue::BigInt(v) => Ok(Self::BigInt(-v)),
-            NnSqlValue::Text(_) | NnSqlValue::Boolean(_) => {
+            NnSqlValue::Text(_) | NnSqlValue::Boolean(_) | NnSqlValue::Timestamp(_) => {
                 Err(SpringError::Sql(anyhow!("{} cannot negate", self)))
             }
         }
@@ -197,6 +210,14 @@ mod tests {
         assert_eq!(
             NnSqlValue::Text("🚔".to_string()).unpack::<String>()?,
             "🚔".to_string()
+        );
+
+        assert!(NnSqlValue::Boolean(true).unpack::<bool>()?);
+        assert!(!NnSqlValue::Boolean(false).unpack::<bool>()?);
+
+        assert_eq!(
+            NnSqlValue::Timestamp(Timestamp::fx_ts1()).unpack::<Timestamp>()?,
+            Timestamp::fx_ts1()
         );
 
         Ok(())
