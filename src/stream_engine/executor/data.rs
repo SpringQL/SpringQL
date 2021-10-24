@@ -4,4 +4,4 @@ pub(in crate::stream_engine::executor) mod row;
 pub(in crate::stream_engine::executor) mod timestamp;
 pub(in crate::stream_engine::executor) mod value;
 
-pub(crate) use timestamp::current_timestamp::CurrentTimestamp;
+pub(crate) use timestamp::{current_timestamp::CurrentTimestamp, Timestamp};

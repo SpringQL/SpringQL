@@ -4,4 +4,4 @@
 
 mod executor;
 
-pub(crate) use executor::CurrentTimestamp;
+pub(crate) use executor::{CurrentTimestamp, Timestamp};

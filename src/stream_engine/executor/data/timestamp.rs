@@ -13,7 +13,7 @@ const FORMAT: &str = "%Y-%m-%d %H:%M:%S%.9f";
 
 /// Timestamp in UTC. Serializable.
 #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Serialize, Deserialize)]
-pub struct Timestamp(#[serde(with = "datetime_format")] NaiveDateTime);
+pub(crate) struct Timestamp(#[serde(with = "datetime_format")] NaiveDateTime);
 
 impl FromStr for Timestamp {
     type Err = SpringError;

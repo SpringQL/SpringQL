@@ -103,6 +103,6 @@ impl ColumnDataType {
 
 impl Row {
     pub fn fx_tokyo(ts: Timestamp) -> Self {
-        Self::new(StreamColumns::fx_tokyo)
+        Self::new(StreamColumns::fx_tokyo())
     }
 }
