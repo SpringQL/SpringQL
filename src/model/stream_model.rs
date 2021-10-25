@@ -48,7 +48,7 @@ impl StreamModel {
                 Ok(())
             } else {
                 Err(SpringError::Sql(anyhow!(
-                    r#"ROWTIME column "{}" is not in stream ("{}") definition"#,
+                    r#"ROWTIME column "{}" is not TIMESTAMP type in stream ("{}") definition"#,
                     rowtime_col,
                     name,
                 )))
@@ -56,7 +56,7 @@ impl StreamModel {
 
             if rowtime_coldef.column_data_type().nullable() {
                 Err(SpringError::Sql(anyhow!(
-                    r#"ROWTIME column "{}" is not in stream ("{}") definition"#,
+                    r#"ROWTIME column "{}" must be NOT NULL in stream ("{}") definition"#,
                     rowtime_col,
                     name,
                 )))
