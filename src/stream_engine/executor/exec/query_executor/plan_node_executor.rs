@@ -24,7 +24,10 @@ mod tests {
     use crate::{
         dependency_injection::{test_di::TestDI, DependencyInjection},
         model::name::{ColumnName, StreamName},
-        stream_engine::{executor::data::row::Row, RowRepository, Timestamp},
+        stream_engine::{
+            executor::data::{row::Row, value::sql_value::SqlValue},
+            RowRepository, Timestamp,
+        },
     };
 
     use super::*;
@@ -61,9 +64,6 @@ mod tests {
         let t_04_04_00 = Timestamp::from_str("2019-03-30 04:04:00.000000000").unwrap();
         let t_04_06_00 = Timestamp::from_str("2019-03-30 04:06:00.000000000").unwrap();
         let t_04_08_00 = Timestamp::from_str("2019-03-30 04:08:00.000000000").unwrap();
-        let t_04_18_00 = Timestamp::from_str("2019-03-30 04:18:00.000000000").unwrap();
-        let t_04_18_00 = Timestamp::from_str("2019-03-30 04:18:00.000000000").unwrap();
-        let t_04_18_00 = Timestamp::from_str("2019-03-30 04:18:00.000000000").unwrap();
         let t_04_18_00 = Timestamp::from_str("2019-03-30 04:18:00.000000000").unwrap();
         let t_04_43_00 = Timestamp::from_str("2019-03-30 04:43:00.000000000").unwrap();
         let t_04_44_00 = Timestamp::from_str("2019-03-30 04:44:00.000000000").unwrap();
@@ -171,10 +171,20 @@ mod tests {
             let row_ref = row_repo.collect_next(&stream_ticker).unwrap();
             let window = executor.run_sliding_window(&op, &row_ref).unwrap();
 
-            let got_pks = window.iter().map(|rr| {
-                let got_row = row_repo.get(rr);
-                got_row.get(ColumnName::new("timestamp".to_string()))
-            });
+            let got_pks = window
+                .map(|rr| {
+                    let got_row = row_repo.get(&rr);
+                    let got_sql_value = got_row
+                        .get(&ColumnName::new("timestamp".to_string()))
+                        .unwrap();
+                    if let SqlValue::NotNull(got_nn_sql_value) = got_sql_value {
+                        got_nn_sql_value.unpack()
+                    } else {
+                        unreachable!()
+                    }
+                })
+                .collect::<Result<Vec<Timestamp>>>()
+                .unwrap();
 
             assert_eq!(got_pks, expected);
         }

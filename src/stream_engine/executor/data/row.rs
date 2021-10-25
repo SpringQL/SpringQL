@@ -1,9 +1,11 @@
 pub(in crate::stream_engine::executor) mod repository;
 
+use super::{
+    column::stream_column::StreamColumns, timestamp::Timestamp, value::sql_value::SqlValue,
+};
+use crate::error::Result;
+use crate::{dependency_injection::DependencyInjection, model::name::ColumnName};
 pub(crate) use repository::{RefCntGcRowRepository, RowRepository};
-
-use super::{column::stream_column::StreamColumns, timestamp::Timestamp};
-use crate::dependency_injection::DependencyInjection;
 
 /// Row that enables "zero-copy stream".
 ///
@@ -51,6 +53,17 @@ impl Row {
                 .promoted_rowtime()
                 .expect("Either arrival ROWTIME or promoted ROWTIME must be enabled")
         })
+    }
+
+    /// # Failure
+    ///
+    /// - [SpringError::Sql](crate::error::SpringError::Sql) when:
+    ///   - No column named `column_name` is found from this stream.
+    pub(in crate::stream_engine::executor) fn get(
+        &self,
+        column_name: &ColumnName,
+    ) -> Result<&SqlValue> {
+        self.cols.get(column_name)
     }
 }
 
