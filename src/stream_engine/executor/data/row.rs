@@ -1,5 +1,7 @@
 pub(in crate::stream_engine::executor) mod repository;
 
+pub(crate) use repository::{RefCntGcRowRepository, RowRepository};
+
 use super::{column::stream_column::StreamColumns, timestamp::Timestamp};
 use crate::dependency_injection::DependencyInjection;
 
@@ -11,7 +13,7 @@ use crate::dependency_injection::DependencyInjection;
 /// - PartialEq by all columns (NULL prevents Eq).
 /// - PartialOrd by timestamp.
 #[derive(PartialEq, Debug)]
-pub(in crate::stream_engine::executor) struct Row {
+pub(crate) struct Row {
     arrival_rowtime: Option<Timestamp>,
 
     /// Columns

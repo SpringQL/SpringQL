@@ -1,12 +1,19 @@
-use crate::stream_engine::{CurrentTimestamp, Timestamp};
+use crate::stream_engine::{CurrentTimestamp, RefCntGcRowRepository, Timestamp};
 
 use super::DependencyInjection;
 
-#[derive(Debug)]
-pub(crate) struct TestDI;
+#[derive(Debug, Default)]
+pub(crate) struct TestDI {
+    row_repo: RefCntGcRowRepository,
+}
 
 impl DependencyInjection for TestDI {
     type CurrentTimestampType = TestCurrentTimestamp;
+    type RowRepositoryType = RefCntGcRowRepository;
+
+    fn row_repository(&self) -> &Self::RowRepositoryType {
+        &self.row_repo
+    }
 }
 
 #[derive(Debug)]

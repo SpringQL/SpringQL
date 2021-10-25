@@ -4,4 +4,4 @@
 
 mod executor;
 
-pub(crate) use executor::{CurrentTimestamp, Timestamp};
+pub(crate) use executor::{CurrentTimestamp, RefCntGcRowRepository, RowRepository, Timestamp};
