@@ -23,7 +23,10 @@ mod tests {
 
     use crate::{
         dependency_injection::{test_di::TestDI, DependencyInjection},
-        model::name::{ColumnName, StreamName},
+        model::{
+            name::{ColumnName, PumpName, StreamName},
+            pipeline::stream_model::StreamModel,
+        },
         stream_engine::{
             executor::data::{row::Row, value::sql_value::SqlValue},
             RowRepository, Timestamp,
@@ -48,8 +51,6 @@ mod tests {
         let op = SlidingWindowOperation::TimeBased {
             lower_bound: Duration::from_secs(5 * 60),
         };
-
-        let stream_ticker = StreamName::new("ticker".to_string());
 
         let t_03_02_00 = Timestamp::from_str("2019-03-30 03:02:00.000000000").unwrap();
         let t_03_02_10 = Timestamp::from_str("2019-03-30 03:02:10.000000000").unwrap();
@@ -167,8 +168,10 @@ mod tests {
             expected,
         } in test_cases
         {
-            row_repo.emit(row, &stream_ticker).unwrap();
-            let row_ref = row_repo.collect_next(&stream_ticker).unwrap();
+            row_repo.emit(row, &[PumpName::fx_ticker_window()]).unwrap();
+            let row_ref = row_repo
+                .collect_next(&PumpName::fx_ticker_window())
+                .unwrap();
             let window = executor.run_sliding_window(&op, &row_ref).unwrap();
 
             let got_pks = window

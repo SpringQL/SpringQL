@@ -1,24 +1,18 @@
 #[cfg(test)]
-pub(crate) mod naive_row_repository;
+pub(crate) mod test_row_repository;
+
+use std::rc::Rc;
 
 #[cfg(test)]
-pub(crate) use naive_row_repository::NaiveRowRepository;
+pub(crate) use test_row_repository::TestRowRepository;
 
-use crate::{
-    error::Result,
-    model::name::{PumpName, StreamName},
-};
+use crate::{error::Result, model::name::PumpName};
 
 use super::Row;
 
-#[derive(Clone, Eq, PartialEq, Hash, Debug)]
-pub(crate) struct RowRef;
-
-impl RowRef {
-    pub(in crate::stream_engine::executor) fn get(&self) -> &Row {
-        todo!()
-    }
-}
+/// Key to get a &Row from RowRepository.
+#[derive(Copy, Clone, Eq, PartialEq, Hash, Debug)]
+pub(crate) struct RowRef(u64);
 
 /// # Concept diagram
 ///
@@ -31,7 +25,7 @@ impl RowRef {
 /// ```
 ///
 /// ```text
-/// emit(r1, "s1");
+/// emit(r1, vec!["s1_p1", "s1_p2"]);
 ///
 /// ---> (Stream "s1") -+- (Pump "s1_p1") ---> (Stream "s2")
 ///                     |   in buf: [r1]
@@ -51,7 +45,7 @@ impl RowRef {
 /// ```
 ///
 /// ```text
-/// emit(r2, "s1");
+/// emit(r2, vec!["s1_p1", "s1_p2"]);
 ///
 /// ---> (Stream "s1") -+- (Pump "s1_p1") ---> (Stream "s2")
 ///                     |   in buf: [r2]
@@ -70,30 +64,16 @@ impl RowRef {
 ///                         in buf: [r2]
 /// ```
 pub(crate) trait RowRepository {
+    /// Generate unique RowRef.
+    fn _gen_ref(&self) -> RowRef;
+
     /// Get ref to Row from RowRef.
-    fn get(&self, row_ref: &RowRef) -> &Row;
+    fn get(&self, row_ref: &RowRef) -> Rc<Row>;
 
     /// Get the next RowRef from `pump`.
     fn collect_next(&self, pump: &PumpName) -> Result<RowRef>;
 
     /// Move `row` to `dest_stream`.
     /// The row is distributed to all pumps going out from `dest_stream`.
-    fn emit(&self, row: Row, dest_stream: &StreamName) -> Result<()>;
-}
-
-#[derive(Debug, Default)]
-pub(crate) struct RefCntGcRowRepository;
-
-impl RowRepository for RefCntGcRowRepository {
-    fn get(&self, row_ref: &RowRef) -> &Row {
-        todo!()
-    }
-
-    fn collect_next(&self, pump: &PumpName) -> Result<RowRef> {
-        todo!()
-    }
-
-    fn emit(&self, row: Row, dest_stream: &StreamName) -> Result<()> {
-        todo!()
-    }
+    fn emit(&self, row: Row, downstream_pumps: &[PumpName]) -> Result<()>;
 }

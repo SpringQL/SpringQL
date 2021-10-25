@@ -4,7 +4,7 @@ use std::sync::Mutex;
 
 use crate::dependency_injection::DependencyInjection;
 use crate::error::Result;
-use crate::model::name::StreamName;
+use crate::model::name::{PumpName, StreamName};
 use crate::model::pipeline::stream_model::StreamModel;
 use crate::stream_engine::executor::data::row::{repository::RowRepository, Row};
 use crate::stream_engine::executor::server::input::InputServerActive;
@@ -30,9 +30,9 @@ impl<S: InputServerActive + Debug> ForeignInputPump<S> {
         foreign_row.into_row::<DI>(self.dest_stream.shape())
     }
 
-    fn emit(&self, row: Row, dest_stream: &StreamName) -> Result<()> {
+    fn emit(&self, row: Row, downstream_pumps: &[PumpName]) -> Result<()> {
         let repo = self.row_repository();
-        repo.emit(row, dest_stream)
+        repo.emit(row, downstream_pumps)
     }
 
     fn row_repository(&self) -> &dyn RowRepository {

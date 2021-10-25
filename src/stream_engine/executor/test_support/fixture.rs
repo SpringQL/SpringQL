@@ -6,7 +6,7 @@ use crate::{
     dependency_injection::test_di::TestDI,
     model::{
         column::{column_data_type::ColumnDataType, column_definition::ColumnDefinition},
-        name::{ColumnName, StreamName},
+        name::{ColumnName, PumpName, StreamName},
         option::{options_builder::OptionsBuilder, Options},
         pipeline::stream_model::{stream_shape::StreamShape, StreamModel},
         sql_type::SqlType,
@@ -105,6 +105,27 @@ impl StreamModel {
             Rc::new(StreamShape::fx_city_temperature()),
             Options::empty(),
         )
+    }
+
+    pub fn fx_ticker() -> Self {
+        Self::new(
+            StreamName::new("ticker".to_string()),
+            Rc::new(StreamShape::fx_ticker()),
+            Options::empty(),
+        )
+    }
+    pub fn fx_ticker_window() -> Self {
+        Self::new(
+            StreamName::new("ticker_window".to_string()),
+            Rc::new(StreamShape::fx_ticker()),
+            Options::empty(),
+        )
+    }
+}
+
+impl PumpName {
+    pub fn fx_ticker_window() -> Self {
+        Self::new("ticker_window".to_string())
     }
 }
 
