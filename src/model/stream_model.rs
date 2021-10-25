@@ -99,6 +99,17 @@ mod tests {
     use super::*;
 
     #[test]
+    fn test_rowtime() {
+        let _ = StreamModel::new(
+            StreamName::new("s".to_string()),
+            vec![ColumnDefinition::fx_timestamp()],
+            Some(ColumnName::new("timestamp".to_string())),
+            Options::empty(),
+        )
+        .expect("should succeed");
+    }
+
+    #[test]
     fn test_rowtime_not_found() {
         assert!(matches!(
             StreamModel::new(
