@@ -43,7 +43,7 @@ impl<S: InputServerActive + Debug> ForeignInputPump<S> {
 mod tests {
     use crate::{
         dependency_injection::test_di::TestDI,
-        error::Result,
+        error::{Result, SpringError},
         stream_engine::executor::{
             data::{foreign_input_row::format::json::JsonObject, timestamp::Timestamp},
             server::input::net::NetInputServerActive,
@@ -54,18 +54,23 @@ mod tests {
 
     #[test]
     fn test_foreign_input_pump() -> Result<()> {
-        let j1 = JsonObject::fx_tokyo(Timestamp::fx_ts1());
-        let j2 = JsonObject::fx_osaka(Timestamp::fx_ts2());
-        let j3 = JsonObject::fx_london(Timestamp::fx_ts3());
+        let t = Timestamp::fx_ts1();
 
-        let server = NetInputServerActive::factory_with_test_source(vec![j2, j3, j1]);
+        let j1 = JsonObject::fx_tokyo(t);
+        let j2 = JsonObject::fx_osaka(t);
+        let j3 = JsonObject::fx_london(t);
+
+        let server = NetInputServerActive::factory_with_test_source(vec![j1, j2, j3]);
         let stream = StreamModel::fx_city_temperature();
         let pump = ForeignInputPump::new(Rc::new(Mutex::new(server)), Rc::new(stream));
 
-        let row = pump._collect_next::<TestDI>()?;
-        assert_eq!(row, Row::fx_osaka(Timestamp::fx_ts2()));
-        assert_eq!(row, Row::fx_london(Timestamp::fx_ts3()));
-        assert_eq!(row, Row::fx_tokyo(Timestamp::fx_ts1()));
+        assert_eq!(pump._collect_next::<TestDI>()?, Row::fx_tokyo(t));
+        assert_eq!(pump._collect_next::<TestDI>()?, Row::fx_osaka(t));
+        assert_eq!(pump._collect_next::<TestDI>()?, Row::fx_london(t));
+        assert!(matches!(
+            pump._collect_next::<TestDI>().unwrap_err(),
+            SpringError::ForeignInputTimeout { .. }
+        ));
 
         Ok(())
     }

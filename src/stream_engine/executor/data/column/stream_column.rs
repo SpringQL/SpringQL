@@ -44,7 +44,7 @@ impl StreamColumns {
                     })
                     .map_err(SpringError::Sql)?;
 
-                Self::try_convert_value_type(value, coldef)
+                Self::validate_or_try_convert_value_type(value, coldef)
             })
             .collect::<Result<Vec<SqlValue>>>()?;
 
@@ -89,18 +89,28 @@ impl StreamColumns {
             .expect("self.values must be sorted to the same as self.stream.columns()"))
     }
 
-    fn try_convert_value_type(value: SqlValue, coldef: &ColumnDefinition) -> Result<SqlValue> {
+    fn validate_or_try_convert_value_type(
+        value: SqlValue,
+        coldef: &ColumnDefinition,
+    ) -> Result<SqlValue> {
         let cdt = coldef.column_data_type();
 
         match &value {
             SqlValue::NotNull(nn_value) => {
-                let nn_value = nn_value
+                if &nn_value.sql_type() == cdt._sql_type() {
+                    Ok(value)
+                } else {
+                    let nn_value = nn_value
                     .try_convert(cdt._sql_type())
-                    .with_context(|| format!(r#"SQL type `{:?}` is expected for column "{}" from stream definition, while the value is {}"#,
-                    cdt._sql_type(),
-                cdt.column_name(),
-                nn_value)).map_err(SpringError::Sql)?;
-                Ok(SqlValue::NotNull(nn_value))
+                    .with_context(|| format!(
+                        r#"SQL type `{:?}` is expected for column "{}" from stream definition, while the value is {:?}"#,
+                        cdt._sql_type(),
+                        cdt.column_name(),
+                        nn_value
+                    ))
+                    .map_err(SpringError::Sql)?;
+                    Ok(SqlValue::NotNull(nn_value))
+                }
             }
             SqlValue::Null => {
                 if cdt._nullable() {
