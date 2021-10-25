@@ -9,7 +9,7 @@ use crate::{
         name::{ColumnName, StreamName},
         option::{options_builder::OptionsBuilder, Options},
         sql_type::SqlType,
-        stream_model::StreamModel,
+        stream_model::{stream_shape::StreamShape, StreamModel},
     },
     stream_engine::executor::data::{
         column::stream_column::StreamColumns,
@@ -75,19 +75,27 @@ impl ForeignInputRow {
     }
 }
 
-impl StreamModel {
+impl StreamShape {
     pub fn fx_city_temperature() -> Self {
         Self::new(
-            StreamName::new("city_temperature".to_string()),
             vec![
                 ColumnDefinition::fx_timestamp(),
                 ColumnDefinition::fx_city(),
                 ColumnDefinition::fx_temperature(),
             ],
             Some(ColumnName::new("timestamp".to_string())),
-            Options::empty(),
         )
         .unwrap()
+    }
+}
+
+impl StreamModel {
+    pub fn fx_city_temperature() -> Self {
+        Self::new(
+            StreamName::new("city_temperature".to_string()),
+            Rc::new(StreamShape::fx_city_temperature()),
+            Options::empty(),
+        )
     }
 }
 
@@ -167,7 +175,7 @@ impl StreamColumns {
             )
             .unwrap();
 
-        Self::new(Rc::new(StreamModel::fx_city_temperature()), column_values).unwrap()
+        Self::new(Rc::new(StreamShape::fx_city_temperature()), column_values).unwrap()
     }
     pub fn fx_osaka(ts: Timestamp) -> Self {
         let mut column_values = ColumnValues::default();
@@ -190,7 +198,7 @@ impl StreamColumns {
             )
             .unwrap();
 
-        Self::new(Rc::new(StreamModel::fx_city_temperature()), column_values).unwrap()
+        Self::new(Rc::new(StreamShape::fx_city_temperature()), column_values).unwrap()
     }
     pub fn fx_london(ts: Timestamp) -> Self {
         let mut column_values = ColumnValues::default();
@@ -213,6 +221,6 @@ impl StreamColumns {
             )
             .unwrap();
 
-        Self::new(Rc::new(StreamModel::fx_city_temperature()), column_values).unwrap()
+        Self::new(Rc::new(StreamShape::fx_city_temperature()), column_values).unwrap()
     }
 }

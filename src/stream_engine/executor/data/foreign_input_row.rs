@@ -5,7 +5,8 @@ use std::rc::Rc;
 use self::format::json::JsonObject;
 
 use crate::{
-    dependency_injection::DependencyInjection, error::Result, model::stream_model::StreamModel,
+    dependency_injection::DependencyInjection, error::Result,
+    model::stream_model::stream_shape::StreamShape,
 };
 
 use super::{column::stream_column::StreamColumns, row::Row};
@@ -27,12 +28,12 @@ impl ForeignInputRow {
     ///   - This foreign input row cannot be converted into row.
     pub(in crate::stream_engine::executor) fn into_row<DI: DependencyInjection>(
         self,
-        stream: Rc<StreamModel>,
+        stream_shape: Rc<StreamShape>,
     ) -> Result<Row> {
         // ForeignInputRow -> JsonObject -> HashMap<ColumnName, SqlValue> -> StreamColumns -> Row
 
         let column_values = self.0.into_column_values()?;
-        let stream_columns = StreamColumns::new(stream, column_values)?;
+        let stream_columns = StreamColumns::new(stream_shape, column_values)?;
         Ok(Row::new::<DI>(stream_columns))
     }
 }
@@ -45,7 +46,7 @@ mod tests {
 
     #[test]
     fn test_json_into_row() {
-        let stream = Rc::new(StreamModel::fx_city_temperature());
+        let stream = Rc::new(StreamShape::fx_city_temperature());
 
         let t = Timestamp::fx_ts1();
         let fr = ForeignInputRow::fx_tokyo(t);

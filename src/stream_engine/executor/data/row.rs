@@ -57,3 +57,13 @@ impl PartialOrd for Row {
         Some(self.rowtime().cmp(&other.rowtime()))
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::model::stream_model::StreamModel;
+
+    use super::*;
+
+    #[test]
+    fn test_partial_eq() {}
+}
