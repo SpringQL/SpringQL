@@ -1,4 +1,4 @@
-use std::{collections::HashMap, rc::Rc};
+use std::rc::Rc;
 
 use serde_json::json;
 
@@ -13,6 +13,7 @@ use crate::{
     },
     stream_engine::executor::data::{
         column::stream_column::StreamColumns,
+        column_values::ColumnValues,
         foreign_input_row::{format::json::JsonObject, ForeignInputRow},
         row::Row,
         timestamp::Timestamp,
@@ -146,53 +147,71 @@ impl Row {
 
 impl StreamColumns {
     pub fn fx_tokyo(ts: Timestamp) -> Self {
-        let mut column_values = HashMap::new();
-        column_values.insert(
-            ColumnName::new("timestamp".to_string()),
-            SqlValue::NotNull(NnSqlValue::Timestamp(ts)),
-        );
-        column_values.insert(
-            ColumnName::new("city".to_string()),
-            SqlValue::NotNull(NnSqlValue::Text("Tokyo".to_string())),
-        );
-        column_values.insert(
-            ColumnName::new("temperature".to_string()),
-            SqlValue::NotNull(NnSqlValue::Integer(21)),
-        );
+        let mut column_values = ColumnValues::default();
+        column_values
+            .insert(
+                ColumnName::new("timestamp".to_string()),
+                SqlValue::NotNull(NnSqlValue::Timestamp(ts)),
+            )
+            .unwrap();
+        column_values
+            .insert(
+                ColumnName::new("city".to_string()),
+                SqlValue::NotNull(NnSqlValue::Text("Tokyo".to_string())),
+            )
+            .unwrap();
+        column_values
+            .insert(
+                ColumnName::new("temperature".to_string()),
+                SqlValue::NotNull(NnSqlValue::Integer(21)),
+            )
+            .unwrap();
 
         Self::new(Rc::new(StreamModel::fx_city_temperature()), column_values).unwrap()
     }
     pub fn fx_osaka(ts: Timestamp) -> Self {
-        let mut column_values = HashMap::new();
-        column_values.insert(
-            ColumnName::new("timestamp".to_string()),
-            SqlValue::NotNull(NnSqlValue::Timestamp(ts)),
-        );
-        column_values.insert(
-            ColumnName::new("city".to_string()),
-            SqlValue::NotNull(NnSqlValue::Text("Osaka".to_string())),
-        );
-        column_values.insert(
-            ColumnName::new("temperature".to_string()),
-            SqlValue::NotNull(NnSqlValue::Integer(23)),
-        );
+        let mut column_values = ColumnValues::default();
+        column_values
+            .insert(
+                ColumnName::new("timestamp".to_string()),
+                SqlValue::NotNull(NnSqlValue::Timestamp(ts)),
+            )
+            .unwrap();
+        column_values
+            .insert(
+                ColumnName::new("city".to_string()),
+                SqlValue::NotNull(NnSqlValue::Text("Osaka".to_string())),
+            )
+            .unwrap();
+        column_values
+            .insert(
+                ColumnName::new("temperature".to_string()),
+                SqlValue::NotNull(NnSqlValue::Integer(23)),
+            )
+            .unwrap();
 
         Self::new(Rc::new(StreamModel::fx_city_temperature()), column_values).unwrap()
     }
     pub fn fx_london(ts: Timestamp) -> Self {
-        let mut column_values = HashMap::new();
-        column_values.insert(
-            ColumnName::new("timestamp".to_string()),
-            SqlValue::NotNull(NnSqlValue::Timestamp(ts)),
-        );
-        column_values.insert(
-            ColumnName::new("city".to_string()),
-            SqlValue::NotNull(NnSqlValue::Text("London".to_string())),
-        );
-        column_values.insert(
-            ColumnName::new("temperature".to_string()),
-            SqlValue::NotNull(NnSqlValue::Integer(13)),
-        );
+        let mut column_values = ColumnValues::default();
+        column_values
+            .insert(
+                ColumnName::new("timestamp".to_string()),
+                SqlValue::NotNull(NnSqlValue::Timestamp(ts)),
+            )
+            .unwrap();
+        column_values
+            .insert(
+                ColumnName::new("city".to_string()),
+                SqlValue::NotNull(NnSqlValue::Text("London".to_string())),
+            )
+            .unwrap();
+        column_values
+            .insert(
+                ColumnName::new("temperature".to_string()),
+                SqlValue::NotNull(NnSqlValue::Integer(13)),
+            )
+            .unwrap();
 
         Self::new(Rc::new(StreamModel::fx_city_temperature()), column_values).unwrap()
     }

@@ -5,12 +5,14 @@ use crate::{
     model::{
         column::column_definition::ColumnDefinition, name::ColumnName, stream_model::StreamModel,
     },
-    stream_engine::executor::data::{timestamp::Timestamp, value::sql_value::SqlValue},
+    stream_engine::executor::data::{
+        column_values::ColumnValues, timestamp::Timestamp, value::sql_value::SqlValue,
+    },
 };
-use std::{collections::HashMap, rc::Rc};
+use std::rc::Rc;
 
 /// Column values in a stream.
-/// 
+///
 /// Should keep as small size as possible because all Row has this inside.
 #[derive(PartialEq, Debug)]
 pub(in crate::stream_engine::executor) struct StreamColumns {
@@ -30,22 +32,13 @@ impl StreamColumns {
     ///   - Type mismatch (and failed to convert type) with `stream` and `column_values`.
     pub(in crate::stream_engine::executor) fn new(
         stream: Rc<StreamModel>,
-        mut column_values: HashMap<ColumnName, SqlValue>,
+        mut column_values: ColumnValues,
     ) -> Result<Self> {
         let values = stream
             .columns()
             .iter()
             .map(|coldef| {
-                let value = column_values
-                    .remove(coldef.column_data_type().column_name())
-                    .with_context(|| {
-                        format!(
-                            r#"column "{}" not found from `column_values`"#,
-                            coldef.column_data_type().column_name()
-                        )
-                    })
-                    .map_err(SpringError::Sql)?;
-
+                let value = column_values.remove(coldef.column_data_type().column_name())?;
                 Self::validate_or_try_convert_value_type(value, coldef)
             })
             .collect::<Result<Vec<SqlValue>>>()?;
@@ -136,15 +129,19 @@ mod tests {
 
     #[test]
     fn test_column_lacks() {
-        let mut column_values = HashMap::new();
-        column_values.insert(
-            ColumnName::new("timestamp".to_string()),
-            SqlValue::NotNull(NnSqlValue::Timestamp(Timestamp::fx_ts1())),
-        );
-        column_values.insert(
-            ColumnName::new("city".to_string()),
-            SqlValue::NotNull(NnSqlValue::Text("Tokyo".to_string())),
-        );
+        let mut column_values = ColumnValues::default();
+        column_values
+            .insert(
+                ColumnName::new("timestamp".to_string()),
+                SqlValue::NotNull(NnSqlValue::Timestamp(Timestamp::fx_ts1())),
+            )
+            .unwrap();
+        column_values
+            .insert(
+                ColumnName::new("city".to_string()),
+                SqlValue::NotNull(NnSqlValue::Text("Tokyo".to_string())),
+            )
+            .unwrap();
         // lacks "temperature" column
 
         assert!(matches!(
@@ -156,19 +153,25 @@ mod tests {
 
     #[test]
     fn test_type_mismatch() {
-        let mut column_values = HashMap::new();
-        column_values.insert(
-            ColumnName::new("timestamp".to_string()),
-            SqlValue::NotNull(NnSqlValue::Timestamp(Timestamp::fx_ts1())),
-        );
-        column_values.insert(
-            ColumnName::new("city".to_string()),
-            SqlValue::NotNull(NnSqlValue::Text("Tokyo".to_string())),
-        );
-        column_values.insert(
-            ColumnName::new("temperature".to_string()),
-            SqlValue::NotNull(NnSqlValue::Text("21".to_string())), // not a INTEGER type
-        );
+        let mut column_values = ColumnValues::default();
+        column_values
+            .insert(
+                ColumnName::new("timestamp".to_string()),
+                SqlValue::NotNull(NnSqlValue::Timestamp(Timestamp::fx_ts1())),
+            )
+            .unwrap();
+        column_values
+            .insert(
+                ColumnName::new("city".to_string()),
+                SqlValue::NotNull(NnSqlValue::Text("Tokyo".to_string())),
+            )
+            .unwrap();
+        column_values
+            .insert(
+                ColumnName::new("temperature".to_string()),
+                SqlValue::NotNull(NnSqlValue::Text("21".to_string())), // not a INTEGER type
+            )
+            .unwrap();
 
         assert!(matches!(
             StreamColumns::new(Rc::new(StreamModel::fx_city_temperature()), column_values)
@@ -179,19 +182,25 @@ mod tests {
 
     #[test]
     fn test_not_null_mismatch() {
-        let mut column_values = HashMap::new();
-        column_values.insert(
-            ColumnName::new("timestamp".to_string()),
-            SqlValue::NotNull(NnSqlValue::Timestamp(Timestamp::fx_ts1())),
-        );
-        column_values.insert(
-            ColumnName::new("city".to_string()),
-            SqlValue::NotNull(NnSqlValue::Text("Tokyo".to_string())),
-        );
-        column_values.insert(
-            ColumnName::new("temperature".to_string()),
-            SqlValue::Null, // NULL for NOT NULL column
-        );
+        let mut column_values = ColumnValues::default();
+        column_values
+            .insert(
+                ColumnName::new("timestamp".to_string()),
+                SqlValue::NotNull(NnSqlValue::Timestamp(Timestamp::fx_ts1())),
+            )
+            .unwrap();
+        column_values
+            .insert(
+                ColumnName::new("city".to_string()),
+                SqlValue::NotNull(NnSqlValue::Text("Tokyo".to_string())),
+            )
+            .unwrap();
+        column_values
+            .insert(
+                ColumnName::new("temperature".to_string()),
+                SqlValue::Null, // NULL for NOT NULL column
+            )
+            .unwrap();
 
         assert!(matches!(
             StreamColumns::new(Rc::new(StreamModel::fx_city_temperature()), column_values)
