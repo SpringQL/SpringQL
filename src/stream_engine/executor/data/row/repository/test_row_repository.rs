@@ -1,6 +1,6 @@
+use std::cell::{Cell, RefCell};
 use std::collections::{HashMap, VecDeque};
 use std::rc::Rc;
-use std::sync::Mutex;
 
 use crate::error::Result;
 use crate::model::name::PumpName;
@@ -11,17 +11,14 @@ use super::RowRepository;
 /// Has similar structure as RowRepository's concept diagram.
 #[derive(Debug, Default)]
 pub(crate) struct TestRowRepository {
-    pumps_buf: Mutex<HashMap<PumpName, VecDeque<Rc<Row>>>>,
-
-    current_row_ref_id: Mutex<u64>,
+    pumps_buf: RefCell<HashMap<PumpName, VecDeque<Rc<Row>>>>,
 }
 
 impl RowRepository for TestRowRepository {
     fn collect_next(&self, pump: &PumpName) -> Result<Rc<Row>> {
         let row_ref = self
             .pumps_buf
-            .lock()
-            .unwrap()
+            .borrow_mut()
             .get_mut(pump)
             .unwrap()
             .pop_back()
@@ -31,7 +28,7 @@ impl RowRepository for TestRowRepository {
     }
 
     fn emit(&self, row_ref: Rc<Row>, downstream_pumps: &[PumpName]) -> Result<()> {
-        let mut pumps_buf = self.pumps_buf.lock().unwrap();
+        let mut pumps_buf = self.pumps_buf.borrow_mut();
         for pump in downstream_pumps {
             // <https://github.com/rust-lang/rust-clippy/issues/5549>
             #[allow(clippy::redundant_closure)]
