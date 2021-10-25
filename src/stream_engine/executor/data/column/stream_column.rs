@@ -10,6 +10,8 @@ use crate::{
 use std::{collections::HashMap, rc::Rc};
 
 /// Column values in a stream.
+/// 
+/// Should keep as small size as possible because all Row has this inside.
 #[derive(PartialEq, Debug)]
 pub(in crate::stream_engine::executor) struct StreamColumns {
     stream: Rc<StreamModel>,
