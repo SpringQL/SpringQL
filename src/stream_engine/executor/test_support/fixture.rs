@@ -13,11 +13,9 @@ use crate::{
     },
     stream_engine::executor::data::{
         column::stream_column::StreamColumns,
-        column_values::ColumnValues,
         foreign_input_row::{format::json::JsonObject, ForeignInputRow},
         row::Row,
         timestamp::Timestamp,
-        value::sql_value::{nn_sql_value::NnSqlValue, SqlValue},
     },
 };
 
