@@ -25,7 +25,7 @@ impl ForeignInputRow {
     ///
     /// - [SpringError::InvalidFormat](crate::error::SpringError::InvalidFormat) when:
     ///   - This foreign input row cannot be converted into row.
-    pub(in crate::stream_engine::executor) fn _into_row<DI: DependencyInjection>(
+    pub(in crate::stream_engine::executor) fn into_row<DI: DependencyInjection>(
         self,
         stream: Rc<StreamModel>,
     ) -> Result<Row> {
@@ -50,6 +50,6 @@ mod tests {
         let t = Timestamp::fx_ts1();
         let fr = ForeignInputRow::fx_tokyo(t);
         let r = Row::fx_tokyo(t);
-        assert_eq!(fr._into_row::<TestDI>(stream).unwrap(), r);
+        assert_eq!(fr.into_row::<TestDI>(stream).unwrap(), r);
     }
 }

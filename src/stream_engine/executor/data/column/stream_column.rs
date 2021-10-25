@@ -51,7 +51,7 @@ impl StreamColumns {
         Ok(Self { stream, values })
     }
 
-    pub(in crate::stream_engine::executor) fn _stream(&self) -> &StreamModel {
+    pub(in crate::stream_engine::executor) fn stream(&self) -> &StreamModel {
         self.stream.as_ref()
     }
 
@@ -97,14 +97,14 @@ impl StreamColumns {
 
         match &value {
             SqlValue::NotNull(nn_value) => {
-                if &nn_value.sql_type() == cdt._sql_type() {
+                if &nn_value.sql_type() == cdt.sql_type() {
                     Ok(value)
                 } else {
                     let nn_value = nn_value
-                    .try_convert(cdt._sql_type())
+                    .try_convert(cdt.sql_type())
                     .with_context(|| format!(
                         r#"SQL type `{:?}` is expected for column "{}" from stream definition, while the value is {:?}"#,
-                        cdt._sql_type(),
+                        cdt.sql_type(),
                         cdt.column_name(),
                         nn_value
                     ))
@@ -113,7 +113,7 @@ impl StreamColumns {
                 }
             }
             SqlValue::Null => {
-                if cdt._nullable() {
+                if cdt.nullable() {
                     Ok(value)
                 } else {
                     Err(SpringError::Sql(anyhow!(

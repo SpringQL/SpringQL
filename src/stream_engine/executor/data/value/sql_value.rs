@@ -109,7 +109,7 @@ impl SqlValue {
     ///
     /// - [SpringError::Sql](crate::error::SpringError::Sql) when:
     ///   - inner value cannot negate
-    pub fn _to_bool(&self) -> Result<bool> {
+    pub fn to_bool(&self) -> Result<bool> {
         match self {
             SqlValue::Null => Ok(false), // NULL is always evaluated as FALSE
             SqlValue::NotNull(nn_sql_value) => match nn_sql_value {

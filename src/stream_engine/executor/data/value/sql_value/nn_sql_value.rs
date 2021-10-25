@@ -203,7 +203,7 @@ impl NnSqlValue {
     ///
     /// - [SpringError::Sql](crate::error::SpringError::Sql) when:
     ///   - inner value cannot negate
-    pub(crate) fn _negate(self) -> Result<Self> {
+    pub(crate) fn negate(self) -> Result<Self> {
         match self {
             NnSqlValue::SmallInt(v) => Ok(Self::SmallInt(-v)),
             NnSqlValue::Integer(v) => Ok(Self::Integer(-v)),

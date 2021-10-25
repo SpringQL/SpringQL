@@ -20,21 +20,21 @@ where
 }
 
 impl<S: InputServerActive + Debug> ForeignInputPump<S> {
-    fn _collect_next<DI: DependencyInjection>(&self) -> Result<Row> {
+    fn collect_next<DI: DependencyInjection>(&self) -> Result<Row> {
         let foreign_row = self
             .in_server
             .lock()
             .unwrap_or_else(|e| panic!("failed to lock input foreign server ({:?}) because another thread sharing the same server got poisoned: {:?}", self.in_server, e))
             .next_row()?;
-        foreign_row._into_row::<DI>(self.dest_stream.clone())
+        foreign_row.into_row::<DI>(self.dest_stream.clone())
     }
 
-    fn _emit(&self, row: Row) -> Result<()> {
-        let repo = self._row_repository();
+    fn emit(&self, row: Row) -> Result<()> {
+        let repo = self.row_repository();
         repo.emit(row)
     }
 
-    fn _row_repository(&self) -> &dyn RowRepository {
+    fn row_repository(&self) -> &dyn RowRepository {
         todo!()
     }
 }
@@ -64,11 +64,11 @@ mod tests {
         let stream = StreamModel::fx_city_temperature();
         let pump = ForeignInputPump::new(Rc::new(Mutex::new(server)), Rc::new(stream));
 
-        assert_eq!(pump._collect_next::<TestDI>()?, Row::fx_tokyo(t));
-        assert_eq!(pump._collect_next::<TestDI>()?, Row::fx_osaka(t));
-        assert_eq!(pump._collect_next::<TestDI>()?, Row::fx_london(t));
+        assert_eq!(pump.collect_next::<TestDI>()?, Row::fx_tokyo(t));
+        assert_eq!(pump.collect_next::<TestDI>()?, Row::fx_osaka(t));
+        assert_eq!(pump.collect_next::<TestDI>()?, Row::fx_london(t));
         assert!(matches!(
-            pump._collect_next::<TestDI>().unwrap_err(),
+            pump.collect_next::<TestDI>().unwrap_err(),
             SpringError::ForeignInputTimeout { .. }
         ));
 

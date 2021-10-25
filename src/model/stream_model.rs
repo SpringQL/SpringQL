@@ -26,7 +26,7 @@ impl StreamModel {
     /// - [SpringError::Sql](crate::error::SpringError::Sql) when:
     ///   - `rowtime` column does not exist in `cols`.
     ///   - `rowtime` column in `cols` is not a `TIMESTAMP NOT NULL` type.
-    pub(in crate) fn _new(
+    pub(in crate) fn new(
         name: StreamName,
         cols: Vec<ColumnDefinition>,
         rowtime: Option<ColumnName>,
@@ -44,7 +44,7 @@ impl StreamModel {
                 })
                 .map_err(SpringError::Sql)?;
 
-            if let SqlType::TimestampComparable = rowtime_coldef.column_data_type()._sql_type() {
+            if let SqlType::TimestampComparable = rowtime_coldef.column_data_type().sql_type() {
                 Ok(())
             } else {
                 Err(SpringError::Sql(anyhow!(
@@ -54,7 +54,7 @@ impl StreamModel {
                 )))
             }?;
 
-            if rowtime_coldef.column_data_type()._nullable() {
+            if rowtime_coldef.column_data_type().nullable() {
                 Err(SpringError::Sql(anyhow!(
                     r#"ROWTIME column "{}" is not in stream ("{}") definition"#,
                     rowtime_col,
@@ -95,7 +95,7 @@ mod tests {
     #[test]
     fn test_rowtime_not_found() {
         assert!(matches!(
-            StreamModel::_new(
+            StreamModel::new(
                 StreamName::new("s".to_string()),
                 vec![ColumnDefinition::fx_timestamp(),],
                 Some(ColumnName::new("invalid_ts_name".to_string())),
@@ -109,7 +109,7 @@ mod tests {
     #[test]
     fn test_rowtime_not_timestamp_type() {
         assert!(matches!(
-            StreamModel::_new(
+            StreamModel::new(
                 StreamName::new("s".to_string()),
                 vec![ColumnDefinition::new(ColumnDataType::new(
                     ColumnName::new("timestamp".to_string()),
@@ -127,7 +127,7 @@ mod tests {
     #[test]
     fn test_rowtime_nullable_timestamp_type() {
         assert!(matches!(
-            StreamModel::_new(
+            StreamModel::new(
                 StreamName::new("s".to_string()),
                 vec![ColumnDefinition::new(ColumnDataType::new(
                     ColumnName::new("timestamp".to_string()),

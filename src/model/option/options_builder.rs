@@ -6,7 +6,7 @@ use super::Options;
 pub(crate) struct OptionsBuilder(HashMap<String, String>);
 
 impl OptionsBuilder {
-    pub(crate) fn _add<SK, SV>(mut self, key: SK, value: SV) -> Self
+    pub(crate) fn add<SK, SV>(mut self, key: SK, value: SV) -> Self
     where
         SK: Into<String>,
         SV: Into<String>,

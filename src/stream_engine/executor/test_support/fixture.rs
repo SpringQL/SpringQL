@@ -76,7 +76,7 @@ impl ForeignInputRow {
 
 impl StreamModel {
     pub fn fx_city_temperature() -> Self {
-        Self::_new(
+        Self::new(
             StreamName::new("city_temperature".to_string()),
             vec![
                 ColumnDefinition::fx_timestamp(),
