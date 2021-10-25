@@ -19,11 +19,13 @@ pub(in crate::stream_engine::executor) struct StreamColumns {
 }
 
 impl StreamColumns {
+    /// Value may be type-casted to stream definition if possible.
+    ///
     /// # Failure
     ///
     /// - [SpringError::Sql](crate::error::SpringError::Sql) when:
     ///   - `column_values` lacks any of `stream.columns()`.
-    ///   - Type mismatch with `stream` and `column_values`.
+    ///   - Type mismatch (and failed to convert type) with `stream` and `column_values`.
     pub(in crate::stream_engine::executor) fn new(
         stream: Rc<StreamModel>,
         mut column_values: HashMap<ColumnName, SqlValue>,
@@ -42,7 +44,7 @@ impl StreamColumns {
                     })
                     .map_err(SpringError::Sql)?;
 
-                Self::validate_value_with_type(value, coldef)
+                Self::try_convert_value_type(value, coldef)
             })
             .collect::<Result<Vec<SqlValue>>>()?;
 
@@ -87,27 +89,26 @@ impl StreamColumns {
             .expect("self.values must be sorted to the same as self.stream.columns()"))
     }
 
-    fn validate_value_with_type(value: SqlValue, coldef: &ColumnDefinition) -> Result<SqlValue> {
+    fn try_convert_value_type(value: SqlValue, coldef: &ColumnDefinition) -> Result<SqlValue> {
+        let cdt = coldef.column_data_type();
+
         match &value {
             SqlValue::NotNull(nn_value) => {
-                if &nn_value.sql_type() == coldef.column_data_type()._sql_type() {
-                    Ok(value)
-                } else {
-                    Err(SpringError::Sql(anyhow!(
-                        r#"SQL type `{:?}` is expected for column "{}" from stream definition, while the value is {}"#,
-                        coldef.column_data_type()._sql_type(),
-                        coldef.column_data_type().column_name(),
-                        nn_value
-                    )))
-                }
+                let nn_value = nn_value
+                    .try_convert(cdt._sql_type())
+                    .with_context(|| format!(r#"SQL type `{:?}` is expected for column "{}" from stream definition, while the value is {}"#,
+                    cdt._sql_type(),
+                cdt.column_name(),
+                nn_value)).map_err(SpringError::Sql)?;
+                Ok(SqlValue::NotNull(nn_value))
             }
             SqlValue::Null => {
-                if coldef.column_data_type()._nullable() {
+                if cdt._nullable() {
                     Ok(value)
                 } else {
                     Err(SpringError::Sql(anyhow!(
                         r#"column "{}" cannot be NULL"#,
-                        coldef.column_data_type().column_name(),
+                        cdt.column_name(),
                     )))
                 }
             }

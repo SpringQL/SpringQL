@@ -10,6 +10,10 @@ impl SqlConvertible for Timestamp {
         NnSqlValue::Timestamp(self)
     }
 
+    fn try_from_string(s: &str) -> Result<Self> {
+        s.parse()
+    }
+
     fn try_from_timestamp(v: &Timestamp) -> Result<Self> {
         Ok(*v)
     }

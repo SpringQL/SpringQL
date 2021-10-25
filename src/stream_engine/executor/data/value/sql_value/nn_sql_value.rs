@@ -2,7 +2,7 @@ use std::{fmt::Display, hash::Hash};
 
 use super::sql_compare_result::SqlCompareResult;
 use crate::error::{Result, SpringError};
-use crate::model::sql_type::{NumericComparableType, SqlType, StringComparableLoseType};
+use crate::model::sql_type::{self, NumericComparableType, SqlType, StringComparableLoseType};
 use crate::stream_engine::executor::data::value::sql_convertible::SqlConvertible;
 use crate::stream_engine::Timestamp;
 use anyhow::anyhow;
@@ -126,6 +126,41 @@ impl NnSqlValue {
             NnSqlValue::Text(_) => SqlType::text(),
             NnSqlValue::Boolean(_) => SqlType::boolean(),
             NnSqlValue::Timestamp(_) => SqlType::timestamp(),
+        }
+    }
+
+    /// Try to convert value into a type.
+    ///
+    /// ```text
+    /// SqlValue -- (unpack by typ) --> Rust type --> SqlValue
+    /// ```
+    ///
+    /// # Failures
+    ///
+    /// - [SpringError::Sql](crate::error::SpringError::Sql) when:
+    ///   - Value cannot be converted to `typ`.
+    pub(crate) fn try_convert(&self, typ: &SqlType) -> Result<NnSqlValue> {
+        match typ {
+            SqlType::NumericComparable(n) => match n {
+                NumericComparableType::I64Loose(i) => match i {
+                    sql_type::I64LooseType::SmallInt => {
+                        self.unpack::<i16>().map(|v| v.into_sql_value())
+                    }
+                    sql_type::I64LooseType::Integer => {
+                        self.unpack::<i32>().map(|v| v.into_sql_value())
+                    }
+                    sql_type::I64LooseType::BigInt => {
+                        self.unpack::<i64>().map(|v| v.into_sql_value())
+                    }
+                },
+            },
+            SqlType::StringComparableLoose(s) => match s {
+                StringComparableLoseType::Text => {
+                    self.unpack::<String>().map(|v| v.into_sql_value())
+                }
+            },
+            SqlType::BooleanComparable => self.unpack::<bool>().map(|v| v.into_sql_value()),
+            SqlType::TimestampComparable => self.unpack::<Timestamp>().map(|v| v.into_sql_value()),
         }
     }
 
