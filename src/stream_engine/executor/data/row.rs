@@ -57,3 +57,24 @@ impl PartialOrd for Row {
         Some(self.rowtime().cmp(&other.rowtime()))
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_partial_eq() {
+        assert_eq!(
+            Row::fx_tokyo(Timestamp::fx_ts1()),
+            Row::fx_tokyo(Timestamp::fx_ts1())
+        );
+    }
+
+    #[test]
+    fn test_partial_ne_timestamp() {
+        assert_ne!(
+            Row::fx_tokyo(Timestamp::fx_ts1()),
+            Row::fx_tokyo(Timestamp::fx_ts2())
+        );
+    }
+}

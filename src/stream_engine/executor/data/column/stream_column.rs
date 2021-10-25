@@ -3,7 +3,8 @@ use anyhow::{anyhow, Context};
 use crate::{
     error::{Result, SpringError},
     model::{
-        column::column_definition::ColumnDefinition, name::ColumnName, stream_model::StreamModel,
+        column::column_definition::ColumnDefinition, name::ColumnName,
+        stream_model::stream_shape::StreamShape,
     },
     stream_engine::executor::data::{
         column_values::ColumnValues, timestamp::Timestamp, value::sql_value::SqlValue,
@@ -16,7 +17,7 @@ use std::rc::Rc;
 /// Should keep as small size as possible because all Row has this inside.
 #[derive(PartialEq, Debug)]
 pub(in crate::stream_engine::executor) struct StreamColumns {
-    stream: Rc<StreamModel>,
+    stream_shape: Rc<StreamShape>,
 
     /// sorted to the same order as `stream.columns()`.
     values: Vec<SqlValue>,
@@ -29,12 +30,12 @@ impl StreamColumns {
     ///
     /// - [SpringError::Sql](crate::error::SpringError::Sql) when:
     ///   - `column_values` lacks any of `stream.columns()`.
-    ///   - Type mismatch (and failed to convert type) with `stream` and `column_values`.
+    ///   - Type mismatch (and failed to convert type) with `stream_shape` and `column_values`.
     pub(in crate::stream_engine::executor) fn new(
-        stream: Rc<StreamModel>,
+        stream_shape: Rc<StreamShape>,
         mut column_values: ColumnValues,
     ) -> Result<Self> {
-        let values = stream
+        let values = stream_shape
             .columns()
             .iter()
             .map(|coldef| {
@@ -43,15 +44,18 @@ impl StreamColumns {
             })
             .collect::<Result<Vec<SqlValue>>>()?;
 
-        Ok(Self { stream, values })
+        Ok(Self {
+            stream_shape,
+            values,
+        })
     }
 
-    pub(in crate::stream_engine::executor) fn stream(&self) -> &StreamModel {
-        self.stream.as_ref()
+    pub(in crate::stream_engine::executor) fn stream(&self) -> &StreamShape {
+        self.stream_shape.as_ref()
     }
 
     pub(in crate::stream_engine::executor) fn promoted_rowtime(&self) -> Option<Timestamp> {
-        let rowtime_col = self.stream.rowtime()?;
+        let rowtime_col = self.stream_shape.rowtime()?;
         let rowtime_sql_value = self
             .get(rowtime_col)
             .expect("rowtime_col is set in stream definition, which must be validated");
@@ -71,7 +75,7 @@ impl StreamColumns {
         column_name: &ColumnName,
     ) -> Result<&SqlValue> {
         let pos = self
-            .stream
+            .stream_shape
             .columns()
             .iter()
             .position(|coldef| coldef.column_data_type().column_name() == column_name)
@@ -150,7 +154,7 @@ mod tests {
             .unwrap();
 
         let _ =
-            StreamColumns::new(Rc::new(StreamModel::fx_city_temperature()), column_values).unwrap();
+            StreamColumns::new(Rc::new(StreamShape::fx_city_temperature()), column_values).unwrap();
     }
 
     #[test]
@@ -171,7 +175,7 @@ mod tests {
         // lacks "temperature" column
 
         assert!(matches!(
-            StreamColumns::new(Rc::new(StreamModel::fx_city_temperature()), column_values)
+            StreamColumns::new(Rc::new(StreamShape::fx_city_temperature()), column_values)
                 .unwrap_err(),
             SpringError::Sql(_)
         ));
@@ -200,7 +204,7 @@ mod tests {
             .unwrap();
 
         assert!(matches!(
-            StreamColumns::new(Rc::new(StreamModel::fx_city_temperature()), column_values)
+            StreamColumns::new(Rc::new(StreamShape::fx_city_temperature()), column_values)
                 .unwrap_err(),
             SpringError::Sql(_)
         ));
@@ -229,7 +233,7 @@ mod tests {
             .unwrap();
 
         assert!(matches!(
-            StreamColumns::new(Rc::new(StreamModel::fx_city_temperature()), column_values)
+            StreamColumns::new(Rc::new(StreamShape::fx_city_temperature()), column_values)
                 .unwrap_err(),
             SpringError::Sql(_)
         ));

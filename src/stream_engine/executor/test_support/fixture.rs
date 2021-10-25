@@ -9,15 +9,13 @@ use crate::{
         name::{ColumnName, StreamName},
         option::{options_builder::OptionsBuilder, Options},
         sql_type::SqlType,
-        stream_model::StreamModel,
+        stream_model::{stream_shape::StreamShape, StreamModel},
     },
     stream_engine::executor::data::{
         column::stream_column::StreamColumns,
-        column_values::ColumnValues,
         foreign_input_row::{format::json::JsonObject, ForeignInputRow},
         row::Row,
         timestamp::Timestamp,
-        value::sql_value::{nn_sql_value::NnSqlValue, SqlValue},
     },
 };
 
@@ -75,19 +73,27 @@ impl ForeignInputRow {
     }
 }
 
-impl StreamModel {
+impl StreamShape {
     pub fn fx_city_temperature() -> Self {
         Self::new(
-            StreamName::new("city_temperature".to_string()),
             vec![
                 ColumnDefinition::fx_timestamp(),
                 ColumnDefinition::fx_city(),
                 ColumnDefinition::fx_temperature(),
             ],
             Some(ColumnName::new("timestamp".to_string())),
-            Options::empty(),
         )
         .unwrap()
+    }
+}
+
+impl StreamModel {
+    pub fn fx_city_temperature() -> Self {
+        Self::new(
+            StreamName::new("city_temperature".to_string()),
+            Rc::new(StreamShape::fx_city_temperature()),
+            Options::empty(),
+        )
     }
 }
 
@@ -147,72 +153,12 @@ impl Row {
 
 impl StreamColumns {
     pub fn fx_tokyo(ts: Timestamp) -> Self {
-        let mut column_values = ColumnValues::default();
-        column_values
-            .insert(
-                ColumnName::new("timestamp".to_string()),
-                SqlValue::NotNull(NnSqlValue::Timestamp(ts)),
-            )
-            .unwrap();
-        column_values
-            .insert(
-                ColumnName::new("city".to_string()),
-                SqlValue::NotNull(NnSqlValue::Text("Tokyo".to_string())),
-            )
-            .unwrap();
-        column_values
-            .insert(
-                ColumnName::new("temperature".to_string()),
-                SqlValue::NotNull(NnSqlValue::Integer(21)),
-            )
-            .unwrap();
-
-        Self::new(Rc::new(StreamModel::fx_city_temperature()), column_values).unwrap()
+        Self::factory_city_temperature(ts, "Tokyo", 21)
     }
     pub fn fx_osaka(ts: Timestamp) -> Self {
-        let mut column_values = ColumnValues::default();
-        column_values
-            .insert(
-                ColumnName::new("timestamp".to_string()),
-                SqlValue::NotNull(NnSqlValue::Timestamp(ts)),
-            )
-            .unwrap();
-        column_values
-            .insert(
-                ColumnName::new("city".to_string()),
-                SqlValue::NotNull(NnSqlValue::Text("Osaka".to_string())),
-            )
-            .unwrap();
-        column_values
-            .insert(
-                ColumnName::new("temperature".to_string()),
-                SqlValue::NotNull(NnSqlValue::Integer(23)),
-            )
-            .unwrap();
-
-        Self::new(Rc::new(StreamModel::fx_city_temperature()), column_values).unwrap()
+        Self::factory_city_temperature(ts, "Osaka", 23)
     }
     pub fn fx_london(ts: Timestamp) -> Self {
-        let mut column_values = ColumnValues::default();
-        column_values
-            .insert(
-                ColumnName::new("timestamp".to_string()),
-                SqlValue::NotNull(NnSqlValue::Timestamp(ts)),
-            )
-            .unwrap();
-        column_values
-            .insert(
-                ColumnName::new("city".to_string()),
-                SqlValue::NotNull(NnSqlValue::Text("London".to_string())),
-            )
-            .unwrap();
-        column_values
-            .insert(
-                ColumnName::new("temperature".to_string()),
-                SqlValue::NotNull(NnSqlValue::Integer(13)),
-            )
-            .unwrap();
-
-        Self::new(Rc::new(StreamModel::fx_city_temperature()), column_values).unwrap()
+        Self::factory_city_temperature(ts, "London", 13)
     }
 }

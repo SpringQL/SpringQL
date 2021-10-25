@@ -26,7 +26,7 @@ impl<S: InputServerActive + Debug> ForeignInputPump<S> {
             .lock()
             .unwrap_or_else(|e| panic!("failed to lock input foreign server ({:?}) because another thread sharing the same server got poisoned: {:?}", self.in_server, e))
             .next_row()?;
-        foreign_row.into_row::<DI>(self.dest_stream.clone())
+        foreign_row.into_row::<DI>(self.dest_stream.shape())
     }
 
     fn emit(&self, row: Row) -> Result<()> {
