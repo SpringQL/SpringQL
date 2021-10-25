@@ -86,7 +86,7 @@ impl StreamColumns {
             )
             .unwrap();
 
-        Self::new(Rc::new(StreamShape::fx_city_temperature()), column_values).unwrap()
+        Self::new(Rc::new(StreamShape::fx_ticker()), column_values).unwrap()
     }
 }
 
