@@ -1,4 +1,4 @@
 //! Execute ServerModel.
 
-mod input;
-mod output;
+pub(in crate::stream_engine::executor) mod input;
+pub(in crate::stream_engine::executor) mod output;

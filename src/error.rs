@@ -19,14 +19,15 @@ pub enum SpringError {
         foreign_info: ForeignInfo,
         source: anyhow::Error,
     },
-    #[error("I/O error inside SpringQL-core")]
-    SpringQlCoreIo(anyhow::Error),
 
     #[error("I/O error in foreign system")]
     ForeignInputTimeout {
         foreign_info: ForeignInfo,
         source: anyhow::Error,
     },
+
+    #[error("I/O error inside SpringQL-core")]
+    SpringQlCoreIo(anyhow::Error),
 
     #[error("invalid option (key `{key:?}`, value `{value:?}`)")]
     InvalidOption {
@@ -48,11 +49,14 @@ impl SpringError {
     pub fn responsibility(&self) -> SpringErrorResponsibility {
         match self {
             SpringError::ForeignIo { .. } => SpringErrorResponsibility::Foreign,
-            SpringError::SpringQlCoreIo(_) => SpringErrorResponsibility::SpringQlCore,
-            SpringError::ForeignInputTimeout { .. } => SpringErrorResponsibility::SpringQlCore,
-            SpringError::InvalidOption { .. } => SpringErrorResponsibility::Client,
-            SpringError::InvalidFormat { .. } => SpringErrorResponsibility::Client,
-            SpringError::Sql(_) => SpringErrorResponsibility::Client,
+
+            SpringError::ForeignInputTimeout { .. } | SpringError::SpringQlCoreIo(_) => {
+                SpringErrorResponsibility::SpringQlCore
+            }
+
+            SpringError::InvalidOption { .. }
+            | SpringError::InvalidFormat { .. }
+            | SpringError::Sql(_) => SpringErrorResponsibility::Client,
         }
     }
 }

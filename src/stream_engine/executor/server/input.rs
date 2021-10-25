@@ -1,11 +1,11 @@
 use crate::{
-    error::Result,
-    stream_engine::{executor::foreign_input_row::ForeignInputRow, model::option::Options},
+    error::Result, model::option::Options,
+    stream_engine::executor::data::foreign_input_row::ForeignInputRow,
 };
 
-mod net;
+pub(in crate::stream_engine::executor) mod net;
 
-trait InputServerStandby<A: InputServerActive> {
+pub(in crate::stream_engine::executor) trait InputServerStandby<A: InputServerActive> {
     fn new(options: Options) -> Result<Self>
     where
         Self: Sized;
@@ -15,7 +15,7 @@ trait InputServerStandby<A: InputServerActive> {
 }
 
 /// Active: ready to provide ForeignInputRow.
-trait InputServerActive {
+pub(in crate::stream_engine::executor) trait InputServerActive {
     /// Returns currently available foreign row.
     fn next_row(&mut self) -> Result<ForeignInputRow>;
 }
