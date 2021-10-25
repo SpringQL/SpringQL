@@ -1,9 +1,9 @@
-use std::time::Duration;
+use std::{rc::Rc, time::Duration};
 
 use crate::{
     error::Result,
-    model::{name::PumpName, query_plan::operation::SlidingWindowOperation},
-    stream_engine::executor::data::{row::repository::RowRef, row_window::RowWindow},
+    model::query_plan::operation::SlidingWindowOperation,
+    stream_engine::executor::data::{row::Row, row_window::RowWindow},
 };
 
 #[derive(Debug)]
@@ -24,7 +24,7 @@ impl SlidingWindowExecutor {
         }
     }
 
-    pub(super) fn run(&self, input: &RowRef) -> Result<RowWindow> {
+    pub(super) fn run(&self, input: Rc<Row>) -> Result<RowWindow> {
         todo!()
     }
 }
@@ -61,7 +61,7 @@ mod tests {
         let op = SlidingWindowOperation::TimeBased {
             lower_bound: Duration::from_secs(5 * 60),
         };
-        let executor = SlidingWindowExecutor::register(&pump, &op).unwrap();
+        let executor = SlidingWindowExecutor::register(&op);
 
         let t_03_02_00 = Timestamp::from_str("2019-03-30 03:02:00.000000000").unwrap();
         let t_03_02_10 = Timestamp::from_str("2019-03-30 03:02:10.000000000").unwrap();
@@ -180,12 +180,11 @@ mod tests {
         } in test_cases
         {
             row_repo.emit_owned(row, &downstream_pumps).unwrap();
-            let row_ref = row_repo.collect_next(&pump).unwrap();
-            let window = executor.run(&row_ref).unwrap();
+            let in_row = row_repo.collect_next(&pump).unwrap();
+            let window = executor.run(in_row).unwrap();
 
             let got_pks = window
-                .map(|rr| {
-                    let got_row = row_repo.get(&rr);
+                .map(|got_row| {
                     let got_sql_value = got_row
                         .get(&ColumnName::new("timestamp".to_string()))
                         .unwrap();
