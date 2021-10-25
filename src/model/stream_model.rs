@@ -33,36 +33,7 @@ impl StreamModel {
         options: Options,
     ) -> Result<Self> {
         let _ = if let Some(rowtime_col) = &rowtime {
-            let rowtime_coldef = cols
-                .iter()
-                .find(|coldef| coldef.column_data_type().column_name() == rowtime_col)
-                .with_context(|| {
-                    format!(
-                        r#"ROWTIME column "{}" is not in stream ("{}") definition"#,
-                        rowtime_col, name,
-                    )
-                })
-                .map_err(SpringError::Sql)?;
-
-            if let SqlType::TimestampComparable = rowtime_coldef.column_data_type().sql_type() {
-                Ok(())
-            } else {
-                Err(SpringError::Sql(anyhow!(
-                    r#"ROWTIME column "{}" is not TIMESTAMP type in stream ("{}") definition"#,
-                    rowtime_col,
-                    name,
-                )))
-            }?;
-
-            if rowtime_coldef.column_data_type().nullable() {
-                Err(SpringError::Sql(anyhow!(
-                    r#"ROWTIME column "{}" must be NOT NULL in stream ("{}") definition"#,
-                    rowtime_col,
-                    name,
-                )))
-            } else {
-                Ok(())
-            }
+            Self::validate_rowtime_column(rowtime_col, &cols, &name)
         } else {
             Ok(())
         }?;
@@ -81,6 +52,43 @@ impl StreamModel {
 
     pub(crate) fn columns(&self) -> &[ColumnDefinition] {
         &self.cols
+    }
+
+    fn validate_rowtime_column(
+        rowtime_col: &ColumnName,
+        cols: &[ColumnDefinition],
+        name: &StreamName,
+    ) -> Result<()> {
+        let rowtime_coldef = cols
+            .iter()
+            .find(|coldef| coldef.column_data_type().column_name() == rowtime_col)
+            .with_context(|| {
+                format!(
+                    r#"ROWTIME column "{}" is not in stream ("{}") definition"#,
+                    rowtime_col, name,
+                )
+            })
+            .map_err(SpringError::Sql)?;
+
+        if let SqlType::TimestampComparable = rowtime_coldef.column_data_type().sql_type() {
+            Ok(())
+        } else {
+            Err(SpringError::Sql(anyhow!(
+                r#"ROWTIME column "{}" is not TIMESTAMP type in stream ("{}") definition"#,
+                rowtime_col,
+                name,
+            )))
+        }?;
+
+        if rowtime_coldef.column_data_type().nullable() {
+            Err(SpringError::Sql(anyhow!(
+                r#"ROWTIME column "{}" must be NOT NULL in stream ("{}") definition"#,
+                rowtime_col,
+                name,
+            )))
+        } else {
+            Ok(())
+        }
     }
 }
 
