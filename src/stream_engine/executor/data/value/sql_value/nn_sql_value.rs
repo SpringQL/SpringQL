@@ -225,21 +225,12 @@ mod tests {
         assert_eq!(NnSqlValue::SmallInt(-1).unpack::<i32>()?, -1);
         assert_eq!(NnSqlValue::SmallInt(-1).unpack::<i64>()?, -1);
 
-        assert!(matches!(
-            NnSqlValue::Integer(-1).unpack::<i16>().unwrap_err(),
-            SpringError::Sql(_),
-        ));
+        assert_eq!(NnSqlValue::Integer(-1).unpack::<i16>()?, -1);
         assert_eq!(NnSqlValue::Integer(-1).unpack::<i32>()?, -1);
         assert_eq!(NnSqlValue::Integer(-1).unpack::<i64>()?, -1);
 
-        assert!(matches!(
-            NnSqlValue::BigInt(-1).unpack::<i16>().unwrap_err(),
-            SpringError::Sql(_),
-        ));
-        assert!(matches!(
-            NnSqlValue::BigInt(-1).unpack::<i32>().unwrap_err(),
-            SpringError::Sql(_),
-        ));
+        assert_eq!(NnSqlValue::BigInt(-1).unpack::<i16>()?, -1);
+        assert_eq!(NnSqlValue::BigInt(-1).unpack::<i32>()?, -1);
         assert_eq!(NnSqlValue::BigInt(-1).unpack::<i64>()?, -1);
 
         assert_eq!(
