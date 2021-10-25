@@ -94,9 +94,7 @@ impl StreamModel {
 
 #[cfg(test)]
 mod tests {
-    use crate::model::{
-        column::column_data_type::ColumnDataType, option::options_builder::OptionsBuilder,
-    };
+    use crate::model::column::column_data_type::ColumnDataType;
 
     use super::*;
 
@@ -107,7 +105,7 @@ mod tests {
                 StreamName::new("s".to_string()),
                 vec![ColumnDefinition::fx_timestamp(),],
                 Some(ColumnName::new("invalid_ts_name".to_string())),
-                OptionsBuilder::default().build(),
+                Options::empty(),
             )
             .unwrap_err(),
             SpringError::Sql(_)
@@ -125,7 +123,7 @@ mod tests {
                     false
                 ))],
                 Some(ColumnName::new("timestamp".to_string())),
-                OptionsBuilder::default().build(),
+                Options::empty(),
             )
             .unwrap_err(),
             SpringError::Sql(_)
@@ -143,7 +141,7 @@ mod tests {
                     true // nullable
                 ))],
                 Some(ColumnName::new("timestamp".to_string())),
-                OptionsBuilder::default().build(),
+                Options::empty(),
             )
             .unwrap_err(),
             SpringError::Sql(_)
