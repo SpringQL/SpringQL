@@ -7,7 +7,7 @@ use crate::dependency_injection::DependencyInjection;
 ///
 /// - Clone/Copy is disabled.
 /// - Immutable. Modification (adding / removing any column or updating column value) leads to new Row.
-/// - Mandatory `timestamp` column.
+/// - Mandatory `rowtime()`, either from `cols` or `arrival_rowtime`.
 /// - PartialEq by all columns (NULL prevents Eq).
 /// - PartialOrd by timestamp.
 #[derive(PartialEq, Debug)]
