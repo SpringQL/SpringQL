@@ -2,7 +2,7 @@ use std::collections::VecDeque;
 
 use super::row::repository::RowRef;
 
-#[derive(Debug)]
+#[derive(Clone, Debug, Default)]
 pub(in crate::stream_engine::executor) struct RowWindow(VecDeque<RowRef>);
 
 impl Iterator for RowWindow {

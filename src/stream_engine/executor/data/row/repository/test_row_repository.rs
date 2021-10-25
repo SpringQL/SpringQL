@@ -41,12 +41,7 @@ impl RowRepository for TestRowRepository {
         Ok(row_ref)
     }
 
-    fn emit(&self, row: Row, downstream_pumps: &[PumpName]) -> Result<()> {
-        let row_ref = self._gen_ref();
-
-        let dup = self.rows.lock().unwrap().insert(row_ref, Rc::new(row));
-        assert!(dup.is_none());
-
+    fn emit(&self, row_ref: RowRef, downstream_pumps: &[PumpName]) -> Result<()> {
         let mut pumps_buf = self.pumps_buf.lock().unwrap();
         for pump in downstream_pumps {
             // <https://github.com/rust-lang/rust-clippy/issues/5549>
@@ -58,5 +53,13 @@ impl RowRepository for TestRowRepository {
         }
 
         Ok(())
+    }
+
+    fn emit_owned(&self, row: Row, downstream_pumps: &[PumpName]) -> Result<()> {
+        let row_ref = self._gen_ref();
+        let dup = self.rows.lock().unwrap().insert(row_ref, Rc::new(row));
+        assert!(dup.is_none());
+
+        self.emit(row_ref, downstream_pumps)
     }
 }

@@ -29,15 +29,6 @@ impl<S: InputServerActive + Debug> ForeignInputPump<S> {
             .next_row()?;
         foreign_row.into_row::<DI>(self.dest_stream.shape())
     }
-
-    fn emit(&self, row: Row, downstream_pumps: &[PumpName]) -> Result<()> {
-        let repo = self.row_repository();
-        repo.emit(row, downstream_pumps)
-    }
-
-    fn row_repository(&self) -> &dyn RowRepository {
-        todo!()
-    }
 }
 
 #[cfg(test)]

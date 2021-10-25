@@ -4,7 +4,7 @@
 
 mod executor;
 
-pub(crate) use executor::{CurrentTimestamp, RefCntGcRowRepository, RowRepository, Timestamp};
+pub(crate) use executor::{CurrentTimestamp, RowRepository, Timestamp};
 
 #[cfg(test)]
-pub(crate) use executor::NaiveRowRepository;
+pub(crate) use executor::TestRowRepository;

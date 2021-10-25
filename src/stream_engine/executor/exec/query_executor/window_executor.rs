@@ -1,18 +1,30 @@
+use std::time::Duration;
+
 use crate::{
     error::Result,
-    model::query_plan::operation::SlidingWindowOperation,
+    model::{name::PumpName, query_plan::operation::SlidingWindowOperation},
     stream_engine::executor::data::{row::repository::RowRef, row_window::RowWindow},
 };
 
-#[derive(Default, Debug)]
-pub(super) struct PlanNodeExecutor;
+#[derive(Debug)]
+pub(super) struct SlidingWindowExecutor {
+    window: RowWindow,
+    window_width: Duration, // TODO row-based sliding window
+}
 
-impl PlanNodeExecutor {
-    pub(super) fn run_sliding_window(
-        &self,
-        op_sliding_window: &SlidingWindowOperation,
-        input: &RowRef,
-    ) -> Result<RowWindow> {
+impl SlidingWindowExecutor {
+    pub(super) fn register(op: &SlidingWindowOperation) -> Self {
+        let window_width = match op {
+            SlidingWindowOperation::TimeBased { lower_bound } => *lower_bound,
+        };
+
+        Self {
+            window: RowWindow::default(),
+            window_width,
+        }
+    }
+
+    pub(super) fn run(&self, input: &RowRef) -> Result<RowWindow> {
         todo!()
     }
 }
@@ -23,10 +35,7 @@ mod tests {
 
     use crate::{
         dependency_injection::{test_di::TestDI, DependencyInjection},
-        model::{
-            name::{ColumnName, PumpName, StreamName},
-            pipeline::stream_model::StreamModel,
-        },
+        model::name::{ColumnName, PumpName},
         stream_engine::{
             executor::data::{row::Row, value::sql_value::SqlValue},
             RowRepository, Timestamp,
@@ -46,11 +55,13 @@ mod tests {
         let di = TestDI::default();
         let row_repo = di.row_repository();
 
-        let executor = PlanNodeExecutor::default();
+        let pump = PumpName::fx_ticker_window();
+        let downstream_pumps = vec![pump.clone()];
 
         let op = SlidingWindowOperation::TimeBased {
             lower_bound: Duration::from_secs(5 * 60),
         };
+        let executor = SlidingWindowExecutor::register(&pump, &op).unwrap();
 
         let t_03_02_00 = Timestamp::from_str("2019-03-30 03:02:00.000000000").unwrap();
         let t_03_02_10 = Timestamp::from_str("2019-03-30 03:02:10.000000000").unwrap();
@@ -161,18 +172,16 @@ mod tests {
             },
         ];
 
-        // row1 -> Stream[ticker] -> ref. row1 -> Window[ticker.pump1]
+        // (ForeignInputServer ->) row1 -> Stream[ticker] -> ref. row1 -> Window[ticker.pump1]
 
         for TestCase {
             input: row,
             expected,
         } in test_cases
         {
-            row_repo.emit(row, &[PumpName::fx_ticker_window()]).unwrap();
-            let row_ref = row_repo
-                .collect_next(&PumpName::fx_ticker_window())
-                .unwrap();
-            let window = executor.run_sliding_window(&op, &row_ref).unwrap();
+            row_repo.emit_owned(row, &downstream_pumps).unwrap();
+            let row_ref = row_repo.collect_next(&pump).unwrap();
+            let window = executor.run(&row_ref).unwrap();
 
             let got_pks = window
                 .map(|rr| {

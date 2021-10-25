@@ -6,10 +6,10 @@ use super::{
 use crate::error::Result;
 use crate::{dependency_injection::DependencyInjection, model::name::ColumnName};
 
-pub(crate) use repository::{RefCntGcRowRepository, RowRepository};
+pub(crate) use repository::RowRepository;
 
 #[cfg(test)]
-pub(crate) use repository::NaiveRowRepository;
+pub(crate) use repository::TestRowRepository;
 
 /// Row that enables "zero-copy stream".
 ///

@@ -73,7 +73,9 @@ pub(crate) trait RowRepository {
     /// Get the next RowRef from `pump`.
     fn collect_next(&self, pump: &PumpName) -> Result<RowRef>;
 
-    /// Move `row` to `dest_stream`.
-    /// The row is distributed to all pumps going out from `dest_stream`.
-    fn emit(&self, row: Row, downstream_pumps: &[PumpName]) -> Result<()>;
+    /// Gives `row_ref` to `dest_pumps`.
+    fn emit(&self, row_ref: RowRef, downstream_pumps: &[PumpName]) -> Result<()>;
+
+    /// Move newly created `row` to `dest_pumps`.
+    fn emit_owned(&self, row: Row, downstream_pumps: &[PumpName]) -> Result<()>;
 }
