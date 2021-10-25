@@ -8,8 +8,8 @@ use crate::{
         column::{column_data_type::ColumnDataType, column_definition::ColumnDefinition},
         name::{ColumnName, StreamName},
         option::{options_builder::OptionsBuilder, Options},
+        pipeline::stream_model::{stream_shape::StreamShape, StreamModel},
         sql_type::SqlType,
-        stream_model::{stream_shape::StreamShape, StreamModel},
     },
     stream_engine::executor::data::{
         column::stream_column::StreamColumns,

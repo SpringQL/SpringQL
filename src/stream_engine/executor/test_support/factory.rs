@@ -4,7 +4,7 @@ use crate::{
     dependency_injection::test_di::TestDI,
     model::{
         name::ColumnName, option::options_builder::OptionsBuilder,
-        stream_model::stream_shape::StreamShape,
+        pipeline::stream_model::stream_shape::StreamShape,
     },
     stream_engine::{
         executor::{

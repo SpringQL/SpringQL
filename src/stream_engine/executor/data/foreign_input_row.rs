@@ -6,7 +6,7 @@ use self::format::json::JsonObject;
 
 use crate::{
     dependency_injection::DependencyInjection, error::Result,
-    model::stream_model::stream_shape::StreamShape,
+    model::pipeline::stream_model::stream_shape::StreamShape,
 };
 
 use super::{column::stream_column::StreamColumns, row::Row};
