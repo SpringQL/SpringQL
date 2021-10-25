@@ -128,6 +128,32 @@ mod tests {
     use super::*;
 
     #[test]
+    fn test_new() {
+        let mut column_values = ColumnValues::default();
+        column_values
+            .insert(
+                ColumnName::new("timestamp".to_string()),
+                SqlValue::NotNull(NnSqlValue::Timestamp(Timestamp::fx_ts1())),
+            )
+            .unwrap();
+        column_values
+            .insert(
+                ColumnName::new("city".to_string()),
+                SqlValue::NotNull(NnSqlValue::Text("Tokyo".to_string())),
+            )
+            .unwrap();
+        column_values
+            .insert(
+                ColumnName::new("temperature".to_string()),
+                SqlValue::NotNull(NnSqlValue::Integer(21)),
+            )
+            .unwrap();
+
+        let _ =
+            StreamColumns::new(Rc::new(StreamModel::fx_city_temperature()), column_values).unwrap();
+    }
+
+    #[test]
     fn test_column_lacks() {
         let mut column_values = ColumnValues::default();
         column_values
