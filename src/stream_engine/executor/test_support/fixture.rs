@@ -13,7 +13,10 @@ use crate::{
     },
     stream_engine::executor::data::{
         column::stream_column::StreamColumns,
-        foreign_row::{foreign_input_row::ForeignInputRow, format::json::JsonObject},
+        foreign_row::{
+            foreign_input_row::ForeignInputRow, foreign_output_row::ForeignOutputRow,
+            format::json::JsonObject,
+        },
         row::Row,
         timestamp::Timestamp,
     },
@@ -104,6 +107,28 @@ impl ForeignInputRow {
     }
     pub fn fx_trade_google() -> Self {
         Self::from_json(JsonObject::fx_trade_google())
+    }
+}
+
+impl ForeignOutputRow {
+    pub fn fx_city_temperature_tokyo() -> Self {
+        Row::fx_city_temperature_tokyo().into()
+    }
+    pub fn fx_city_temperature_osaka() -> Self {
+        Row::fx_city_temperature_osaka().into()
+    }
+    pub fn fx_city_temperature_london() -> Self {
+        Row::fx_city_temperature_london().into()
+    }
+
+    pub fn fx_trade_oracle() -> Self {
+        Row::fx_trade_oracle().into()
+    }
+    pub fn fx_trade_ibm() -> Self {
+        Row::fx_trade_ibm().into()
+    }
+    pub fn fx_trade_google() -> Self {
+        Row::fx_trade_google().into()
     }
 }
 
