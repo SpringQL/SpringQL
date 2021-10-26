@@ -5,7 +5,7 @@ use crate::{
 use chrono::Duration;
 use std::{collections::VecDeque, rc::Rc};
 
-use super::row_window::RowWindow;
+use super::{interm_row::PreservedRow, row_window::RowWindow};
 
 #[derive(Debug)]
 pub(super) struct SlidingWindowExecutor {
@@ -35,13 +35,13 @@ impl SlidingWindowExecutor {
             .inner()
             .iter()
             .filter(|r| {
-                let ts = r.rowtime();
+                let ts = r.as_ref().rowtime();
                 lower_bound_ts < ts && ts <= input_ts
             })
             .cloned()
-            .collect::<VecDeque<Rc<Row>>>();
+            .collect::<VecDeque<PreservedRow>>();
 
-        new_window_fifo.push_front(input);
+        new_window_fifo.push_front(PreservedRow::new(input));
 
         self.window = RowWindow::new(new_window_fifo);
         Ok(&self.window)
@@ -207,6 +207,7 @@ mod tests {
                 .iter()
                 .map(|got_row| {
                     let got_sql_value = got_row
+                        .as_ref()
                         .get(&ColumnName::new("timestamp".to_string()))
                         .unwrap();
                     if let SqlValue::NotNull(got_nn_sql_value) = got_sql_value {

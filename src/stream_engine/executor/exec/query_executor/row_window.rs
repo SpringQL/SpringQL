@@ -1,13 +1,17 @@
-use std::{collections::VecDeque, rc::Rc};
+use std::collections::VecDeque;
 
-use crate::stream_engine::executor::data::row::Row;
+use super::interm_row::PreservedRow;
 
 /// Note: RowWindow is a temporal structure during query execution (cannot be a pump output).
-#[derive(Clone, Debug, Default, new)]
-pub(in crate::stream_engine::executor) struct RowWindow(VecDeque<Rc<Row>>);
+#[derive(Debug, Default, new)]
+pub(in crate::stream_engine::executor::exec::query_executor) struct RowWindow(
+    VecDeque<PreservedRow>,
+);
 
 impl RowWindow {
-    pub(in crate::stream_engine::executor) fn inner(&self) -> &VecDeque<Rc<Row>> {
+    pub(in crate::stream_engine::executor::exec::query_executor) fn inner(
+        &self,
+    ) -> &VecDeque<PreservedRow> {
         &self.0
     }
 }
