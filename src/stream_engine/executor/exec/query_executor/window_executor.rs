@@ -1,10 +1,10 @@
-use std::{rc::Rc, time::Duration};
-
 use crate::{
     error::Result,
     model::query_plan::operation::SlidingWindowOperation,
     stream_engine::executor::data::{row::Row, row_window::RowWindow},
 };
+use chrono::Duration;
+use std::rc::Rc;
 
 #[derive(Debug)]
 pub(super) struct SlidingWindowExecutor {
@@ -25,13 +25,14 @@ impl SlidingWindowExecutor {
     }
 
     pub(super) fn run(&self, input: Rc<Row>) -> Result<RowWindow> {
-        todo!()
+        let input_ts = input.rowtime();
+        let lower_bound_ts = input_ts - self.window_width;
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use std::{str::FromStr, time::Duration};
+    use std::str::FromStr;
 
     use crate::{
         dependency_injection::{test_di::TestDI, DependencyInjection},
@@ -59,7 +60,7 @@ mod tests {
         let downstream_pumps = vec![pump.clone()];
 
         let op = SlidingWindowOperation::TimeBased {
-            lower_bound: Duration::from_secs(5 * 60),
+            lower_bound: Duration::minutes(5),
         };
         let executor = SlidingWindowExecutor::register(&op);
 

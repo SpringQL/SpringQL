@@ -1,4 +1,4 @@
-use std::time::Duration;
+use chrono::Duration;
 
 #[derive(Clone, Eq, PartialEq, Debug)]
 pub(crate) enum SlidingWindowOperation {

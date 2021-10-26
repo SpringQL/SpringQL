@@ -1,9 +1,9 @@
 use crate::error::Result;
 use crate::stream_engine::executor::data::foreign_input_row::format::json::JsonObject;
+use chrono::Duration;
 use std::io::Write;
 use std::net::{IpAddr, Shutdown, SocketAddr, TcpListener, TcpStream};
 use std::thread::{self, JoinHandle};
-use std::time::Duration;
 
 pub struct TestSource {
     my_addr: SocketAddr,
@@ -52,7 +52,7 @@ impl TestSource {
         }
 
         eprintln!("[TestSource] No message left. Wait forever...");
-        thread::sleep(Duration::from_secs(60 * 60));
+        thread::sleep(Duration::hours(1).to_std().unwrap());
 
         Ok(())
     }
