@@ -5,7 +5,7 @@ pub mod responsibility;
 
 use thiserror::Error;
 
-use crate::model::name::StreamName;
+use crate::model::name::PumpName;
 
 use self::{foreign_info::ForeignInfo, responsibility::SpringErrorResponsibility};
 
@@ -28,9 +28,9 @@ pub enum SpringError {
         source: anyhow::Error,
     },
 
-    #[error("Timeout when getting an input from a stream ({stream_name})")]
+    #[error("Timeout when getting an input from a stream ({pump_name})")]
     InputTimeout {
-        stream_name: StreamName,
+        pump_name: PumpName,
         source: anyhow::Error,
     },
 

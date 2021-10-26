@@ -6,7 +6,7 @@ use serde::{Deserialize, Serialize};
 pub struct StreamName(String);
 
 #[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Serialize, Deserialize, new)]
-pub(crate) struct PumpName(String);
+pub struct PumpName(String);
 
 #[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Serialize, Deserialize, new)]
 pub(crate) struct ColumnName(String);

@@ -103,9 +103,9 @@ mod tests {
             panic!("Expected FinalRow::Preserved");
         }
 
-        // assert!(matches!(
-        //     executor.run().unwrap_err(),
-        //     SpringError::InputTimeout { .. }
-        // ));
+        assert!(matches!(
+            executor.run().unwrap_err(),
+            SpringError::InputTimeout { .. }
+        ));
     }
 }
