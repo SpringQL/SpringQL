@@ -1,13 +1,11 @@
 pub(in crate::stream_engine::executor::exec::query_executor) mod collect_executor;
+pub(in crate::stream_engine::executor::exec::query_executor) mod window_executor;
 
 use std::fmt::Debug;
 
-use crate::{
-    dependency_injection::DependencyInjection,
-    stream_engine::executor::exec::query_executor::window_executor::SlidingWindowExecutor,
-};
+use crate::dependency_injection::DependencyInjection;
 
-use self::collect_executor::CollectExecutor;
+use self::{collect_executor::CollectExecutor, window_executor::SlidingWindowExecutor};
 
 #[derive(Debug)]
 pub(in crate::stream_engine::executor::exec::query_executor) enum NodeExecutor<DI>

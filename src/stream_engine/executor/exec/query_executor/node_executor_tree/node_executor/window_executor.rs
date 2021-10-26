@@ -1,20 +1,24 @@
 use crate::{
-    error::Result, model::query_plan::query_plan_node::operation::SlidingWindowOperation,
-    stream_engine::executor::data::row::Row,
+    error::Result,
+    model::query_plan::query_plan_node::operation::SlidingWindowOperation,
+    stream_engine::executor::{
+        data::row::Row,
+        exec::query_executor::{interm_row::PreservedRow, row_window::RowWindow},
+    },
 };
 use chrono::Duration;
 use std::{collections::VecDeque, rc::Rc};
 
-use super::{interm_row::PreservedRow, row_window::RowWindow};
-
 #[derive(Debug)]
-pub(super) struct SlidingWindowExecutor {
+pub(in crate::stream_engine::executor::exec::query_executor) struct SlidingWindowExecutor {
     window: RowWindow,
     window_width: Duration, // TODO row-based sliding window
 }
 
 impl SlidingWindowExecutor {
-    pub(super) fn register(op: &SlidingWindowOperation) -> Self {
+    pub(in crate::stream_engine::executor::exec::query_executor) fn register(
+        op: &SlidingWindowOperation,
+    ) -> Self {
         let window_width = match op {
             SlidingWindowOperation::TimeBased { lower_bound } => *lower_bound,
         };
@@ -26,7 +30,10 @@ impl SlidingWindowExecutor {
     }
 
     /// Mutates internal window state.
-    pub(super) fn run(&mut self, input: Rc<Row>) -> Result<&RowWindow> {
+    pub(in crate::stream_engine::executor::exec::query_executor) fn run(
+        &mut self,
+        input: Rc<Row>,
+    ) -> Result<&RowWindow> {
         let input_ts = input.rowtime();
         let lower_bound_ts = input_ts - self.window_width;
 

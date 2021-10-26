@@ -9,7 +9,6 @@ mod final_row;
 mod interm_row;
 mod node_executor_tree;
 mod row_window;
-mod window_executor; // TODO merge into node_executor_tree
 
 /// Process input row 1-by-1.
 #[derive(Debug)]
