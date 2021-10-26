@@ -4,30 +4,18 @@ use crate::stream_engine::executor::data::row::Row;
 
 /// Intermediate row appearing only in a QueryPlan.
 ///
-/// This row is an output from a QueryPlan's operation, which means the operation does not change the input row.
+/// This row is an output from a QueryPlan's operation and is **not changed** by the operation.
 #[derive(Clone, PartialEq, Debug, new)]
 pub(super) struct PreservedRow(Rc<Row>);
 
-/// Intermediate output row appearing only in a QueryPlan.
+/// Intermediate row appearing only in a QueryPlan.
 ///
-/// In order to realize zero-copy stream, whether or not a QueryPlan can preserve child node's row is important (if possible, a row is not copied but just transferred from input to output stream).
-#[derive(PartialEq, Debug)]
-pub(super) enum IntermOutputRow {
-    Preserved(PreservedRow),
-    NewlyCreated(Row),
-}
+/// This row is an output from a QueryPlan's operation and is **newly created** by the operation.
+#[derive(PartialEq, Debug, new)]
+pub(super) struct NewRow(Row);
 
 impl AsRef<Row> for PreservedRow {
     fn as_ref(&self) -> &Row {
         &self.0
-    }
-}
-
-impl AsRef<Row> for IntermOutputRow {
-    fn as_ref(&self) -> &Row {
-        match self {
-            IntermOutputRow::Preserved(row) => row.as_ref(),
-            IntermOutputRow::NewlyCreated(row) => row,
-        }
     }
 }
