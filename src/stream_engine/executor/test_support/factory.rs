@@ -65,7 +65,7 @@ impl StreamColumns {
         Self::new(Rc::new(StreamShape::fx_city_temperature()), column_values).unwrap()
     }
 
-    pub fn factory_ticker(timestamp: Timestamp, ticker: &str, amount: i16) -> Self {
+    pub fn factory_trade(timestamp: Timestamp, ticker: &str, amount: i16) -> Self {
         let mut column_values = ColumnValues::default();
         column_values
             .insert(
@@ -98,7 +98,7 @@ impl Row {
             temperature,
         ))
     }
-    pub fn factory_ticker(timestamp: Timestamp, ticker: &str, amount: i16) -> Self {
-        Self::new::<TestDI>(StreamColumns::factory_ticker(timestamp, ticker, amount))
+    pub fn factory_trade(timestamp: Timestamp, ticker: &str, amount: i16) -> Self {
+        Self::new::<TestDI>(StreamColumns::factory_trade(timestamp, ticker, amount))
     }
 }

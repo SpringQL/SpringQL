@@ -74,7 +74,7 @@ mod tests {
         let di = TestDI::default();
         let row_repo = di.row_repository();
 
-        let pump = PumpName::fx_ticker_window();
+        let pump = PumpName::fx_trade_window();
         let downstream_pumps = vec![pump.clone()];
 
         let op = SlidingWindowOperation::TimeBased {
@@ -102,91 +102,91 @@ mod tests {
 
         let test_cases = vec![
             TestCase {
-                input: Row::factory_ticker(t_03_02_00, "ORCL", 20),
+                input: Row::factory_trade(t_03_02_00, "ORCL", 20),
                 expected: vec![t_03_02_00],
             },
             TestCase {
-                input: Row::factory_ticker(t_03_02_10, "ORCL", 20),
+                input: Row::factory_trade(t_03_02_10, "ORCL", 20),
                 expected: vec![t_03_02_10, t_03_02_00],
             },
             TestCase {
-                input: Row::factory_ticker(t_03_03_00, "IBM", 30),
+                input: Row::factory_trade(t_03_03_00, "IBM", 30),
                 expected: vec![t_03_03_00, t_03_02_10, t_03_02_00],
             },
             TestCase {
-                input: Row::factory_ticker(t_03_04_00, "ORCL", 15),
+                input: Row::factory_trade(t_03_04_00, "ORCL", 15),
                 expected: vec![t_03_04_00, t_03_03_00, t_03_02_10, t_03_02_00],
             },
             TestCase {
-                input: Row::factory_ticker(t_03_04_30, "IBM", 40),
+                input: Row::factory_trade(t_03_04_30, "IBM", 40),
                 expected: vec![t_03_04_30, t_03_04_00, t_03_03_00, t_03_02_10, t_03_02_00],
             },
             TestCase {
-                input: Row::factory_ticker(t_03_04_45, "IBM", 10),
+                input: Row::factory_trade(t_03_04_45, "IBM", 10),
                 expected: vec![
                     t_03_04_45, t_03_04_30, t_03_04_00, t_03_03_00, t_03_02_10, t_03_02_00,
                 ],
             },
             TestCase {
-                input: Row::factory_ticker(t_03_05_00, "MSFT", 15),
+                input: Row::factory_trade(t_03_05_00, "MSFT", 15),
                 expected: vec![
                     t_03_05_00, t_03_04_45, t_03_04_30, t_03_04_00, t_03_03_00, t_03_02_10,
                     t_03_02_00,
                 ],
             },
             TestCase {
-                input: Row::factory_ticker(t_03_05_30, "MSFT", 55),
+                input: Row::factory_trade(t_03_05_30, "MSFT", 55),
                 expected: vec![
                     t_03_05_30, t_03_05_00, t_03_04_45, t_03_04_30, t_03_04_00, t_03_03_00,
                     t_03_02_10, t_03_02_00,
                 ],
             },
             TestCase {
-                input: Row::factory_ticker(t_03_59_45, "IBM", 20),
+                input: Row::factory_trade(t_03_59_45, "IBM", 20),
                 expected: vec![t_03_59_45],
             },
             TestCase {
-                input: Row::factory_ticker(t_04_02_00, "GOOGL", 100),
+                input: Row::factory_trade(t_04_02_00, "GOOGL", 100),
                 expected: vec![t_04_02_00, t_03_59_45],
             },
             TestCase {
-                input: Row::factory_ticker(t_04_04_00, "GOOGL", 100),
+                input: Row::factory_trade(t_04_04_00, "GOOGL", 100),
                 expected: vec![t_04_04_00, t_04_02_00, t_03_59_45],
             },
             TestCase {
-                input: Row::factory_ticker(t_04_06_00, "ORCL", 5),
+                input: Row::factory_trade(t_04_06_00, "ORCL", 5),
                 expected: vec![t_04_06_00, t_04_04_00, t_04_02_00],
             },
             TestCase {
-                input: Row::factory_ticker(t_04_08_00, "IBM", 15),
+                input: Row::factory_trade(t_04_08_00, "IBM", 15),
                 expected: vec![t_04_08_00, t_04_06_00, t_04_04_00],
             },
             TestCase {
-                input: Row::factory_ticker(t_04_18_00, "IBM", 40),
+                input: Row::factory_trade(t_04_18_00, "IBM", 40),
                 expected: vec![t_04_18_00],
             },
             TestCase {
-                input: Row::factory_ticker(t_04_18_00, "GOOGL", 100),
+                input: Row::factory_trade(t_04_18_00, "GOOGL", 100),
                 expected: vec![t_04_18_00, t_04_18_00],
             },
             TestCase {
-                input: Row::factory_ticker(t_04_18_00, "GOOGL", 100),
+                input: Row::factory_trade(t_04_18_00, "GOOGL", 100),
                 expected: vec![t_04_18_00, t_04_18_00, t_04_18_00],
             },
             TestCase {
-                input: Row::factory_ticker(t_04_18_00, "IBM", 15),
+                input: Row::factory_trade(t_04_18_00, "IBM", 15),
                 expected: vec![t_04_18_00, t_04_18_00, t_04_18_00, t_04_18_00],
             },
             TestCase {
-                input: Row::factory_ticker(t_04_43_00, "IBM", 60),
+                input: Row::factory_trade(t_04_43_00, "IBM", 60),
                 expected: vec![t_04_43_00],
             },
             TestCase {
-                input: Row::factory_ticker(t_04_44_00, "ORCL", 1000),
+                input: Row::factory_trade(t_04_44_00, "ORCL", 1000),
                 expected: vec![t_04_44_00, t_04_43_00],
             },
             TestCase {
-                input: Row::factory_ticker(t_05_46_00, "ORCL", 3000),
+                input: Row::factory_trade(t_05_46_00, "ORCL", 3000),
                 expected: vec![t_05_46_00],
             },
         ];

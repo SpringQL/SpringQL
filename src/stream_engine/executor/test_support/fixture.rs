@@ -59,6 +59,30 @@ impl JsonObject {
             "temperature": 13,
         }))
     }
+
+    pub fn fx_trade_oracle(ts: Timestamp) -> Self {
+        Self::new(json!({
+            "timestamp": ts.to_string(),
+            "ticker": "ORCL",
+            "amount": 20,
+        }))
+    }
+
+    pub fn fx_trade_ibm(ts: Timestamp) -> Self {
+        Self::new(json!({
+            "timestamp": ts.to_string(),
+            "ticker": "IBM",
+            "amount": 30,
+        }))
+    }
+
+    pub fn fx_trade_google(ts: Timestamp) -> Self {
+        Self::new(json!({
+            "timestamp": ts.to_string(),
+            "ticker": "GOOGL",
+            "amount": 100,
+        }))
+    }
 }
 
 impl ForeignInputRow {
@@ -70,6 +94,16 @@ impl ForeignInputRow {
     }
     pub fn fx_city_temperature_london(ts: Timestamp) -> Self {
         Self::from_json(JsonObject::fx_city_temperature_london(ts))
+    }
+
+    pub fn fx_trade_oracle(ts: Timestamp) -> Self {
+        Self::from_json(JsonObject::fx_trade_oracle(ts))
+    }
+    pub fn fx_trade_ibm(ts: Timestamp) -> Self {
+        Self::from_json(JsonObject::fx_trade_ibm(ts))
+    }
+    pub fn fx_trade_google(ts: Timestamp) -> Self {
+        Self::from_json(JsonObject::fx_trade_google(ts))
     }
 }
 
@@ -208,6 +242,16 @@ impl Row {
     pub fn fx_city_temperature_london(ts: Timestamp) -> Self {
         Self::new::<TestDI>(StreamColumns::fx_city_temperature_london(ts))
     }
+
+    pub fn fx_trade_oracle(ts: Timestamp) -> Self {
+        Self::new::<TestDI>(StreamColumns::fx_trade_oracle(ts))
+    }
+    pub fn fx_trade_ibm(ts: Timestamp) -> Self {
+        Self::new::<TestDI>(StreamColumns::fx_trade_ibm(ts))
+    }
+    pub fn fx_trade_google(ts: Timestamp) -> Self {
+        Self::new::<TestDI>(StreamColumns::fx_trade_google(ts))
+    }
 }
 
 impl StreamColumns {
@@ -219,5 +263,15 @@ impl StreamColumns {
     }
     pub fn fx_city_temperature_london(ts: Timestamp) -> Self {
         Self::factory_city_temperature(ts, "London", 13)
+    }
+
+    pub fn fx_trade_oracle(ts: Timestamp) -> Self {
+        Self::factory_trade(ts, "ORCL", 20)
+    }
+    pub fn fx_trade_ibm(ts: Timestamp) -> Self {
+        Self::factory_trade(ts, "IBM", 30)
+    }
+    pub fn fx_trade_google(ts: Timestamp) -> Self {
+        Self::factory_trade(ts, "GOOGL", 100)
     }
 }
