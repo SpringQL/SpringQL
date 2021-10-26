@@ -145,14 +145,13 @@ mod tests {
     use crate::model::option::options_builder::OptionsBuilder;
     use crate::stream_engine::executor::data::foreign_input_row::format::json::JsonObject;
     use crate::stream_engine::executor::data::foreign_input_row::ForeignInputRow;
-    use crate::stream_engine::executor::data::timestamp::Timestamp;
     use crate::stream_engine::executor::test_support::foreign::source::TestSource;
 
     #[test]
     fn test_input_server_tcp() -> crate::error::Result<()> {
-        let j1 = JsonObject::fx_city_temperature_tokyo(Timestamp::fx_ts1());
-        let j2 = JsonObject::fx_city_temperature_osaka(Timestamp::fx_ts2());
-        let j3 = JsonObject::fx_city_temperature_london(Timestamp::fx_ts3());
+        let j1 = JsonObject::fx_city_temperature_tokyo();
+        let j2 = JsonObject::fx_city_temperature_osaka();
+        let j3 = JsonObject::fx_city_temperature_london();
 
         let source = TestSource::start(vec![j2.clone(), j3.clone(), j1.clone()])?;
 

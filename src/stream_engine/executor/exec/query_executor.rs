@@ -1,5 +1,5 @@
 use self::{final_row::FinalRow, interm_row::NewRow};
-use crate::error::Result;
+use crate::{error::Result, model::query_plan::QueryPlan};
 
 mod final_row;
 mod interm_row;
@@ -34,11 +34,19 @@ impl QueryExecutor {
 
 #[cfg(test)]
 mod tests {
+    use std::rc::Rc;
+
     use crate::{
         dependency_injection::{test_di::TestDI, DependencyInjection},
         error::SpringError,
-        model::{name::PumpName, pipeline::stream_model::StreamModel},
-        stream_engine::{executor::data::row::Row, RowRepository, Timestamp},
+        model::{
+            name::{PumpName, StreamName},
+            query_plan::{
+                query_plan_node::{operation::LeafOperation, QueryPlanNode, QueryPlanNodeLeaf},
+                QueryPlan,
+            },
+        },
+        stream_engine::{executor::data::row::Row, RowRepository},
     };
 
     use super::*;
@@ -53,35 +61,39 @@ mod tests {
         //   "ticker" TEXT NOT NULL,
         //   "amount" INTEGER NOT NULL
         // );
-        let stream_trade = StreamModel::fx_trade();
+        let stream_trade = StreamName::fx_trade();
 
         let pump_trade_p1 = PumpName::fx_trade_p1();
         let downstream_pumps = vec![pump_trade_p1];
 
-        let row_oracle = Row::fx_trade_oracle(Timestamp::fx_ts1());
-        let row_ibm = Row::fx_trade_ibm(Timestamp::fx_ts2());
-        let row_google = Row::fx_trade_google(Timestamp::fx_ts3());
+        let row_oracle = Row::fx_trade_oracle();
+        let row_ibm = Row::fx_trade_ibm();
+        let row_google = Row::fx_trade_google();
 
-        row_repo.emit_owned(row_oracle, &downstream_pumps);
-        row_repo.emit_owned(row_ibm, &downstream_pumps);
-        row_repo.emit_owned(row_google, &downstream_pumps);
+        row_repo.emit_owned(row_oracle, &downstream_pumps).unwrap();
+        row_repo.emit_owned(row_ibm, &downstream_pumps).unwrap();
+        row_repo.emit_owned(row_google, &downstream_pumps).unwrap();
 
         // SELECT timestamp, ticker, amount FROM trade;
-        let query_plan = todo!();
-        let executor = QueryExecutor::register(query_plan);
+        let query_plan = QueryPlan::new(Rc::new(QueryPlanNode::Leaf(QueryPlanNodeLeaf {
+            op: LeafOperation::Collect {
+                stream: stream_trade,
+            },
+        })));
+        let mut executor = QueryExecutor::register(query_plan);
 
         if let FinalRow::Preserved(got_row) = executor.run().unwrap() {
-            assert_eq!(*got_row, row_oracle);
+            assert_eq!(*got_row, Row::fx_trade_oracle());
         } else {
             panic!("Expected FinalRow::Preserved");
         }
         if let FinalRow::Preserved(got_row) = executor.run().unwrap() {
-            assert_eq!(*got_row, row_ibm);
+            assert_eq!(*got_row, Row::fx_trade_ibm());
         } else {
             panic!("Expected FinalRow::Preserved");
         }
         if let FinalRow::Preserved(got_row) = executor.run().unwrap() {
-            assert_eq!(*got_row, row_google);
+            assert_eq!(*got_row, Row::fx_trade_google());
         } else {
             panic!("Expected FinalRow::Preserved");
         }

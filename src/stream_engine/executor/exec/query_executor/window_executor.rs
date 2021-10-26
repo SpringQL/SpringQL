@@ -1,5 +1,5 @@
 use crate::{
-    error::Result, model::query_plan::operation::SlidingWindowOperation,
+    error::Result, model::query_plan::query_plan_node::operation::SlidingWindowOperation,
     stream_engine::executor::data::row::Row,
 };
 use chrono::Duration;

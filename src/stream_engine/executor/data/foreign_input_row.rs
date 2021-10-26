@@ -40,7 +40,7 @@ impl ForeignInputRow {
 
 #[cfg(test)]
 mod tests {
-    use crate::{dependency_injection::test_di::TestDI, stream_engine::Timestamp};
+    use crate::dependency_injection::test_di::TestDI;
 
     use super::*;
 
@@ -48,9 +48,8 @@ mod tests {
     fn test_json_into_row() {
         let stream = Rc::new(StreamShape::fx_city_temperature());
 
-        let t = Timestamp::fx_ts1();
-        let fr = ForeignInputRow::fx_city_temperature_tokyo(t);
-        let r = Row::fx_city_temperature_tokyo(t);
+        let fr = ForeignInputRow::fx_city_temperature_tokyo();
+        let r = Row::fx_city_temperature_tokyo();
         assert_eq!(fr.into_row::<TestDI>(stream).unwrap(), r);
     }
 }

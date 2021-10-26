@@ -36,49 +36,49 @@ impl Timestamp {
 }
 
 impl JsonObject {
-    pub fn fx_city_temperature_tokyo(ts: Timestamp) -> Self {
+    pub fn fx_city_temperature_tokyo() -> Self {
         Self::new(json!({
-            "timestamp": ts.to_string(),
+            "timestamp": Timestamp::fx_ts1().to_string(),
             "city": "Tokyo",
             "temperature": 21,
         }))
     }
 
-    pub fn fx_city_temperature_osaka(ts: Timestamp) -> Self {
+    pub fn fx_city_temperature_osaka() -> Self {
         Self::new(json!({
-            "timestamp": ts.to_string(),
+            "timestamp": Timestamp::fx_ts2().to_string(),
             "city": "Osaka",
             "temperature": 23,
         }))
     }
 
-    pub fn fx_city_temperature_london(ts: Timestamp) -> Self {
+    pub fn fx_city_temperature_london() -> Self {
         Self::new(json!({
-            "timestamp": ts.to_string(),
+            "timestamp": Timestamp::fx_ts3().to_string(),
             "city": "London",
             "temperature": 13,
         }))
     }
 
-    pub fn fx_trade_oracle(ts: Timestamp) -> Self {
+    pub fn fx_trade_oracle() -> Self {
         Self::new(json!({
-            "timestamp": ts.to_string(),
+            "timestamp": Timestamp::fx_ts1().to_string(),
             "ticker": "ORCL",
             "amount": 20,
         }))
     }
 
-    pub fn fx_trade_ibm(ts: Timestamp) -> Self {
+    pub fn fx_trade_ibm() -> Self {
         Self::new(json!({
-            "timestamp": ts.to_string(),
+            "timestamp": Timestamp::fx_ts2().to_string(),
             "ticker": "IBM",
             "amount": 30,
         }))
     }
 
-    pub fn fx_trade_google(ts: Timestamp) -> Self {
+    pub fn fx_trade_google() -> Self {
         Self::new(json!({
-            "timestamp": ts.to_string(),
+            "timestamp": Timestamp::fx_ts3().to_string(),
             "ticker": "GOOGL",
             "amount": 100,
         }))
@@ -86,24 +86,24 @@ impl JsonObject {
 }
 
 impl ForeignInputRow {
-    pub fn fx_city_temperature_tokyo(ts: Timestamp) -> Self {
-        Self::from_json(JsonObject::fx_city_temperature_tokyo(ts))
+    pub fn fx_city_temperature_tokyo() -> Self {
+        Self::from_json(JsonObject::fx_city_temperature_tokyo())
     }
-    pub fn fx_city_temperature_osaka(ts: Timestamp) -> Self {
-        Self::from_json(JsonObject::fx_city_temperature_osaka(ts))
+    pub fn fx_city_temperature_osaka() -> Self {
+        Self::from_json(JsonObject::fx_city_temperature_osaka())
     }
-    pub fn fx_city_temperature_london(ts: Timestamp) -> Self {
-        Self::from_json(JsonObject::fx_city_temperature_london(ts))
+    pub fn fx_city_temperature_london() -> Self {
+        Self::from_json(JsonObject::fx_city_temperature_london())
     }
 
-    pub fn fx_trade_oracle(ts: Timestamp) -> Self {
-        Self::from_json(JsonObject::fx_trade_oracle(ts))
+    pub fn fx_trade_oracle() -> Self {
+        Self::from_json(JsonObject::fx_trade_oracle())
     }
-    pub fn fx_trade_ibm(ts: Timestamp) -> Self {
-        Self::from_json(JsonObject::fx_trade_ibm(ts))
+    pub fn fx_trade_ibm() -> Self {
+        Self::from_json(JsonObject::fx_trade_ibm())
     }
-    pub fn fx_trade_google(ts: Timestamp) -> Self {
-        Self::from_json(JsonObject::fx_trade_google(ts))
+    pub fn fx_trade_google() -> Self {
+        Self::from_json(JsonObject::fx_trade_google())
     }
 }
 
@@ -135,7 +135,7 @@ impl StreamShape {
 impl StreamModel {
     pub fn fx_city_temperature() -> Self {
         Self::new(
-            StreamName::new("city_temperature".to_string()),
+            StreamName::fx_city_temperature(),
             Rc::new(StreamShape::fx_city_temperature()),
             Options::empty(),
         )
@@ -143,17 +143,19 @@ impl StreamModel {
 
     pub fn fx_trade() -> Self {
         Self::new(
-            StreamName::new("trade".to_string()),
+            StreamName::fx_trade(),
             Rc::new(StreamShape::fx_ticker()),
             Options::empty(),
         )
     }
-    pub fn fx_trade_window() -> Self {
-        Self::new(
-            StreamName::new("trade_window".to_string()),
-            Rc::new(StreamShape::fx_ticker()),
-            Options::empty(),
-        )
+}
+
+impl StreamName {
+    pub fn fx_city_temperature() -> Self {
+        StreamName::new("city_temperature".to_string())
+    }
+    pub fn fx_trade() -> Self {
+        StreamName::new("trade".to_string())
     }
 }
 
@@ -233,45 +235,45 @@ impl ColumnDataType {
 }
 
 impl Row {
-    pub fn fx_city_temperature_tokyo(ts: Timestamp) -> Self {
-        Self::new::<TestDI>(StreamColumns::fx_city_temperature_tokyo(ts))
+    pub fn fx_city_temperature_tokyo() -> Self {
+        Self::new::<TestDI>(StreamColumns::fx_city_temperature_tokyo())
     }
-    pub fn fx_city_temperature_osaka(ts: Timestamp) -> Self {
-        Self::new::<TestDI>(StreamColumns::fx_city_temperature_osaka(ts))
+    pub fn fx_city_temperature_osaka() -> Self {
+        Self::new::<TestDI>(StreamColumns::fx_city_temperature_osaka())
     }
-    pub fn fx_city_temperature_london(ts: Timestamp) -> Self {
-        Self::new::<TestDI>(StreamColumns::fx_city_temperature_london(ts))
+    pub fn fx_city_temperature_london() -> Self {
+        Self::new::<TestDI>(StreamColumns::fx_city_temperature_london())
     }
 
-    pub fn fx_trade_oracle(ts: Timestamp) -> Self {
-        Self::new::<TestDI>(StreamColumns::fx_trade_oracle(ts))
+    pub fn fx_trade_oracle() -> Self {
+        Self::new::<TestDI>(StreamColumns::fx_trade_oracle())
     }
-    pub fn fx_trade_ibm(ts: Timestamp) -> Self {
-        Self::new::<TestDI>(StreamColumns::fx_trade_ibm(ts))
+    pub fn fx_trade_ibm() -> Self {
+        Self::new::<TestDI>(StreamColumns::fx_trade_ibm())
     }
-    pub fn fx_trade_google(ts: Timestamp) -> Self {
-        Self::new::<TestDI>(StreamColumns::fx_trade_google(ts))
+    pub fn fx_trade_google() -> Self {
+        Self::new::<TestDI>(StreamColumns::fx_trade_google())
     }
 }
 
 impl StreamColumns {
-    pub fn fx_city_temperature_tokyo(ts: Timestamp) -> Self {
-        Self::factory_city_temperature(ts, "Tokyo", 21)
+    pub fn fx_city_temperature_tokyo() -> Self {
+        Self::factory_city_temperature(Timestamp::fx_ts1(), "Tokyo", 21)
     }
-    pub fn fx_city_temperature_osaka(ts: Timestamp) -> Self {
-        Self::factory_city_temperature(ts, "Osaka", 23)
+    pub fn fx_city_temperature_osaka() -> Self {
+        Self::factory_city_temperature(Timestamp::fx_ts2(), "Osaka", 23)
     }
-    pub fn fx_city_temperature_london(ts: Timestamp) -> Self {
-        Self::factory_city_temperature(ts, "London", 13)
+    pub fn fx_city_temperature_london() -> Self {
+        Self::factory_city_temperature(Timestamp::fx_ts3(), "London", 13)
     }
 
-    pub fn fx_trade_oracle(ts: Timestamp) -> Self {
-        Self::factory_trade(ts, "ORCL", 20)
+    pub fn fx_trade_oracle() -> Self {
+        Self::factory_trade(Timestamp::fx_ts1(), "ORCL", 20)
     }
-    pub fn fx_trade_ibm(ts: Timestamp) -> Self {
-        Self::factory_trade(ts, "IBM", 30)
+    pub fn fx_trade_ibm() -> Self {
+        Self::factory_trade(Timestamp::fx_ts2(), "IBM", 30)
     }
-    pub fn fx_trade_google(ts: Timestamp) -> Self {
-        Self::factory_trade(ts, "GOOGL", 100)
+    pub fn fx_trade_google() -> Self {
+        Self::factory_trade(Timestamp::fx_ts3(), "GOOGL", 100)
     }
 }
