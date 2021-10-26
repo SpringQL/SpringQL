@@ -155,6 +155,14 @@ impl StreamShape {
         )
         .unwrap()
     }
+
+    pub fn fx_no_promoted_rowtime() -> Self {
+        Self::new(
+            vec![ColumnDefinition::fx_amount()],
+            None,
+        )
+        .unwrap()
+    }
 }
 
 impl StreamModel {
@@ -279,6 +287,10 @@ impl Row {
     pub fn fx_trade_google() -> Self {
         Self::new::<TestDI>(StreamColumns::fx_trade_google())
     }
+
+    pub fn fx_no_promoted_rowtime() -> Self {
+        Self::new::<TestDI>(StreamColumns::fx_no_promoted_rowtime())
+    }
 }
 
 impl StreamColumns {
@@ -300,5 +312,9 @@ impl StreamColumns {
     }
     pub fn fx_trade_google() -> Self {
         Self::factory_trade(Timestamp::fx_ts3(), "GOOGL", 100)
+    }
+
+    pub fn fx_no_promoted_rowtime() -> Self {
+        Self::factory_no_promoted_rowtime(12345)
     }
 }

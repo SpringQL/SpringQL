@@ -40,7 +40,13 @@ impl From<Row> for ForeignOutputRow {
 mod tests {
     use serde_json::json;
 
-    use crate::stream_engine::Timestamp;
+    use crate::{
+        model::name::ColumnName,
+        stream_engine::{
+            executor::data::value::sql_value::{nn_sql_value::NnSqlValue, SqlValue},
+            Timestamp,
+        },
+    };
 
     use super::*;
 
@@ -55,5 +61,21 @@ mod tests {
         })));
 
         assert_eq!(ForeignOutputRow::from(row), f_row);
+    }
+
+    #[test]
+    fn test_from_row_arrival_rowtime() {
+        let row = Row::fx_no_promoted_rowtime();
+        let f_row = ForeignOutputRow::from(row);
+        let f_json = JsonObject::from(f_row);
+        let mut f_colvals = f_json.into_column_values().unwrap();
+        let f_rowtime_sql_value = f_colvals.remove(&ColumnName::arrival_rowtime()).unwrap();
+
+        if let SqlValue::NotNull(f_rowtime_nn_sql_value) = f_rowtime_sql_value {
+            let f_rowtime: Timestamp = f_rowtime_nn_sql_value.unpack().unwrap();
+            assert_eq!(f_rowtime, Timestamp::fx_now());
+        } else {
+            unreachable!()
+        };
     }
 }

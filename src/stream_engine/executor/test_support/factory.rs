@@ -90,6 +90,22 @@ impl StreamColumns {
 
         Self::new(Rc::new(StreamShape::fx_ticker()), column_values).unwrap()
     }
+
+    pub fn factory_no_promoted_rowtime(amount: i32) -> Self {
+        let mut column_values = ColumnValues::default();
+        column_values
+            .insert(
+                ColumnName::new("amount".to_string()),
+                SqlValue::NotNull(NnSqlValue::Integer(amount)),
+            )
+            .unwrap();
+
+        Self::new(
+            Rc::new(StreamShape::fx_no_promoted_rowtime()),
+            column_values,
+        )
+        .unwrap()
+    }
 }
 
 impl Row {
