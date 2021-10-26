@@ -17,5 +17,13 @@ pub(in crate::stream_engine::executor) trait InputServerStandby<A: InputServerAc
 /// Active: ready to provide ForeignInputRow.
 pub(in crate::stream_engine::executor) trait InputServerActive {
     /// Returns currently available foreign row.
+    ///
+    /// # Failure
+    ///
+    /// - [SpringError::ForeignInputTimeout](crate::error::SpringError::ForeignInputTimeout) when:
+    ///   - Remote source does not provide row within timeout.
+    /// - [SpringError::ForeignIo](crate::error::SpringError::ForeignIo) when:
+    ///   - Failed to parse response from remote source.
+    ///   - Unknown foreign error.
     fn next_row(&mut self) -> Result<ForeignInputRow>;
 }

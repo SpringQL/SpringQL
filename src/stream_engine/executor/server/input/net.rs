@@ -87,13 +87,6 @@ impl InputServerStandby<NetInputServerActive> for NetInputServerStandby {
 }
 
 impl InputServerActive for NetInputServerActive {
-    /// # Failure
-    ///
-    /// - [SpringError::ForeignInputTimeout](crate::error::SpringError::ForeignInputTimeout) when:
-    ///   - Remote source does not provide row within timeout.
-    /// - [SpringError::ForeignIo](crate::error::SpringError::ForeignIo) when:
-    ///   - Failed to parse response from remote source.
-    ///   - Unknown foreign error.
     fn next_row(&mut self) -> Result<ForeignInputRow> {
         let mut json_s = String::new();
 
