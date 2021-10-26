@@ -8,14 +8,20 @@ use crate::stream_engine::executor::data::row::Row;
 #[derive(Clone, PartialEq, Debug, new)]
 pub(super) struct PreservedRow(Rc<Row>);
 
+impl AsRef<Row> for PreservedRow {
+    fn as_ref(&self) -> &Row {
+        &self.0
+    }
+}
+
 /// Intermediate row appearing only in a QueryPlan.
 ///
 /// This row is an output from a QueryPlan's operation and is **newly created** by the operation.
 #[derive(PartialEq, Debug, new)]
 pub(super) struct NewRow(Row);
 
-impl AsRef<Row> for PreservedRow {
-    fn as_ref(&self) -> &Row {
-        &self.0
+impl From<NewRow> for Row {
+    fn from(n: NewRow) -> Self {
+        n.0
     }
 }

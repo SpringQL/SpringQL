@@ -1,5 +1,11 @@
+use std::rc::Rc;
+
 use self::{final_row::FinalRow, interm_row::NewRow};
-use crate::{error::Result, model::query_plan::QueryPlan};
+use crate::{
+    error::Result,
+    model::query_plan::{query_plan_node::QueryPlanNode, QueryPlan},
+    stream_engine::executor::data::row::Row,
+};
 
 mod final_row;
 mod interm_row;
@@ -28,6 +34,16 @@ impl QueryExecutor {
     /// - [SpringError::InputTimeout](crate::error::SpringError::InputTimeout) when:
     ///   - Input from a source stream is not available within timeout period.
     pub(super) fn run(&mut self) -> Result<FinalRow> {
+        let row = self.run_dfs_post_order(self.query_plan.root())?;
+
+        if let Some(new_row) = self.latest_new_row.take() {
+            Ok(FinalRow::NewlyCreated(new_row.into()))
+        } else {
+            Ok(FinalRow::Preserved(row))
+        }
+    }
+
+    fn run_dfs_post_order(&mut self, node: Rc<QueryPlanNode>) -> Result<Rc<Row>> {
         todo!()
     }
 }

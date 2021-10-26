@@ -11,3 +11,9 @@ pub(crate) mod query_plan_node;
 pub(crate) struct QueryPlan {
     root: Rc<QueryPlanNode>,
 }
+
+impl QueryPlan {
+    pub(crate) fn root(&self) -> Rc<QueryPlanNode> {
+        self.root.clone()
+    }
+}
