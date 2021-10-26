@@ -1,31 +1,22 @@
-use std::rc::Rc;
-
-use self::{final_row::FinalRow, interm_row::NewRow};
-use crate::{
-    error::Result,
-    model::query_plan::{query_plan_node::QueryPlanNode, QueryPlan},
-    stream_engine::executor::data::row::Row,
-};
+use self::{final_row::FinalRow, node_executor_tree::NodeExecutorTree};
+use crate::{error::Result, model::query_plan::QueryPlan};
 
 mod final_row;
 mod interm_row;
+mod node_executor_tree;
 mod row_window;
-mod window_executor;
+mod window_executor; // TODO merge into node_executor_tree
 
+/// Process input row 1-by-1.
 #[derive(Debug)]
 pub(super) struct QueryExecutor {
-    query_plan: QueryPlan,
-
-    /// Some(_) means: Output of the query plan is this NewRow.
-    /// None means: Output of the query plan is the input of it.
-    latest_new_row: Option<NewRow>,
+    node_executor_tree: NodeExecutorTree,
 }
 
 impl QueryExecutor {
     pub(super) fn register(query_plan: QueryPlan) -> Self {
         Self {
-            query_plan,
-            latest_new_row: None,
+            node_executor_tree: NodeExecutorTree::compile(query_plan),
         }
     }
 
@@ -34,17 +25,7 @@ impl QueryExecutor {
     /// - [SpringError::InputTimeout](crate::error::SpringError::InputTimeout) when:
     ///   - Input from a source stream is not available within timeout period.
     pub(super) fn run(&mut self) -> Result<FinalRow> {
-        let row = self.run_dfs_post_order(self.query_plan.root())?;
-
-        if let Some(new_row) = self.latest_new_row.take() {
-            Ok(FinalRow::NewlyCreated(new_row.into()))
-        } else {
-            Ok(FinalRow::Preserved(row))
-        }
-    }
-
-    fn run_dfs_post_order(&mut self, node: Rc<QueryPlanNode>) -> Result<Rc<Row>> {
-        todo!()
+        self.node_executor_tree.run()
     }
 }
 
