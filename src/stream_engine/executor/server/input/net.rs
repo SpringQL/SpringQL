@@ -9,7 +9,7 @@ use anyhow::Context;
 use crate::{
     error::{foreign_info::ForeignInfo, Result, SpringError},
     model::option::Options,
-    stream_engine::executor::data::foreign_input_row::{format::json::JsonObject, ForeignInputRow},
+    stream_engine::executor::data::foreign_row::{format::json::JsonObject, ForeignInputRow},
 };
 
 use super::{InputServerActive, InputServerStandby};
@@ -136,8 +136,8 @@ impl NetInputServerActive {}
 mod tests {
     use super::*;
     use crate::model::option::options_builder::OptionsBuilder;
-    use crate::stream_engine::executor::data::foreign_input_row::format::json::JsonObject;
-    use crate::stream_engine::executor::data::foreign_input_row::ForeignInputRow;
+    use crate::stream_engine::executor::data::foreign_row::format::json::JsonObject;
+    use crate::stream_engine::executor::data::foreign_row::ForeignInputRow;
     use crate::stream_engine::executor::test_support::foreign::source::TestSource;
 
     #[test]

@@ -13,7 +13,7 @@ use crate::{
             data::{
                 column::stream_column::StreamColumns,
                 column_values::ColumnValues,
-                foreign_input_row::format::json::JsonObject,
+                foreign_row::format::json::JsonObject,
                 row::Row,
                 value::sql_value::{nn_sql_value::NnSqlValue, SqlValue},
             },

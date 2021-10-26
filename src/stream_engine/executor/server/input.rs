@@ -1,6 +1,6 @@
 use crate::{
     error::Result, model::option::Options,
-    stream_engine::executor::data::foreign_input_row::ForeignInputRow,
+    stream_engine::executor::data::foreign_row::ForeignInputRow,
 };
 
 pub(in crate::stream_engine::executor) mod net;

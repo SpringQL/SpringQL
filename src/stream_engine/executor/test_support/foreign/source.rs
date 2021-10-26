@@ -1,5 +1,5 @@
 use crate::error::Result;
-use crate::stream_engine::executor::data::foreign_input_row::format::json::JsonObject;
+use crate::stream_engine::executor::data::foreign_row::format::json::JsonObject;
 use chrono::Duration;
 use std::io::Write;
 use std::net::{IpAddr, Shutdown, SocketAddr, TcpListener, TcpStream};
