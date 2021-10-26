@@ -36,7 +36,7 @@ impl Timestamp {
 }
 
 impl JsonObject {
-    pub fn fx_tokyo(ts: Timestamp) -> Self {
+    pub fn fx_city_temperature_tokyo(ts: Timestamp) -> Self {
         Self::new(json!({
             "timestamp": ts.to_string(),
             "city": "Tokyo",
@@ -44,7 +44,7 @@ impl JsonObject {
         }))
     }
 
-    pub fn fx_osaka(ts: Timestamp) -> Self {
+    pub fn fx_city_temperature_osaka(ts: Timestamp) -> Self {
         Self::new(json!({
             "timestamp": ts.to_string(),
             "city": "Osaka",
@@ -52,7 +52,7 @@ impl JsonObject {
         }))
     }
 
-    pub fn fx_london(ts: Timestamp) -> Self {
+    pub fn fx_city_temperature_london(ts: Timestamp) -> Self {
         Self::new(json!({
             "timestamp": ts.to_string(),
             "city": "London",
@@ -62,14 +62,14 @@ impl JsonObject {
 }
 
 impl ForeignInputRow {
-    pub fn fx_tokyo(ts: Timestamp) -> Self {
-        Self::from_json(JsonObject::fx_tokyo(ts))
+    pub fn fx_city_temperature_tokyo(ts: Timestamp) -> Self {
+        Self::from_json(JsonObject::fx_city_temperature_tokyo(ts))
     }
-    pub fn fx_osaka(ts: Timestamp) -> Self {
-        Self::from_json(JsonObject::fx_osaka(ts))
+    pub fn fx_city_temperature_osaka(ts: Timestamp) -> Self {
+        Self::from_json(JsonObject::fx_city_temperature_osaka(ts))
     }
-    pub fn fx_london(ts: Timestamp) -> Self {
-        Self::from_json(JsonObject::fx_london(ts))
+    pub fn fx_city_temperature_london(ts: Timestamp) -> Self {
+        Self::from_json(JsonObject::fx_city_temperature_london(ts))
     }
 }
 
@@ -107,16 +107,16 @@ impl StreamModel {
         )
     }
 
-    pub fn fx_ticker() -> Self {
+    pub fn fx_trade() -> Self {
         Self::new(
-            StreamName::new("ticker".to_string()),
+            StreamName::new("trade".to_string()),
             Rc::new(StreamShape::fx_ticker()),
             Options::empty(),
         )
     }
-    pub fn fx_ticker_window() -> Self {
+    pub fn fx_trade_window() -> Self {
         Self::new(
-            StreamName::new("ticker_window".to_string()),
+            StreamName::new("trade_window".to_string()),
             Rc::new(StreamShape::fx_ticker()),
             Options::empty(),
         )
@@ -124,8 +124,11 @@ impl StreamModel {
 }
 
 impl PumpName {
-    pub fn fx_ticker_window() -> Self {
-        Self::new("ticker_window".to_string())
+    pub fn fx_trade_p1() -> Self {
+        Self::new("trade_p1".to_string())
+    }
+    pub fn fx_trade_window() -> Self {
+        Self::new("trade_window".to_string())
     }
 }
 
@@ -196,25 +199,25 @@ impl ColumnDataType {
 }
 
 impl Row {
-    pub fn fx_tokyo(ts: Timestamp) -> Self {
-        Self::new::<TestDI>(StreamColumns::fx_tokyo(ts))
+    pub fn fx_city_temperature_tokyo(ts: Timestamp) -> Self {
+        Self::new::<TestDI>(StreamColumns::fx_city_temperature_tokyo(ts))
     }
-    pub fn fx_osaka(ts: Timestamp) -> Self {
-        Self::new::<TestDI>(StreamColumns::fx_osaka(ts))
+    pub fn fx_city_temperature_osaka(ts: Timestamp) -> Self {
+        Self::new::<TestDI>(StreamColumns::fx_city_temperature_osaka(ts))
     }
-    pub fn fx_london(ts: Timestamp) -> Self {
-        Self::new::<TestDI>(StreamColumns::fx_london(ts))
+    pub fn fx_city_temperature_london(ts: Timestamp) -> Self {
+        Self::new::<TestDI>(StreamColumns::fx_city_temperature_london(ts))
     }
 }
 
 impl StreamColumns {
-    pub fn fx_tokyo(ts: Timestamp) -> Self {
+    pub fn fx_city_temperature_tokyo(ts: Timestamp) -> Self {
         Self::factory_city_temperature(ts, "Tokyo", 21)
     }
-    pub fn fx_osaka(ts: Timestamp) -> Self {
+    pub fn fx_city_temperature_osaka(ts: Timestamp) -> Self {
         Self::factory_city_temperature(ts, "Osaka", 23)
     }
-    pub fn fx_london(ts: Timestamp) -> Self {
+    pub fn fx_city_temperature_london(ts: Timestamp) -> Self {
         Self::factory_city_temperature(ts, "London", 13)
     }
 }

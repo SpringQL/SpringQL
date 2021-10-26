@@ -84,16 +84,16 @@ mod tests {
     #[test]
     fn test_partial_eq() {
         assert_eq!(
-            Row::fx_tokyo(Timestamp::fx_ts1()),
-            Row::fx_tokyo(Timestamp::fx_ts1())
+            Row::fx_city_temperature_tokyo(Timestamp::fx_ts1()),
+            Row::fx_city_temperature_tokyo(Timestamp::fx_ts1())
         );
     }
 
     #[test]
     fn test_partial_ne_timestamp() {
         assert_ne!(
-            Row::fx_tokyo(Timestamp::fx_ts1()),
-            Row::fx_tokyo(Timestamp::fx_ts2())
+            Row::fx_city_temperature_tokyo(Timestamp::fx_ts1()),
+            Row::fx_city_temperature_tokyo(Timestamp::fx_ts2())
         );
     }
 }

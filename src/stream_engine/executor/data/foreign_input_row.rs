@@ -49,8 +49,8 @@ mod tests {
         let stream = Rc::new(StreamShape::fx_city_temperature());
 
         let t = Timestamp::fx_ts1();
-        let fr = ForeignInputRow::fx_tokyo(t);
-        let r = Row::fx_tokyo(t);
+        let fr = ForeignInputRow::fx_city_temperature_tokyo(t);
+        let r = Row::fx_city_temperature_tokyo(t);
         assert_eq!(fr.into_row::<TestDI>(stream).unwrap(), r);
     }
 }

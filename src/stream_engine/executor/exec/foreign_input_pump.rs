@@ -43,17 +43,26 @@ mod tests {
     fn test_foreign_input_pump() -> Result<()> {
         let t = Timestamp::fx_ts1();
 
-        let j1 = JsonObject::fx_tokyo(t);
-        let j2 = JsonObject::fx_osaka(t);
-        let j3 = JsonObject::fx_london(t);
+        let j1 = JsonObject::fx_city_temperature_tokyo(t);
+        let j2 = JsonObject::fx_city_temperature_osaka(t);
+        let j3 = JsonObject::fx_city_temperature_london(t);
 
         let server = NetInputServerActive::factory_with_test_source(vec![j1, j2, j3]);
         let stream = StreamModel::fx_city_temperature();
         let pump = ForeignInputPump::new(Rc::new(RefCell::new(server)), Rc::new(stream));
 
-        assert_eq!(pump.collect_next::<TestDI>()?, Row::fx_tokyo(t));
-        assert_eq!(pump.collect_next::<TestDI>()?, Row::fx_osaka(t));
-        assert_eq!(pump.collect_next::<TestDI>()?, Row::fx_london(t));
+        assert_eq!(
+            pump.collect_next::<TestDI>()?,
+            Row::fx_city_temperature_tokyo(t)
+        );
+        assert_eq!(
+            pump.collect_next::<TestDI>()?,
+            Row::fx_city_temperature_osaka(t)
+        );
+        assert_eq!(
+            pump.collect_next::<TestDI>()?,
+            Row::fx_city_temperature_london(t)
+        );
         assert!(matches!(
             pump.collect_next::<TestDI>().unwrap_err(),
             SpringError::ForeignInputTimeout { .. }

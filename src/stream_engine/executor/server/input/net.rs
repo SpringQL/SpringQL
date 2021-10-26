@@ -150,9 +150,9 @@ mod tests {
 
     #[test]
     fn test_input_server_tcp() -> crate::error::Result<()> {
-        let j1 = JsonObject::fx_tokyo(Timestamp::fx_ts1());
-        let j2 = JsonObject::fx_osaka(Timestamp::fx_ts2());
-        let j3 = JsonObject::fx_london(Timestamp::fx_ts3());
+        let j1 = JsonObject::fx_city_temperature_tokyo(Timestamp::fx_ts1());
+        let j2 = JsonObject::fx_city_temperature_osaka(Timestamp::fx_ts2());
+        let j3 = JsonObject::fx_city_temperature_london(Timestamp::fx_ts3());
 
         let source = TestSource::start(vec![j2.clone(), j3.clone(), j1.clone()])?;
 
