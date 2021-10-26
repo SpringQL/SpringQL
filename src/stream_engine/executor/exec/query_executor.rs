@@ -60,7 +60,6 @@ mod tests {
     #[test]
     fn test_query_executor_collect() {
         let di = Rc::new(TestDI::default());
-        let row_repo = di.row_repository();
 
         // CREATE STREAM trade(
         //   "timestamp" TIMESTAMP NOT NULL AS ROWTIME,
@@ -68,22 +67,19 @@ mod tests {
         //   "amount" INTEGER NOT NULL
         // );
         let pump_trade_p1 = PumpName::fx_trade_p1();
-        let downstream_pumps = vec![pump_trade_p1.clone()];
 
         let row_oracle = Row::fx_trade_oracle();
         let row_ibm = Row::fx_trade_ibm();
         let row_google = Row::fx_trade_google();
 
-        row_repo.emit_owned(row_oracle, &downstream_pumps).unwrap();
-        row_repo.emit_owned(row_ibm, &downstream_pumps).unwrap();
-        row_repo.emit_owned(row_google, &downstream_pumps).unwrap();
-
         // SELECT timestamp, ticker, amount FROM trade;
-        let query_plan = QueryPlan::new(Rc::new(QueryPlanNode::Leaf(QueryPlanNodeLeaf {
-            op: LeafOperation::Collect {
-                pump: pump_trade_p1,
-            },
-        })));
+        let query_plan_leaf = QueryPlanNodeLeaf::factory_with_pump_in(
+            di.clone(),
+            pump_trade_p1,
+            vec![row_oracle, row_ibm, row_google],
+        );
+
+        let query_plan = QueryPlan::new(Rc::new(QueryPlanNode::Leaf(query_plan_leaf)));
         let mut executor = QueryExecutor::<TestDI>::register(di, query_plan);
 
         if let FinalRow::Preserved(got_row) = executor.run().unwrap() {
