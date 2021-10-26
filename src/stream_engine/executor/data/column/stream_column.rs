@@ -55,7 +55,7 @@ impl StreamColumns {
     }
 
     pub(in crate::stream_engine::executor) fn promoted_rowtime(&self) -> Option<Timestamp> {
-        let rowtime_col = self.stream_shape.rowtime()?;
+        let rowtime_col = self.stream_shape.promoted_rowtime()?;
         let rowtime_sql_value = self
             .get(rowtime_col)
             .expect("rowtime_col is set in stream definition, which must be validated");
