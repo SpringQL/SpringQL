@@ -1,7 +1,4 @@
-use std::{
-    collections::{vec_deque, VecDeque},
-    rc::Rc,
-};
+use std::{collections::VecDeque, rc::Rc};
 
 use super::row::Row;
 
