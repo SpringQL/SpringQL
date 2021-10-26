@@ -61,6 +61,11 @@ use super::Row;
 /// ```
 pub(crate) trait RowRepository {
     /// Get the next RowRef from `pump`.
+    /// 
+    /// # Failure
+    /// 
+    /// - [SpringError::InputTimeout](crate::error::SpringError::InputTimeout) when:
+    ///   - next row is not available within `timeout`
     fn collect_next(&self, pump: &PumpName) -> Result<Rc<Row>>;
 
     /// Gives `row_ref` to `dest_pumps`.

@@ -2,7 +2,9 @@ use std::cell::RefCell;
 use std::collections::{HashMap, VecDeque};
 use std::rc::Rc;
 
-use crate::error::Result;
+use anyhow::Context;
+
+use crate::error::{Result, SpringError};
 use crate::model::name::PumpName;
 use crate::stream_engine::executor::data::row::Row;
 
@@ -22,7 +24,11 @@ impl RowRepository for TestRowRepository {
             .get_mut(pump)
             .unwrap()
             .pop_back()
-            .unwrap();
+            .context("next row not available")
+            .map_err(|e| SpringError::InputTimeout {
+                source: e,
+                pump_name: pump.clone(),
+            })?;
 
         Ok(row_ref)
     }

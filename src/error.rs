@@ -5,6 +5,8 @@ pub mod responsibility;
 
 use thiserror::Error;
 
+use crate::model::name::PumpName;
+
 use self::{foreign_info::ForeignInfo, responsibility::SpringErrorResponsibility};
 
 /// Result type
@@ -14,15 +16,21 @@ pub type Result<T> = std::result::Result<T, SpringError>;
 #[allow(missing_docs)]
 #[derive(Debug, Error)]
 pub enum SpringError {
-    #[error("I/O error related to foreign system")]
+    #[error("I/O error related to foreign system: {foreign_info:?}")]
     ForeignIo {
         foreign_info: ForeignInfo,
         source: anyhow::Error,
     },
 
-    #[error("I/O error in foreign system")]
+    #[error("Timeout when getting an input from foreign system: {foreign_info:?}")]
     ForeignInputTimeout {
         foreign_info: ForeignInfo,
+        source: anyhow::Error,
+    },
+
+    #[error("Timeout when getting an input from a stream ({pump_name})")]
+    InputTimeout {
+        pump_name: PumpName,
         source: anyhow::Error,
     },
 
@@ -50,9 +58,9 @@ impl SpringError {
         match self {
             SpringError::ForeignIo { .. } => SpringErrorResponsibility::Foreign,
 
-            SpringError::ForeignInputTimeout { .. } | SpringError::SpringQlCoreIo(_) => {
-                SpringErrorResponsibility::SpringQlCore
-            }
+            SpringError::ForeignInputTimeout { .. }
+            | SpringError::InputTimeout { .. }
+            | SpringError::SpringQlCoreIo(_) => SpringErrorResponsibility::SpringQlCore,
 
             SpringError::InvalidOption { .. }
             | SpringError::InvalidFormat { .. }

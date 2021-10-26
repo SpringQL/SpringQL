@@ -1,10 +1,12 @@
 use std::rc::Rc;
 
 use crate::{
-    dependency_injection::test_di::TestDI,
+    dependency_injection::{test_di::TestDI, DependencyInjection},
     model::{
-        name::ColumnName, option::options_builder::OptionsBuilder,
+        name::{ColumnName, PumpName},
+        option::options_builder::OptionsBuilder,
         pipeline::stream_model::stream_shape::StreamShape,
+        query_plan::query_plan_node::{operation::LeafOperation, QueryPlanNodeLeaf},
     },
     stream_engine::{
         executor::{
@@ -21,7 +23,7 @@ use crate::{
             },
             test_support::foreign::source::TestSource,
         },
-        Timestamp,
+        RowRepository, Timestamp,
     },
 };
 
@@ -65,7 +67,7 @@ impl StreamColumns {
         Self::new(Rc::new(StreamShape::fx_city_temperature()), column_values).unwrap()
     }
 
-    pub fn factory_ticker(timestamp: Timestamp, ticker: &str, amount: i16) -> Self {
+    pub fn factory_trade(timestamp: Timestamp, ticker: &str, amount: i16) -> Self {
         let mut column_values = ColumnValues::default();
         column_values
             .insert(
@@ -98,7 +100,25 @@ impl Row {
             temperature,
         ))
     }
-    pub fn factory_ticker(timestamp: Timestamp, ticker: &str, amount: i16) -> Self {
-        Self::new::<TestDI>(StreamColumns::factory_ticker(timestamp, ticker, amount))
+    pub fn factory_trade(timestamp: Timestamp, ticker: &str, amount: i16) -> Self {
+        Self::new::<TestDI>(StreamColumns::factory_trade(timestamp, ticker, amount))
+    }
+}
+
+impl QueryPlanNodeLeaf {
+    pub fn factory_with_pump_in<DI>(di: Rc<DI>, pump_name: PumpName, input: Vec<Row>) -> Self
+    where
+        DI: DependencyInjection,
+    {
+        let row_repo = di.row_repository();
+        let downstream_pumps = vec![pump_name.clone()];
+
+        for row in input {
+            row_repo.emit_owned(row, &downstream_pumps).unwrap();
+        }
+
+        Self {
+            op: LeafOperation::Collect { pump: pump_name },
+        }
     }
 }
