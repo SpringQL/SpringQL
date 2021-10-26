@@ -1,4 +1,4 @@
-use std::rc::Rc;
+use std::{collections::HashMap, rc::Rc};
 
 use crate::{
     dependency_injection::DependencyInjection,
@@ -27,7 +27,12 @@ impl From<ForeignOutputRow> for JsonObject {
 ///   - This row cannot be converted into foreign output row.
 impl From<Row> for ForeignOutputRow {
     fn from(row: Row) -> Self {
-        todo!()
+        let map = row
+            .into_iter()
+            .map(|(col, val)| (col.to_string(), serde_json::Value::from(val)))
+            .collect::<serde_json::Map<String, serde_json::Value>>();
+        let v = serde_json::Value::from(map);
+        Self(JsonObject::new(v))
     }
 }
 

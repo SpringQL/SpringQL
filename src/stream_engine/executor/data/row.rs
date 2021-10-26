@@ -1,9 +1,12 @@
 pub(in crate::stream_engine::executor) mod repository;
 
+use std::vec;
+
 use super::{
     column::stream_column::StreamColumns, timestamp::Timestamp, value::sql_value::SqlValue,
 };
 use crate::error::Result;
+use crate::stream_engine::executor::data::value::sql_value::nn_sql_value::NnSqlValue;
 use crate::{dependency_injection::DependencyInjection, model::name::ColumnName};
 
 pub(crate) use repository::RowRepository;
@@ -74,6 +77,26 @@ impl Row {
 impl PartialOrd for Row {
     fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
         Some(self.rowtime().cmp(&other.rowtime()))
+    }
+}
+
+impl IntoIterator for Row {
+    type Item = (ColumnName, SqlValue);
+    type IntoIter = vec::IntoIter<Self::Item>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        let into_iter = self.cols.into_iter();
+        if let Some(rowtime) = self.arrival_rowtime {
+            into_iter
+                .chain(vec![(
+                    ColumnName::arrival_rowtime(),
+                    SqlValue::NotNull(NnSqlValue::Timestamp(rowtime)),
+                )])
+                .collect::<Vec<Self::Item>>()
+                .into_iter()
+        } else {
+            into_iter
+        }
     }
 }
 
