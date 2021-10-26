@@ -13,7 +13,7 @@ use crate::{
     },
     stream_engine::executor::data::{
         column::stream_column::StreamColumns,
-        foreign_row::{format::json::JsonObject, ForeignInputRow},
+        foreign_row::{foreign_input_row::ForeignInputRow, format::json::JsonObject},
         row::Row,
         timestamp::Timestamp,
     },
