@@ -44,6 +44,8 @@ where
     DI: DependencyInjection,
 {
     fn run_expect(&mut self, expected: Vec<FinalRow>) {
+        use crate::error::SpringError;
+
         for expected_row in expected {
             assert_eq!(self.run().unwrap(), expected_row);
         }
