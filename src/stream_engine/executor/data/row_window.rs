@@ -1,15 +1,15 @@
-use std::{collections::VecDeque, rc::Rc};
+use std::{
+    collections::{vec_deque, VecDeque},
+    rc::Rc,
+};
 
 use super::row::Row;
 
-#[derive(Clone, Debug, Default)]
+#[derive(Clone, Debug, Default, new)]
 pub(in crate::stream_engine::executor) struct RowWindow(VecDeque<Rc<Row>>);
 
-impl Iterator for RowWindow {
-    type Item = Rc<Row>;
-
-    /// FIFO row.
-    fn next(&mut self) -> Option<Self::Item> {
-        self.0.pop_back()
+impl RowWindow {
+    pub(in crate::stream_engine::executor) fn inner(&self) -> &VecDeque<Rc<Row>> {
+        &self.0
     }
 }

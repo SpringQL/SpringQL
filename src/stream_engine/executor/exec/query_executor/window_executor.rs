@@ -4,7 +4,7 @@ use crate::{
     stream_engine::executor::data::{row::Row, row_window::RowWindow},
 };
 use chrono::Duration;
-use std::rc::Rc;
+use std::{collections::VecDeque, rc::Rc};
 
 #[derive(Debug)]
 pub(super) struct SlidingWindowExecutor {
@@ -24,9 +24,26 @@ impl SlidingWindowExecutor {
         }
     }
 
-    pub(super) fn run(&self, input: Rc<Row>) -> Result<RowWindow> {
+    /// Mutates internal window state.
+    pub(super) fn run(&mut self, input: Rc<Row>) -> Result<&RowWindow> {
         let input_ts = input.rowtime();
         let lower_bound_ts = input_ts - self.window_width;
+
+        let mut new_window_fifo = self
+            .window
+            .inner()
+            .iter()
+            .filter(|r| {
+                let ts = r.rowtime();
+                lower_bound_ts < ts && ts <= input_ts
+            })
+            .cloned()
+            .collect::<VecDeque<Rc<Row>>>();
+
+        new_window_fifo.push_front(input);
+
+        self.window = RowWindow::new(new_window_fifo);
+        Ok(&self.window)
     }
 }
 
@@ -50,7 +67,7 @@ mod tests {
     fn test_sliding_window() {
         struct TestCase {
             input: Row,               // PK: timestamp
-            expected: Vec<Timestamp>, // PKs
+            expected: Vec<Timestamp>, // PKs; FIFO (left is the latest pushed)
         }
 
         let di = TestDI::default();
@@ -62,7 +79,7 @@ mod tests {
         let op = SlidingWindowOperation::TimeBased {
             lower_bound: Duration::minutes(5),
         };
-        let executor = SlidingWindowExecutor::register(&op);
+        let mut executor = SlidingWindowExecutor::register(&op);
 
         let t_03_02_00 = Timestamp::from_str("2019-03-30 03:02:00.000000000").unwrap();
         let t_03_02_10 = Timestamp::from_str("2019-03-30 03:02:10.000000000").unwrap();
@@ -89,38 +106,38 @@ mod tests {
             },
             TestCase {
                 input: Row::factory_ticker(t_03_02_10, "ORCL", 20),
-                expected: vec![t_03_02_00, t_03_02_10],
+                expected: vec![t_03_02_10, t_03_02_00],
             },
             TestCase {
                 input: Row::factory_ticker(t_03_03_00, "IBM", 30),
-                expected: vec![t_03_02_00, t_03_02_10, t_03_03_00],
+                expected: vec![t_03_03_00, t_03_02_10, t_03_02_00],
             },
             TestCase {
                 input: Row::factory_ticker(t_03_04_00, "ORCL", 15),
-                expected: vec![t_03_02_00, t_03_02_10, t_03_03_00, t_03_04_00],
+                expected: vec![t_03_04_00, t_03_03_00, t_03_02_10, t_03_02_00],
             },
             TestCase {
                 input: Row::factory_ticker(t_03_04_30, "IBM", 40),
-                expected: vec![t_03_02_00, t_03_02_10, t_03_03_00, t_03_04_00, t_03_04_30],
+                expected: vec![t_03_04_30, t_03_04_00, t_03_03_00, t_03_02_10, t_03_02_00],
             },
             TestCase {
                 input: Row::factory_ticker(t_03_04_45, "IBM", 10),
                 expected: vec![
-                    t_03_02_00, t_03_02_10, t_03_03_00, t_03_04_00, t_03_04_30, t_03_04_45,
+                    t_03_04_45, t_03_04_30, t_03_04_00, t_03_03_00, t_03_02_10, t_03_02_00,
                 ],
             },
             TestCase {
                 input: Row::factory_ticker(t_03_05_00, "MSFT", 15),
                 expected: vec![
-                    t_03_02_00, t_03_02_10, t_03_03_00, t_03_04_00, t_03_04_30, t_03_04_45,
-                    t_03_05_00,
+                    t_03_05_00, t_03_04_45, t_03_04_30, t_03_04_00, t_03_03_00, t_03_02_10,
+                    t_03_02_00,
                 ],
             },
             TestCase {
                 input: Row::factory_ticker(t_03_05_30, "MSFT", 55),
                 expected: vec![
-                    t_03_02_00, t_03_02_10, t_03_03_00, t_03_04_00, t_03_04_30, t_03_04_45,
-                    t_03_05_00, t_03_05_30,
+                    t_03_05_30, t_03_05_00, t_03_04_45, t_03_04_30, t_03_04_00, t_03_03_00,
+                    t_03_02_10, t_03_02_00,
                 ],
             },
             TestCase {
@@ -129,19 +146,19 @@ mod tests {
             },
             TestCase {
                 input: Row::factory_ticker(t_04_02_00, "GOOGL", 100),
-                expected: vec![t_03_59_45, t_04_02_00],
+                expected: vec![t_04_02_00, t_03_59_45],
             },
             TestCase {
                 input: Row::factory_ticker(t_04_04_00, "GOOGL", 100),
-                expected: vec![t_03_59_45, t_04_02_00, t_04_04_00],
+                expected: vec![t_04_04_00, t_04_02_00, t_03_59_45],
             },
             TestCase {
                 input: Row::factory_ticker(t_04_06_00, "ORCL", 5),
-                expected: vec![t_04_02_00, t_04_04_00, t_04_06_00],
+                expected: vec![t_04_06_00, t_04_04_00, t_04_02_00],
             },
             TestCase {
                 input: Row::factory_ticker(t_04_08_00, "IBM", 15),
-                expected: vec![t_04_04_00, t_04_06_00, t_04_08_00],
+                expected: vec![t_04_08_00, t_04_06_00, t_04_04_00],
             },
             TestCase {
                 input: Row::factory_ticker(t_04_18_00, "IBM", 40),
@@ -165,11 +182,11 @@ mod tests {
             },
             TestCase {
                 input: Row::factory_ticker(t_04_44_00, "ORCL", 1000),
-                expected: vec![t_04_43_00, t_04_44_00],
+                expected: vec![t_04_44_00, t_04_43_00],
             },
             TestCase {
                 input: Row::factory_ticker(t_05_46_00, "ORCL", 3000),
-                expected: vec![t_04_43_00, t_04_44_00, t_05_46_00],
+                expected: vec![t_05_46_00],
             },
         ];
 
@@ -185,6 +202,8 @@ mod tests {
             let window = executor.run(in_row).unwrap();
 
             let got_pks = window
+                .inner()
+                .iter()
                 .map(|got_row| {
                     let got_sql_value = got_row
                         .get(&ColumnName::new("timestamp".to_string()))
