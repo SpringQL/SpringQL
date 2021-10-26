@@ -215,6 +215,19 @@ impl NnSqlValue {
     }
 }
 
+impl From<NnSqlValue> for serde_json::Value {
+    fn from(nn_sql_value: NnSqlValue) -> Self {
+        match nn_sql_value {
+            NnSqlValue::SmallInt(i) => serde_json::Value::from(i),
+            NnSqlValue::Integer(i) => serde_json::Value::from(i),
+            NnSqlValue::BigInt(i) => serde_json::Value::from(i),
+            NnSqlValue::Text(s) => serde_json::Value::from(s),
+            NnSqlValue::Boolean(b) => serde_json::Value::from(b),
+            NnSqlValue::Timestamp(t) => serde_json::Value::from(t.to_string()),
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

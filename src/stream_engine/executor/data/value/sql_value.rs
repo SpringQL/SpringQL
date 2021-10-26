@@ -151,6 +151,15 @@ impl TryFrom<&serde_json::Value> for SqlValue {
     }
 }
 
+impl From<SqlValue> for serde_json::Value {
+    fn from(sql_value: SqlValue) -> Self {
+        match sql_value {
+            SqlValue::Null => serde_json::Value::Null,
+            SqlValue::NotNull(nn_sql_value) => serde_json::Value::from(nn_sql_value),
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use std::collections::HashSet;
