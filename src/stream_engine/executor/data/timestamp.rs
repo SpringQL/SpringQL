@@ -3,9 +3,9 @@
 pub(crate) mod current_timestamp;
 
 use anyhow::Context;
-use chrono::NaiveDateTime;
+use chrono::{Duration, NaiveDateTime};
 use serde::{Deserialize, Serialize};
-use std::str::FromStr;
+use std::{ops::Sub, str::FromStr};
 
 use crate::error::SpringError;
 
@@ -33,6 +33,14 @@ impl FromStr for Timestamp {
 impl ToString for Timestamp {
     fn to_string(&self) -> String {
         self.0.format(FORMAT).to_string()
+    }
+}
+
+impl Sub<Duration> for Timestamp {
+    type Output = Self;
+
+    fn sub(self, rhs: Duration) -> Self::Output {
+        Self(self.0 - rhs)
     }
 }
 

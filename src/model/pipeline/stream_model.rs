@@ -2,9 +2,9 @@ pub(crate) mod stream_shape;
 
 use std::rc::Rc;
 
-use self::stream_shape::StreamShape;
+use crate::model::{name::StreamName, option::Options};
 
-use super::{name::StreamName, option::Options};
+use self::stream_shape::StreamShape;
 
 #[derive(Eq, PartialEq, Debug, new)]
 pub(crate) struct StreamModel {

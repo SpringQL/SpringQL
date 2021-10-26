@@ -6,10 +6,10 @@ use crate::{
     dependency_injection::test_di::TestDI,
     model::{
         column::{column_data_type::ColumnDataType, column_definition::ColumnDefinition},
-        name::{ColumnName, StreamName},
+        name::{ColumnName, PumpName, StreamName},
         option::{options_builder::OptionsBuilder, Options},
+        pipeline::stream_model::{stream_shape::StreamShape, StreamModel},
         sql_type::SqlType,
-        stream_model::{stream_shape::StreamShape, StreamModel},
     },
     stream_engine::executor::data::{
         column::stream_column::StreamColumns,
@@ -85,6 +85,17 @@ impl StreamShape {
         )
         .unwrap()
     }
+    pub fn fx_ticker() -> Self {
+        Self::new(
+            vec![
+                ColumnDefinition::fx_timestamp(),
+                ColumnDefinition::fx_ticker(),
+                ColumnDefinition::fx_amount(),
+            ],
+            Some(ColumnName::new("timestamp".to_string())),
+        )
+        .unwrap()
+    }
 }
 
 impl StreamModel {
@@ -94,6 +105,27 @@ impl StreamModel {
             Rc::new(StreamShape::fx_city_temperature()),
             Options::empty(),
         )
+    }
+
+    pub fn fx_ticker() -> Self {
+        Self::new(
+            StreamName::new("ticker".to_string()),
+            Rc::new(StreamShape::fx_ticker()),
+            Options::empty(),
+        )
+    }
+    pub fn fx_ticker_window() -> Self {
+        Self::new(
+            StreamName::new("ticker_window".to_string()),
+            Rc::new(StreamShape::fx_ticker()),
+            Options::empty(),
+        )
+    }
+}
+
+impl PumpName {
+    pub fn fx_ticker_window() -> Self {
+        Self::new("ticker_window".to_string())
     }
 }
 
@@ -115,6 +147,14 @@ impl ColumnDefinition {
     pub fn fx_temperature() -> Self {
         Self::new(ColumnDataType::fx_temperature())
     }
+
+    pub fn fx_ticker() -> Self {
+        Self::new(ColumnDataType::fx_ticker())
+    }
+
+    pub fn fx_amount() -> Self {
+        Self::new(ColumnDataType::fx_amount())
+    }
 }
 
 impl ColumnDataType {
@@ -134,6 +174,22 @@ impl ColumnDataType {
         Self::new(
             ColumnName::new("temperature".to_string()),
             SqlType::integer(),
+            false,
+        )
+    }
+
+    pub fn fx_ticker() -> Self {
+        Self::new(
+            ColumnName::new("ticker".to_string()),
+            SqlType::text(),
+            false,
+        )
+    }
+
+    pub fn fx_amount() -> Self {
+        Self::new(
+            ColumnName::new("amount".to_string()),
+            SqlType::small_int(),
             false,
         )
     }
