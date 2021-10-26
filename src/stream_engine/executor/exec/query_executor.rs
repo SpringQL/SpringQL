@@ -2,7 +2,10 @@ use std::rc::Rc;
 
 use self::{final_row::FinalRow, node_executor_tree::NodeExecutorTree};
 use crate::{
-    dependency_injection::DependencyInjection, error::Result, model::query_plan::QueryPlan,
+    dependency_injection::DependencyInjection,
+    error::{Result, SpringError},
+    model::query_plan::QueryPlan,
+    stream_engine::executor::data::row::Row,
 };
 
 mod final_row;
@@ -39,20 +42,35 @@ where
 }
 
 #[cfg(test)]
+impl<DI> QueryExecutor<DI>
+where
+    DI: DependencyInjection,
+{
+    fn run_expect(&mut self, expected: Vec<FinalRow>) {
+        for expected_row in expected {
+            assert_eq!(self.run().unwrap(), expected_row);
+        }
+        assert!(matches!(
+            self.run().unwrap_err(),
+            SpringError::InputTimeout { .. }
+        ));
+    }
+}
+
+#[cfg(test)]
 mod tests {
     use std::rc::Rc;
 
     use crate::{
-        dependency_injection::{test_di::TestDI, DependencyInjection},
-        error::SpringError,
+        dependency_injection::test_di::TestDI,
         model::{
             name::PumpName,
             query_plan::{
-                query_plan_node::{operation::LeafOperation, QueryPlanNode, QueryPlanNodeLeaf},
+                query_plan_node::{QueryPlanNode, QueryPlanNodeLeaf},
                 QueryPlan,
             },
         },
-        stream_engine::{executor::data::row::Row, RowRepository},
+        stream_engine::executor::data::row::Row,
     };
 
     use super::*;
@@ -68,39 +86,24 @@ mod tests {
         // );
         let pump_trade_p1 = PumpName::fx_trade_p1();
 
-        let row_oracle = Row::fx_trade_oracle();
-        let row_ibm = Row::fx_trade_ibm();
-        let row_google = Row::fx_trade_google();
-
         // SELECT timestamp, ticker, amount FROM trade;
         let query_plan_leaf = QueryPlanNodeLeaf::factory_with_pump_in(
             di.clone(),
             pump_trade_p1,
-            vec![row_oracle, row_ibm, row_google],
+            vec![
+                Row::fx_trade_oracle(),
+                Row::fx_trade_ibm(),
+                Row::fx_trade_google(),
+            ],
         );
 
         let query_plan = QueryPlan::new(Rc::new(QueryPlanNode::Leaf(query_plan_leaf)));
         let mut executor = QueryExecutor::<TestDI>::register(di, query_plan);
 
-        if let FinalRow::Preserved(got_row) = executor.run().unwrap() {
-            assert_eq!(*got_row, Row::fx_trade_oracle());
-        } else {
-            panic!("Expected FinalRow::Preserved");
-        }
-        if let FinalRow::Preserved(got_row) = executor.run().unwrap() {
-            assert_eq!(*got_row, Row::fx_trade_ibm());
-        } else {
-            panic!("Expected FinalRow::Preserved");
-        }
-        if let FinalRow::Preserved(got_row) = executor.run().unwrap() {
-            assert_eq!(*got_row, Row::fx_trade_google());
-        } else {
-            panic!("Expected FinalRow::Preserved");
-        }
-
-        assert!(matches!(
-            executor.run().unwrap_err(),
-            SpringError::InputTimeout { .. }
-        ));
+        executor.run_expect(vec![
+            FinalRow::Preserved(Rc::new(Row::fx_trade_oracle())),
+            FinalRow::Preserved(Rc::new(Row::fx_trade_ibm())),
+            FinalRow::Preserved(Rc::new(Row::fx_trade_google())),
+        ]);
     }
 }
