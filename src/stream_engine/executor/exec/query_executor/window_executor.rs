@@ -1,10 +1,11 @@
 use crate::{
-    error::Result,
-    model::query_plan::operation::SlidingWindowOperation,
-    stream_engine::executor::data::{row::Row, row_window::RowWindow},
+    error::Result, model::query_plan::operation::SlidingWindowOperation,
+    stream_engine::executor::data::row::Row,
 };
 use chrono::Duration;
 use std::{collections::VecDeque, rc::Rc};
+
+use super::row_window::RowWindow;
 
 #[derive(Debug)]
 pub(super) struct SlidingWindowExecutor {
