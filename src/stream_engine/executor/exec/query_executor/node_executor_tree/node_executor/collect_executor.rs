@@ -1,16 +1,27 @@
 use std::rc::Rc;
 
+use crate::dependency_injection::DependencyInjection;
 use crate::error::Result;
-use crate::model::name::StreamName;
+use crate::model::name::PumpName;
 use crate::stream_engine::executor::data::row::Row;
+use crate::stream_engine::RowRepository;
 
 #[derive(Debug, new)]
-pub(in crate::stream_engine::executor::exec::query_executor) struct CollectExecutor {
-    stream: StreamName,
+pub(in crate::stream_engine::executor::exec::query_executor) struct CollectExecutor<DI>
+where
+    DI: DependencyInjection,
+{
+    di: Rc<DI>,
+
+    pump: PumpName,
 }
 
-impl CollectExecutor {
+impl<DI> CollectExecutor<DI>
+where
+    DI: DependencyInjection,
+{
     pub(in crate::stream_engine::executor::exec::query_executor) fn run(&self) -> Result<Rc<Row>> {
-        todo!()
+        let row_repo = self.di.row_repository();
+        row_repo.collect_next(&self.pump)
     }
 }

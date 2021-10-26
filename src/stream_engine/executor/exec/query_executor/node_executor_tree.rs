@@ -7,6 +7,7 @@ use self::node_executor::{CollectNodeExecutor, NodeExecutor};
 
 use super::final_row::FinalRow;
 use super::interm_row::NewRow;
+use crate::dependency_injection::DependencyInjection;
 use crate::error::Result;
 use crate::model::query_plan::query_plan_node::operation::LeafOperation;
 use crate::model::query_plan::query_plan_node::QueryPlanNode;
@@ -14,18 +15,24 @@ use crate::model::query_plan::QueryPlan;
 use crate::stream_engine::executor::data::row::Row;
 
 #[derive(Debug)]
-pub(super) struct NodeExecutorTree {
-    root: NodeExecutor,
+pub(super) struct NodeExecutorTree<DI>
+where
+    DI: DependencyInjection,
+{
+    root: NodeExecutor<DI>,
 
     /// Some(_) means: Output of the query plan is this NewRow.
     /// None means: Output of the query plan is the input of it.
     latest_new_row: Option<NewRow>,
 }
 
-impl NodeExecutorTree {
-    pub(super) fn compile(query_plan: QueryPlan) -> Self {
+impl<DI> NodeExecutorTree<DI>
+where
+    DI: DependencyInjection,
+{
+    pub(super) fn compile(di: Rc<DI>, query_plan: QueryPlan) -> Self {
         let plan_root = query_plan.root();
-        let root = Self::compile_node(plan_root);
+        let root = Self::compile_node(di, plan_root);
 
         Self {
             root,
@@ -33,11 +40,11 @@ impl NodeExecutorTree {
         }
     }
 
-    fn compile_node(plan_node: Rc<QueryPlanNode>) -> NodeExecutor {
+    fn compile_node(di: Rc<DI>, plan_node: Rc<QueryPlanNode>) -> NodeExecutor<DI> {
         match plan_node.as_ref() {
             QueryPlanNode::Leaf(leaf_node) => match &leaf_node.op {
-                LeafOperation::Collect { stream } => NodeExecutor::Collect(
-                    CollectNodeExecutor::Collect(CollectExecutor::new(stream.clone())),
+                LeafOperation::Collect { pump } => NodeExecutor::Collect(
+                    CollectNodeExecutor::Collect(CollectExecutor::new(di, pump.clone())),
                 ),
             },
         }
@@ -58,7 +65,7 @@ impl NodeExecutorTree {
     }
 
     fn run_dfs_post_order(
-        executor: &NodeExecutor,
+        executor: &NodeExecutor<DI>,
         latest_new_row: &mut Option<NewRow>,
     ) -> Result<Rc<Row>> {
         match executor {

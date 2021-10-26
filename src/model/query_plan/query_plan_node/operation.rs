@@ -1,13 +1,13 @@
 use chrono::Duration;
 
-use crate::model::name::StreamName;
+use crate::model::name::PumpName;
 
 pub(crate) trait Operation {}
 
 /// Leaf operations, which generates rows from a stream
 #[derive(Clone, Eq, PartialEq, Debug)]
 pub(crate) enum LeafOperation {
-    Collect { stream: StreamName },
+    Collect { pump: PumpName },
 }
 impl Operation for LeafOperation {}
 
