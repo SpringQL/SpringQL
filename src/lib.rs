@@ -5,8 +5,10 @@
 #[macro_use]
 extern crate derive_new;
 
-pub mod error;
-
 pub(crate) mod dependency_injection;
 pub(crate) mod model;
 pub(crate) mod stream_engine;
+
+mod api;
+
+pub use api::*;
