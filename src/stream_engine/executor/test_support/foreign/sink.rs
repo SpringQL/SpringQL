@@ -45,7 +45,7 @@ impl TestSink {
     ///
     /// If expectation and received rows are different
     pub(in crate::stream_engine::executor) fn expect_receive(
-        &self,
+        self,
         expected: Vec<serde_json::Value>,
     ) {
         for expected_row in expected {
@@ -54,7 +54,7 @@ impl TestSink {
         }
     }
 
-    fn stream_handler(mut stream: TcpStream, tx: mpsc::Sender<serde_json::Value>) {
+    fn stream_handler(stream: TcpStream, tx: mpsc::Sender<serde_json::Value>) {
         eprintln!("[TestSink] Connection from {}", stream.peer_addr().unwrap());
 
         let mut tcp_reader = BufReader::new(stream);
@@ -62,9 +62,16 @@ impl TestSink {
         loop {
             let mut buf_read = String::new();
             loop {
-                tcp_reader
+                eprintln!("[TestSink] waiting for next row message...");
+
+                let n = tcp_reader
                     .read_line(&mut buf_read)
                     .expect("failed to read from the socket");
+
+                if n == 0 {
+                    eprintln!("[TestSink] Got EOF. Stop stream_handler.");
+                    return;
+                }
 
                 eprintln!("[TestSink] read: {}", buf_read);
 
