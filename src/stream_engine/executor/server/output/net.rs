@@ -95,7 +95,16 @@ impl OutputServerActive for NetOutputServerActive {
             .map_err(|e| SpringError::ForeignIo {
                 source: e,
                 foreign_info: ForeignInfo::GenericTcp(self.foreign_addr),
-            })
+            })?;
+        self.tcp_stream_writer
+            .flush()
+            .with_context(|| format!("failed to flush JSON row to remote sink: {}", json_s))
+            .map_err(|e| SpringError::ForeignIo {
+                source: e,
+                foreign_info: ForeignInfo::GenericTcp(self.foreign_addr),
+            })?;
+
+        Ok(())
     }
 }
 
