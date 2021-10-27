@@ -8,7 +8,7 @@ use anyhow::Context;
 
 use crate::{
     error::{foreign_info::ForeignInfo, Result, SpringError},
-    model::option::Options,
+    model::option::{server_options::NetServerOptions, Options},
     stream_engine::executor::data::foreign_row::{
         foreign_input_row::ForeignInputRow, format::json::JsonObject,
     },
@@ -27,9 +27,7 @@ enum Protocol {
 
 #[derive(Debug)]
 pub(in crate::stream_engine::executor) struct NetInputServerStandby {
-    protocol: Protocol,
-    remote_host: IpAddr,
-    remote_port: u16,
+    options: NetServerOptions,
 }
 
 #[derive(Debug)]
@@ -44,17 +42,7 @@ impl InputServerStandby<NetInputServerActive> for NetInputServerStandby {
         Self: Sized,
     {
         Ok(Self {
-            protocol: options.get("PROTOCOL", |protocol_str| {
-                (protocol_str == "TCP")
-                    .then(|| Protocol::Tcp)
-                    .context("unsupported protocol")
-            })?,
-            remote_host: options.get("REMOTE_HOST", |remote_host_str| {
-                remote_host_str.parse().context("invalid remote host")
-            })?,
-            remote_port: options.get("REMOTE_PORT", |remote_port_str| {
-                remote_port_str.parse().context("invalid remote port")
-            })?,
+            options: NetServerOptions::try_from(options)?,
         })
     }
 
@@ -62,7 +50,7 @@ impl InputServerStandby<NetInputServerActive> for NetInputServerStandby {
     ///
     /// - [SpringError::ForeignIo](crate::error::SpringError::ForeignIo)
     fn start(self) -> Result<NetInputServerActive> {
-        let sock_addr = SocketAddr::new(self.remote_host, self.remote_port);
+        let sock_addr = SocketAddr::new(self.options.remote_host, self.options.remote_port);
 
         let tcp_stream =
             TcpStream::connect_timeout(&sock_addr, Duration::from_secs(CONNECT_TIMEOUT_SECS))

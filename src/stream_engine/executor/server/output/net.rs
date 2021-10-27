@@ -1,6 +1,6 @@
 use std::{
     io::{BufWriter, Write},
-    net::{IpAddr, SocketAddr, TcpStream},
+    net::{SocketAddr, TcpStream},
     time::Duration,
 };
 
@@ -9,7 +9,7 @@ use anyhow::Context;
 use super::{OutputServerActive, OutputServerStandby};
 use crate::{
     error::{foreign_info::ForeignInfo, Result, SpringError},
-    model::option::Options,
+    model::option::{server_options::NetServerOptions, Options},
     stream_engine::executor::data::foreign_row::{
         foreign_output_row::ForeignOutputRow, format::json::JsonObject,
     },
@@ -20,15 +20,8 @@ const CONNECT_TIMEOUT_SECS: u64 = 1;
 const WRITE_TIMEOUT_MSECS: u64 = 100;
 
 #[derive(Debug)]
-enum Protocol {
-    Tcp,
-}
-
-#[derive(Debug)]
 pub(in crate::stream_engine::executor) struct NetOutputServerStandby {
-    protocol: Protocol,
-    remote_host: IpAddr,
-    remote_port: u16,
+    options: NetServerOptions,
 }
 
 #[derive(Debug)]
@@ -43,22 +36,12 @@ impl OutputServerStandby<NetOutputServerActive> for NetOutputServerStandby {
         Self: Sized,
     {
         Ok(Self {
-            protocol: options.get("PROTOCOL", |protocol_str| {
-                (protocol_str == "TCP")
-                    .then(|| Protocol::Tcp)
-                    .context("unsupported protocol")
-            })?,
-            remote_host: options.get("REMOTE_HOST", |remote_host_str| {
-                remote_host_str.parse().context("invalid remote host")
-            })?,
-            remote_port: options.get("REMOTE_PORT", |remote_port_str| {
-                remote_port_str.parse().context("invalid remote port")
-            })?,
+            options: NetServerOptions::try_from(options)?,
         })
     }
 
     fn start(self) -> Result<NetOutputServerActive> {
-        let sock_addr = SocketAddr::new(self.remote_host, self.remote_port);
+        let sock_addr = SocketAddr::new(self.options.remote_host, self.options.remote_port);
 
         let tcp_stream =
             TcpStream::connect_timeout(&sock_addr, Duration::from_secs(CONNECT_TIMEOUT_SECS))
