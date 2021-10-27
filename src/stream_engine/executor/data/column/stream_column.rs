@@ -10,7 +10,7 @@ use crate::{
         column_values::ColumnValues, timestamp::Timestamp, value::sql_value::SqlValue,
     },
 };
-use std::rc::Rc;
+use std::{rc::Rc, vec};
 
 /// Column values in a stream.
 ///
@@ -19,7 +19,7 @@ use std::rc::Rc;
 pub(in crate::stream_engine::executor) struct StreamColumns {
     stream_shape: Rc<StreamShape>,
 
-    /// sorted to the same order as `stream.columns()`.
+    /// sorted to the same order as `stream_shape.columns()`.
     values: Vec<SqlValue>,
 }
 
@@ -55,7 +55,7 @@ impl StreamColumns {
     }
 
     pub(in crate::stream_engine::executor) fn promoted_rowtime(&self) -> Option<Timestamp> {
-        let rowtime_col = self.stream_shape.rowtime()?;
+        let rowtime_col = self.stream_shape.promoted_rowtime()?;
         let rowtime_sql_value = self
             .get(rowtime_col)
             .expect("rowtime_col is set in stream definition, which must be validated");
@@ -122,6 +122,21 @@ impl StreamColumns {
                 }
             }
         }
+    }
+}
+
+impl IntoIterator for StreamColumns {
+    type Item = (ColumnName, SqlValue);
+    type IntoIter = vec::IntoIter<Self::Item>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.stream_shape
+            .columns()
+            .iter()
+            .zip(self.values.into_iter())
+            .map(|(coldef, sql_value)| (coldef.column_data_type().column_name().clone(), sql_value))
+            .collect::<Vec<Self::Item>>()
+            .into_iter()
     }
 }
 

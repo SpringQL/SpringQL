@@ -11,7 +11,7 @@ use crate::model::{column::column_definition::ColumnDefinition, name::ColumnName
 #[derive(Eq, PartialEq, Debug, Serialize, Deserialize)]
 pub(crate) struct StreamShape {
     cols: Vec<ColumnDefinition>,
-    rowtime: Option<ColumnName>,
+    promoted_rowtime: Option<ColumnName>,
 }
 
 impl StreamShape {
@@ -27,11 +27,14 @@ impl StreamShape {
             Ok(())
         }?;
 
-        Ok(Self { cols, rowtime })
+        Ok(Self {
+            cols,
+            promoted_rowtime: rowtime,
+        })
     }
 
-    pub(crate) fn rowtime(&self) -> Option<&ColumnName> {
-        self.rowtime.as_ref()
+    pub(crate) fn promoted_rowtime(&self) -> Option<&ColumnName> {
+        self.promoted_rowtime.as_ref()
     }
 
     pub(crate) fn columns(&self) -> &[ColumnDefinition] {

@@ -32,8 +32,7 @@ mod tests {
         dependency_injection::test_di::TestDI,
         error::{Result, SpringError},
         stream_engine::executor::{
-            data::foreign_input_row::format::json::JsonObject,
-            server::input::net::NetInputServerActive,
+            data::foreign_row::format::json::JsonObject, server::input::net::NetInputServerActive,
         },
     };
 

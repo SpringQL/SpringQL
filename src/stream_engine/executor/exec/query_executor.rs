@@ -2,10 +2,7 @@ use std::rc::Rc;
 
 use self::{final_row::FinalRow, node_executor_tree::NodeExecutorTree};
 use crate::{
-    dependency_injection::DependencyInjection,
-    error::{Result, SpringError},
-    model::query_plan::QueryPlan,
-    stream_engine::executor::data::row::Row,
+    dependency_injection::DependencyInjection, error::Result, model::query_plan::QueryPlan,
 };
 
 mod final_row;
@@ -47,6 +44,8 @@ where
     DI: DependencyInjection,
 {
     fn run_expect(&mut self, expected: Vec<FinalRow>) {
+        use crate::error::SpringError;
+
         for expected_row in expected {
             assert_eq!(self.run().unwrap(), expected_row);
         }

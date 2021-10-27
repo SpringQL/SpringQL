@@ -13,7 +13,10 @@ use crate::{
     },
     stream_engine::executor::data::{
         column::stream_column::StreamColumns,
-        foreign_input_row::{format::json::JsonObject, ForeignInputRow},
+        foreign_row::{
+            foreign_input_row::ForeignInputRow, foreign_output_row::ForeignOutputRow,
+            format::json::JsonObject,
+        },
         row::Row,
         timestamp::Timestamp,
     },
@@ -107,6 +110,28 @@ impl ForeignInputRow {
     }
 }
 
+impl ForeignOutputRow {
+    pub fn fx_city_temperature_tokyo() -> Self {
+        Row::fx_city_temperature_tokyo().into()
+    }
+    pub fn fx_city_temperature_osaka() -> Self {
+        Row::fx_city_temperature_osaka().into()
+    }
+    pub fn fx_city_temperature_london() -> Self {
+        Row::fx_city_temperature_london().into()
+    }
+
+    pub fn fx_trade_oracle() -> Self {
+        Row::fx_trade_oracle().into()
+    }
+    pub fn fx_trade_ibm() -> Self {
+        Row::fx_trade_ibm().into()
+    }
+    pub fn fx_trade_google() -> Self {
+        Row::fx_trade_google().into()
+    }
+}
+
 impl StreamShape {
     pub fn fx_city_temperature() -> Self {
         Self::new(
@@ -127,6 +152,14 @@ impl StreamShape {
                 ColumnDefinition::fx_amount(),
             ],
             Some(ColumnName::new("timestamp".to_string())),
+        )
+        .unwrap()
+    }
+
+    pub fn fx_no_promoted_rowtime() -> Self {
+        Self::new(
+            vec![ColumnDefinition::fx_amount()],
+            None,
         )
         .unwrap()
     }
@@ -254,6 +287,10 @@ impl Row {
     pub fn fx_trade_google() -> Self {
         Self::new::<TestDI>(StreamColumns::fx_trade_google())
     }
+
+    pub fn fx_no_promoted_rowtime() -> Self {
+        Self::new::<TestDI>(StreamColumns::fx_no_promoted_rowtime())
+    }
 }
 
 impl StreamColumns {
@@ -275,5 +312,9 @@ impl StreamColumns {
     }
     pub fn fx_trade_google() -> Self {
         Self::factory_trade(Timestamp::fx_ts3(), "GOOGL", 100)
+    }
+
+    pub fn fx_no_promoted_rowtime() -> Self {
+        Self::factory_no_promoted_rowtime(12345)
     }
 }

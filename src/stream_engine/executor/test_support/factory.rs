@@ -13,7 +13,7 @@ use crate::{
             data::{
                 column::stream_column::StreamColumns,
                 column_values::ColumnValues,
-                foreign_input_row::format::json::JsonObject,
+                foreign_row::format::json::JsonObject,
                 row::Row,
                 value::sql_value::{nn_sql_value::NnSqlValue, SqlValue},
             },
@@ -89,6 +89,22 @@ impl StreamColumns {
             .unwrap();
 
         Self::new(Rc::new(StreamShape::fx_ticker()), column_values).unwrap()
+    }
+
+    pub fn factory_no_promoted_rowtime(amount: i32) -> Self {
+        let mut column_values = ColumnValues::default();
+        column_values
+            .insert(
+                ColumnName::new("amount".to_string()),
+                SqlValue::NotNull(NnSqlValue::Integer(amount)),
+            )
+            .unwrap();
+
+        Self::new(
+            Rc::new(StreamShape::fx_no_promoted_rowtime()),
+            column_values,
+        )
+        .unwrap()
     }
 }
 

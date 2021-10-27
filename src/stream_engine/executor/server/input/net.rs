@@ -8,8 +8,10 @@ use anyhow::Context;
 
 use crate::{
     error::{foreign_info::ForeignInfo, Result, SpringError},
-    model::option::Options,
-    stream_engine::executor::data::foreign_input_row::{format::json::JsonObject, ForeignInputRow},
+    model::option::{server_options::NetServerOptions, Options},
+    stream_engine::executor::data::foreign_row::{
+        foreign_input_row::ForeignInputRow, format::json::JsonObject,
+    },
 };
 
 use super::{InputServerActive, InputServerStandby};
@@ -25,9 +27,7 @@ enum Protocol {
 
 #[derive(Debug)]
 pub(in crate::stream_engine::executor) struct NetInputServerStandby {
-    protocol: Protocol,
-    remote_host: IpAddr,
-    remote_port: u16,
+    options: NetServerOptions,
 }
 
 #[derive(Debug)]
@@ -42,17 +42,7 @@ impl InputServerStandby<NetInputServerActive> for NetInputServerStandby {
         Self: Sized,
     {
         Ok(Self {
-            protocol: options.get("PROTOCOL", |protocol_str| {
-                (protocol_str == "TCP")
-                    .then(|| Protocol::Tcp)
-                    .context("unsupported protocol")
-            })?,
-            remote_host: options.get("REMOTE_HOST", |remote_host_str| {
-                remote_host_str.parse().context("invalid remote host")
-            })?,
-            remote_port: options.get("REMOTE_PORT", |remote_port_str| {
-                remote_port_str.parse().context("invalid remote port")
-            })?,
+            options: NetServerOptions::try_from(options)?,
         })
     }
 
@@ -60,7 +50,7 @@ impl InputServerStandby<NetInputServerActive> for NetInputServerStandby {
     ///
     /// - [SpringError::ForeignIo](crate::error::SpringError::ForeignIo)
     fn start(self) -> Result<NetInputServerActive> {
-        let sock_addr = SocketAddr::new(self.remote_host, self.remote_port);
+        let sock_addr = SocketAddr::new(self.options.remote_host, self.options.remote_port);
 
         let tcp_stream =
             TcpStream::connect_timeout(&sock_addr, Duration::from_secs(CONNECT_TIMEOUT_SECS))
@@ -87,13 +77,6 @@ impl InputServerStandby<NetInputServerActive> for NetInputServerStandby {
 }
 
 impl InputServerActive for NetInputServerActive {
-    /// # Failure
-    ///
-    /// - [SpringError::ForeignInputTimeout](crate::error::SpringError::ForeignInputTimeout) when:
-    ///   - Remote source does not provide row within timeout.
-    /// - [SpringError::ForeignIo](crate::error::SpringError::ForeignIo) when:
-    ///   - Failed to parse response from remote source.
-    ///   - Unknown foreign error.
     fn next_row(&mut self) -> Result<ForeignInputRow> {
         let mut json_s = String::new();
 
@@ -143,8 +126,7 @@ impl NetInputServerActive {}
 mod tests {
     use super::*;
     use crate::model::option::options_builder::OptionsBuilder;
-    use crate::stream_engine::executor::data::foreign_input_row::format::json::JsonObject;
-    use crate::stream_engine::executor::data::foreign_input_row::ForeignInputRow;
+    use crate::stream_engine::executor::data::foreign_row::format::json::JsonObject;
     use crate::stream_engine::executor::test_support::foreign::source::TestSource;
 
     #[test]

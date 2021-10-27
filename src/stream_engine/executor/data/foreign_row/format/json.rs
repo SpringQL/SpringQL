@@ -15,6 +15,12 @@ impl ToString for JsonObject {
     }
 }
 
+impl From<JsonObject> for serde_json::Value {
+    fn from(j: JsonObject) -> Self {
+        j.0
+    }
+}
+
 impl JsonObject {
     /// # Failure
     ///

@@ -1,15 +1,13 @@
-pub(in crate::stream_engine) mod format;
-
 use std::rc::Rc;
 
-use self::format::json::JsonObject;
-
 use crate::{
-    dependency_injection::DependencyInjection, error::Result,
+    dependency_injection::DependencyInjection,
+    error::Result,
     model::pipeline::stream_model::stream_shape::StreamShape,
+    stream_engine::executor::data::{column::stream_column::StreamColumns, row::Row},
 };
 
-use super::{column::stream_column::StreamColumns, row::Row};
+use super::format::json::JsonObject;
 
 /// Input row from foreign systems (retrieved from InputServer).
 ///

@@ -26,3 +26,9 @@ impl Display for ColumnName {
         write!(f, "{}", self.0)
     }
 }
+
+impl ColumnName {
+    pub(crate) fn arrival_rowtime() -> Self {
+        Self::new("ROWTIME".to_string())
+    }
+}
