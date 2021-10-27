@@ -42,10 +42,7 @@ mod tests {
 
     use crate::{
         model::name::ColumnName,
-        stream_engine::{
-            executor::data::value::sql_value::{nn_sql_value::NnSqlValue, SqlValue},
-            Timestamp,
-        },
+        stream_engine::{executor::data::value::sql_value::SqlValue, Timestamp},
     };
 
     use super::*;

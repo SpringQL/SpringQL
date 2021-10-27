@@ -2,6 +2,8 @@ use crate::error::Result;
 use crate::model::option::Options;
 use crate::stream_engine::executor::data::foreign_row::foreign_output_row::ForeignOutputRow;
 
+pub(in crate::stream_engine::executor) mod net;
+
 pub(in crate::stream_engine::executor) trait OutputServerStandby<A: OutputServerActive> {
     fn new(options: Options) -> Result<Self>
     where
@@ -20,5 +22,5 @@ pub(in crate::stream_engine::executor) trait OutputServerActive {
     /// - [SpringError::ForeignIo](crate::error::SpringError::ForeignIo) when:
     ///   - Remote sink has failed to parse request.
     ///   - Unknown foreign error.
-    fn receive_row(&mut self, row: ForeignOutputRow) -> Result<()>;
+    fn send_row(&mut self, row: ForeignOutputRow) -> Result<()>;
 }
