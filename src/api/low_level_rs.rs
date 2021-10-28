@@ -56,7 +56,7 @@ pub fn spring_open() -> Result<SpringPipeline> {
 ///   - Refers to undefined objects (streams, pumps, etc)
 /// - [SpringError::InvalidOption](crate::error::SpringError::Sql) when:
 ///   - `OPTIONS` in `CREATE` statement includes invalid key or value.
-pub fn spring_prepare(sql: &str) -> Result<SpringStatement> {
+pub fn spring_prepare(pipeline: &mut SpringPipeline, sql: &str) -> Result<SpringStatement> {
     todo!()
 }
 
@@ -100,7 +100,7 @@ pub fn spring_column_text(stmt: &mut SpringStatement, i_col: usize) -> Result<St
 
 /// Destroys the prepared statement.
 ///
-/// You don't have to call this function but just dropping (moving out) the connection object is enough.
+/// You don't have to call this function but just dropping (moving out) the prepared statement object is enough.
 pub fn spring_finalize(stmt: SpringStatement) {
     // just drop stmt
 }
@@ -108,6 +108,6 @@ pub fn spring_finalize(stmt: SpringStatement) {
 /// Destroys the in-process stream pipeline.
 ///
 /// You don't have to call this function but just dropping (moving out) the connection object is enough.
-pub fn spring_close(conn: SpringPipeline) {
+pub fn spring_close(pipeline: SpringPipeline) {
     // just drop conn
 }
