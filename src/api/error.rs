@@ -47,6 +47,12 @@ pub enum SpringError {
     #[error(r#"invalid format ("{s}")"#)]
     InvalidFormat { s: String, source: anyhow::Error },
 
+    #[error("requested {resource} but its not available")]
+    Unavailable {
+        resource: String,
+        source: anyhow::Error,
+    },
+
     #[error("SQL error")]
     Sql(anyhow::Error),
 }
@@ -64,7 +70,8 @@ impl SpringError {
 
             SpringError::InvalidOption { .. }
             | SpringError::InvalidFormat { .. }
-            | SpringError::Sql(_) => SpringErrorResponsibility::Client,
+            | SpringError::Sql(_)
+            | SpringError::Unavailable { .. } => SpringErrorResponsibility::Client,
         }
     }
 }
