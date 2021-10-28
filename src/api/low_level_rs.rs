@@ -18,7 +18,7 @@ pub struct SpringPipeline;
 pub struct SpringStatement;
 
 /// Successful response from `spring_step()`.
-#[derive(Debug)]
+#[derive(Eq, PartialEq, Debug)]
 pub enum SpringStepSuccess {
     /// No more rows available.
     ///
