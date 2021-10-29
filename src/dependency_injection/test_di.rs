@@ -1,4 +1,6 @@
-use crate::stream_engine::{CurrentTimestamp, TestRowRepository, Timestamp};
+use crate::stream_engine::{
+    CurrentTimestamp, FlowEfficientScheduler, TestRowRepository, Timestamp,
+};
 
 use super::DependencyInjection;
 
@@ -10,6 +12,7 @@ pub(crate) struct TestDI {
 impl DependencyInjection for TestDI {
     type CurrentTimestampType = TestCurrentTimestamp;
     type RowRepositoryType = TestRowRepository;
+    type SchedulerType = FlowEfficientScheduler;
 
     fn row_repository(&self) -> &Self::RowRepositoryType {
         &self.row_repo

@@ -2,14 +2,18 @@ pub(self) mod data;
 pub(self) mod exec;
 pub(self) mod server;
 
+mod scheduler;
 mod worker_pool;
 
 use std::sync::{Arc, Mutex};
 
 pub(crate) use data::{CurrentTimestamp, RowRepository, Timestamp};
+pub(crate) use scheduler::{FlowEfficientScheduler, Scheduler};
 
 #[cfg(test)]
 pub(crate) use data::TestRowRepository;
+
+use crate::dependency_injection::DependencyInjection;
 
 use self::worker_pool::WorkerPool;
 
@@ -24,8 +28,11 @@ pub(in crate::stream_engine) struct AutonomousExecutor {
 }
 
 impl AutonomousExecutor {
-    pub(crate) fn new(n_worker_threads: usize, pipeline: PipelineRead) -> Self {
-        let scheduler = Arc::new(Mutex::new(Scheduler::new(pipeline)));
+    pub(crate) fn new<DI: DependencyInjection>(
+        n_worker_threads: usize,
+        pipeline: PipelineRead,
+    ) -> Self {
+        let scheduler = Arc::new(Mutex::new(DI::SchedulerType::new(pipeline)));
 
         Self {
             worker_pool: WorkerPool::new(n_worker_threads, scheduler),

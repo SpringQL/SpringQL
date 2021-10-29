@@ -7,20 +7,25 @@ use std::{
     time::Duration,
 };
 
+use crate::{dependency_injection::DependencyInjection, stream_engine::Scheduler};
+
 #[derive(Debug)]
 pub(super) struct Worker {
     stop_button: mpsc::SyncSender<()>,
 }
 
 impl Worker {
-    pub(super) fn new(scheduler: Arc<Mutex<Scheduler>>) -> Self {
+    pub(super) fn new<DI: DependencyInjection>(scheduler: Arc<Mutex<DI::SchedulerType>>) -> Self {
         let (stop_button, stop_receiver) = mpsc::sync_channel(0);
 
-        let thread = thread::spawn(|| Self::main_loop(scheduler.clone(), stop_receiver));
+        let thread = thread::spawn(|| Self::main_loop::<DI>(scheduler.clone(), stop_receiver));
         Self { stop_button }
     }
 
-    fn main_loop(scheduler: Arc<Mutex<Scheduler>>, stop_receiver: mpsc::Receiver<()>) {
+    fn main_loop<DI: DependencyInjection>(
+        scheduler: Arc<Mutex<DI::SchedulerType>>,
+        stop_receiver: mpsc::Receiver<()>,
+    ) {
         while stop_receiver.try_recv().is_err() {
             if let Some(task) = scheduler
                 .lock()

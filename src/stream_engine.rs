@@ -15,7 +15,9 @@
 
 mod autonomous_executor;
 
-pub(crate) use autonomous_executor::{CurrentTimestamp, RowRepository, Timestamp};
+pub(crate) use autonomous_executor::{
+    CurrentTimestamp, FlowEfficientScheduler, RowRepository, Scheduler, Timestamp,
+};
 
 #[cfg(test)]
 pub(crate) use autonomous_executor::TestRowRepository;
