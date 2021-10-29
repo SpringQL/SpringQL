@@ -17,9 +17,9 @@ use crate::{
                 row::Row,
                 value::sql_value::{nn_sql_value::NnSqlValue, SqlValue},
             },
-            server::input::{
-                net::{NetInputServerActive, NetInputServerStandby},
-                InputServerStandby,
+            server::source::{
+                net::{NetSourceServerActive, NetSourceServerStandby},
+                SourceServerStandby,
             },
             test_support::foreign::source::TestSource,
         },
@@ -27,7 +27,7 @@ use crate::{
     },
 };
 
-impl NetInputServerActive {
+impl NetSourceServerActive {
     pub fn factory_with_test_source(inputs: Vec<JsonObject>) -> Self {
         let source = TestSource::start(inputs).unwrap();
 
@@ -37,7 +37,7 @@ impl NetInputServerActive {
             .add("REMOTE_PORT", source.port().to_string())
             .build();
 
-        let server = NetInputServerStandby::new(options).unwrap();
+        let server = NetSourceServerStandby::new(options).unwrap();
         server.start().unwrap()
     }
 }

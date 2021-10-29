@@ -199,7 +199,7 @@ mod tests {
             },
         ];
 
-        // (ForeignInputServer ->) row1 -> Stream[ticker] -> ref. row1 -> Window[ticker.pump1]
+        // (ForeignSourceServer ->) row1 -> Stream[ticker] -> ref. row1 -> Window[ticker.pump1]
 
         for TestCase {
             input: row,

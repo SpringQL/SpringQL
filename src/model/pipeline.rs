@@ -1,8 +1,8 @@
 //! - Pipeline
 //!   - Stream
 //!     - (native) Stream
-//!     - Input/Output Foreign Stream
-//!   - Input/Output Server
+//!     - Source/Sink Foreign Stream
+//!   - Source/Sink Server
 //!   - Pump
 
 pub(crate) mod server_model;

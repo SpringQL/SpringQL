@@ -14,7 +14,7 @@ use crate::{
     stream_engine::autonomous_executor::data::{
         column::stream_column::StreamColumns,
         foreign_row::{
-            foreign_input_row::ForeignInputRow, foreign_output_row::ForeignOutputRow,
+            foreign_sink_row::ForeignSinkRow, foreign_source_row::ForeignSourceRow,
             format::json::JsonObject,
         },
         row::Row,
@@ -88,7 +88,7 @@ impl JsonObject {
     }
 }
 
-impl ForeignInputRow {
+impl ForeignSourceRow {
     pub fn fx_city_temperature_tokyo() -> Self {
         Self::from_json(JsonObject::fx_city_temperature_tokyo())
     }
@@ -110,7 +110,7 @@ impl ForeignInputRow {
     }
 }
 
-impl ForeignOutputRow {
+impl ForeignSinkRow {
     pub fn fx_city_temperature_tokyo() -> Self {
         Row::fx_city_temperature_tokyo().into()
     }

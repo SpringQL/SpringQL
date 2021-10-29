@@ -9,14 +9,14 @@ use crate::{
 
 use super::format::json::JsonObject;
 
-/// Output row into foreign systems (retrieved by OutputServer).
+/// Output row into foreign systems (retrieved by SinkServer).
 ///
 /// Immediately converted from Row on stream-engine boundary.
 #[derive(Eq, PartialEq, Debug)]
-pub(in crate::stream_engine::autonomous_executor) struct ForeignOutputRow(JsonObject);
+pub(in crate::stream_engine::autonomous_executor) struct ForeignSinkRow(JsonObject);
 
-impl From<ForeignOutputRow> for JsonObject {
-    fn from(foreign_output_row: ForeignOutputRow) -> Self {
+impl From<ForeignSinkRow> for JsonObject {
+    fn from(foreign_output_row: ForeignSinkRow) -> Self {
         foreign_output_row.0
     }
 }
@@ -25,7 +25,7 @@ impl From<ForeignOutputRow> for JsonObject {
 ///
 /// - [SpringError::InvalidFormat](crate::error::SpringError::InvalidFormat) when:
 ///   - This row cannot be converted into foreign output row.
-impl From<Row> for ForeignOutputRow {
+impl From<Row> for ForeignSinkRow {
     fn from(row: Row) -> Self {
         let map = row
             .into_iter()
@@ -51,19 +51,19 @@ mod tests {
     fn test_from_row() {
         let row = Row::fx_city_temperature_tokyo();
 
-        let f_row = ForeignOutputRow(JsonObject::new(json!({
+        let f_row = ForeignSinkRow(JsonObject::new(json!({
             "timestamp": Timestamp::fx_ts1().to_string(),
             "city": "Tokyo",
             "temperature": 21
         })));
 
-        assert_eq!(ForeignOutputRow::from(row), f_row);
+        assert_eq!(ForeignSinkRow::from(row), f_row);
     }
 
     #[test]
     fn test_from_row_arrival_rowtime() {
         let row = Row::fx_no_promoted_rowtime();
-        let f_row = ForeignOutputRow::from(row);
+        let f_row = ForeignSinkRow::from(row);
         let f_json = JsonObject::from(f_row);
         let mut f_colvals = f_json.into_column_values().unwrap();
         let f_rowtime_sql_value = f_colvals.remove(&ColumnName::arrival_rowtime()).unwrap();
