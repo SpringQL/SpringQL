@@ -3,6 +3,7 @@ pub(self) mod exec;
 pub(self) mod server;
 
 mod scheduler;
+mod task;
 mod worker_pool;
 
 use std::sync::{Arc, Mutex};

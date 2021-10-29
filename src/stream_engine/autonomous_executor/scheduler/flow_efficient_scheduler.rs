@@ -95,6 +95,8 @@
 //!
 //!   (imm `a` or **`b`**) `[b]` (imm `d` or **`e`**) [e] (req `g`) (req `f` and **`d`**) `[d]` (req `f`) `[acf]` (imm `g`) `[g]` (imm `h` or **`i`**) `[ikm][hjl]`
 
+use crate::stream_engine::autonomous_executor::task::Task;
+
 use super::Scheduler;
 
 pub(crate) struct FlowEfficientScheduler;
