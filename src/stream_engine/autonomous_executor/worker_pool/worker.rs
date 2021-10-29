@@ -18,7 +18,7 @@ impl Worker {
     pub(super) fn new<DI: DependencyInjection>(scheduler: Arc<Mutex<DI::SchedulerType>>) -> Self {
         let (stop_button, stop_receiver) = mpsc::sync_channel(0);
 
-        let thread = thread::spawn(|| Self::main_loop::<DI>(scheduler.clone(), stop_receiver));
+        let _ = thread::spawn(move || Self::main_loop::<DI>(scheduler.clone(), stop_receiver));
         Self { stop_button }
     }
 

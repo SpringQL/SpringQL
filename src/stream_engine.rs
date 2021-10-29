@@ -14,6 +14,7 @@
 //! ```
 
 mod autonomous_executor;
+mod pipeline;
 
 pub(crate) use autonomous_executor::{
     CurrentTimestamp, FlowEfficientScheduler, RowRepository, Scheduler, Timestamp,

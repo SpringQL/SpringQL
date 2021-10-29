@@ -8,17 +8,19 @@ use crate::{
         column::{column_data_type::ColumnDataType, column_definition::ColumnDefinition},
         name::{ColumnName, PumpName, StreamName},
         option::{options_builder::OptionsBuilder, Options},
-        pipeline::stream_model::{stream_shape::StreamShape, StreamModel},
         sql_type::SqlType,
     },
-    stream_engine::autonomous_executor::data::{
-        column::stream_column::StreamColumns,
-        foreign_row::{
-            foreign_sink_row::ForeignSinkRow, foreign_source_row::ForeignSourceRow,
-            format::json::JsonObject,
+    stream_engine::{
+        autonomous_executor::data::{
+            column::stream_column::StreamColumns,
+            foreign_row::{
+                foreign_sink_row::ForeignSinkRow, foreign_source_row::ForeignSourceRow,
+                format::json::JsonObject,
+            },
+            row::Row,
+            timestamp::Timestamp,
         },
-        row::Row,
-        timestamp::Timestamp,
+        pipeline::stream_model::{stream_shape::StreamShape, StreamModel},
     },
 };
 

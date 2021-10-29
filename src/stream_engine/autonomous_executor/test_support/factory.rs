@@ -5,7 +5,6 @@ use crate::{
     model::{
         name::{ColumnName, PumpName},
         option::options_builder::OptionsBuilder,
-        pipeline::stream_model::stream_shape::StreamShape,
         query_plan::query_plan_node::{operation::LeafOperation, QueryPlanNodeLeaf},
     },
     stream_engine::{
@@ -23,6 +22,7 @@ use crate::{
             },
             test_support::foreign::source::TestSource,
         },
+        pipeline::stream_model::stream_shape::StreamShape,
         RowRepository, Timestamp,
     },
 };

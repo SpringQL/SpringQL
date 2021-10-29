@@ -2,6 +2,7 @@ pub(self) mod data;
 pub(self) mod exec;
 pub(self) mod server;
 
+mod pipeline_read;
 mod scheduler;
 mod task;
 mod worker_pool;
@@ -16,7 +17,7 @@ pub(crate) use data::TestRowRepository;
 
 use crate::dependency_injection::DependencyInjection;
 
-use self::worker_pool::WorkerPool;
+use self::{pipeline_read::PipelineRead, worker_pool::WorkerPool};
 
 #[cfg(test)]
 pub mod test_support;
@@ -36,7 +37,7 @@ impl AutonomousExecutor {
         let scheduler = Arc::new(Mutex::new(DI::SchedulerType::new(pipeline)));
 
         Self {
-            worker_pool: WorkerPool::new(n_worker_threads, scheduler),
+            worker_pool: WorkerPool::new::<DI>(n_worker_threads, scheduler),
         }
     }
 }

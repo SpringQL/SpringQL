@@ -2,7 +2,7 @@ mod flow_efficient_scheduler;
 
 pub(crate) use flow_efficient_scheduler::FlowEfficientScheduler;
 
-use super::task::Task;
+use super::{pipeline_read::PipelineRead, task::Task};
 
 pub(crate) trait Scheduler {
     fn new(pipeline: PipelineRead) -> Self;

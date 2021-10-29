@@ -4,9 +4,10 @@ use std::rc::Rc;
 
 use crate::dependency_injection::DependencyInjection;
 use crate::error::Result;
-use crate::model::pipeline::stream_model::StreamModel;
-use crate::stream_engine::autonomous_executor::data::row::Row;
 use crate::stream_engine::autonomous_executor::server::source::SourceServerActive;
+use crate::stream_engine::{
+    autonomous_executor::data::row::Row, pipeline::stream_model::StreamModel,
+};
 
 #[derive(Debug, new)]
 pub(in crate::stream_engine::autonomous_executor::exec) struct ForeignSourcePump<S>

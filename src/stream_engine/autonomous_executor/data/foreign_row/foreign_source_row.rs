@@ -3,8 +3,10 @@ use std::rc::Rc;
 use crate::{
     dependency_injection::DependencyInjection,
     error::Result,
-    model::pipeline::stream_model::stream_shape::StreamShape,
-    stream_engine::autonomous_executor::data::{column::stream_column::StreamColumns, row::Row},
+    stream_engine::{
+        autonomous_executor::data::{column::stream_column::StreamColumns, row::Row},
+        pipeline::stream_model::stream_shape::StreamShape,
+    },
 };
 
 use super::format::json::JsonObject;
