@@ -13,12 +13,12 @@
 //! Reactive executor resides in a main thread, while autonomous executor works with separate threads (models as WorkerPool).
 //! ```
 
-mod executor;
+mod autonomous_executor;
 
-pub(crate) use executor::{CurrentTimestamp, RowRepository, Timestamp};
+pub(crate) use autonomous_executor::{CurrentTimestamp, RowRepository, Timestamp};
 
 #[cfg(test)]
-pub(crate) use executor::TestRowRepository;
+pub(crate) use autonomous_executor::TestRowRepository;
 
 #[derive(Debug)]
 pub(crate) struct StreamEngine;
