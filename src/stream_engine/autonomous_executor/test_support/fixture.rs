@@ -1,4 +1,4 @@
-use std::rc::Rc;
+use std::sync::Arc;
 
 use serde_json::json;
 
@@ -243,7 +243,7 @@ impl StreamModel {
     pub(in crate::stream_engine) fn fx_city_temperature() -> Self {
         Self::new(
             StreamName::fx_city_temperature(),
-            Rc::new(StreamShape::fx_city_temperature()),
+            Arc::new(StreamShape::fx_city_temperature()),
             Options::fx_empty(),
         )
     }
@@ -251,7 +251,7 @@ impl StreamModel {
     pub(in crate::stream_engine) fn fx_trade() -> Self {
         Self::new(
             StreamName::fx_trade(),
-            Rc::new(StreamShape::fx_trade()),
+            Arc::new(StreamShape::fx_trade()),
             Options::fx_empty(),
         )
     }
@@ -261,14 +261,14 @@ impl ForeignStreamModel {
     pub(in crate::stream_engine) fn fx_trade_source() -> Self {
         Self::new(StreamModel::new(
             StreamName::fx_trade_source(),
-            Rc::new(StreamShape::fx_trade()),
+            Arc::new(StreamShape::fx_trade()),
             Options::fx_empty(),
         ))
     }
     pub(in crate::stream_engine) fn fx_trade_sink() -> Self {
         Self::new(StreamModel::new(
             StreamName::fx_trade_sink(),
-            Rc::new(StreamShape::fx_trade()),
+            Arc::new(StreamShape::fx_trade()),
             Options::fx_empty(),
         ))
     }

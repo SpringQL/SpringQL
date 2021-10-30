@@ -10,14 +10,14 @@ use crate::{
         pipeline::stream_model::stream_shape::StreamShape,
     },
 };
-use std::{rc::Rc, vec};
+use std::{sync::Arc, vec};
 
 /// Column values in a stream.
 ///
 /// Should keep as small size as possible because all Row has this inside.
 #[derive(PartialEq, Debug)]
 pub(in crate::stream_engine::autonomous_executor) struct StreamColumns {
-    stream_shape: Rc<StreamShape>,
+    stream_shape: Arc<StreamShape>,
 
     /// sorted to the same order as `stream_shape.columns()`.
     values: Vec<SqlValue>,
@@ -32,7 +32,7 @@ impl StreamColumns {
     ///   - `column_values` lacks any of `stream.columns()`.
     ///   - Type mismatch (and failed to convert type) with `stream_shape` and `column_values`.
     pub(in crate::stream_engine::autonomous_executor) fn new(
-        stream_shape: Rc<StreamShape>,
+        stream_shape: Arc<StreamShape>,
         mut column_values: ColumnValues,
     ) -> Result<Self> {
         let values = stream_shape
@@ -170,8 +170,8 @@ mod tests {
             )
             .unwrap();
 
-        let _ =
-            StreamColumns::new(Rc::new(StreamShape::fx_city_temperature()), column_values).unwrap();
+        let _ = StreamColumns::new(Arc::new(StreamShape::fx_city_temperature()), column_values)
+            .unwrap();
     }
 
     #[test]
@@ -192,7 +192,7 @@ mod tests {
         // lacks "temperature" column
 
         assert!(matches!(
-            StreamColumns::new(Rc::new(StreamShape::fx_city_temperature()), column_values)
+            StreamColumns::new(Arc::new(StreamShape::fx_city_temperature()), column_values)
                 .unwrap_err(),
             SpringError::Sql(_)
         ));
@@ -221,7 +221,7 @@ mod tests {
             .unwrap();
 
         assert!(matches!(
-            StreamColumns::new(Rc::new(StreamShape::fx_city_temperature()), column_values)
+            StreamColumns::new(Arc::new(StreamShape::fx_city_temperature()), column_values)
                 .unwrap_err(),
             SpringError::Sql(_)
         ));
@@ -250,7 +250,7 @@ mod tests {
             .unwrap();
 
         assert!(matches!(
-            StreamColumns::new(Rc::new(StreamShape::fx_city_temperature()), column_values)
+            StreamColumns::new(Arc::new(StreamShape::fx_city_temperature()), column_values)
                 .unwrap_err(),
             SpringError::Sql(_)
         ));
