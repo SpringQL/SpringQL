@@ -1,11 +1,14 @@
 use std::rc::Rc;
 
 use crate::{
-    dependency_injection::{test_di::TestDI, DependencyInjection},
     model::{
         name::{ColumnName, PumpName},
         option::options_builder::OptionsBuilder,
         query_plan::query_plan_node::{operation::LeafOperation, QueryPlanNodeLeaf},
+    },
+    stream_engine::{
+        autonomous_executor::Timestamp,
+        dependency_injection::{test_di::TestDI, DependencyInjection},
     },
     stream_engine::{
         autonomous_executor::{
@@ -23,7 +26,7 @@ use crate::{
             test_support::foreign::source::TestSource,
         },
         pipeline::stream_model::stream_shape::StreamShape,
-        RowRepository, Timestamp,
+        RowRepository,
     },
 };
 

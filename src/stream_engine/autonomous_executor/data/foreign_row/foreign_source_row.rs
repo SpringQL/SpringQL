@@ -1,10 +1,10 @@
 use std::rc::Rc;
 
 use crate::{
-    dependency_injection::DependencyInjection,
     error::Result,
     stream_engine::{
         autonomous_executor::data::{column::stream_column::StreamColumns, row::Row},
+        dependency_injection::DependencyInjection,
         pipeline::stream_model::stream_shape::StreamShape,
     },
 };
@@ -40,7 +40,7 @@ impl ForeignSourceRow {
 
 #[cfg(test)]
 mod tests {
-    use crate::dependency_injection::test_di::TestDI;
+    use crate::stream_engine::dependency_injection::test_di::TestDI;
 
     use super::*;
 

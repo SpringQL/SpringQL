@@ -4,7 +4,7 @@ use super::sql_compare_result::SqlCompareResult;
 use crate::error::{Result, SpringError};
 use crate::model::sql_type::{self, NumericComparableType, SqlType, StringComparableLoseType};
 use crate::stream_engine::autonomous_executor::data::value::sql_convertible::SqlConvertible;
-use crate::stream_engine::Timestamp;
+use crate::stream_engine::autonomous_executor::Timestamp;
 use anyhow::anyhow;
 use serde::{Deserialize, Serialize};
 

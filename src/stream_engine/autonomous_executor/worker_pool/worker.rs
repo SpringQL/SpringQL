@@ -7,7 +7,7 @@ use std::{
     time::Duration,
 };
 
-use crate::{dependency_injection::DependencyInjection, stream_engine::Scheduler};
+use crate::stream_engine::{dependency_injection::DependencyInjection, Scheduler};
 
 #[derive(Debug)]
 pub(super) struct Worker {

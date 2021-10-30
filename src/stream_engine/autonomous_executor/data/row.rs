@@ -6,8 +6,9 @@ use super::{
     column::stream_column::StreamColumns, timestamp::Timestamp, value::sql_value::SqlValue,
 };
 use crate::error::Result;
+use crate::model::name::ColumnName;
 use crate::stream_engine::autonomous_executor::data::value::sql_value::nn_sql_value::NnSqlValue;
-use crate::{dependency_injection::DependencyInjection, model::name::ColumnName};
+use crate::stream_engine::dependency_injection::DependencyInjection;
 
 pub(crate) use repository::RowRepository;
 

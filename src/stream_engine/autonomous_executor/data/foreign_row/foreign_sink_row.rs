@@ -1,7 +1,6 @@
 use std::{collections::HashMap, rc::Rc};
 
 use crate::{
-    dependency_injection::DependencyInjection,
     error::Result,
     stream_engine::{
         autonomous_executor::data::{column::stream_column::StreamColumns, row::Row},
@@ -44,7 +43,7 @@ mod tests {
 
     use crate::{
         model::name::ColumnName,
-        stream_engine::{autonomous_executor::data::value::sql_value::SqlValue, Timestamp},
+        stream_engine::autonomous_executor::{data::value::sql_value::SqlValue, Timestamp},
     };
 
     use super::*;

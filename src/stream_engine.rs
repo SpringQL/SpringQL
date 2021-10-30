@@ -14,14 +14,10 @@
 //! ```
 
 mod autonomous_executor;
+mod dependency_injection;
 mod pipeline;
 
-pub(crate) use autonomous_executor::{
-    CurrentTimestamp, FlowEfficientScheduler, RowRepository, Scheduler, Timestamp,
-};
-
-#[cfg(test)]
-pub(crate) use autonomous_executor::TestRowRepository;
+use autonomous_executor::{CurrentTimestamp, RowRepository, Scheduler};
 
 #[derive(Debug)]
 pub(crate) struct StreamEngine;

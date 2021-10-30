@@ -7,12 +7,12 @@ use self::node_executor::{CollectNodeExecutor, NodeExecutor};
 
 use super::final_row::FinalRow;
 use super::interm_row::NewRow;
-use crate::dependency_injection::DependencyInjection;
 use crate::error::Result;
 use crate::model::query_plan::query_plan_node::operation::LeafOperation;
 use crate::model::query_plan::query_plan_node::QueryPlanNode;
 use crate::model::query_plan::QueryPlan;
 use crate::stream_engine::autonomous_executor::data::row::Row;
+use crate::stream_engine::dependency_injection::DependencyInjection;
 
 #[derive(Debug)]
 pub(super) struct NodeExecutorTree<DI>

@@ -15,9 +15,9 @@ pub(crate) use scheduler::{FlowEfficientScheduler, Scheduler};
 #[cfg(test)]
 pub(crate) use data::TestRowRepository;
 
-use crate::dependency_injection::DependencyInjection;
-
 use self::{pipeline_read::PipelineRead, worker_pool::WorkerPool};
+
+use super::dependency_injection::DependencyInjection;
 
 #[cfg(test)]
 pub mod test_support;

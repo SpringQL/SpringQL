@@ -2,9 +2,9 @@ use std::cell::RefCell;
 use std::fmt::Debug;
 use std::rc::Rc;
 
-use crate::dependency_injection::DependencyInjection;
 use crate::error::Result;
 use crate::stream_engine::autonomous_executor::server::source::SourceServerActive;
+use crate::stream_engine::dependency_injection::DependencyInjection;
 use crate::stream_engine::{
     autonomous_executor::data::row::Row, pipeline::stream_model::StreamModel,
 };
@@ -30,10 +30,13 @@ impl<S: SourceServerActive + Debug> ForeignSourcePump<S> {
 #[cfg(test)]
 mod tests {
     use crate::{
-        dependency_injection::test_di::TestDI,
         error::{Result, SpringError},
-        stream_engine::autonomous_executor::{
-            data::foreign_row::format::json::JsonObject, server::source::net::NetSourceServerActive,
+        stream_engine::{
+            autonomous_executor::{
+                data::foreign_row::format::json::JsonObject,
+                server::source::net::NetSourceServerActive,
+            },
+            dependency_injection::test_di::TestDI,
         },
     };
 

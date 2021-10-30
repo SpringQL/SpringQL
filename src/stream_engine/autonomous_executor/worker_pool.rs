@@ -2,7 +2,7 @@ mod worker;
 
 use std::sync::{Arc, Mutex};
 
-use crate::dependency_injection::DependencyInjection;
+use crate::stream_engine::dependency_injection::DependencyInjection;
 
 use self::worker::Worker;
 

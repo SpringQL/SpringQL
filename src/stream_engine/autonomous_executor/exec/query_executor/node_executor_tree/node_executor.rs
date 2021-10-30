@@ -3,7 +3,7 @@ pub(in crate::stream_engine::autonomous_executor::exec::query_executor) mod wind
 
 use std::fmt::Debug;
 
-use crate::dependency_injection::DependencyInjection;
+use crate::stream_engine::dependency_injection::DependencyInjection;
 
 use self::{collect_executor::CollectExecutor, window_executor::SlidingWindowExecutor};
 

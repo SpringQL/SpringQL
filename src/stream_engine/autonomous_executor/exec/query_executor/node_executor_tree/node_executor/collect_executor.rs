@@ -1,9 +1,9 @@
 use std::rc::Rc;
 
-use crate::dependency_injection::DependencyInjection;
 use crate::error::Result;
 use crate::model::name::PumpName;
 use crate::stream_engine::autonomous_executor::data::row::Row;
+use crate::stream_engine::dependency_injection::DependencyInjection;
 use crate::stream_engine::RowRepository;
 
 #[derive(Debug, new)]

@@ -1,7 +1,7 @@
 use crate::{
     error::Result,
-    stream_engine::{
-        autonomous_executor::data::value::sql_value::nn_sql_value::NnSqlValue, Timestamp,
+    stream_engine::autonomous_executor::{
+        data::value::sql_value::nn_sql_value::NnSqlValue, Timestamp,
     },
 };
 

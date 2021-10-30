@@ -3,13 +3,13 @@ use std::rc::Rc;
 use serde_json::json;
 
 use crate::{
-    dependency_injection::test_di::TestDI,
     model::{
         column::{column_data_type::ColumnDataType, column_definition::ColumnDefinition},
         name::{ColumnName, PumpName, StreamName},
         option::{options_builder::OptionsBuilder, Options},
         sql_type::SqlType,
     },
+    stream_engine::dependency_injection::test_di::TestDI,
     stream_engine::{
         autonomous_executor::data::{
             column::stream_column::StreamColumns,

@@ -1,10 +1,10 @@
 #[cfg(test)]
-pub(crate) mod test_di;
+pub(super) mod test_di;
 
 use crate::stream_engine::{CurrentTimestamp, RowRepository, Scheduler};
 
 /// Compile-time dependency injection.
-pub(crate) trait DependencyInjection {
+pub(super) trait DependencyInjection {
     // Mainly for testable mock
     type CurrentTimestampType: CurrentTimestamp;
 

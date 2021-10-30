@@ -1,5 +1,6 @@
 use crate::stream_engine::{
-    CurrentTimestamp, FlowEfficientScheduler, TestRowRepository, Timestamp,
+    autonomous_executor::{FlowEfficientScheduler, TestRowRepository, Timestamp},
+    CurrentTimestamp,
 };
 
 use super::DependencyInjection;
