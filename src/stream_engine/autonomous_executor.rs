@@ -9,8 +9,8 @@ mod worker_pool;
 
 use std::sync::{Arc, Mutex};
 
-pub(crate) use data::{CurrentTimestamp, RowRepository, Timestamp};
-pub(crate) use scheduler::{FlowEfficientScheduler, Scheduler};
+pub(in crate::stream_engine) use data::{CurrentTimestamp, RowRepository, Timestamp};
+pub(in crate::stream_engine) use scheduler::{FlowEfficientScheduler, Scheduler};
 
 #[cfg(test)]
 pub(crate) use data::TestRowRepository;
