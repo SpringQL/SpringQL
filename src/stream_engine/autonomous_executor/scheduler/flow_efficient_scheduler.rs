@@ -94,6 +94,8 @@
 //! 8. `bedacfgikmhjl`
 //!
 //!   (imm `a` or **`b`**) `[b]` (imm `d` or **`e`**) [e] (req `g`) (req `f` and **`d`**) `[d]` (req `f`) `[acf]` (imm `g`) `[g]` (imm `h` or **`i`**) `[ikm][hjl]`
+//!
+//! Selecting 1 from these schedule intelligently should lead to more memory reduction but current implementation always select first one (eagerly select leftmost outgoing edge).
 
 use crate::stream_engine::autonomous_executor::{pipeline_read::PipelineRead, task::Task};
 
@@ -109,4 +111,51 @@ impl Scheduler for FlowEfficientScheduler {
     fn next_task(&mut self) -> Option<Task> {
         todo!()
     }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// ```text
+    /// (0)--a-->[1]--b-->[2]--c-->
+    /// ```
+    ///
+    /// -> `abc`
+    #[test]
+    fn test_linear_pipeline() {}
+
+    /// ```text
+    /// (0)--a-->[1]--c-->[3]--e-->
+    ///  |
+    ///  +---b-->[2]--d-->[4]--f-->
+    /// ```
+    ///
+    /// -> `acebdf`
+    #[test]
+    fn test_pipeline_with_split() {}
+
+    /// ```text
+    /// (0)--a-->[1]--c-->[3]--e-->
+    ///  |                 ^
+    ///  |                 |
+    ///  +---b-->[2]--d----+
+    /// ```
+    ///
+    /// -> `acbde`
+    #[test]
+    fn test_pipeline_with_merge() {}
+
+    /// ```text
+    /// (0)--a-->[1]--c-->[3]--f-->[4]--g-->[5]--h-->[6]--j-->[8]--l-->
+    ///  |                          ^       ^ |
+    ///  |                          |       | |
+    ///  +---b-->[2]-------d--------+       | +--i-->[7]--k-->[9]--m-->
+    ///           |                         |
+    ///           +--------------e----------+
+    /// ```
+    ///
+    /// -> `acfbdgehjlikm`
+    #[test]
+    fn test_complex_pipeline() {}
 }
