@@ -130,7 +130,7 @@ mod tests {
     use crate::stream_engine::autonomous_executor::test_support::foreign::source::TestSource;
 
     #[test]
-    fn test_input_server_tcp() -> crate::error::Result<()> {
+    fn test_source_server_tcp() -> crate::error::Result<()> {
         let j1 = JsonObject::fx_city_temperature_tokyo();
         let j2 = JsonObject::fx_city_temperature_osaka();
         let j3 = JsonObject::fx_city_temperature_london();

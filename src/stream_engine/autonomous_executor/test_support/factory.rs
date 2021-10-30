@@ -91,7 +91,7 @@ impl StreamColumns {
             )
             .unwrap();
 
-        Self::new(Rc::new(StreamShape::fx_ticker()), column_values).unwrap()
+        Self::new(Rc::new(StreamShape::fx_trade()), column_values).unwrap()
     }
 
     pub(in crate::stream_engine) fn factory_no_promoted_rowtime(amount: i32) -> Self {

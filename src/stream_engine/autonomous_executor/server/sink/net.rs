@@ -102,7 +102,7 @@ mod tests {
     };
 
     #[test]
-    fn test_output_server_tcp() {
+    fn test_sink_server_tcp() {
         let sink = TestSink::start().unwrap();
 
         let options = OptionsBuilder::default()

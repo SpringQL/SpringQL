@@ -12,6 +12,11 @@ use crate::{
     stream_engine::{
         autonomous_executor::worker_pool::worker::worker_id::WorkerId,
         dependency_injection::test_di::TestDI,
+        pipeline::{
+            foreign_stream_model::ForeignStreamModel,
+            pump_model::PumpModel,
+            server_model::{server_type::ServerType, ServerModel},
+        },
     },
     stream_engine::{
         autonomous_executor::{
@@ -144,18 +149,62 @@ impl ForeignSinkRow {
 }
 
 impl Pipeline {
+    /// ```text
+    /// (0)--a-->[1]--b-->[2]--c-->
+    /// ```
     pub(in crate::stream_engine) fn fx_linear() -> Self {
+        let mut pipeline = Pipeline::default();
+        pipeline
+            .add_foreign_stream(ForeignStreamModel::fx_trade_source())
+            .unwrap();
+        pipeline
+            .add_source_server(ServerModel::fx_net_source(StreamName::fx_trade_source()))
+            .unwrap();
+
+        pipeline
+            .add_foreign_stream(ForeignStreamModel::fx_trade_sink())
+            .unwrap();
+        pipeline
+            .add_sink_server(ServerModel::fx_net_sink(StreamName::fx_trade_sink()))
+            .unwrap();
+
+        pipeline
+            .add_pump(PumpModel::fx_passthrough_trade(
+                StreamName::fx_trade_source(),
+                StreamName::fx_trade_sink(),
+            ))
+            .unwrap();
+
         todo!()
     }
 
+    /// ```text
+    /// (0)--a-->[1]--c-->[3]--e-->
+    ///  |
+    ///  +---b-->[2]--d-->[4]--f-->
+    /// ```
     pub(in crate::stream_engine) fn fx_split() -> Self {
         todo!()
     }
 
+    /// ```text
+    /// (0)--a-->[1]--c-->[3]--e-->
+    ///  |                 ^
+    ///  |                 |
+    ///  +---b-->[2]--d----+
+    /// ```
     pub(in crate::stream_engine) fn fx_split_merge() -> Self {
         todo!()
     }
 
+    /// ```text
+    /// (0)--a-->[1]--c-->[3]--f-->[4]--g-->[5]--h-->[6]--j-->[8]--l-->
+    ///  |                          ^       ^ |
+    ///  |                          |       | |
+    ///  +---b-->[2]-------d--------+       | +--i-->[7]--k-->[9]--m-->
+    ///           |                         |
+    ///           +--------------e----------+
+    /// ```
     pub(in crate::stream_engine) fn fx_complex() -> Self {
         todo!()
     }
@@ -173,7 +222,7 @@ impl StreamShape {
         )
         .unwrap()
     }
-    pub(in crate::stream_engine) fn fx_ticker() -> Self {
+    pub(in crate::stream_engine) fn fx_trade() -> Self {
         Self::new(
             vec![
                 ColumnDefinition::fx_timestamp(),
@@ -195,40 +244,103 @@ impl StreamModel {
         Self::new(
             StreamName::fx_city_temperature(),
             Rc::new(StreamShape::fx_city_temperature()),
-            Options::empty(),
+            Options::fx_empty(),
         )
     }
 
     pub(in crate::stream_engine) fn fx_trade() -> Self {
         Self::new(
             StreamName::fx_trade(),
-            Rc::new(StreamShape::fx_ticker()),
-            Options::empty(),
+            Rc::new(StreamShape::fx_trade()),
+            Options::fx_empty(),
         )
+    }
+}
+
+impl ForeignStreamModel {
+    pub(in crate::stream_engine) fn fx_trade_source() -> Self {
+        Self::new(StreamModel::new(
+            StreamName::fx_trade_source(),
+            Rc::new(StreamShape::fx_trade()),
+            Options::fx_empty(),
+        ))
+    }
+    pub(in crate::stream_engine) fn fx_trade_sink() -> Self {
+        Self::new(StreamModel::new(
+            StreamName::fx_trade_sink(),
+            Rc::new(StreamShape::fx_trade()),
+            Options::fx_empty(),
+        ))
+    }
+}
+
+impl ServerModel {
+    pub(in crate::stream_engine) fn fx_net_source(serving_foreign_stream: StreamName) -> Self {
+        Self::new(
+            ServerType::SourceNet,
+            serving_foreign_stream,
+            Options::fx_net_source_server(),
+        )
+    }
+    pub(in crate::stream_engine) fn fx_net_sink(serving_foreign_stream: StreamName) -> Self {
+        Self::new(
+            ServerType::SourceNet,
+            serving_foreign_stream,
+            Options::fx_net_sink_server(),
+        )
+    }
+}
+
+impl PumpModel {
+    pub(in crate::stream_engine) fn fx_passthrough_trade(
+        upstream: StreamName,
+        downstream: StreamName,
+    ) -> Self {
+        Self::new(PumpName::fx_trade_p1(), upstream, downstream)
     }
 }
 
 impl StreamName {
     pub(in crate::stream_engine) fn fx_city_temperature() -> Self {
-        StreamName::new("city_temperature".to_string())
+        StreamName::new("st_city_temperature".to_string())
     }
     pub(in crate::stream_engine) fn fx_trade() -> Self {
-        StreamName::new("trade".to_string())
+        StreamName::new("st_trade".to_string())
+    }
+    pub(in crate::stream_engine) fn fx_trade_source() -> Self {
+        StreamName::new("fst_trade_source".to_string())
+    }
+    pub(in crate::stream_engine) fn fx_trade_sink() -> Self {
+        StreamName::new("fst_trade_sink".to_string())
     }
 }
 
 impl PumpName {
     pub(in crate::stream_engine) fn fx_trade_p1() -> Self {
-        Self::new("trade_p1".to_string())
+        Self::new("pu_trade_p1".to_string())
     }
     pub(in crate::stream_engine) fn fx_trade_window() -> Self {
-        Self::new("trade_window".to_string())
+        Self::new("pu_trade_window".to_string())
     }
 }
 
 impl Options {
-    pub(in crate::stream_engine) fn empty() -> Self {
+    pub(in crate::stream_engine) fn fx_empty() -> Self {
         OptionsBuilder::default().build()
+    }
+
+    pub(in crate::stream_engine) fn fx_net_source_server() -> Self {
+        OptionsBuilder::default()
+            .add("PROTOCOL", "TCP")
+            // TODO cannot decide TestSource's remote host:port for ServerModel.
+            .build()
+    }
+
+    pub(in crate::stream_engine) fn fx_net_sink_server() -> Self {
+        OptionsBuilder::default()
+            .add("PROTOCOL", "TCP")
+            // TODO cannot decide TestSink's remote host:port for ServerModel.
+            .build()
     }
 }
 
