@@ -10,11 +10,11 @@ use crate::{
     error::{foreign_info::ForeignInfo, Result, SpringError},
     model::option::{server_options::NetServerOptions, Options},
     stream_engine::autonomous_executor::data::foreign_row::{
-        foreign_input_row::ForeignInputRow, format::json::JsonObject,
+        foreign_source_row::ForeignSourceRow, format::json::JsonObject,
     },
 };
 
-use super::{InputServerActive, InputServerStandby};
+use super::{SourceServerActive, SourceServerStandby};
 
 // TODO config
 const CONNECT_TIMEOUT_SECS: u64 = 1;
@@ -26,17 +26,17 @@ enum Protocol {
 }
 
 #[derive(Debug)]
-pub(in crate::stream_engine::autonomous_executor) struct NetInputServerStandby {
+pub(in crate::stream_engine::autonomous_executor) struct NetSourceServerStandby {
     options: NetServerOptions,
 }
 
 #[derive(Debug)]
-pub(in crate::stream_engine::autonomous_executor) struct NetInputServerActive {
+pub(in crate::stream_engine::autonomous_executor) struct NetSourceServerActive {
     foreign_addr: SocketAddr,
     tcp_stream_reader: BufReader<TcpStream>, // TODO UDP
 }
 
-impl InputServerStandby<NetInputServerActive> for NetInputServerStandby {
+impl SourceServerStandby<NetSourceServerActive> for NetSourceServerStandby {
     fn new(options: Options) -> Result<Self>
     where
         Self: Sized,
@@ -49,7 +49,7 @@ impl InputServerStandby<NetInputServerActive> for NetInputServerStandby {
     /// # Failure
     ///
     /// - [SpringError::ForeignIo](crate::error::SpringError::ForeignIo)
-    fn start(self) -> Result<NetInputServerActive> {
+    fn start(self) -> Result<NetSourceServerActive> {
         let sock_addr = SocketAddr::new(self.options.remote_host, self.options.remote_port);
 
         let tcp_stream =
@@ -69,22 +69,22 @@ impl InputServerStandby<NetInputServerActive> for NetInputServerStandby {
 
         let tcp_stream_reader = BufReader::new(tcp_stream);
 
-        Ok(NetInputServerActive {
+        Ok(NetSourceServerActive {
             tcp_stream_reader,
             foreign_addr: sock_addr,
         })
     }
 }
 
-impl InputServerActive for NetInputServerActive {
-    fn next_row(&mut self) -> Result<ForeignInputRow> {
+impl SourceServerActive for NetSourceServerActive {
+    fn next_row(&mut self) -> Result<ForeignSourceRow> {
         let mut json_s = String::new();
 
         self.tcp_stream_reader
             .read_line(&mut json_s)
             .map_err(|io_err| {
                 if let io::ErrorKind::TimedOut | io::ErrorKind::WouldBlock = io_err.kind() {
-                    SpringError::ForeignInputTimeout {
+                    SpringError::ForeignSourceTimeout {
                         source: anyhow::Error::from(io_err),
                         foreign_info: ForeignInfo::GenericTcp(self.foreign_addr),
                     }
@@ -100,8 +100,8 @@ impl InputServerActive for NetInputServerActive {
     }
 }
 
-impl NetInputServerActive {
-    fn parse_resp(&self, json_s: &str) -> Result<ForeignInputRow> {
+impl NetSourceServerActive {
+    fn parse_resp(&self, json_s: &str) -> Result<ForeignSourceRow> {
         let json_v = serde_json::from_str(json_s)
             .with_context(|| {
                 format!(
@@ -116,11 +116,11 @@ impl NetInputServerActive {
 
         let json_obj = JsonObject::new(json_v);
 
-        Ok(ForeignInputRow::from_json(json_obj))
+        Ok(ForeignSourceRow::from_json(json_obj))
     }
 }
 
-impl NetInputServerActive {}
+impl NetSourceServerActive {}
 
 #[cfg(test)]
 mod tests {
@@ -143,15 +143,15 @@ mod tests {
             .add("REMOTE_PORT", source.port().to_string())
             .build();
 
-        let server = NetInputServerStandby::new(options)?;
+        let server = NetSourceServerStandby::new(options)?;
         let mut server = server.start()?;
 
-        assert_eq!(server.next_row()?, ForeignInputRow::from_json(j2));
-        assert_eq!(server.next_row()?, ForeignInputRow::from_json(j3));
-        assert_eq!(server.next_row()?, ForeignInputRow::from_json(j1));
+        assert_eq!(server.next_row()?, ForeignSourceRow::from_json(j2));
+        assert_eq!(server.next_row()?, ForeignSourceRow::from_json(j3));
+        assert_eq!(server.next_row()?, ForeignSourceRow::from_json(j1));
         assert!(matches!(
             server.next_row().unwrap_err(),
-            SpringError::ForeignInputTimeout { .. }
+            SpringError::ForeignSourceTimeout { .. }
         ));
 
         Ok(())

@@ -58,14 +58,18 @@ impl SlidingWindowExecutor {
 
 #[cfg(test)]
 mod tests {
+
     use std::str::FromStr;
 
     use crate::{
-        dependency_injection::{test_di::TestDI, DependencyInjection},
         model::name::{ColumnName, PumpName},
         stream_engine::{
             autonomous_executor::data::{row::Row, value::sql_value::SqlValue},
-            RowRepository, Timestamp,
+            RowRepository,
+        },
+        stream_engine::{
+            autonomous_executor::Timestamp,
+            dependency_injection::{test_di::TestDI, DependencyInjection},
         },
     };
 
@@ -199,7 +203,7 @@ mod tests {
             },
         ];
 
-        // (ForeignInputServer ->) row1 -> Stream[ticker] -> ref. row1 -> Window[ticker.pump1]
+        // (ForeignSourceServer ->) row1 -> Stream[ticker] -> ref. row1 -> Window[ticker.pump1]
 
         for TestCase {
             input: row,

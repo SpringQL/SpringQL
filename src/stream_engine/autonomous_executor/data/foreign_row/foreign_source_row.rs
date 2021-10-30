@@ -1,21 +1,23 @@
 use std::rc::Rc;
 
 use crate::{
-    dependency_injection::DependencyInjection,
     error::Result,
-    model::pipeline::stream_model::stream_shape::StreamShape,
-    stream_engine::autonomous_executor::data::{column::stream_column::StreamColumns, row::Row},
+    stream_engine::{
+        autonomous_executor::data::{column::stream_column::StreamColumns, row::Row},
+        dependency_injection::DependencyInjection,
+        pipeline::stream_model::stream_shape::StreamShape,
+    },
 };
 
 use super::format::json::JsonObject;
 
-/// Input row from foreign systems (retrieved from InputServer).
+/// Input row from foreign sources (retrieved from SourceServer).
 ///
 /// Immediately converted into Row on stream-engine boundary.
 #[derive(Eq, PartialEq, Debug)]
-pub(in crate::stream_engine::autonomous_executor) struct ForeignInputRow(JsonObject);
+pub(in crate::stream_engine::autonomous_executor) struct ForeignSourceRow(JsonObject);
 
-impl ForeignInputRow {
+impl ForeignSourceRow {
     pub(in crate::stream_engine::autonomous_executor) fn from_json(json: JsonObject) -> Self {
         Self(json)
     }
@@ -28,7 +30,7 @@ impl ForeignInputRow {
         self,
         stream_shape: Rc<StreamShape>,
     ) -> Result<Row> {
-        // ForeignInputRow -> JsonObject -> HashMap<ColumnName, SqlValue> -> StreamColumns -> Row
+        // ForeignSourceRow -> JsonObject -> HashMap<ColumnName, SqlValue> -> StreamColumns -> Row
 
         let column_values = self.0.into_column_values()?;
         let stream_columns = StreamColumns::new(stream_shape, column_values)?;
@@ -38,7 +40,7 @@ impl ForeignInputRow {
 
 #[cfg(test)]
 mod tests {
-    use crate::dependency_injection::test_di::TestDI;
+    use crate::stream_engine::dependency_injection::test_di::TestDI;
 
     use super::*;
 
@@ -46,7 +48,7 @@ mod tests {
     fn test_json_into_row() {
         let stream = Rc::new(StreamShape::fx_city_temperature());
 
-        let fr = ForeignInputRow::fx_city_temperature_tokyo();
+        let fr = ForeignSourceRow::fx_city_temperature_tokyo();
         let r = Row::fx_city_temperature_tokyo();
         assert_eq!(fr.into_row::<TestDI>(stream).unwrap(), r);
     }

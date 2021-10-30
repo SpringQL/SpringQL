@@ -2,7 +2,8 @@ use std::rc::Rc;
 
 use self::{final_row::FinalRow, node_executor_tree::NodeExecutorTree};
 use crate::{
-    dependency_injection::DependencyInjection, error::Result, model::query_plan::QueryPlan,
+    error::Result, model::query_plan::QueryPlan,
+    stream_engine::dependency_injection::DependencyInjection,
 };
 
 mod final_row;
@@ -61,7 +62,6 @@ mod tests {
     use std::rc::Rc;
 
     use crate::{
-        dependency_injection::test_di::TestDI,
         model::{
             name::PumpName,
             query_plan::{
@@ -70,6 +70,7 @@ mod tests {
             },
         },
         stream_engine::autonomous_executor::data::row::Row,
+        stream_engine::dependency_injection::test_di::TestDI,
     };
 
     use super::*;

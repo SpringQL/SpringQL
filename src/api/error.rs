@@ -22,8 +22,8 @@ pub enum SpringError {
         source: anyhow::Error,
     },
 
-    #[error("Timeout when getting an input from foreign system: {foreign_info:?}")]
-    ForeignInputTimeout {
+    #[error("Timeout when getting an input from foreign source: {foreign_info:?}")]
+    ForeignSourceTimeout {
         foreign_info: ForeignInfo,
         source: anyhow::Error,
     },
@@ -64,7 +64,7 @@ impl SpringError {
         match self {
             SpringError::ForeignIo { .. } => SpringErrorResponsibility::Foreign,
 
-            SpringError::ForeignInputTimeout { .. }
+            SpringError::ForeignSourceTimeout { .. }
             | SpringError::InputTimeout { .. }
             | SpringError::SpringQlCoreIo(_) => SpringErrorResponsibility::SpringQlCore,
 

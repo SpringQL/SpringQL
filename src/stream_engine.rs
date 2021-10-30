@@ -10,15 +10,14 @@
 //! Reactive executor quickly changes some status of a pipeline. It does not deal with stream data (Row, to be precise).
 //! Autonomous executor deals with stream data.
 //!
-//! Reactive executor resides in a main thread, while autonomous executor works with separate threads (models as WorkerPool).
+//! Both reactive executor and autonomous executor instance run at a main thread, while autonomous executor has workers which run at different worker threads.
 //! ```
 
 mod autonomous_executor;
+mod dependency_injection;
+mod pipeline;
 
-pub(crate) use autonomous_executor::{CurrentTimestamp, RowRepository, Timestamp};
-
-#[cfg(test)]
-pub(crate) use autonomous_executor::TestRowRepository;
+use autonomous_executor::{CurrentTimestamp, RowRepository, Scheduler};
 
 #[derive(Debug)]
 pub(crate) struct StreamEngine;

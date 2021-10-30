@@ -1,12 +1,14 @@
 use std::rc::Rc;
 
 use crate::{
-    dependency_injection::{test_di::TestDI, DependencyInjection},
     model::{
         name::{ColumnName, PumpName},
         option::options_builder::OptionsBuilder,
-        pipeline::stream_model::stream_shape::StreamShape,
         query_plan::query_plan_node::{operation::LeafOperation, QueryPlanNodeLeaf},
+    },
+    stream_engine::{
+        autonomous_executor::Timestamp,
+        dependency_injection::{test_di::TestDI, DependencyInjection},
     },
     stream_engine::{
         autonomous_executor::{
@@ -17,18 +19,19 @@ use crate::{
                 row::Row,
                 value::sql_value::{nn_sql_value::NnSqlValue, SqlValue},
             },
-            server::input::{
-                net::{NetInputServerActive, NetInputServerStandby},
-                InputServerStandby,
+            server::source::{
+                net::{NetSourceServerActive, NetSourceServerStandby},
+                SourceServerStandby,
             },
             test_support::foreign::source::TestSource,
         },
-        RowRepository, Timestamp,
+        pipeline::stream_model::stream_shape::StreamShape,
+        RowRepository,
     },
 };
 
-impl NetInputServerActive {
-    pub fn factory_with_test_source(inputs: Vec<JsonObject>) -> Self {
+impl NetSourceServerActive {
+    pub(in crate::stream_engine) fn factory_with_test_source(inputs: Vec<JsonObject>) -> Self {
         let source = TestSource::start(inputs).unwrap();
 
         let options = OptionsBuilder::default()
@@ -37,13 +40,13 @@ impl NetInputServerActive {
             .add("REMOTE_PORT", source.port().to_string())
             .build();
 
-        let server = NetInputServerStandby::new(options).unwrap();
+        let server = NetSourceServerStandby::new(options).unwrap();
         server.start().unwrap()
     }
 }
 
 impl StreamColumns {
-    pub fn factory_city_temperature(timestamp: Timestamp, city: &str, temperature: i32) -> Self {
+    pub(in crate::stream_engine) fn factory_city_temperature(timestamp: Timestamp, city: &str, temperature: i32) -> Self {
         let mut column_values = ColumnValues::default();
         column_values
             .insert(
@@ -67,7 +70,7 @@ impl StreamColumns {
         Self::new(Rc::new(StreamShape::fx_city_temperature()), column_values).unwrap()
     }
 
-    pub fn factory_trade(timestamp: Timestamp, ticker: &str, amount: i16) -> Self {
+    pub(in crate::stream_engine) fn factory_trade(timestamp: Timestamp, ticker: &str, amount: i16) -> Self {
         let mut column_values = ColumnValues::default();
         column_values
             .insert(
@@ -91,7 +94,7 @@ impl StreamColumns {
         Self::new(Rc::new(StreamShape::fx_ticker()), column_values).unwrap()
     }
 
-    pub fn factory_no_promoted_rowtime(amount: i32) -> Self {
+    pub(in crate::stream_engine) fn factory_no_promoted_rowtime(amount: i32) -> Self {
         let mut column_values = ColumnValues::default();
         column_values
             .insert(
@@ -109,20 +112,20 @@ impl StreamColumns {
 }
 
 impl Row {
-    pub fn factory_city_temperature(timestamp: Timestamp, city: &str, temperature: i32) -> Self {
+    pub(in crate::stream_engine) fn factory_city_temperature(timestamp: Timestamp, city: &str, temperature: i32) -> Self {
         Self::new::<TestDI>(StreamColumns::factory_city_temperature(
             timestamp,
             city,
             temperature,
         ))
     }
-    pub fn factory_trade(timestamp: Timestamp, ticker: &str, amount: i16) -> Self {
+    pub(in crate::stream_engine) fn factory_trade(timestamp: Timestamp, ticker: &str, amount: i16) -> Self {
         Self::new::<TestDI>(StreamColumns::factory_trade(timestamp, ticker, amount))
     }
 }
 
 impl QueryPlanNodeLeaf {
-    pub fn factory_with_pump_in<DI>(di: Rc<DI>, pump_name: PumpName, input: Vec<Row>) -> Self
+    pub(in crate::stream_engine) fn factory_with_pump_in<DI>(di: Rc<DI>, pump_name: PumpName, input: Vec<Row>) -> Self
     where
         DI: DependencyInjection,
     {

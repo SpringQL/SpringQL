@@ -1,29 +1,29 @@
 use crate::{
     error::Result, model::option::Options,
-    stream_engine::autonomous_executor::data::foreign_row::foreign_input_row::ForeignInputRow,
+    stream_engine::autonomous_executor::data::foreign_row::foreign_source_row::ForeignSourceRow,
 };
 
 pub(in crate::stream_engine::autonomous_executor) mod net;
 
-pub(in crate::stream_engine::autonomous_executor) trait InputServerStandby<A: InputServerActive> {
+pub(in crate::stream_engine::autonomous_executor) trait SourceServerStandby<A: SourceServerActive> {
     fn new(options: Options) -> Result<Self>
     where
         Self: Sized;
 
-    /// Blocks until the server is ready to provide ForeignInputRow.
+    /// Blocks until the server is ready to provide ForeignSourceRow.
     fn start(self) -> Result<A>;
 }
 
-/// Active: ready to provide ForeignInputRow.
-pub(in crate::stream_engine::autonomous_executor) trait InputServerActive {
+/// Active: ready to provide ForeignSourceRow.
+pub(in crate::stream_engine::autonomous_executor) trait SourceServerActive {
     /// Returns currently available foreign row.
     ///
     /// # Failure
     ///
-    /// - [SpringError::ForeignInputTimeout](crate::error::SpringError::ForeignInputTimeout) when:
+    /// - [SpringError::ForeignSourceTimeout](crate::error::SpringError::ForeignSourceTimeout) when:
     ///   - Remote source does not provide row within timeout.
     /// - [SpringError::ForeignIo](crate::error::SpringError::ForeignIo) when:
     ///   - Failed to parse response from remote source.
     ///   - Unknown foreign error.
-    fn next_row(&mut self) -> Result<ForeignInputRow>;
+    fn next_row(&mut self) -> Result<ForeignSourceRow>;
 }

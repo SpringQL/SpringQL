@@ -6,12 +6,12 @@ use std::{
 
 use anyhow::Context;
 
-use super::{OutputServerActive, OutputServerStandby};
+use super::{SinkServerActive, SinkServerStandby};
 use crate::{
     error::{foreign_info::ForeignInfo, Result, SpringError},
     model::option::{server_options::NetServerOptions, Options},
     stream_engine::autonomous_executor::data::foreign_row::{
-        foreign_output_row::ForeignOutputRow, format::json::JsonObject,
+        foreign_sink_row::ForeignSinkRow, format::json::JsonObject,
     },
 };
 
@@ -20,17 +20,17 @@ const CONNECT_TIMEOUT_SECS: u64 = 1;
 const WRITE_TIMEOUT_MSECS: u64 = 100;
 
 #[derive(Debug)]
-pub(in crate::stream_engine::autonomous_executor) struct NetOutputServerStandby {
+pub(in crate::stream_engine::autonomous_executor) struct NetSinkServerStandby {
     options: NetServerOptions,
 }
 
 #[derive(Debug)]
-pub(in crate::stream_engine::autonomous_executor) struct NetOutputServerActive {
+pub(in crate::stream_engine::autonomous_executor) struct NetSinkServerActive {
     foreign_addr: SocketAddr,
     tcp_stream_writer: BufWriter<TcpStream>, // TODO UDP
 }
 
-impl OutputServerStandby<NetOutputServerActive> for NetOutputServerStandby {
+impl SinkServerStandby<NetSinkServerActive> for NetSinkServerStandby {
     fn new(options: Options) -> Result<Self>
     where
         Self: Sized,
@@ -40,7 +40,7 @@ impl OutputServerStandby<NetOutputServerActive> for NetOutputServerStandby {
         })
     }
 
-    fn start(self) -> Result<NetOutputServerActive> {
+    fn start(self) -> Result<NetSinkServerActive> {
         let sock_addr = SocketAddr::new(self.options.remote_host, self.options.remote_port);
 
         let tcp_stream =
@@ -60,15 +60,15 @@ impl OutputServerStandby<NetOutputServerActive> for NetOutputServerStandby {
 
         let tcp_stream_writer = BufWriter::new(tcp_stream);
 
-        Ok(NetOutputServerActive {
+        Ok(NetSinkServerActive {
             tcp_stream_writer,
             foreign_addr: sock_addr,
         })
     }
 }
 
-impl OutputServerActive for NetOutputServerActive {
-    fn send_row(&mut self, row: ForeignOutputRow) -> Result<()> {
+impl SinkServerActive for NetSinkServerActive {
+    fn send_row(&mut self, row: ForeignSinkRow) -> Result<()> {
         let mut json_s = JsonObject::from(row).to_string();
         json_s.push('\n');
 
@@ -111,17 +111,17 @@ mod tests {
             .add("REMOTE_PORT", sink.port().to_string())
             .build();
 
-        let server = NetOutputServerStandby::new(options).unwrap();
+        let server = NetSinkServerStandby::new(options).unwrap();
         let mut server = server.start().unwrap();
 
         server
-            .send_row(ForeignOutputRow::fx_city_temperature_tokyo())
+            .send_row(ForeignSinkRow::fx_city_temperature_tokyo())
             .unwrap();
         server
-            .send_row(ForeignOutputRow::fx_city_temperature_osaka())
+            .send_row(ForeignSinkRow::fx_city_temperature_osaka())
             .unwrap();
         server
-            .send_row(ForeignOutputRow::fx_city_temperature_london())
+            .send_row(ForeignSinkRow::fx_city_temperature_london())
             .unwrap();
 
         sink.expect_receive(vec![
