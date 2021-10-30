@@ -1,10 +1,12 @@
-mod worker;
+pub(super) mod worker;
 
 use std::sync::{Arc, Mutex};
 
 use crate::stream_engine::dependency_injection::DependencyInjection;
 
-use self::worker::Worker;
+use self::worker::{worker_id::WorkerId, Worker};
+
+use super::scheduler::scheduler_read::SchedulerRead;
 
 #[derive(Debug)]
 pub(super) struct WorkerPool(Vec<Worker>);
@@ -12,10 +14,10 @@ pub(super) struct WorkerPool(Vec<Worker>);
 impl WorkerPool {
     pub(super) fn new<DI: DependencyInjection>(
         n_worker_threads: usize,
-        scheduler: Arc<Mutex<DI::SchedulerType>>,
+        scheduler_read: SchedulerRead<DI>,
     ) -> Self {
         let workers = (0..n_worker_threads)
-            .map(|_| Worker::new::<DI>(scheduler.clone()))
+            .map(|i| Worker::new::<DI>(WorkerId::new(i as u64), scheduler_read.clone()))
             .collect();
         Self(workers)
     }

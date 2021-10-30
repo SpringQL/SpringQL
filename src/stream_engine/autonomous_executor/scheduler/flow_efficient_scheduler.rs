@@ -97,25 +97,34 @@
 //!
 //! Selecting 1 from these schedule intelligently should lead to more memory reduction but current implementation always select first one (eagerly select leftmost outgoing edge).
 
-use crate::stream_engine::autonomous_executor::{pipeline_read::PipelineRead, task::Task};
+use crate::stream_engine::autonomous_executor::{
+    task::Task, worker_pool::worker::worker_id::WorkerId,
+};
 
 use super::Scheduler;
 
+#[derive(Debug, Default)]
 pub(crate) struct FlowEfficientScheduler;
 
 impl Scheduler for FlowEfficientScheduler {
-    fn new(pipeline: PipelineRead) -> Self {
+    fn update_pipeline(&mut self, pipeline: crate::stream_engine::pipeline::Pipeline) {
         todo!()
     }
 
-    fn next_task(&mut self) -> Option<Task> {
+    fn next_task(&self, worker: WorkerId) -> Option<Task> {
         todo!()
     }
 }
 
 #[cfg(test)]
 mod tests {
+    use std::sync::{Arc, RwLock};
+
+    use crate::stream_engine::pipeline::{self, Pipeline};
+
     use super::*;
+
+    // fn t(pipeline: Pipeline, expected: Vec<TaskId>) {}
 
     /// ```text
     /// (0)--a-->[1]--b-->[2]--c-->
@@ -123,7 +132,11 @@ mod tests {
     ///
     /// -> `abc`
     #[test]
-    fn test_linear_pipeline() {}
+    fn test_linear_pipeline() {
+        // let pipeline = Pipeline::fx_linear();
+
+        // pipeline.add_source_server(SourceServerModel::);
+    }
 
     /// ```text
     /// (0)--a-->[1]--c-->[3]--e-->

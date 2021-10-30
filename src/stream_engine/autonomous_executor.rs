@@ -2,12 +2,11 @@ pub(self) mod data;
 pub(self) mod exec;
 pub(self) mod server;
 
-mod pipeline_read;
 mod scheduler;
 mod task;
 mod worker_pool;
 
-use std::sync::{Arc, Mutex};
+use std::sync::{Arc, RwLock};
 
 pub(in crate::stream_engine) use data::{CurrentTimestamp, RowRepository, Timestamp};
 pub(in crate::stream_engine) use scheduler::{FlowEfficientScheduler, Scheduler};
@@ -15,29 +14,47 @@ pub(in crate::stream_engine) use scheduler::{FlowEfficientScheduler, Scheduler};
 #[cfg(test)]
 pub(crate) use data::TestRowRepository;
 
-use self::{pipeline_read::PipelineRead, worker_pool::WorkerPool};
+use self::{
+    scheduler::{scheduler_read::SchedulerRead, scheduler_write::SchedulerWrite},
+    worker_pool::WorkerPool,
+};
 
-use super::dependency_injection::DependencyInjection;
+use super::{dependency_injection::DependencyInjection, pipeline::Pipeline};
 
 #[cfg(test)]
 pub mod test_support;
 
 /// Executor of pipeline's stream data.
+///
+/// All methods are called from main thread.
 #[derive(Debug)]
-pub(in crate::stream_engine) struct AutonomousExecutor {
-    /// On empty: Asks scheduler to give a runnable task.
+pub(in crate::stream_engine) struct AutonomousExecutor<DI>
+where
+    DI: DependencyInjection,
+{
+    /// Writer: Main thread. Write on pipeline update.
+    /// Reader: Worker threads. Read on task request.
+    scheduler_write: SchedulerWrite<DI>,
+
     worker_pool: WorkerPool,
 }
 
-impl AutonomousExecutor {
-    pub(crate) fn new<DI: DependencyInjection>(
-        n_worker_threads: usize,
-        pipeline: PipelineRead,
-    ) -> Self {
-        let scheduler = Arc::new(Mutex::new(DI::SchedulerType::new(pipeline)));
+impl<DI> AutonomousExecutor<DI>
+where
+    DI: DependencyInjection,
+{
+    pub(in crate::stream_engine) fn new(n_worker_threads: usize) -> Self {
+        let scheduler = Arc::new(RwLock::new(DI::SchedulerType::default()));
+        let scheduler_write = SchedulerWrite::new(scheduler.clone());
+        let scheduler_read = SchedulerRead::new(scheduler.clone());
 
         Self {
-            worker_pool: WorkerPool::new::<DI>(n_worker_threads, scheduler),
+            scheduler_write,
+            worker_pool: WorkerPool::new::<DI>(n_worker_threads, scheduler_read),
         }
+    }
+
+    pub(in crate::stream_engine) fn update_pipeline(&self, pipeline: Pipeline) {
+        self.scheduler_write.write_lock().update_pipeline(pipeline)
     }
 }
