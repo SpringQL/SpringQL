@@ -118,13 +118,42 @@ impl Scheduler for FlowEfficientScheduler {
 
 #[cfg(test)]
 mod tests {
-    use std::sync::{Arc, RwLock};
+    use std::{
+        collections::VecDeque,
+        sync::{Arc, RwLock},
+    };
 
-    use crate::stream_engine::pipeline::{self, Pipeline};
+    use crate::stream_engine::{
+        autonomous_executor::task::task_id::TaskId,
+        pipeline::{self, Pipeline},
+    };
 
     use super::*;
 
-    // fn t(pipeline: Pipeline, expected: Vec<TaskId>) {}
+    fn t(pipeline: Pipeline, expected: Vec<TaskId>) {
+        let mut expected = expected.into_iter().collect::<VecDeque<_>>();
+
+        let worker_id = WorkerId::fx_main_thread();
+
+        let mut scheduler = FlowEfficientScheduler::default();
+        scheduler.update_pipeline(pipeline);
+
+        if let Some(first_task) = scheduler.next_task(worker_id) {
+            assert_eq!(first_task.id(), expected.pop_front().unwrap());
+
+            loop {
+                let next_task = scheduler
+                    .next_task(worker_id)
+                    .expect("task must be infinitely provided");
+                if next_task == first_task {
+                    return;
+                }
+                assert_eq!(next_task.id(), expected.pop_front().unwrap());
+            }
+        } else {
+            assert!(expected.is_empty())
+        }
+    }
 
     /// ```text
     /// (0)--a-->[1]--b-->[2]--c-->
@@ -133,9 +162,10 @@ mod tests {
     /// -> `abc`
     #[test]
     fn test_linear_pipeline() {
-        // let pipeline = Pipeline::fx_linear();
-
-        // pipeline.add_source_server(SourceServerModel::);
+        t(
+            Pipeline::fx_linear(),
+            vec![TaskId::fx_a(), TaskId::fx_b(), TaskId::fx_c()],
+        )
     }
 
     /// ```text
@@ -146,7 +176,19 @@ mod tests {
     ///
     /// -> `acebdf`
     #[test]
-    fn test_pipeline_with_split() {}
+    fn test_pipeline_with_split() {
+        t(
+            Pipeline::fx_split(),
+            vec![
+                TaskId::fx_a(),
+                TaskId::fx_c(),
+                TaskId::fx_e(),
+                TaskId::fx_b(),
+                TaskId::fx_d(),
+                TaskId::fx_f(),
+            ],
+        )
+    }
 
     /// ```text
     /// (0)--a-->[1]--c-->[3]--e-->
@@ -157,7 +199,18 @@ mod tests {
     ///
     /// -> `acbde`
     #[test]
-    fn test_pipeline_with_merge() {}
+    fn test_pipeline_with_merge() {
+        t(
+            Pipeline::fx_split_merge(),
+            vec![
+                TaskId::fx_a(),
+                TaskId::fx_c(),
+                TaskId::fx_b(),
+                TaskId::fx_d(),
+                TaskId::fx_e(),
+            ],
+        )
+    }
 
     /// ```text
     /// (0)--a-->[1]--c-->[3]--f-->[4]--g-->[5]--h-->[6]--j-->[8]--l-->
@@ -170,5 +223,24 @@ mod tests {
     ///
     /// -> `acfbdgehjlikm`
     #[test]
-    fn test_complex_pipeline() {}
+    fn test_complex_pipeline() {
+        t(
+            Pipeline::fx_complex(),
+            vec![
+                TaskId::fx_a(),
+                TaskId::fx_c(),
+                TaskId::fx_f(),
+                TaskId::fx_b(),
+                TaskId::fx_d(),
+                TaskId::fx_g(),
+                TaskId::fx_e(),
+                TaskId::fx_h(),
+                TaskId::fx_j(),
+                TaskId::fx_l(),
+                TaskId::fx_i(),
+                TaskId::fx_k(),
+                TaskId::fx_m(),
+            ],
+        )
+    }
 }

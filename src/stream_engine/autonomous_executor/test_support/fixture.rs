@@ -9,18 +9,27 @@ use crate::{
         option::{options_builder::OptionsBuilder, Options},
         sql_type::SqlType,
     },
-    stream_engine::dependency_injection::test_di::TestDI,
     stream_engine::{
-        autonomous_executor::data::{
-            column::stream_column::StreamColumns,
-            foreign_row::{
-                foreign_sink_row::ForeignSinkRow, foreign_source_row::ForeignSourceRow,
-                format::json::JsonObject,
+        autonomous_executor::worker_pool::worker::worker_id::WorkerId,
+        dependency_injection::test_di::TestDI,
+    },
+    stream_engine::{
+        autonomous_executor::{
+            data::{
+                column::stream_column::StreamColumns,
+                foreign_row::{
+                    foreign_sink_row::ForeignSinkRow, foreign_source_row::ForeignSourceRow,
+                    format::json::JsonObject,
+                },
+                row::Row,
+                timestamp::Timestamp,
             },
-            row::Row,
-            timestamp::Timestamp,
+            task::task_id::TaskId,
         },
-        pipeline::stream_model::{stream_shape::StreamShape, StreamModel},
+        pipeline::{
+            stream_model::{stream_shape::StreamShape, StreamModel},
+            Pipeline,
+        },
     },
 };
 
@@ -131,6 +140,24 @@ impl ForeignSinkRow {
     }
     pub(in crate::stream_engine) fn fx_trade_google() -> Self {
         Row::fx_trade_google().into()
+    }
+}
+
+impl Pipeline {
+    pub(in crate::stream_engine) fn fx_linear() -> Self {
+        todo!()
+    }
+
+    pub(in crate::stream_engine) fn fx_split() -> Self {
+        todo!()
+    }
+
+    pub(in crate::stream_engine) fn fx_split_merge() -> Self {
+        todo!()
+    }
+
+    pub(in crate::stream_engine) fn fx_complex() -> Self {
+        todo!()
     }
 }
 
@@ -314,5 +341,53 @@ impl StreamColumns {
 
     pub(in crate::stream_engine) fn fx_no_promoted_rowtime() -> Self {
         Self::factory_no_promoted_rowtime(12345)
+    }
+}
+
+impl WorkerId {
+    pub(in crate::stream_engine) fn fx_main_thread() -> Self {
+        Self::new(0)
+    }
+}
+
+impl TaskId {
+    pub(in crate::stream_engine) fn fx_a() -> Self {
+        Self::new("task-a".to_string())
+    }
+    pub(in crate::stream_engine) fn fx_b() -> Self {
+        Self::new("task-b".to_string())
+    }
+    pub(in crate::stream_engine) fn fx_c() -> Self {
+        Self::new("task-c".to_string())
+    }
+    pub(in crate::stream_engine) fn fx_d() -> Self {
+        Self::new("task-d".to_string())
+    }
+    pub(in crate::stream_engine) fn fx_e() -> Self {
+        Self::new("task-e".to_string())
+    }
+    pub(in crate::stream_engine) fn fx_f() -> Self {
+        Self::new("task-f".to_string())
+    }
+    pub(in crate::stream_engine) fn fx_g() -> Self {
+        Self::new("task-g".to_string())
+    }
+    pub(in crate::stream_engine) fn fx_h() -> Self {
+        Self::new("task-h".to_string())
+    }
+    pub(in crate::stream_engine) fn fx_i() -> Self {
+        Self::new("task-i".to_string())
+    }
+    pub(in crate::stream_engine) fn fx_j() -> Self {
+        Self::new("task-j".to_string())
+    }
+    pub(in crate::stream_engine) fn fx_k() -> Self {
+        Self::new("task-k".to_string())
+    }
+    pub(in crate::stream_engine) fn fx_l() -> Self {
+        Self::new("task-l".to_string())
+    }
+    pub(in crate::stream_engine) fn fx_m() -> Self {
+        Self::new("task-m".to_string())
     }
 }
