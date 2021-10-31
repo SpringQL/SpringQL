@@ -1,5 +1,7 @@
 pub(super) mod task_id;
 
+pub(super) mod task_graph;
+
 use crate::error::Result;
 
 use self::task_id::TaskId;

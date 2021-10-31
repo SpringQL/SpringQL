@@ -97,8 +97,9 @@
 //!
 //! Selecting 1 from these schedule intelligently should lead to more memory reduction but current implementation always select first one (eagerly select leftmost outgoing edge).
 
-use crate::stream_engine::autonomous_executor::{
-    task::Task, worker_pool::worker::worker_id::WorkerId,
+use crate::stream_engine::{
+    autonomous_executor::{task::Task, worker_pool::worker::worker_id::WorkerId},
+    pipeline::Pipeline,
 };
 
 use super::Scheduler;
@@ -107,7 +108,7 @@ use super::Scheduler;
 pub(crate) struct FlowEfficientScheduler;
 
 impl Scheduler for FlowEfficientScheduler {
-    fn update_pipeline(&mut self, pipeline: crate::stream_engine::pipeline::Pipeline) {
+    fn update_pipeline(&mut self, pipeline: Pipeline) {
         todo!()
     }
 
