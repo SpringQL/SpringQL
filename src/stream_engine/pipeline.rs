@@ -10,7 +10,7 @@ pub(in crate::stream_engine) mod pump_model;
 pub(in crate::stream_engine) mod server_model;
 pub(in crate::stream_engine) mod stream_model;
 
-mod pipeline_graph;
+pub(in crate::stream_engine) mod pipeline_graph;
 
 use anyhow::anyhow;
 use std::collections::{HashMap, HashSet};
@@ -33,6 +33,10 @@ pub(super) struct Pipeline {
 }
 
 impl Pipeline {
+    pub(super) fn as_graph(&self) -> &PipelineGraph {
+        &self.graph
+    }
+
     /// # Failure
     ///
     /// - [SpringError::Sql](crate::error::SpringError::Sql) when:

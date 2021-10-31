@@ -34,7 +34,7 @@ pub(super) enum PumpEdge {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-pub(super) struct PipelineGraph {
+pub(in crate::stream_engine) struct PipelineGraph {
     graph: DiGraph<StreamNode, PumpEdge>,
     stream_nodes: HashMap<StreamName, NodeIndex>,
 }
