@@ -15,7 +15,7 @@ use std::collections::{HashMap, HashSet};
 
 use crate::{
     error::{Result, SpringError},
-    model::name::StreamName,
+    model::name::{PumpName, StreamName},
 };
 use serde::{Deserialize, Serialize};
 
@@ -26,6 +26,7 @@ use self::{
 #[derive(Eq, PartialEq, Debug, Default, Serialize, Deserialize)]
 pub(super) struct Pipeline {
     object_names: HashSet<String>,
+    pumps: HashMap<PumpName, PumpModel>,
     foreign_streams: HashMap<StreamName, ForeignStreamModel>,
     servers_serving_to: HashMap<StreamName, ServerModel>,
 }
@@ -40,7 +41,25 @@ impl Pipeline {
     pub(super) fn add_pump(&mut self, pump: PumpModel) -> Result<()> {
         self.register_name(pump.name().as_ref())?;
 
-        todo!()
+        self.object_names
+            .get(pump.upstream().as_ref())
+            .ok_or_else(|| {
+                SpringError::Sql(anyhow!(
+                    r#"upstream "{}" does not exist in pipeline"#,
+                    pump.upstream()
+                ))
+            })?;
+        self.object_names
+            .get(pump.downstream().as_ref())
+            .ok_or_else(|| {
+                SpringError::Sql(anyhow!(
+                    r#"downstream "{}" does not exist in pipeline"#,
+                    pump.downstream()
+                ))
+            })?;
+
+        let _ = self.pumps.insert(pump.name().clone(), pump);
+        Ok(())
     }
 
     /// # Failure
