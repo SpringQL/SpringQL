@@ -22,5 +22,7 @@ fastrand = "1.5"
 env_logger = "0.9"
 log = "0.4"
 
+petgraph = {version = "0.6", features = ["serde-1"]}
+
 [dev-dependencies]
 regex = "1.5"

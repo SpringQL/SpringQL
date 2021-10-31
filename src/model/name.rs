@@ -1,4 +1,4 @@
-use std::fmt::Display;
+use std::{fmt::Display, io::sink};
 
 use serde::{Deserialize, Serialize};
 
@@ -41,5 +41,15 @@ impl AsRef<str> for PumpName {
 impl ColumnName {
     pub(crate) fn arrival_rowtime() -> Self {
         Self::new("ROWTIME".to_string())
+    }
+}
+
+impl StreamName {
+    pub(crate) fn virtual_root() -> Self {
+        Self::new("__st_virtual_root__".to_string())
+    }
+
+    pub(crate) fn virtual_leaf(sink_foreign_stream: StreamName) -> Self {
+        Self::new(format!("__st_virtual_leaf__{}__", sink_foreign_stream))
     }
 }

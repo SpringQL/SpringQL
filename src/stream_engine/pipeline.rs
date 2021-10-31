@@ -5,10 +5,12 @@
 //!   - Source/Sink Server
 //!   - Pump
 
-pub(crate) mod foreign_stream_model;
-pub(crate) mod pump_model;
-pub(crate) mod server_model;
-pub(crate) mod stream_model;
+pub(in crate::stream_engine) mod foreign_stream_model;
+pub(in crate::stream_engine) mod pump_model;
+pub(in crate::stream_engine) mod server_model;
+pub(in crate::stream_engine) mod stream_model;
+
+mod pipeline_graph;
 
 use anyhow::anyhow;
 use std::collections::{HashMap, HashSet};
@@ -20,15 +22,14 @@ use crate::{
 use serde::{Deserialize, Serialize};
 
 use self::{
-    foreign_stream_model::ForeignStreamModel, pump_model::PumpModel, server_model::ServerModel,
+    foreign_stream_model::ForeignStreamModel, pipeline_graph::PipelineGraph, pump_model::PumpModel,
+    server_model::ServerModel,
 };
 
-#[derive(Eq, PartialEq, Debug, Default, Serialize, Deserialize)]
+#[derive(Debug, Default, Serialize, Deserialize)]
 pub(super) struct Pipeline {
     object_names: HashSet<String>,
-    pumps: HashMap<PumpName, PumpModel>,
-    foreign_streams: HashMap<StreamName, ForeignStreamModel>,
-    servers_serving_to: HashMap<StreamName, ServerModel>,
+    graph: PipelineGraph,
 }
 
 impl Pipeline {
@@ -40,26 +41,7 @@ impl Pipeline {
     ///   - Name of downstream stream is not found in pipeline
     pub(super) fn add_pump(&mut self, pump: PumpModel) -> Result<()> {
         self.register_name(pump.name().as_ref())?;
-
-        self.object_names
-            .get(pump.upstream().as_ref())
-            .ok_or_else(|| {
-                SpringError::Sql(anyhow!(
-                    r#"upstream "{}" does not exist in pipeline"#,
-                    pump.upstream()
-                ))
-            })?;
-        self.object_names
-            .get(pump.downstream().as_ref())
-            .ok_or_else(|| {
-                SpringError::Sql(anyhow!(
-                    r#"downstream "{}" does not exist in pipeline"#,
-                    pump.downstream()
-                ))
-            })?;
-
-        let _ = self.pumps.insert(pump.name().clone(), pump);
-        Ok(())
+        self.graph.add_pump(pump)
     }
 
     /// # Failure
@@ -68,11 +50,7 @@ impl Pipeline {
     ///   - Name of foreign stream is already used in the same pipeline
     pub(super) fn add_foreign_stream(&mut self, foreign_stream: ForeignStreamModel) -> Result<()> {
         self.register_name(foreign_stream.name().as_ref())?;
-
-        let _ = self
-            .foreign_streams
-            .insert(foreign_stream.name().clone(), foreign_stream);
-        Ok(())
+        self.graph.add_foreign_stream(foreign_stream)
     }
 
     /// # Failure
@@ -80,8 +58,7 @@ impl Pipeline {
     /// TODO
     pub(super) fn add_server(&mut self, server: ServerModel) -> Result<()> {
         let serving_to = server.serving_foreign_stream();
-        let _ = self.servers_serving_to.insert(serving_to.clone(), server);
-        Ok(())
+        self.graph.add_server(server)
     }
 
     /// # Failure

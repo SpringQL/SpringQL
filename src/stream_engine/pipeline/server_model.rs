@@ -15,6 +15,10 @@ pub(in crate::stream_engine) struct ServerModel {
 }
 
 impl ServerModel {
+    pub(in crate::stream_engine) fn server_type(&self) -> &ServerType {
+        &self.server_type
+    }
+
     pub(in crate::stream_engine) fn serving_foreign_stream(&self) -> &StreamName {
         &self.serving_foreign_stream
     }
