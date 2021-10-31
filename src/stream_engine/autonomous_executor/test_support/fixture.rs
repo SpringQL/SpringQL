@@ -158,14 +158,14 @@ impl Pipeline {
             .add_foreign_stream(ForeignStreamModel::fx_trade_source())
             .unwrap();
         pipeline
-            .add_source_server(ServerModel::fx_net_source(StreamName::fx_trade_source()))
+            .add_server(ServerModel::fx_net_source(StreamName::fx_trade_source()))
             .unwrap();
 
         pipeline
             .add_foreign_stream(ForeignStreamModel::fx_trade_sink())
             .unwrap();
         pipeline
-            .add_sink_server(ServerModel::fx_net_sink(StreamName::fx_trade_sink()))
+            .add_server(ServerModel::fx_net_sink(StreamName::fx_trade_sink()))
             .unwrap();
 
         pipeline

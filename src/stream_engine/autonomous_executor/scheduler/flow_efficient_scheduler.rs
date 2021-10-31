@@ -118,15 +118,9 @@ impl Scheduler for FlowEfficientScheduler {
 
 #[cfg(test)]
 mod tests {
-    use std::{
-        collections::VecDeque,
-        sync::{Arc, RwLock},
-    };
+    use std::collections::VecDeque;
 
-    use crate::stream_engine::{
-        autonomous_executor::task::task_id::TaskId,
-        pipeline::{self, Pipeline},
-    };
+    use crate::stream_engine::{autonomous_executor::task::task_id::TaskId, pipeline::Pipeline};
 
     use super::*;
 

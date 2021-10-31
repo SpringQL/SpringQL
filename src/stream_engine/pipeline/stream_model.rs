@@ -14,6 +14,10 @@ pub(crate) struct StreamModel {
 }
 
 impl StreamModel {
+    pub(crate) fn name(&self) -> &StreamName {
+        &self.name
+    }
+
     pub(crate) fn shape(&self) -> Arc<StreamShape> {
         self.shape.clone()
     }

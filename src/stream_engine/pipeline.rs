@@ -10,7 +10,13 @@ pub(crate) mod pump_model;
 pub(crate) mod server_model;
 pub(crate) mod stream_model;
 
-use crate::error::Result;
+use anyhow::anyhow;
+use std::collections::{HashMap, HashSet};
+
+use crate::{
+    error::{Result, SpringError},
+    model::name::StreamName,
+};
 use serde::{Deserialize, Serialize};
 
 use self::{
@@ -18,7 +24,11 @@ use self::{
 };
 
 #[derive(Eq, PartialEq, Debug, Default, Serialize, Deserialize)]
-pub(super) struct Pipeline;
+pub(super) struct Pipeline {
+    object_names: HashSet<String>,
+    foreign_streams: HashMap<StreamName, ForeignStreamModel>,
+    servers_serving_to: HashMap<StreamName, ServerModel>,
+}
 
 impl Pipeline {
     /// # Failure
@@ -28,6 +38,8 @@ impl Pipeline {
     ///   - Name of upstream stream is not found in pipeline
     ///   - Name of downstream stream is not found in pipeline
     pub(super) fn add_pump(&mut self, pump: PumpModel) -> Result<()> {
+        self.register_name(pump.name().as_ref())?;
+
         todo!()
     }
 
@@ -36,20 +48,35 @@ impl Pipeline {
     /// - [SpringError::Sql](crate::error::SpringError::Sql) when:
     ///   - Name of foreign stream is already used in the same pipeline
     pub(super) fn add_foreign_stream(&mut self, foreign_stream: ForeignStreamModel) -> Result<()> {
-        todo!()
+        self.register_name(foreign_stream.name().as_ref())?;
+
+        let _ = self
+            .foreign_streams
+            .insert(foreign_stream.name().clone(), foreign_stream);
+        Ok(())
     }
 
     /// # Failure
     ///
     /// TODO
-    pub(super) fn add_source_server(&mut self, source_server: ServerModel) -> Result<()> {
-        todo!()
+    pub(super) fn add_server(&mut self, server: ServerModel) -> Result<()> {
+        let serving_to = server.serving_foreign_stream();
+        let _ = self.servers_serving_to.insert(serving_to.clone(), server);
+        Ok(())
     }
 
     /// # Failure
     ///
-    /// TODO
-    pub(super) fn add_sink_server(&mut self, sink_server: ServerModel) -> Result<()> {
-        todo!()
+    /// - [SpringError::Sql](crate::error::SpringError::Sql) when:
+    ///   - Name is already used in the same pipeline
+    fn register_name(&mut self, name: &str) -> Result<()> {
+        if !self.object_names.insert(name.to_string()) {
+            Err(SpringError::Sql(anyhow!(
+                r#"name "{}" already exists in pipeline"#,
+                name
+            )))
+        } else {
+            Ok(())
+        }
     }
 }

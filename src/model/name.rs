@@ -27,6 +27,17 @@ impl Display for ColumnName {
     }
 }
 
+impl AsRef<str> for StreamName {
+    fn as_ref(&self) -> &str {
+        &self.0
+    }
+}
+impl AsRef<str> for PumpName {
+    fn as_ref(&self) -> &str {
+        &self.0
+    }
+}
+
 impl ColumnName {
     pub(crate) fn arrival_rowtime() -> Self {
         Self::new("ROWTIME".to_string())
