@@ -1,4 +1,4 @@
-use std::rc::Rc;
+use std::sync::Arc;
 
 use crate::{
     error::Result,
@@ -15,7 +15,7 @@ use super::format::json::JsonObject;
 ///
 /// Immediately converted into Row on stream-engine boundary.
 #[derive(Eq, PartialEq, Debug)]
-pub(in crate::stream_engine::autonomous_executor) struct ForeignSourceRow(JsonObject);
+pub(in crate::stream_engine) struct ForeignSourceRow(JsonObject);
 
 impl ForeignSourceRow {
     pub(in crate::stream_engine::autonomous_executor) fn from_json(json: JsonObject) -> Self {
@@ -28,7 +28,7 @@ impl ForeignSourceRow {
     ///   - This foreign input row cannot be converted into row.
     pub(in crate::stream_engine::autonomous_executor) fn into_row<DI: DependencyInjection>(
         self,
-        stream_shape: Rc<StreamShape>,
+        stream_shape: Arc<StreamShape>,
     ) -> Result<Row> {
         // ForeignSourceRow -> JsonObject -> HashMap<ColumnName, SqlValue> -> StreamColumns -> Row
 
@@ -46,7 +46,7 @@ mod tests {
 
     #[test]
     fn test_json_into_row() {
-        let stream = Rc::new(StreamShape::fx_city_temperature());
+        let stream = Arc::new(StreamShape::fx_city_temperature());
 
         let fr = ForeignSourceRow::fx_city_temperature_tokyo();
         let r = Row::fx_city_temperature_tokyo();

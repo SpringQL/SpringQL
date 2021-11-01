@@ -1,14 +1,15 @@
-use std::rc::Rc;
+use std::{rc::Rc, sync::Arc};
 
 use crate::{
     model::{
-        name::{ColumnName, PumpName},
+        name::{ColumnName, PumpName, StreamName},
         option::options_builder::OptionsBuilder,
         query_plan::query_plan_node::{operation::LeafOperation, QueryPlanNodeLeaf},
     },
     stream_engine::{
         autonomous_executor::Timestamp,
         dependency_injection::{test_di::TestDI, DependencyInjection},
+        pipeline::stream_model::StreamModel,
     },
     stream_engine::{
         autonomous_executor::{
@@ -40,13 +41,17 @@ impl NetSourceServerActive {
             .add("REMOTE_PORT", source.port().to_string())
             .build();
 
-        let server = NetSourceServerStandby::new(options).unwrap();
+        let server = NetSourceServerStandby::new(&options).unwrap();
         server.start().unwrap()
     }
 }
 
 impl StreamColumns {
-    pub(in crate::stream_engine) fn factory_city_temperature(timestamp: Timestamp, city: &str, temperature: i32) -> Self {
+    pub(in crate::stream_engine) fn factory_city_temperature(
+        timestamp: Timestamp,
+        city: &str,
+        temperature: i32,
+    ) -> Self {
         let mut column_values = ColumnValues::default();
         column_values
             .insert(
@@ -67,10 +72,14 @@ impl StreamColumns {
             )
             .unwrap();
 
-        Self::new(Rc::new(StreamShape::fx_city_temperature()), column_values).unwrap()
+        Self::new(Arc::new(StreamShape::fx_city_temperature()), column_values).unwrap()
     }
 
-    pub(in crate::stream_engine) fn factory_trade(timestamp: Timestamp, ticker: &str, amount: i16) -> Self {
+    pub(in crate::stream_engine) fn factory_trade(
+        timestamp: Timestamp,
+        ticker: &str,
+        amount: i16,
+    ) -> Self {
         let mut column_values = ColumnValues::default();
         column_values
             .insert(
@@ -91,7 +100,7 @@ impl StreamColumns {
             )
             .unwrap();
 
-        Self::new(Rc::new(StreamShape::fx_ticker()), column_values).unwrap()
+        Self::new(Arc::new(StreamShape::fx_trade()), column_values).unwrap()
     }
 
     pub(in crate::stream_engine) fn factory_no_promoted_rowtime(amount: i32) -> Self {
@@ -104,7 +113,7 @@ impl StreamColumns {
             .unwrap();
 
         Self::new(
-            Rc::new(StreamShape::fx_no_promoted_rowtime()),
+            Arc::new(StreamShape::fx_no_promoted_rowtime()),
             column_values,
         )
         .unwrap()
@@ -112,20 +121,32 @@ impl StreamColumns {
 }
 
 impl Row {
-    pub(in crate::stream_engine) fn factory_city_temperature(timestamp: Timestamp, city: &str, temperature: i32) -> Self {
+    pub(in crate::stream_engine) fn factory_city_temperature(
+        timestamp: Timestamp,
+        city: &str,
+        temperature: i32,
+    ) -> Self {
         Self::new::<TestDI>(StreamColumns::factory_city_temperature(
             timestamp,
             city,
             temperature,
         ))
     }
-    pub(in crate::stream_engine) fn factory_trade(timestamp: Timestamp, ticker: &str, amount: i16) -> Self {
+    pub(in crate::stream_engine) fn factory_trade(
+        timestamp: Timestamp,
+        ticker: &str,
+        amount: i16,
+    ) -> Self {
         Self::new::<TestDI>(StreamColumns::factory_trade(timestamp, ticker, amount))
     }
 }
 
 impl QueryPlanNodeLeaf {
-    pub(in crate::stream_engine) fn factory_with_pump_in<DI>(di: Rc<DI>, pump_name: PumpName, input: Vec<Row>) -> Self
+    pub(in crate::stream_engine) fn factory_with_pump_in<DI>(
+        di: Rc<DI>,
+        pump_name: PumpName,
+        input: Vec<Row>,
+    ) -> Self
     where
         DI: DependencyInjection,
     {
@@ -139,5 +160,17 @@ impl QueryPlanNodeLeaf {
         Self {
             op: LeafOperation::Collect { pump: pump_name },
         }
+    }
+}
+
+impl StreamName {
+    pub(in crate::stream_engine) fn factory(name: &str) -> Self {
+        Self::new(name.to_string())
+    }
+}
+
+impl PumpName {
+    pub(in crate::stream_engine) fn factory(name: &str) -> Self {
+        Self::new(name.to_string())
     }
 }

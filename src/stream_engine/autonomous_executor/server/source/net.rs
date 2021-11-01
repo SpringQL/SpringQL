@@ -36,8 +36,10 @@ pub(in crate::stream_engine::autonomous_executor) struct NetSourceServerActive {
     tcp_stream_reader: BufReader<TcpStream>, // TODO UDP
 }
 
-impl SourceServerStandby<NetSourceServerActive> for NetSourceServerStandby {
-    fn new(options: Options) -> Result<Self>
+impl SourceServerStandby for NetSourceServerStandby {
+    type Act = NetSourceServerActive;
+
+    fn new(options: &Options) -> Result<Self>
     where
         Self: Sized,
     {
@@ -130,7 +132,7 @@ mod tests {
     use crate::stream_engine::autonomous_executor::test_support::foreign::source::TestSource;
 
     #[test]
-    fn test_input_server_tcp() -> crate::error::Result<()> {
+    fn test_source_server_tcp() -> crate::error::Result<()> {
         let j1 = JsonObject::fx_city_temperature_tokyo();
         let j2 = JsonObject::fx_city_temperature_osaka();
         let j3 = JsonObject::fx_city_temperature_london();
@@ -143,7 +145,7 @@ mod tests {
             .add("REMOTE_PORT", source.port().to_string())
             .build();
 
-        let server = NetSourceServerStandby::new(options)?;
+        let server = NetSourceServerStandby::new(&options)?;
         let mut server = server.start()?;
 
         assert_eq!(server.next_row()?, ForeignSourceRow::from_json(j2));

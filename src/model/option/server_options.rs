@@ -18,10 +18,10 @@ pub(crate) struct NetServerOptions {
     pub(crate) remote_port: u16,
 }
 
-impl TryFrom<Options> for NetServerOptions {
+impl TryFrom<&Options> for NetServerOptions {
     type Error = SpringError;
 
-    fn try_from(options: Options) -> Result<Self> {
+    fn try_from(options: &Options) -> Result<Self> {
         Ok(Self {
             protocol: options.get("PROTOCOL", |protocol_str| {
                 (protocol_str == "TCP")

@@ -2,20 +2,25 @@ use crate::{
     error::Result, model::option::Options,
     stream_engine::autonomous_executor::data::foreign_row::foreign_source_row::ForeignSourceRow,
 };
+use std::fmt::Debug;
 
 pub(in crate::stream_engine::autonomous_executor) mod net;
 
-pub(in crate::stream_engine::autonomous_executor) trait SourceServerStandby<A: SourceServerActive> {
-    fn new(options: Options) -> Result<Self>
+pub(in crate::stream_engine::autonomous_executor) trait SourceServerStandby {
+    type Act: SourceServerActive;
+
+    fn new(options: &Options) -> Result<Self>
     where
         Self: Sized;
 
     /// Blocks until the server is ready to provide ForeignSourceRow.
-    fn start(self) -> Result<A>;
+    fn start(self) -> Result<Self::Act>;
 }
 
 /// Active: ready to provide ForeignSourceRow.
-pub(in crate::stream_engine::autonomous_executor) trait SourceServerActive {
+pub(in crate::stream_engine) trait SourceServerActive:
+    Debug + Sync + Send
+{
     /// Returns currently available foreign row.
     ///
     /// # Failure

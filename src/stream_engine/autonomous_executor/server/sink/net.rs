@@ -30,8 +30,10 @@ pub(in crate::stream_engine::autonomous_executor) struct NetSinkServerActive {
     tcp_stream_writer: BufWriter<TcpStream>, // TODO UDP
 }
 
-impl SinkServerStandby<NetSinkServerActive> for NetSinkServerStandby {
-    fn new(options: Options) -> Result<Self>
+impl SinkServerStandby for NetSinkServerStandby {
+    type Act = NetSinkServerActive;
+
+    fn new(options: &Options) -> Result<Self>
     where
         Self: Sized,
     {
@@ -102,7 +104,7 @@ mod tests {
     };
 
     #[test]
-    fn test_output_server_tcp() {
+    fn test_sink_server_tcp() {
         let sink = TestSink::start().unwrap();
 
         let options = OptionsBuilder::default()
@@ -111,7 +113,7 @@ mod tests {
             .add("REMOTE_PORT", sink.port().to_string())
             .build();
 
-        let server = NetSinkServerStandby::new(options).unwrap();
+        let server = NetSinkServerStandby::new(&options).unwrap();
         let mut server = server.start().unwrap();
 
         server

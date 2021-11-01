@@ -1,4 +1,4 @@
-use std::rc::Rc;
+use std::{net::IpAddr, sync::Arc};
 
 use serde_json::json;
 
@@ -9,20 +9,36 @@ use crate::{
         option::{options_builder::OptionsBuilder, Options},
         sql_type::SqlType,
     },
-    stream_engine::dependency_injection::test_di::TestDI,
     stream_engine::{
-        autonomous_executor::data::{
-            column::stream_column::StreamColumns,
-            foreign_row::{
-                foreign_sink_row::ForeignSinkRow, foreign_source_row::ForeignSourceRow,
-                format::json::JsonObject,
+        autonomous_executor::{
+            data::{
+                column::stream_column::StreamColumns,
+                foreign_row::{
+                    foreign_sink_row::ForeignSinkRow, foreign_source_row::ForeignSourceRow,
+                    format::json::JsonObject,
+                },
+                row::Row,
+                timestamp::Timestamp,
             },
-            row::Row,
-            timestamp::Timestamp,
+            task::task_id::TaskId,
+            test_support::foreign::sink::TestSink,
         },
-        pipeline::stream_model::{stream_shape::StreamShape, StreamModel},
+        pipeline::{
+            stream_model::{stream_shape::StreamShape, StreamModel},
+            Pipeline,
+        },
+    },
+    stream_engine::{
+        dependency_injection::test_di::TestDI,
+        pipeline::{
+            foreign_stream_model::ForeignStreamModel,
+            pump_model::PumpModel,
+            server_model::{server_type::ServerType, ServerModel},
+        },
     },
 };
+
+use super::foreign::source::TestSource;
 
 impl Timestamp {
     pub(in crate::stream_engine) fn fx_now() -> Self {
@@ -134,6 +150,289 @@ impl ForeignSinkRow {
     }
 }
 
+impl Pipeline {
+    /// ```text
+    /// (0)--a-->[1]--b-->[2]--c-->
+    /// ```
+    pub(in crate::stream_engine) fn fx_linear() -> Self {
+        let test_source = TestSource::start(vec![]).unwrap();
+        let test_sink = TestSink::start().unwrap();
+
+        let fst_1 = Arc::new(ForeignStreamModel::fx_trade_with_name(StreamName::factory(
+            "fst_1",
+        )));
+        let fst_2 = Arc::new(ForeignStreamModel::fx_trade_with_name(StreamName::factory(
+            "fst_2",
+        )));
+
+        let server_a =
+            ServerModel::fx_net_source(fst_1.clone(), test_source.host_ip(), test_source.port());
+        let server_c =
+            ServerModel::fx_net_sink(fst_2.clone(), test_sink.host_ip(), test_sink.port());
+
+        let pu_b = PumpModel::fx_passthrough_trade(
+            PumpName::factory("pu_b"),
+            fst_1.name().clone(),
+            fst_2.name().clone(),
+        );
+
+        let mut pipeline = Pipeline::default();
+
+        pipeline.add_foreign_stream(fst_1).unwrap();
+        pipeline.add_foreign_stream(fst_2).unwrap();
+
+        pipeline.add_server(server_a).unwrap();
+        pipeline.add_server(server_c).unwrap();
+
+        pipeline.add_pump(pu_b).unwrap();
+
+        pipeline
+    }
+
+    /// ```text
+    /// (0)--a-->[1]--c-->[3]--e-->
+    ///  |
+    ///  +---b-->[2]--d-->[4]--f-->
+    /// ```
+    pub(in crate::stream_engine) fn fx_split() -> Self {
+        let test_source = TestSource::start(vec![]).unwrap();
+        let test_sink1 = TestSink::start().unwrap();
+        let test_sink2 = TestSink::start().unwrap();
+
+        let fst_1 = Arc::new(ForeignStreamModel::fx_trade_with_name(StreamName::factory(
+            "fst_1",
+        )));
+        let fst_2 = Arc::new(ForeignStreamModel::fx_trade_with_name(StreamName::factory(
+            "fst_2",
+        )));
+
+        let fst_3 = Arc::new(ForeignStreamModel::fx_trade_with_name(StreamName::factory(
+            "fst_3",
+        )));
+        let fst_4 = Arc::new(ForeignStreamModel::fx_trade_with_name(StreamName::factory(
+            "fst_4",
+        )));
+
+        let server_a =
+            ServerModel::fx_net_source(fst_1.clone(), test_source.host_ip(), test_source.port());
+        let server_b =
+            ServerModel::fx_net_source(fst_2.clone(), test_source.host_ip(), test_source.port());
+
+        let server_e =
+            ServerModel::fx_net_sink(fst_3.clone(), test_sink1.host_ip(), test_sink1.port());
+        let server_f =
+            ServerModel::fx_net_sink(fst_4.clone(), test_sink2.host_ip(), test_sink2.port());
+
+        let pu_c = PumpModel::fx_passthrough_trade(
+            PumpName::factory("pu_c"),
+            fst_1.name().clone(),
+            fst_3.name().clone(),
+        );
+        let pu_d = PumpModel::fx_passthrough_trade(
+            PumpName::factory("pu_d"),
+            fst_2.name().clone(),
+            fst_4.name().clone(),
+        );
+
+        let mut pipeline = Pipeline::default();
+
+        pipeline.add_foreign_stream(fst_1).unwrap();
+        pipeline.add_foreign_stream(fst_2).unwrap();
+
+        pipeline.add_foreign_stream(fst_3).unwrap();
+        pipeline.add_foreign_stream(fst_4).unwrap();
+
+        pipeline.add_server(server_a).unwrap();
+        pipeline.add_server(server_b).unwrap();
+
+        pipeline.add_server(server_e).unwrap();
+        pipeline.add_server(server_f).unwrap();
+
+        pipeline.add_pump(pu_c).unwrap();
+        pipeline.add_pump(pu_d).unwrap();
+
+        pipeline
+    }
+
+    /// ```text
+    /// (0)--a-->[1]--c-->[3]--e-->
+    ///  |                 ^
+    ///  |                 |
+    ///  +---b-->[2]--d----+
+    /// ```
+    pub(in crate::stream_engine) fn fx_split_merge() -> Self {
+        let test_source = TestSource::start(vec![]).unwrap();
+        let test_sink = TestSink::start().unwrap();
+
+        let fst_1 = Arc::new(ForeignStreamModel::fx_trade_with_name(StreamName::factory(
+            "fst_1",
+        )));
+        let fst_2 = Arc::new(ForeignStreamModel::fx_trade_with_name(StreamName::factory(
+            "fst_2",
+        )));
+
+        let fst_3 = Arc::new(ForeignStreamModel::fx_trade_with_name(StreamName::factory(
+            "fst_3",
+        )));
+
+        let server_a =
+            ServerModel::fx_net_source(fst_1.clone(), test_source.host_ip(), test_source.port());
+        let server_b =
+            ServerModel::fx_net_source(fst_2.clone(), test_source.host_ip(), test_source.port());
+
+        let server_e =
+            ServerModel::fx_net_sink(fst_3.clone(), test_sink.host_ip(), test_sink.port());
+
+        let pu_c = PumpModel::fx_passthrough_trade(
+            PumpName::factory("pu_c"),
+            fst_1.name().clone(),
+            fst_3.name().clone(),
+        );
+        let pu_d = PumpModel::fx_passthrough_trade(
+            PumpName::factory("pu_d"),
+            fst_2.name().clone(),
+            fst_3.name().clone(),
+        );
+
+        let mut pipeline = Pipeline::default();
+
+        pipeline.add_foreign_stream(fst_1).unwrap();
+        pipeline.add_foreign_stream(fst_2).unwrap();
+
+        pipeline.add_foreign_stream(fst_3).unwrap();
+
+        pipeline.add_server(server_a).unwrap();
+        pipeline.add_server(server_b).unwrap();
+
+        pipeline.add_server(server_e).unwrap();
+
+        pipeline.add_pump(pu_c).unwrap();
+        pipeline.add_pump(pu_d).unwrap();
+
+        pipeline
+    }
+
+    /// ```text
+    /// (0)--a-->[1]--c-->[3]--f-->[4]--g-->[5]--h-->[6]--j-->[8]--l-->
+    ///  |                          ^       ^ |
+    ///  |                          |       | |
+    ///  +---b-->[2]-------d--------+       | +--i-->[7]--k-->[9]--m-->
+    ///           |                         |
+    ///           +--------------e----------+
+    /// ```
+    pub(in crate::stream_engine) fn fx_complex() -> Self {
+        let test_source = TestSource::start(vec![]).unwrap();
+        let test_sink = TestSink::start().unwrap();
+        let test_sink2 = TestSink::start().unwrap();
+
+        let fst_1 = Arc::new(ForeignStreamModel::fx_trade_with_name(StreamName::factory(
+            "fst_1",
+        )));
+        let fst_2 = Arc::new(ForeignStreamModel::fx_trade_with_name(StreamName::factory(
+            "fst_2",
+        )));
+        let st_3 = Arc::new(StreamModel::fx_trade_with_name(StreamName::factory("st_3")));
+        let st_4 = Arc::new(StreamModel::fx_trade_with_name(StreamName::factory("st_4")));
+        let st_5 = Arc::new(StreamModel::fx_trade_with_name(StreamName::factory("st_5")));
+        let st_6 = Arc::new(StreamModel::fx_trade_with_name(StreamName::factory("st_6")));
+        let st_7 = Arc::new(StreamModel::fx_trade_with_name(StreamName::factory("st_7")));
+        let fst_8 = Arc::new(ForeignStreamModel::fx_trade_with_name(StreamName::factory(
+            "fst_8",
+        )));
+        let fst_9 = Arc::new(ForeignStreamModel::fx_trade_with_name(StreamName::factory(
+            "fst_9",
+        )));
+
+        let server_a =
+            ServerModel::fx_net_source(fst_1.clone(), test_source.host_ip(), test_source.port());
+        let server_b =
+            ServerModel::fx_net_source(fst_2.clone(), test_source.host_ip(), test_source.port());
+
+        let server_l =
+            ServerModel::fx_net_sink(fst_8.clone(), test_sink.host_ip(), test_sink.port());
+        let server_m =
+            ServerModel::fx_net_sink(fst_9.clone(), test_sink2.host_ip(), test_sink2.port());
+
+        let pu_c = PumpModel::fx_passthrough_trade(
+            PumpName::factory("pu_c"),
+            fst_1.name().clone(),
+            st_3.name().clone(),
+        );
+        let pu_d = PumpModel::fx_passthrough_trade(
+            PumpName::factory("pu_d"),
+            fst_2.name().clone(),
+            st_4.name().clone(),
+        );
+        let pu_e = PumpModel::fx_passthrough_trade(
+            PumpName::factory("pu_e"),
+            fst_2.name().clone(),
+            st_5.name().clone(),
+        );
+        let pu_f = PumpModel::fx_passthrough_trade(
+            PumpName::factory("pu_f"),
+            st_3.name().clone(),
+            st_4.name().clone(),
+        );
+        let pu_g = PumpModel::fx_passthrough_trade(
+            PumpName::factory("pu_g"),
+            st_4.name().clone(),
+            st_5.name().clone(),
+        );
+        let pu_h = PumpModel::fx_passthrough_trade(
+            PumpName::factory("pu_h"),
+            st_5.name().clone(),
+            st_6.name().clone(),
+        );
+        let pu_i = PumpModel::fx_passthrough_trade(
+            PumpName::factory("pu_i"),
+            st_5.name().clone(),
+            st_7.name().clone(),
+        );
+        let pu_j = PumpModel::fx_passthrough_trade(
+            PumpName::factory("pu_j"),
+            st_6.name().clone(),
+            fst_8.name().clone(),
+        );
+        let pu_k = PumpModel::fx_passthrough_trade(
+            PumpName::factory("pu_k"),
+            st_7.name().clone(),
+            fst_9.name().clone(),
+        );
+
+        let mut pipeline = Pipeline::default();
+
+        pipeline.add_foreign_stream(fst_1).unwrap();
+        pipeline.add_foreign_stream(fst_2).unwrap();
+
+        pipeline.add_foreign_stream(fst_8).unwrap();
+        pipeline.add_foreign_stream(fst_9).unwrap();
+
+        pipeline.add_server(server_a).unwrap();
+        pipeline.add_server(server_b).unwrap();
+
+        pipeline.add_server(server_l).unwrap();
+        pipeline.add_server(server_m).unwrap();
+
+        pipeline.add_stream(st_3).unwrap();
+        pipeline.add_stream(st_4).unwrap();
+        pipeline.add_stream(st_5).unwrap();
+        pipeline.add_stream(st_6).unwrap();
+        pipeline.add_stream(st_7).unwrap();
+
+        pipeline.add_pump(pu_c).unwrap();
+        pipeline.add_pump(pu_d).unwrap();
+        pipeline.add_pump(pu_e).unwrap();
+        pipeline.add_pump(pu_f).unwrap();
+        pipeline.add_pump(pu_g).unwrap();
+        pipeline.add_pump(pu_h).unwrap();
+        pipeline.add_pump(pu_i).unwrap();
+        pipeline.add_pump(pu_j).unwrap();
+        pipeline.add_pump(pu_k).unwrap();
+
+        pipeline
+    }
+}
+
 impl StreamShape {
     pub(in crate::stream_engine) fn fx_city_temperature() -> Self {
         Self::new(
@@ -146,7 +445,7 @@ impl StreamShape {
         )
         .unwrap()
     }
-    pub(in crate::stream_engine) fn fx_ticker() -> Self {
+    pub(in crate::stream_engine) fn fx_trade() -> Self {
         Self::new(
             vec![
                 ColumnDefinition::fx_timestamp(),
@@ -167,41 +466,152 @@ impl StreamModel {
     pub(in crate::stream_engine) fn fx_city_temperature() -> Self {
         Self::new(
             StreamName::fx_city_temperature(),
-            Rc::new(StreamShape::fx_city_temperature()),
-            Options::empty(),
+            Arc::new(StreamShape::fx_city_temperature()),
+            Options::fx_empty(),
         )
     }
 
     pub(in crate::stream_engine) fn fx_trade() -> Self {
         Self::new(
             StreamName::fx_trade(),
-            Rc::new(StreamShape::fx_ticker()),
-            Options::empty(),
+            Arc::new(StreamShape::fx_trade()),
+            Options::fx_empty(),
         )
+    }
+
+    pub(in crate::stream_engine) fn fx_trade_with_name(name: StreamName) -> Self {
+        Self::new(name, Arc::new(StreamShape::fx_trade()), Options::fx_empty())
+    }
+}
+
+impl ForeignStreamModel {
+    pub(in crate::stream_engine) fn fx_city_temperature_source() -> Self {
+        Self::new(StreamModel::new(
+            StreamName::fx_city_temperature_source(),
+            Arc::new(StreamShape::fx_city_temperature()),
+            Options::fx_empty(),
+        ))
+    }
+
+    pub(in crate::stream_engine) fn fx_trade_source() -> Self {
+        Self::new(StreamModel::new(
+            StreamName::fx_trade_source(),
+            Arc::new(StreamShape::fx_trade()),
+            Options::fx_empty(),
+        ))
+    }
+
+    pub(in crate::stream_engine) fn fx_trade_sink() -> Self {
+        Self::new(StreamModel::new(
+            StreamName::fx_trade_sink(),
+            Arc::new(StreamShape::fx_trade()),
+            Options::fx_empty(),
+        ))
+    }
+
+    pub(in crate::stream_engine) fn fx_trade_with_name(name: StreamName) -> Self {
+        Self::new(StreamModel::new(
+            name,
+            Arc::new(StreamShape::fx_trade()),
+            Options::fx_empty(),
+        ))
+    }
+}
+
+impl ServerModel {
+    pub(in crate::stream_engine) fn fx_net_source(
+        serving_foreign_stream: Arc<ForeignStreamModel>,
+        remote_host: IpAddr,
+        remote_port: u16,
+    ) -> Self {
+        Self::new(
+            ServerType::SourceNet,
+            serving_foreign_stream,
+            Options::fx_net_source_server(remote_host, remote_port),
+        )
+    }
+    pub(in crate::stream_engine) fn fx_net_sink(
+        serving_foreign_stream: Arc<ForeignStreamModel>,
+        remote_host: IpAddr,
+        remote_port: u16,
+    ) -> Self {
+        Self::new(
+            ServerType::SinkNet,
+            serving_foreign_stream,
+            Options::fx_net_sink_server(remote_host, remote_port),
+        )
+    }
+}
+
+impl PumpModel {
+    pub(in crate::stream_engine) fn fx_passthrough_trade(
+        name: PumpName,
+        upstream: StreamName,
+        downstream: StreamName,
+    ) -> Self {
+        Self::new(name, upstream, downstream)
     }
 }
 
 impl StreamName {
     pub(in crate::stream_engine) fn fx_city_temperature() -> Self {
-        StreamName::new("city_temperature".to_string())
+        StreamName::new("st_city_temperature".to_string())
     }
+    pub(in crate::stream_engine) fn fx_city_temperature_source() -> Self {
+        StreamName::new("st_city_temperature_source".to_string())
+    }
+    pub(in crate::stream_engine) fn fx_city_temperature_sink() -> Self {
+        StreamName::new("st_city_temperature_sink".to_string())
+    }
+
     pub(in crate::stream_engine) fn fx_trade() -> Self {
-        StreamName::new("trade".to_string())
+        StreamName::new("st_trade".to_string())
+    }
+    pub(in crate::stream_engine) fn fx_trade_source() -> Self {
+        StreamName::new("fst_trade_source".to_string())
+    }
+    pub(in crate::stream_engine) fn fx_trade_sink() -> Self {
+        StreamName::new("fst_trade_sink".to_string())
     }
 }
 
 impl PumpName {
     pub(in crate::stream_engine) fn fx_trade_p1() -> Self {
-        Self::new("trade_p1".to_string())
+        Self::new("pu_trade_p1".to_string())
+    }
+    pub(in crate::stream_engine) fn fx_trade2_p1() -> Self {
+        Self::new("pu_trade2_p1".to_string())
     }
     pub(in crate::stream_engine) fn fx_trade_window() -> Self {
-        Self::new("trade_window".to_string())
+        Self::new("pu_trade_window".to_string())
     }
 }
 
 impl Options {
-    pub(in crate::stream_engine) fn empty() -> Self {
+    pub(in crate::stream_engine) fn fx_empty() -> Self {
         OptionsBuilder::default().build()
+    }
+
+    pub(in crate::stream_engine) fn fx_net_source_server(
+        remote_host: IpAddr,
+        remote_port: u16,
+    ) -> Self {
+        OptionsBuilder::default()
+            .add("PROTOCOL", "TCP")
+            .add("REMOTE_HOST", remote_host.to_string())
+            .add("REMOTE_PORT", remote_port.to_string())
+            .build()
+    }
+
+    pub(in crate::stream_engine) fn fx_net_sink_server(
+        remote_host: IpAddr,
+        remote_port: u16,
+    ) -> Self {
+        OptionsBuilder::default()
+            .add("PROTOCOL", "TCP")
+            .add("REMOTE_HOST", remote_host.to_string())
+            .add("REMOTE_PORT", remote_port.to_string())
+            .build()
     }
 }
 

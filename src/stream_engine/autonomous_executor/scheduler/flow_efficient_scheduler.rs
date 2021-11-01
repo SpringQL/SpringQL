@@ -94,19 +94,233 @@
 //! 8. `bedacfgikmhjl`
 //!
 //!   (imm `a` or **`b`**) `[b]` (imm `d` or **`e`**) [e] (req `g`) (req `f` and **`d`**) `[d]` (req `f`) `[acf]` (imm `g`) `[g]` (imm `h` or **`i`**) `[ikm][hjl]`
+//!
+//! Selecting 1 from these schedule intelligently should lead to more memory reduction but current implementation always select first one (eagerly select leftmost outgoing edge).
 
-use crate::stream_engine::autonomous_executor::{pipeline_read::PipelineRead, task::Task};
+use std::{collections::HashSet, sync::Arc};
 
-use super::Scheduler;
+use petgraph::{
+    graph::{DiGraph, NodeIndex},
+    visit::EdgeRef,
+};
 
-pub(crate) struct FlowEfficientScheduler;
+use crate::{
+    model::name::StreamName,
+    stream_engine::{
+        autonomous_executor::task::{task_graph::TaskGraph, task_id::TaskId, Task},
+        pipeline::pipeline_version::PipelineVersion,
+    },
+};
+
+use super::{Scheduler, WorkerState};
+
+#[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Default)]
+pub(crate) struct CurrentTaskIdx {
+    pipeline_version: PipelineVersion,
+    idx: usize,
+}
+impl WorkerState for CurrentTaskIdx {}
+
+#[derive(Debug, Default)]
+pub(crate) struct FlowEfficientScheduler {
+    pipeline_version: PipelineVersion,
+    seq_task_schedule: Vec<Arc<Task>>,
+}
 
 impl Scheduler for FlowEfficientScheduler {
-    fn new(pipeline: PipelineRead) -> Self {
-        todo!()
+    type W = CurrentTaskIdx;
+
+    fn _update_pipeline_version(&mut self, v: PipelineVersion) {
+        self.pipeline_version = v;
     }
 
-    fn next_task(&mut self) -> Option<Task> {
-        todo!()
+    fn next_task(&self, worker_state: CurrentTaskIdx) -> Option<(Arc<Task>, CurrentTaskIdx)> {
+        if self.seq_task_schedule.is_empty() {
+            None
+        } else if worker_state.pipeline_version != self.pipeline_version {
+            let current_task = self
+                .seq_task_schedule
+                .get(0)
+                .expect("index is managed in this function")
+                .clone();
+            let next_worker_state = CurrentTaskIdx {
+                pipeline_version: self.pipeline_version,
+                idx: 1 % self.seq_task_schedule.len(),
+            };
+            Some((current_task, next_worker_state))
+        } else {
+            let current_task_idx = worker_state.idx;
+            let current_task = self
+                .seq_task_schedule
+                .get(current_task_idx)
+                .expect("index is managed in this function")
+                .clone();
+            let next_worker_state = CurrentTaskIdx {
+                idx: (worker_state.idx + 1) % self.seq_task_schedule.len(),
+                ..worker_state
+            };
+            Some((current_task, next_worker_state))
+        }
+    }
+
+    fn _update_task_graph(&mut self, task_graph: TaskGraph) {
+        let graph = task_graph.as_petgraph();
+
+        let mut unvisited = graph
+            .edge_weights()
+            .into_iter()
+            .map(|task| task.id())
+            .cloned()
+            .collect::<HashSet<TaskId>>();
+
+        let mut seq_task_schedule = Vec::<Arc<Task>>::new();
+
+        for leaf_node in Self::_leaf_nodes(graph) {
+            Self::_leaf_to_root_dfs_post_order(
+                leaf_node,
+                graph,
+                &mut seq_task_schedule,
+                &mut unvisited,
+            );
+        }
+
+        self.seq_task_schedule = seq_task_schedule;
+    }
+}
+
+impl FlowEfficientScheduler {
+    fn _leaf_nodes(graph: &DiGraph<StreamName, Arc<Task>>) -> Vec<NodeIndex> {
+        graph
+            .node_indices()
+            .filter(|idx| graph.neighbors(*idx).next().is_none())
+            .collect()
+    }
+
+    fn _leaf_to_root_dfs_post_order(
+        cur_node: NodeIndex,
+        graph: &DiGraph<StreamName, Arc<Task>>,
+        seq_task_schedule: &mut Vec<Arc<Task>>,
+        unvisited: &mut HashSet<TaskId>,
+    ) {
+        let incoming_edges = graph.edges_directed(cur_node, petgraph::Direction::Incoming);
+        for incoming_edge in incoming_edges {
+            let task = incoming_edge.weight();
+
+            if unvisited.remove(task.id()) {
+                let parent_node = incoming_edge.source();
+                Self::_leaf_to_root_dfs_post_order(
+                    parent_node,
+                    graph,
+                    seq_task_schedule,
+                    unvisited,
+                );
+                seq_task_schedule.push(task.clone());
+            }
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use std::collections::VecDeque;
+
+    use crate::{
+        model::name::{PumpName, StreamName},
+        stream_engine::{autonomous_executor::task::task_id::TaskId, pipeline::Pipeline},
+    };
+
+    use super::*;
+
+    fn t(pipeline: Pipeline, expected: Vec<TaskId>) {
+        let mut expected = expected.into_iter().collect::<VecDeque<_>>();
+
+        let mut cur_task_idx = CurrentTaskIdx::default();
+
+        let mut scheduler = FlowEfficientScheduler::default();
+        scheduler.update_pipeline(pipeline);
+
+        if let Some((first_task, next_task_idx)) = scheduler.next_task(cur_task_idx) {
+            assert_eq!(first_task.id(), &expected.pop_front().unwrap());
+            cur_task_idx = next_task_idx;
+
+            loop {
+                let (next_task, next_task_idx) = scheduler
+                    .next_task(cur_task_idx)
+                    .expect("task must be infinitely provided");
+                if next_task == first_task {
+                    return;
+                }
+
+                let expected_next = expected.pop_front().unwrap();
+                assert_eq!(next_task.id(), &expected_next);
+
+                cur_task_idx = next_task_idx;
+            }
+        } else {
+            assert!(expected.is_empty())
+        }
+    }
+
+    #[test]
+    fn test_linear_pipeline() {
+        t(
+            Pipeline::fx_linear(),
+            vec![
+                TaskId::from_source_server(StreamName::factory("fst_1")),
+                TaskId::from_pump(PumpName::factory("pu_b")),
+                TaskId::from_sink_server(StreamName::factory("fst_2")),
+            ],
+        )
+    }
+
+    #[test]
+    fn test_pipeline_with_split() {
+        t(
+            Pipeline::fx_split(),
+            vec![
+                TaskId::from_source_server(StreamName::factory("fst_1")),
+                TaskId::from_pump(PumpName::factory("pu_c")),
+                TaskId::from_sink_server(StreamName::factory("fst_3")),
+                TaskId::from_source_server(StreamName::factory("fst_2")),
+                TaskId::from_pump(PumpName::factory("pu_d")),
+                TaskId::from_sink_server(StreamName::factory("fst_4")),
+            ],
+        )
+    }
+
+    #[test]
+    fn test_pipeline_with_merge() {
+        t(
+            Pipeline::fx_split_merge(),
+            vec![
+                TaskId::from_source_server(StreamName::factory("fst_2")),
+                TaskId::from_pump(PumpName::factory("pu_d")),
+                TaskId::from_source_server(StreamName::factory("fst_1")),
+                TaskId::from_pump(PumpName::factory("pu_c")),
+                TaskId::from_sink_server(StreamName::factory("fst_3")),
+            ],
+        )
+    }
+
+    #[test]
+    fn test_complex_pipeline() {
+        t(
+            Pipeline::fx_complex(),
+            vec![
+                TaskId::from_source_server(StreamName::factory("fst_1")),
+                TaskId::from_pump(PumpName::factory("pu_c")),
+                TaskId::from_pump(PumpName::factory("pu_f")),
+                TaskId::from_source_server(StreamName::factory("fst_2")),
+                TaskId::from_pump(PumpName::factory("pu_d")),
+                TaskId::from_pump(PumpName::factory("pu_g")),
+                TaskId::from_pump(PumpName::factory("pu_e")),
+                TaskId::from_pump(PumpName::factory("pu_h")),
+                TaskId::from_pump(PumpName::factory("pu_j")),
+                TaskId::from_sink_server(StreamName::factory("fst_8")),
+                TaskId::from_pump(PumpName::factory("pu_i")),
+                TaskId::from_pump(PumpName::factory("pu_k")),
+                TaskId::from_sink_server(StreamName::factory("fst_9")),
+            ],
+        )
     }
 }
