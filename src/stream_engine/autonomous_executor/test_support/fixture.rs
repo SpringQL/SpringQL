@@ -266,7 +266,56 @@ impl Pipeline {
     ///  +---b-->[2]--d----+
     /// ```
     pub(in crate::stream_engine) fn fx_split_merge() -> Self {
-        todo!()
+        let test_source = TestSource::start(vec![]).unwrap();
+        let test_sink = TestSink::start().unwrap();
+
+        let fst_trade_source1 = Arc::new(ForeignStreamModel::fx_trade_source());
+        let fst_trade_source2 = Arc::new(ForeignStreamModel::fx_trade_source2());
+
+        let fst_trade_sink = Arc::new(ForeignStreamModel::fx_trade_sink());
+
+        let server_trade_source1 = ServerModel::fx_net_source(
+            fst_trade_source1.clone(),
+            test_source.host_ip(),
+            test_source.port(),
+        );
+        let server_trade_source2 = ServerModel::fx_net_source(
+            fst_trade_source2.clone(),
+            test_source.host_ip(),
+            test_source.port(),
+        );
+
+        let server_trade_sink = ServerModel::fx_net_sink(
+            fst_trade_sink.clone(),
+            test_sink.host_ip(),
+            test_sink.port(),
+        );
+
+        let pump_trade_source1_p1 = PumpModel::fx_passthrough_trade(
+            PumpName::fx_trade_p1(),
+            fst_trade_source1.name().clone(),
+            fst_trade_sink.name().clone(),
+        );
+        let pump_trade_source2_p1 = PumpModel::fx_passthrough_trade(
+            PumpName::fx_trade2_p1(),
+            fst_trade_source2.name().clone(),
+            fst_trade_sink.name().clone(),
+        );
+
+        let mut pipeline = Pipeline::default();
+        pipeline.add_foreign_stream(fst_trade_source1).unwrap();
+        pipeline.add_server(server_trade_source1).unwrap();
+
+        pipeline.add_foreign_stream(fst_trade_source2).unwrap();
+        pipeline.add_server(server_trade_source2).unwrap();
+
+        pipeline.add_foreign_stream(fst_trade_sink).unwrap();
+        pipeline.add_server(server_trade_sink).unwrap();
+
+        pipeline.add_pump(pump_trade_source1_p1).unwrap();
+        pipeline.add_pump(pump_trade_source2_p1).unwrap();
+
+        pipeline
     }
 
     /// ```text

@@ -206,7 +206,7 @@ impl FlowEfficientScheduler {
         for incoming_edge in incoming_edges {
             let task = incoming_edge.weight();
 
-            if unvisited.remove(&task.id()) {
+            if unvisited.remove(task.id()) {
                 let parent_node = incoming_edge.source();
                 Self::_leaf_to_root_dfs_post_order(
                     parent_node,
@@ -293,11 +293,11 @@ mod tests {
         t(
             Pipeline::fx_split_merge(),
             vec![
-                TaskId::fx_a(),
-                TaskId::fx_c(),
-                TaskId::fx_b(),
-                TaskId::fx_d(),
-                TaskId::fx_e(),
+                TaskId::from_source_server(StreamName::fx_trade_source2()),
+                TaskId::from_pump(PumpName::fx_trade2_p1()),
+                TaskId::from_source_server(StreamName::fx_trade_source()),
+                TaskId::from_pump(PumpName::fx_trade_p1()),
+                TaskId::from_sink_server(StreamName::fx_trade_sink()),
             ],
         )
     }
