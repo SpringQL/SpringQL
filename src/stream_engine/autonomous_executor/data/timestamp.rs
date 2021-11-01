@@ -12,7 +12,7 @@ use crate::error::SpringError;
 const FORMAT: &str = "%Y-%m-%d %H:%M:%S%.9f";
 
 /// Timestamp in UTC. Serializable.
-#[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Serialize, Deserialize)]
+#[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Serialize, Deserialize, new)]
 pub(crate) struct Timestamp(#[serde(with = "datetime_format")] NaiveDateTime);
 
 impl FromStr for Timestamp {

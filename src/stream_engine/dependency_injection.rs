@@ -1,3 +1,5 @@
+pub(super) mod prod_di;
+
 #[cfg(test)]
 pub(super) mod test_di;
 

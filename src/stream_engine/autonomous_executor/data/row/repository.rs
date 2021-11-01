@@ -1,10 +1,8 @@
-#[cfg(test)]
-pub(crate) mod test_row_repository;
+pub(crate) mod naive_row_repository;
 
 use std::rc::Rc;
 
-#[cfg(test)]
-pub(crate) use test_row_repository::TestRowRepository;
+pub(crate) use naive_row_repository::NaiveRowRepository;
 
 use crate::{error::Result, model::name::PumpName};
 
