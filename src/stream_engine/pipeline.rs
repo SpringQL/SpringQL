@@ -67,7 +67,6 @@ impl Pipeline {
     /// TODO
     pub(super) fn add_server(&mut self, server: ServerModel) -> Result<()> {
         self.update_version();
-        let serving_to = server.serving_foreign_stream();
         self.graph.add_server(server)
     }
 
