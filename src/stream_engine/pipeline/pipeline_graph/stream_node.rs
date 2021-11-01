@@ -12,6 +12,7 @@ pub(in crate::stream_engine) enum StreamNode {
     Native(StreamModel),
     Foreign(ForeignStreamModel),
     VirtualRoot,
+    VirtualLeaf { parent_foreign_stream: StreamName },
 }
 
 impl StreamNode {
@@ -20,6 +21,9 @@ impl StreamNode {
             StreamNode::Native(stream) => stream.name().clone(),
             StreamNode::Foreign(stream) => stream.name().clone(),
             StreamNode::VirtualRoot => StreamName::virtual_root(),
+            StreamNode::VirtualLeaf {
+                parent_foreign_stream,
+            } => StreamName::virtual_leaf(parent_foreign_stream.clone()),
         }
     }
 }

@@ -17,8 +17,12 @@ pub(in crate::stream_engine) enum Task {
 }
 
 impl Task {
-    pub(super) fn id(&self) -> TaskId {
-        todo!()
+    pub(super) fn id(&self) -> &TaskId {
+        match self {
+            Task::Pump(t) => t.id(),
+            Task::Source(s) => s.id(),
+            Task::Sink(s) => s.id(),
+        }
     }
 
     pub(super) fn run(&self) -> Result<()> {

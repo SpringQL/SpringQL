@@ -91,6 +91,20 @@ impl PipelineGraph {
                     .graph
                     .add_edge(*upstream_node, *downstream_node, Edge::Source(server));
             }
+            ServerType::SinkNet => {
+                let upstream_node = self.stream_nodes.get(serving_to.name()).ok_or_else(|| {
+                    SpringError::Sql(anyhow!(
+                        r#"upstream "{}" does not exist in pipeline"#,
+                        serving_to.name()
+                    ))
+                })?;
+                let downstream_node = self.graph.add_node(StreamNode::VirtualLeaf {
+                    parent_foreign_stream: serving_to.name().clone(),
+                });
+                let _ = self
+                    .graph
+                    .add_edge(*upstream_node, downstream_node, Edge::Sink(server));
+            }
         }
         Ok(())
     }

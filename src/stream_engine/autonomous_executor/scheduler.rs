@@ -3,6 +3,8 @@ pub(super) mod scheduler_write;
 
 mod flow_efficient_scheduler;
 
+use std::sync::Arc;
+
 pub(crate) use flow_efficient_scheduler::FlowEfficientScheduler;
 
 use crate::error::Result;
@@ -29,5 +31,5 @@ pub(in crate::stream_engine) trait Scheduler {
     fn _update_task_graph(&mut self, task_graph: TaskGraph);
 
     /// Called from worker threads.
-    fn next_task(&self, worker_state: Self::W) -> Option<(&Task, Self::W)>;
+    fn next_task(&self, worker_state: Self::W) -> Option<(Arc<Task>, Self::W)>;
 }

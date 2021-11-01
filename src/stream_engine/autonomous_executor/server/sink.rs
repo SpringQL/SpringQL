@@ -7,7 +7,7 @@ pub(in crate::stream_engine::autonomous_executor) mod net;
 pub(in crate::stream_engine::autonomous_executor) trait SinkServerStandby {
     type Act: SinkServerActive;
 
-    fn new(options: Options) -> Result<Self>
+    fn new(options: &Options) -> Result<Self>
     where
         Self: Sized;
 

@@ -313,7 +313,7 @@ impl ServerModel {
         remote_port: u16,
     ) -> Self {
         Self::new(
-            ServerType::SourceNet,
+            ServerType::SinkNet,
             serving_foreign_stream,
             Options::fx_net_sink_server(remote_host, remote_port),
         )

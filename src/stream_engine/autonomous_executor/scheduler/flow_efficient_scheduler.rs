@@ -97,9 +97,12 @@
 //!
 //! Selecting 1 from these schedule intelligently should lead to more memory reduction but current implementation always select first one (eagerly select leftmost outgoing edge).
 
-use std::collections::HashSet;
+use std::{collections::HashSet, sync::Arc};
 
-use petgraph::{graph::{DiGraph, NodeIndex}, visit::EdgeRef};
+use petgraph::{
+    graph::{DiGraph, NodeIndex},
+    visit::EdgeRef,
+};
 
 use crate::{
     model::name::StreamName,
@@ -121,7 +124,7 @@ impl WorkerState for CurrentTaskIdx {}
 #[derive(Debug, Default)]
 pub(crate) struct FlowEfficientScheduler {
     pipeline_version: PipelineVersion,
-    seq_task_schedule: Vec<Task>,
+    seq_task_schedule: Vec<Arc<Task>>,
 }
 
 impl Scheduler for FlowEfficientScheduler {
@@ -131,14 +134,15 @@ impl Scheduler for FlowEfficientScheduler {
         self.pipeline_version = v;
     }
 
-    fn next_task(&self, worker_state: CurrentTaskIdx) -> Option<(&Task, CurrentTaskIdx)> {
+    fn next_task(&self, worker_state: CurrentTaskIdx) -> Option<(Arc<Task>, CurrentTaskIdx)> {
         if self.seq_task_schedule.is_empty() {
             None
         } else if worker_state.pipeline_version != self.pipeline_version {
             let current_task = self
                 .seq_task_schedule
                 .get(0)
-                .expect("index is managed in this function");
+                .expect("index is managed in this function")
+                .clone();
             let next_worker_state = CurrentTaskIdx {
                 pipeline_version: self.pipeline_version,
                 idx: 1 % self.seq_task_schedule.len(),
@@ -149,7 +153,8 @@ impl Scheduler for FlowEfficientScheduler {
             let current_task = self
                 .seq_task_schedule
                 .get(current_task_idx)
-                .expect("index is managed in this function");
+                .expect("index is managed in this function")
+                .clone();
             let next_worker_state = CurrentTaskIdx {
                 idx: (worker_state.idx + 1) % self.seq_task_schedule.len(),
                 ..worker_state
@@ -165,9 +170,10 @@ impl Scheduler for FlowEfficientScheduler {
             .edge_weights()
             .into_iter()
             .map(|task| task.id())
+            .cloned()
             .collect::<HashSet<TaskId>>();
 
-        let mut seq_task_schedule = Vec::<Task>::new();
+        let mut seq_task_schedule = Vec::<Arc<Task>>::new();
 
         for leaf_node in Self::_leaf_nodes(graph) {
             Self::_leaf_to_root_dfs_post_order(
@@ -183,7 +189,7 @@ impl Scheduler for FlowEfficientScheduler {
 }
 
 impl FlowEfficientScheduler {
-    fn _leaf_nodes(graph: &DiGraph<StreamName, Task>) -> Vec<NodeIndex> {
+    fn _leaf_nodes(graph: &DiGraph<StreamName, Arc<Task>>) -> Vec<NodeIndex> {
         graph
             .node_indices()
             .filter(|idx| graph.neighbors(*idx).next().is_none())
@@ -192,8 +198,8 @@ impl FlowEfficientScheduler {
 
     fn _leaf_to_root_dfs_post_order(
         cur_node: NodeIndex,
-        graph: &DiGraph<StreamName, Task>,
-        seq_task_schedule: &mut Vec<Task>,
+        graph: &DiGraph<StreamName, Arc<Task>>,
+        seq_task_schedule: &mut Vec<Arc<Task>>,
         unvisited: &mut HashSet<TaskId>,
     ) {
         let incoming_edges = graph.edges_directed(cur_node, petgraph::Direction::Incoming);
@@ -208,7 +214,7 @@ impl FlowEfficientScheduler {
                     seq_task_schedule,
                     unvisited,
                 );
-                seq_task_schedule.push(task);
+                seq_task_schedule.push(task.clone());
             }
         }
     }
@@ -234,7 +240,7 @@ mod tests {
         scheduler.update_pipeline(pipeline);
 
         if let Some((first_task, next_task_idx)) = scheduler.next_task(cur_task_idx) {
-            assert_eq!(first_task.id(), expected.pop_front().unwrap());
+            assert_eq!(first_task.id(), &expected.pop_front().unwrap());
             cur_task_idx = next_task_idx;
 
             loop {
@@ -244,7 +250,9 @@ mod tests {
                 if next_task == first_task {
                     return;
                 }
-                assert_eq!(next_task.id(), expected.pop_front().unwrap());
+
+                let expected_next = expected.pop_front().unwrap();
+                assert_eq!(next_task.id(), &expected_next);
 
                 cur_task_idx = next_task_idx;
             }

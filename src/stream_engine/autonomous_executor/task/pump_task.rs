@@ -13,3 +13,9 @@ impl From<&PumpModel> for PumpTask {
         Self { id }
     }
 }
+
+impl PumpTask {
+    pub(in crate::stream_engine) fn id(&self) -> &TaskId {
+        &self.id
+    }
+}

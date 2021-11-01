@@ -3,6 +3,8 @@ use std::sync::{Arc, Mutex};
 
 use crate::error::{Result, SpringError};
 use crate::stream_engine::autonomous_executor::data::row::Row;
+use crate::stream_engine::autonomous_executor::server::sink::net::NetSinkServerStandby;
+use crate::stream_engine::autonomous_executor::server::sink::SinkServerStandby;
 use crate::stream_engine::autonomous_executor::server::source::net::NetSourceServerStandby;
 use crate::stream_engine::autonomous_executor::server::source::{
     SourceServerActive, SourceServerStandby,
@@ -25,6 +27,10 @@ pub(in crate::stream_engine) struct SourceTask {
 }
 
 impl SourceTask {
+    pub(in crate::stream_engine) fn id(&self) -> &TaskId {
+        &self.id
+    }
+
     pub(in crate::stream_engine) fn new(server: &ServerModel) -> Result<Self> {
         let id = TaskId::from_source_server(server.serving_foreign_stream().name().clone());
         let upstream_server = match server.server_type() {
@@ -33,6 +39,7 @@ impl SourceTask {
                 let server_active = server_standby.start()?;
                 Box::new(server_active)
             }
+            ServerType::SinkNet => unreachable!("sink type server ({:?}) for SourceTask", server),
         };
         let downstream = server.serving_foreign_stream().clone();
 

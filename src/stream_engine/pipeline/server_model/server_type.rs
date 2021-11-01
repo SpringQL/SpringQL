@@ -4,4 +4,5 @@ use serde::{Deserialize, Serialize};
 #[derive(Eq, PartialEq, Debug, Serialize, Deserialize)]
 pub(crate) enum ServerType {
     SourceNet,
+    SinkNet,
 }
