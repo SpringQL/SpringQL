@@ -8,7 +8,7 @@ use anyhow::anyhow;
 
 use crate::{
     error::{Result, SpringError},
-    stream_engine::{pipeline::Pipeline, StreamEngine},
+    stream_engine::StreamEngine,
     PIPELINE_CREATED,
 };
 

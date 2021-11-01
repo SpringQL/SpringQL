@@ -130,7 +130,7 @@ pub(crate) struct FlowEfficientScheduler {
 impl Scheduler for FlowEfficientScheduler {
     type W = CurrentTaskIdx;
 
-    fn _update_pipeline_version(&mut self, v: PipelineVersion) {
+    fn _notify_pipeline_version(&mut self, v: PipelineVersion) {
         self.pipeline_version = v;
     }
 
@@ -163,7 +163,7 @@ impl Scheduler for FlowEfficientScheduler {
         }
     }
 
-    fn _update_task_graph(&mut self, task_graph: TaskGraph) {
+    fn _notify_task_graph_update(&mut self, task_graph: TaskGraph) {
         let graph = task_graph.as_petgraph();
 
         let mut unvisited = graph
@@ -237,7 +237,7 @@ mod tests {
         let mut cur_task_idx = CurrentTaskIdx::default();
 
         let mut scheduler = FlowEfficientScheduler::default();
-        scheduler.update_pipeline(pipeline);
+        scheduler.notify_pipeline_update(pipeline);
 
         if let Some((first_task, next_task_idx)) = scheduler.next_task(cur_task_idx) {
             assert_eq!(first_task.id(), &expected.pop_front().unwrap());

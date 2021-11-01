@@ -55,7 +55,7 @@ where
         }
     }
 
-    pub(in crate::stream_engine) fn update_pipeline(&self, pipeline: Pipeline) {
-        self.scheduler_write.write_lock().update_pipeline(pipeline)
+    pub(in crate::stream_engine) fn notify_pipeline_update(&self, pipeline: Pipeline) {
+        self.scheduler_write.write_lock().notify_pipeline_update(pipeline)
     }
 }

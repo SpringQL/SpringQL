@@ -18,17 +18,17 @@ pub(crate) trait Scheduler {
     type W: WorkerState + Clone + Default;
 
     /// Called from main thread.
-    fn update_pipeline(&mut self, pipeline: Pipeline) {
+    fn notify_pipeline_update(&mut self, pipeline: Pipeline) {
         let task_graph = TaskGraph::from(pipeline.as_graph());
-        self._update_pipeline_version(pipeline.version());
-        self._update_task_graph(task_graph)
+        self._notify_pipeline_version(pipeline.version());
+        self._notify_task_graph_update(task_graph)
     }
 
     /// Called from main thread.
-    fn _update_pipeline_version(&mut self, v: PipelineVersion);
+    fn _notify_pipeline_version(&mut self, v: PipelineVersion);
 
     /// Called from main thread.
-    fn _update_task_graph(&mut self, task_graph: TaskGraph);
+    fn _notify_task_graph_update(&mut self, task_graph: TaskGraph);
 
     /// Called from worker threads.
     fn next_task(&self, worker_state: Self::W) -> Option<(Arc<Task>, Self::W)>;

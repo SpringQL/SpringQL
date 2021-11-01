@@ -13,19 +13,17 @@
 //! Both reactive executor and autonomous executor instance run at a main thread, while autonomous executor has workers which run at different worker threads.
 //! ```
 
-pub(crate) mod pipeline;
+pub(crate) mod command;
 
 mod autonomous_executor;
 mod dependency_injection;
+mod pipeline;
 mod reactive_executor;
 
 use crate::error::Result;
 use autonomous_executor::{CurrentTimestamp, NaiveRowRepository, RowRepository, Scheduler};
 
-use self::{
-    autonomous_executor::AutonomousExecutor, dependency_injection::DependencyInjection,
-    pipeline::Pipeline, reactive_executor::ReactiveExecutor,
-};
+use self::{autonomous_executor::AutonomousExecutor, command::alter_pipeline_command::AlterPipelineCommand, dependency_injection::DependencyInjection, pipeline::Pipeline, reactive_executor::ReactiveExecutor};
 
 #[cfg(not(test))]
 pub(crate) type StreamEngine = StreamEngineDI<dependency_injection::prod_di::ProdDI>;
@@ -56,9 +54,9 @@ where
         }
     }
 
-    // pub(crate) fn alter_pipeline(&mut self, command: AlterPipelineCommand) -> Result<()> {
-    //     let pipeline = self.reactive_executor.alter_pipeline(commad)?;
-    //     self.autonomous_executor.update_pipeline(pipeline);
-    //     Ok(())
-    // }
+    pub(crate) fn alter_pipeline(&mut self, command: AlterPipelineCommand) -> Result<()> {
+        let pipeline = self.reactive_executor.alter_pipeline(command)?;
+        self.autonomous_executor.notify_pipeline_update(pipeline);
+        Ok(())
+    }
 }
