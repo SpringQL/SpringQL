@@ -13,11 +13,25 @@
 //! Both reactive executor and autonomous executor instance run at a main thread, while autonomous executor has workers which run at different worker threads.
 //! ```
 
+pub(crate) mod pipeline;
+
 mod autonomous_executor;
 mod dependency_injection;
-mod pipeline;
 
+use crate::error::Result;
 use autonomous_executor::{CurrentTimestamp, NaiveRowRepository, RowRepository, Scheduler};
 
-#[derive(Debug)]
+use self::pipeline::Pipeline;
+
+/// Stream engine has reactive executor and autonomous executor inside.
+///
+/// Stream engine has access methods.
+/// External components (sql-processor) access methods to change stream engine's states and get result from it.
+#[derive(Debug, Default)]
 pub(crate) struct StreamEngine;
+
+impl StreamEngine {
+    pub(crate) fn create_pipeline(&mut self) -> Result<Pipeline> {
+        Ok(Pipeline::default())
+    }
+}

@@ -4,14 +4,20 @@
 //!
 //! C API and high-level Rust API are provided separately.
 
-use crate::error::Result;
+use crate::{
+    error::Result,
+    stream_engine::{pipeline::Pipeline, StreamEngine},
+};
 
 /// Connection object.
 ///
 /// 1 stream pipeline has only 1 connection.
 /// In other words, the lifecycle of SpringConnection and internal stream pipeline are the same.
 #[derive(Debug)]
-pub struct SpringPipeline;
+pub struct SpringPipeline {
+    engine: StreamEngine,
+    pipeline: Pipeline,
+}
 
 /// Prepared statement.
 #[derive(Debug)]
@@ -44,7 +50,11 @@ pub enum SpringStepSuccess {
 ///
 /// (will be added)
 pub fn spring_open() -> Result<SpringPipeline> {
-    todo!()
+    let mut engine = StreamEngine::default();
+    engine.create_pipeline().map(|p| SpringPipeline {
+        engine,
+        pipeline: p,
+    })
 }
 
 /// Creates a prepared statement.

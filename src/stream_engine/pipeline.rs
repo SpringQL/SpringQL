@@ -26,7 +26,7 @@ use self::{
 };
 
 #[derive(Debug, Default, Serialize, Deserialize)]
-pub(super) struct Pipeline {
+pub(crate) struct Pipeline {
     version: PipelineVersion,
     object_names: HashSet<String>,
     graph: PipelineGraph,
