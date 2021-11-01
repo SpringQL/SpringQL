@@ -266,9 +266,9 @@ mod tests {
         t(
             Pipeline::fx_linear(),
             vec![
-                TaskId::from_source_server(StreamName::fx_trade_source()),
-                TaskId::from_pump(PumpName::fx_trade_p1()),
-                TaskId::from_sink_server(StreamName::fx_trade_sink()),
+                TaskId::from_source_server(StreamName::factory("fst_1")),
+                TaskId::from_pump(PumpName::factory("pu_b")),
+                TaskId::from_sink_server(StreamName::factory("fst_2")),
             ],
         )
     }
@@ -278,12 +278,12 @@ mod tests {
         t(
             Pipeline::fx_split(),
             vec![
-                TaskId::from_source_server(StreamName::fx_trade_source()),
-                TaskId::from_pump(PumpName::fx_trade_p1()),
-                TaskId::from_sink_server(StreamName::fx_trade_sink()),
-                TaskId::from_source_server(StreamName::fx_trade_source2()),
-                TaskId::from_pump(PumpName::fx_trade2_p1()),
-                TaskId::from_sink_server(StreamName::fx_trade_sink2()),
+                TaskId::from_source_server(StreamName::factory("fst_1")),
+                TaskId::from_pump(PumpName::factory("pu_c")),
+                TaskId::from_sink_server(StreamName::factory("fst_3")),
+                TaskId::from_source_server(StreamName::factory("fst_2")),
+                TaskId::from_pump(PumpName::factory("pu_d")),
+                TaskId::from_sink_server(StreamName::factory("fst_4")),
             ],
         )
     }
@@ -293,11 +293,11 @@ mod tests {
         t(
             Pipeline::fx_split_merge(),
             vec![
-                TaskId::from_source_server(StreamName::fx_trade_source2()),
-                TaskId::from_pump(PumpName::fx_trade2_p1()),
-                TaskId::from_source_server(StreamName::fx_trade_source()),
-                TaskId::from_pump(PumpName::fx_trade_p1()),
-                TaskId::from_sink_server(StreamName::fx_trade_sink()),
+                TaskId::from_source_server(StreamName::factory("fst_2")),
+                TaskId::from_pump(PumpName::factory("pu_d")),
+                TaskId::from_source_server(StreamName::factory("fst_1")),
+                TaskId::from_pump(PumpName::factory("pu_c")),
+                TaskId::from_sink_server(StreamName::factory("fst_3")),
             ],
         )
     }
