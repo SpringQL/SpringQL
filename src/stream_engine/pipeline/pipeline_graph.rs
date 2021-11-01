@@ -13,6 +13,7 @@ use self::{edge::Edge, stream_node::StreamNode};
 
 use super::{
     foreign_stream_model::ForeignStreamModel, pump_model::PumpModel, server_model::ServerModel,
+    stream_model::StreamModel,
 };
 use crate::{
     error::{Result, SpringError},
@@ -43,6 +44,13 @@ impl Default for PipelineGraph {
 }
 
 impl PipelineGraph {
+    pub(super) fn add_stream(&mut self, stream: Arc<StreamModel>) -> Result<()> {
+        let st_name = stream.name().clone();
+        let st_node = self.graph.add_node(StreamNode::Native(stream));
+        let _ = self.stream_nodes.insert(st_name, st_node);
+        Ok(())
+    }
+
     pub(super) fn add_foreign_stream(
         &mut self,
         foreign_stream: Arc<ForeignStreamModel>,

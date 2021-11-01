@@ -327,7 +327,115 @@ impl Pipeline {
     ///           +--------------e----------+
     /// ```
     pub(in crate::stream_engine) fn fx_complex() -> Self {
-        todo!()
+        let test_source = TestSource::start(vec![]).unwrap();
+        let test_sink = TestSink::start().unwrap();
+        let test_sink2 = TestSink::start().unwrap();
+
+        let fst_1 = Arc::new(ForeignStreamModel::fx_trade_with_name(StreamName::factory(
+            "fst_1",
+        ))); // [1]
+        let fst_2 = Arc::new(ForeignStreamModel::fx_trade_with_name(StreamName::factory(
+            "fst_2",
+        )));
+        let st_3 = Arc::new(StreamModel::fx_trade_with_name(StreamName::factory("st_3")));
+        let st_4 = Arc::new(StreamModel::fx_trade_with_name(StreamName::factory("st_4")));
+        let st_5 = Arc::new(StreamModel::fx_trade_with_name(StreamName::factory("st_5")));
+        let st_6 = Arc::new(StreamModel::fx_trade_with_name(StreamName::factory("st_6")));
+        let st_7 = Arc::new(StreamModel::fx_trade_with_name(StreamName::factory("st_7")));
+        let fst_8 = Arc::new(ForeignStreamModel::fx_trade_with_name(StreamName::factory(
+            "fst_8",
+        )));
+        let fst_9 = Arc::new(ForeignStreamModel::fx_trade_with_name(StreamName::factory(
+            "fst_9",
+        )));
+
+        let server_a =
+            ServerModel::fx_net_source(fst_1.clone(), test_source.host_ip(), test_source.port());
+        let server_b =
+            ServerModel::fx_net_source(fst_2.clone(), test_source.host_ip(), test_source.port());
+
+        let server_l =
+            ServerModel::fx_net_sink(fst_8.clone(), test_sink.host_ip(), test_sink.port());
+        let server_m =
+            ServerModel::fx_net_sink(fst_9.clone(), test_sink2.host_ip(), test_sink2.port());
+
+        let pu_c = PumpModel::fx_passthrough_trade(
+            PumpName::factory("pu_c"),
+            fst_1.name().clone(),
+            st_3.name().clone(),
+        );
+        let pu_d = PumpModel::fx_passthrough_trade(
+            PumpName::factory("pu_d"),
+            fst_2.name().clone(),
+            st_4.name().clone(),
+        );
+        let pu_e = PumpModel::fx_passthrough_trade(
+            PumpName::factory("pu_e"),
+            fst_2.name().clone(),
+            st_5.name().clone(),
+        );
+        let pu_f = PumpModel::fx_passthrough_trade(
+            PumpName::factory("pu_f"),
+            st_3.name().clone(),
+            st_4.name().clone(),
+        );
+        let pu_g = PumpModel::fx_passthrough_trade(
+            PumpName::factory("pu_g"),
+            st_4.name().clone(),
+            st_5.name().clone(),
+        );
+        let pu_h = PumpModel::fx_passthrough_trade(
+            PumpName::factory("pu_h"),
+            st_5.name().clone(),
+            st_6.name().clone(),
+        );
+        let pu_i = PumpModel::fx_passthrough_trade(
+            PumpName::factory("pu_i"),
+            st_5.name().clone(),
+            st_7.name().clone(),
+        );
+        let pu_j = PumpModel::fx_passthrough_trade(
+            PumpName::factory("pu_j"),
+            st_6.name().clone(),
+            fst_8.name().clone(),
+        );
+        let pu_k = PumpModel::fx_passthrough_trade(
+            PumpName::factory("pu_k"),
+            st_7.name().clone(),
+            fst_9.name().clone(),
+        );
+
+        let mut pipeline = Pipeline::default();
+
+        pipeline.add_foreign_stream(fst_1).unwrap();
+        pipeline.add_foreign_stream(fst_2).unwrap();
+
+        pipeline.add_foreign_stream(fst_8).unwrap();
+        pipeline.add_foreign_stream(fst_9).unwrap();
+
+        pipeline.add_server(server_a).unwrap();
+        pipeline.add_server(server_b).unwrap();
+
+        pipeline.add_server(server_l).unwrap();
+        pipeline.add_server(server_m).unwrap();
+
+        pipeline.add_stream(st_3).unwrap();
+        pipeline.add_stream(st_4).unwrap();
+        pipeline.add_stream(st_5).unwrap();
+        pipeline.add_stream(st_6).unwrap();
+        pipeline.add_stream(st_7).unwrap();
+
+        pipeline.add_pump(pu_c).unwrap();
+        pipeline.add_pump(pu_d).unwrap();
+        pipeline.add_pump(pu_e).unwrap();
+        pipeline.add_pump(pu_f).unwrap();
+        pipeline.add_pump(pu_g).unwrap();
+        pipeline.add_pump(pu_h).unwrap();
+        pipeline.add_pump(pu_i).unwrap();
+        pipeline.add_pump(pu_j).unwrap();
+        pipeline.add_pump(pu_k).unwrap();
+
+        pipeline
     }
 }
 
@@ -376,6 +484,10 @@ impl StreamModel {
             Options::fx_empty(),
         )
     }
+
+    pub(in crate::stream_engine) fn fx_trade_with_name(name: StreamName) -> Self {
+        Self::new(name, Arc::new(StreamShape::fx_trade()), Options::fx_empty())
+    }
 }
 
 impl ForeignStreamModel {
@@ -412,6 +524,14 @@ impl ForeignStreamModel {
     pub(in crate::stream_engine) fn fx_trade_sink2() -> Self {
         Self::new(StreamModel::new(
             StreamName::fx_trade_sink2(),
+            Arc::new(StreamShape::fx_trade()),
+            Options::fx_empty(),
+        ))
+    }
+
+    pub(in crate::stream_engine) fn fx_trade_with_name(name: StreamName) -> Self {
+        Self::new(StreamModel::new(
+            name,
             Arc::new(StreamShape::fx_trade()),
             Options::fx_empty(),
         ))
@@ -630,47 +750,5 @@ impl StreamColumns {
 
     pub(in crate::stream_engine) fn fx_no_promoted_rowtime() -> Self {
         Self::factory_no_promoted_rowtime(12345)
-    }
-}
-
-impl TaskId {
-    pub(in crate::stream_engine) fn fx_a() -> Self {
-        Self::new("task-a".to_string())
-    }
-    pub(in crate::stream_engine) fn fx_b() -> Self {
-        Self::new("task-b".to_string())
-    }
-    pub(in crate::stream_engine) fn fx_c() -> Self {
-        Self::new("task-c".to_string())
-    }
-    pub(in crate::stream_engine) fn fx_d() -> Self {
-        Self::new("task-d".to_string())
-    }
-    pub(in crate::stream_engine) fn fx_e() -> Self {
-        Self::new("task-e".to_string())
-    }
-    pub(in crate::stream_engine) fn fx_f() -> Self {
-        Self::new("task-f".to_string())
-    }
-    pub(in crate::stream_engine) fn fx_g() -> Self {
-        Self::new("task-g".to_string())
-    }
-    pub(in crate::stream_engine) fn fx_h() -> Self {
-        Self::new("task-h".to_string())
-    }
-    pub(in crate::stream_engine) fn fx_i() -> Self {
-        Self::new("task-i".to_string())
-    }
-    pub(in crate::stream_engine) fn fx_j() -> Self {
-        Self::new("task-j".to_string())
-    }
-    pub(in crate::stream_engine) fn fx_k() -> Self {
-        Self::new("task-k".to_string())
-    }
-    pub(in crate::stream_engine) fn fx_l() -> Self {
-        Self::new("task-l".to_string())
-    }
-    pub(in crate::stream_engine) fn fx_m() -> Self {
-        Self::new("task-m".to_string())
     }
 }

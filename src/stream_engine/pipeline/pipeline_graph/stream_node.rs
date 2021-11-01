@@ -11,7 +11,7 @@ use crate::{
 
 #[derive(Eq, PartialEq, Debug, Serialize, Deserialize)]
 pub(in crate::stream_engine) enum StreamNode {
-    Native(StreamModel),
+    Native(Arc<StreamModel>),
     Foreign(Arc<ForeignStreamModel>),
     VirtualRoot,
     VirtualLeaf { parent_foreign_stream: StreamName },

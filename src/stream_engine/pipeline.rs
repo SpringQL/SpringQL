@@ -22,6 +22,7 @@ use serde::{Deserialize, Serialize};
 use self::{
     foreign_stream_model::ForeignStreamModel, pipeline_graph::PipelineGraph,
     pipeline_version::PipelineVersion, pump_model::PumpModel, server_model::ServerModel,
+    stream_model::StreamModel,
 };
 
 #[derive(Debug, Default, Serialize, Deserialize)]
@@ -63,6 +64,16 @@ impl Pipeline {
         self.update_version();
         self.register_name(foreign_stream.name().as_ref())?;
         self.graph.add_foreign_stream(foreign_stream)
+    }
+
+    /// # Failure
+    ///
+    /// - [SpringError::Sql](crate::error::SpringError::Sql) when:
+    ///   - Name of stream is already used in the same pipeline
+    pub(super) fn add_stream(&mut self, stream: Arc<StreamModel>) -> Result<()> {
+        self.update_version();
+        self.register_name(stream.name().as_ref())?;
+        self.graph.add_stream(stream)
     }
 
     /// # Failure

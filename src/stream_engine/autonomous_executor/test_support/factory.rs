@@ -2,13 +2,14 @@ use std::{rc::Rc, sync::Arc};
 
 use crate::{
     model::{
-        name::{ColumnName, PumpName},
+        name::{ColumnName, PumpName, StreamName},
         option::options_builder::OptionsBuilder,
         query_plan::query_plan_node::{operation::LeafOperation, QueryPlanNodeLeaf},
     },
     stream_engine::{
         autonomous_executor::Timestamp,
         dependency_injection::{test_di::TestDI, DependencyInjection},
+        pipeline::stream_model::StreamModel,
     },
     stream_engine::{
         autonomous_executor::{
@@ -159,5 +160,17 @@ impl QueryPlanNodeLeaf {
         Self {
             op: LeafOperation::Collect { pump: pump_name },
         }
+    }
+}
+
+impl StreamName {
+    pub(in crate::stream_engine) fn factory(name: &str) -> Self {
+        Self::new(name.to_string())
+    }
+}
+
+impl PumpName {
+    pub(in crate::stream_engine) fn factory(name: &str) -> Self {
+        Self::new(name.to_string())
     }
 }
