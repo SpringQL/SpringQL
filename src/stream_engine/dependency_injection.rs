@@ -14,6 +14,4 @@ pub(super) trait DependencyInjection: 'static {
     // Autonomous executor
     type SchedulerType: Scheduler + Debug + Default + Sync + Send + 'static;
     type RowRepositoryType: RowRepository;
-
-    fn row_repository(&self) -> &Self::RowRepositoryType;
 }

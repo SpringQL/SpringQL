@@ -7,23 +7,17 @@ use crate::stream_engine::dependency_injection::DependencyInjection;
 use crate::stream_engine::RowRepository;
 
 #[derive(Debug, new)]
-pub(in crate::stream_engine::autonomous_executor::exec::query_executor) struct CollectExecutor<DI>
-where
-    DI: DependencyInjection,
-{
-    di: Rc<DI>,
-
+pub(in crate::stream_engine::autonomous_executor::exec::query_executor) struct CollectExecutor {
     pump: PumpName,
 }
 
-impl<DI> CollectExecutor<DI>
-where
-    DI: DependencyInjection,
-{
-    pub(in crate::stream_engine::autonomous_executor::exec::query_executor) fn run(
+impl CollectExecutor {
+    pub(in crate::stream_engine::autonomous_executor::exec::query_executor) fn run<
+        DI: DependencyInjection,
+    >(
         &self,
+        row_repo: &DI::RowRepositoryType,
     ) -> Result<Rc<Row>> {
-        let row_repo = self.di.row_repository();
         row_repo.collect_next(&self.pump)
     }
 }

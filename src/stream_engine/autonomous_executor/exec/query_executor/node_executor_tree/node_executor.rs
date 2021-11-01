@@ -8,21 +8,15 @@ use crate::stream_engine::dependency_injection::DependencyInjection;
 use self::{collect_executor::CollectExecutor, window_executor::SlidingWindowExecutor};
 
 #[derive(Debug)]
-pub(in crate::stream_engine::autonomous_executor::exec::query_executor) enum NodeExecutor<DI>
-where
-    DI: DependencyInjection,
-{
-    Collect(CollectNodeExecutor<DI>),
+pub(in crate::stream_engine::autonomous_executor::exec::query_executor) enum NodeExecutor {
+    Collect(CollectNodeExecutor),
     Stream(StreamNodeExecutor),
     Window(WindowNodeExecutor),
 }
 
 #[derive(Debug)]
-pub(in crate::stream_engine::autonomous_executor::exec::query_executor) enum CollectNodeExecutor<DI>
-where
-    DI: DependencyInjection,
-{
-    Collect(CollectExecutor<DI>),
+pub(in crate::stream_engine::autonomous_executor::exec::query_executor) enum CollectNodeExecutor {
+    Collect(CollectExecutor),
 }
 
 #[derive(Debug)]
