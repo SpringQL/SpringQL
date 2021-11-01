@@ -173,8 +173,9 @@ impl Pipeline {
         );
 
         let pump_trade_source_p1 = PumpModel::fx_passthrough_trade(
-            StreamName::fx_trade_source(),
-            StreamName::fx_trade_sink(),
+            PumpName::fx_trade_p1(),
+            fst_trade_source.name().clone(),
+            fst_trade_sink.name().clone(),
         );
 
         let mut pipeline = Pipeline::default();
@@ -195,7 +196,67 @@ impl Pipeline {
     ///  +---b-->[2]--d-->[4]--f-->
     /// ```
     pub(in crate::stream_engine) fn fx_split() -> Self {
-        todo!()
+        let test_source = TestSource::start(vec![]).unwrap();
+
+        let test_sink1 = TestSink::start().unwrap();
+        let test_sink2 = TestSink::start().unwrap();
+
+        let fst_trade_source1 = Arc::new(ForeignStreamModel::fx_trade_source());
+        let fst_trade_source2 = Arc::new(ForeignStreamModel::fx_trade_source2());
+
+        let fst_trade_sink1 = Arc::new(ForeignStreamModel::fx_trade_sink());
+        let fst_trade_sink2 = Arc::new(ForeignStreamModel::fx_trade_sink2());
+
+        let server_trade_source1 = ServerModel::fx_net_source(
+            fst_trade_source1.clone(),
+            test_source.host_ip(),
+            test_source.port(),
+        );
+        let server_trade_source2 = ServerModel::fx_net_source(
+            fst_trade_source2.clone(),
+            test_source.host_ip(),
+            test_source.port(),
+        );
+
+        let server_trade_sink1 = ServerModel::fx_net_sink(
+            fst_trade_sink1.clone(),
+            test_sink1.host_ip(),
+            test_sink1.port(),
+        );
+        let server_trade_sink2 = ServerModel::fx_net_sink(
+            fst_trade_sink1.clone(),
+            test_sink2.host_ip(),
+            test_sink2.port(),
+        );
+
+        let pump_trade_source1_p1 = PumpModel::fx_passthrough_trade(
+            PumpName::fx_trade_p1(),
+            fst_trade_source1.name().clone(),
+            fst_trade_sink1.name().clone(),
+        );
+        let pump_trade_source2_p1 = PumpModel::fx_passthrough_trade(
+            PumpName::fx_trade2_p1(),
+            fst_trade_source2.name().clone(),
+            fst_trade_sink2.name().clone(),
+        );
+
+        let mut pipeline = Pipeline::default();
+        pipeline.add_foreign_stream(fst_trade_source1).unwrap();
+        pipeline.add_server(server_trade_source1).unwrap();
+
+        pipeline.add_foreign_stream(fst_trade_source2).unwrap();
+        pipeline.add_server(server_trade_source2).unwrap();
+
+        pipeline.add_foreign_stream(fst_trade_sink1).unwrap();
+        pipeline.add_server(server_trade_sink1).unwrap();
+
+        pipeline.add_foreign_stream(fst_trade_sink2).unwrap();
+        pipeline.add_server(server_trade_sink2).unwrap();
+
+        pipeline.add_pump(pump_trade_source1_p1).unwrap();
+        pipeline.add_pump(pump_trade_source2_p1).unwrap();
+
+        pipeline
     }
 
     /// ```text
@@ -284,9 +345,24 @@ impl ForeignStreamModel {
             Options::fx_empty(),
         ))
     }
+    pub(in crate::stream_engine) fn fx_trade_source2() -> Self {
+        Self::new(StreamModel::new(
+            StreamName::fx_trade_source2(),
+            Arc::new(StreamShape::fx_trade()),
+            Options::fx_empty(),
+        ))
+    }
+
     pub(in crate::stream_engine) fn fx_trade_sink() -> Self {
         Self::new(StreamModel::new(
             StreamName::fx_trade_sink(),
+            Arc::new(StreamShape::fx_trade()),
+            Options::fx_empty(),
+        ))
+    }
+    pub(in crate::stream_engine) fn fx_trade_sink2() -> Self {
+        Self::new(StreamModel::new(
+            StreamName::fx_trade_sink2(),
             Arc::new(StreamShape::fx_trade()),
             Options::fx_empty(),
         ))
@@ -320,10 +396,11 @@ impl ServerModel {
 
 impl PumpModel {
     pub(in crate::stream_engine) fn fx_passthrough_trade(
+        name: PumpName,
         upstream: StreamName,
         downstream: StreamName,
     ) -> Self {
-        Self::new(PumpName::fx_trade_p1(), upstream, downstream)
+        Self::new(name, upstream, downstream)
     }
 }
 
@@ -344,14 +421,23 @@ impl StreamName {
     pub(in crate::stream_engine) fn fx_trade_source() -> Self {
         StreamName::new("fst_trade_source".to_string())
     }
+    pub(in crate::stream_engine) fn fx_trade_source2() -> Self {
+        StreamName::new("fst_trade_source2".to_string())
+    }
     pub(in crate::stream_engine) fn fx_trade_sink() -> Self {
         StreamName::new("fst_trade_sink".to_string())
+    }
+    pub(in crate::stream_engine) fn fx_trade_sink2() -> Self {
+        StreamName::new("fst_trade_sink2".to_string())
     }
 }
 
 impl PumpName {
     pub(in crate::stream_engine) fn fx_trade_p1() -> Self {
         Self::new("pu_trade_p1".to_string())
+    }
+    pub(in crate::stream_engine) fn fx_trade2_p1() -> Self {
+        Self::new("pu_trade2_p1".to_string())
     }
     pub(in crate::stream_engine) fn fx_trade_window() -> Self {
         Self::new("pu_trade_window".to_string())

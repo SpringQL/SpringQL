@@ -278,12 +278,12 @@ mod tests {
         t(
             Pipeline::fx_split(),
             vec![
-                TaskId::fx_a(),
-                TaskId::fx_c(),
-                TaskId::fx_e(),
-                TaskId::fx_b(),
-                TaskId::fx_d(),
-                TaskId::fx_f(),
+                TaskId::from_source_server(StreamName::fx_trade_source()),
+                TaskId::from_pump(PumpName::fx_trade_p1()),
+                TaskId::from_sink_server(StreamName::fx_trade_sink()),
+                TaskId::from_source_server(StreamName::fx_trade_source2()),
+                TaskId::from_pump(PumpName::fx_trade2_p1()),
+                TaskId::from_sink_server(StreamName::fx_trade_sink2()),
             ],
         )
     }
