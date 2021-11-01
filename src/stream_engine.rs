@@ -17,13 +17,14 @@ pub(crate) mod pipeline;
 
 mod autonomous_executor;
 mod dependency_injection;
+mod reactive_executor;
 
 use crate::error::Result;
 use autonomous_executor::{CurrentTimestamp, NaiveRowRepository, RowRepository, Scheduler};
 
 use self::{
     autonomous_executor::AutonomousExecutor, dependency_injection::DependencyInjection,
-    pipeline::Pipeline,
+    pipeline::Pipeline, reactive_executor::ReactiveExecutor,
 };
 
 #[cfg(not(test))]
@@ -39,6 +40,7 @@ pub(crate) type StreamEngine = StreamEngineDI<dependency_injection::test_di::Tes
 pub(crate) struct StreamEngineDI<DI: DependencyInjection> {
     pipeline: Pipeline,
 
+    reactive_executor: ReactiveExecutor,
     autonomous_executor: AutonomousExecutor<DI>,
 }
 
@@ -49,6 +51,7 @@ where
     pub(crate) fn new(n_worker_threads: usize) -> Self {
         Self {
             pipeline: Pipeline::default(),
+            reactive_executor: ReactiveExecutor::default(),
             autonomous_executor: AutonomousExecutor::new(n_worker_threads),
         }
     }

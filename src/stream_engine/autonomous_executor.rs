@@ -27,7 +27,7 @@ pub mod test_support;
 
 /// Executor of pipeline's stream data.
 ///
-/// All methods are called from main thread.
+/// All interface methods are called from main thread, while `new()` incur spawn worker threads.
 #[derive(Debug)]
 pub(in crate::stream_engine) struct AutonomousExecutor<DI>
 where
