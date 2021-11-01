@@ -17,7 +17,7 @@ impl DependencyInjection for ProdDI {
 }
 
 #[derive(Debug)]
-pub(crate) struct SystemTimestamp;
+pub struct SystemTimestamp;
 
 impl CurrentTimestamp for SystemTimestamp {
     fn now() -> Timestamp {

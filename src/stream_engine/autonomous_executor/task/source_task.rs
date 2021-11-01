@@ -17,7 +17,7 @@ use crate::stream_engine::pipeline::server_model::ServerModel;
 use super::task_id::TaskId;
 
 #[derive(Debug)]
-pub(in crate::stream_engine) struct SourceTask {
+pub(crate) struct SourceTask {
     id: TaskId,
 
     /// 1 server can be shared to 2 or more foreign streams.

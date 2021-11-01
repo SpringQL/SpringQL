@@ -21,17 +21,41 @@ mod dependency_injection;
 use crate::error::Result;
 use autonomous_executor::{CurrentTimestamp, NaiveRowRepository, RowRepository, Scheduler};
 
-use self::pipeline::Pipeline;
+use self::{
+    autonomous_executor::AutonomousExecutor, dependency_injection::DependencyInjection,
+    pipeline::Pipeline,
+};
+
+#[cfg(not(test))]
+pub(crate) type StreamEngine = StreamEngineDI<dependency_injection::prod_di::ProdDI>;
+#[cfg(test)]
+pub(crate) type StreamEngine = StreamEngineDI<dependency_injection::test_di::TestDI>;
 
 /// Stream engine has reactive executor and autonomous executor inside.
 ///
-/// Stream engine has access methods.
-/// External components (sql-processor) access methods to change stream engine's states and get result from it.
-#[derive(Debug, Default)]
-pub(crate) struct StreamEngine;
+/// Stream engine has Access Methods.
+/// External components (sql-processor) call Access Methods to change stream engine's states and get result from it.
+#[derive(Debug)]
+pub(crate) struct StreamEngineDI<DI: DependencyInjection> {
+    pipeline: Pipeline,
 
-impl StreamEngine {
-    pub(crate) fn create_pipeline(&mut self) -> Result<Pipeline> {
-        Ok(Pipeline::default())
+    autonomous_executor: AutonomousExecutor<DI>,
+}
+
+impl<DI> StreamEngineDI<DI>
+where
+    DI: DependencyInjection,
+{
+    pub(crate) fn new(n_worker_threads: usize) -> Self {
+        Self {
+            pipeline: Pipeline::default(),
+            autonomous_executor: AutonomousExecutor::new(n_worker_threads),
+        }
     }
+
+    // pub(crate) fn alter_pipeline(&mut self, command: AlterPipelineCommand) -> Result<()> {
+    //     let pipeline = self.reactive_executor.alter_pipeline(commad)?;
+    //     self.autonomous_executor.update_pipeline(pipeline);
+    //     Ok(())
+    // }
 }

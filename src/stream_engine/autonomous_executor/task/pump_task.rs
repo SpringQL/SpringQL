@@ -3,7 +3,7 @@ use crate::stream_engine::pipeline::pump_model::PumpModel;
 use super::task_id::TaskId;
 
 #[derive(Debug)]
-pub(in crate::stream_engine) struct PumpTask {
+pub(crate) struct PumpTask {
     id: TaskId,
 }
 

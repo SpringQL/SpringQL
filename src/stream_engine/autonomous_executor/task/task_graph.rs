@@ -20,7 +20,7 @@ use crate::{
 use super::{sink_task::SinkTask, source_task::SourceTask, Task};
 
 #[derive(Debug)]
-pub(in crate::stream_engine) struct TaskGraph(DiGraph<StreamName, Arc<Task>>);
+pub(crate) struct TaskGraph(DiGraph<StreamName, Arc<Task>>);
 
 impl From<&PipelineGraph> for TaskGraph {
     fn from(p_graph: &PipelineGraph) -> Self {

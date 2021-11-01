@@ -10,7 +10,7 @@ use crate::error::Result;
 use self::{pump_task::PumpTask, sink_task::SinkTask, source_task::SourceTask, task_id::TaskId};
 
 #[derive(Debug)]
-pub(in crate::stream_engine) enum Task {
+pub(crate) enum Task {
     Pump(PumpTask),
     Source(SourceTask),
     Sink(SinkTask),

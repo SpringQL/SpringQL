@@ -4,10 +4,16 @@
 //!
 //! C API and high-level Rust API are provided separately.
 
+use anyhow::anyhow;
+
 use crate::{
-    error::Result,
+    error::{Result, SpringError},
     stream_engine::{pipeline::Pipeline, StreamEngine},
+    PIPELINE_CREATED,
 };
+
+// TODO config
+const N_WORKER_THREADS: usize = 2;
 
 /// Connection object.
 ///
@@ -16,7 +22,6 @@ use crate::{
 #[derive(Debug)]
 pub struct SpringPipeline {
     engine: StreamEngine,
-    pipeline: Pipeline,
 }
 
 /// Prepared statement.
@@ -48,13 +53,22 @@ pub enum SpringStepSuccess {
 ///
 /// # Failure
 ///
-/// (will be added)
+/// - [SpringError::Unavailable](crate::error::SpringError::Unavailable) when:
+///   - Pipeline is already open.
 pub fn spring_open() -> Result<SpringPipeline> {
-    let mut engine = StreamEngine::default();
-    engine.create_pipeline().map(|p| SpringPipeline {
-        engine,
-        pipeline: p,
-    })
+    let mut created = PIPELINE_CREATED
+        .lock()
+        .expect("another thread calling spring_open() seems get panic");
+    if *created {
+        return Err(SpringError::Unavailable {
+            source: anyhow!("pipeline already open"),
+            resource: "pipeline".to_string(),
+        });
+    }
+    *created = true;
+
+    let engine = StreamEngine::new(N_WORKER_THREADS);
+    Ok(SpringPipeline { engine })
 }
 
 /// Creates a prepared statement.
@@ -119,5 +133,5 @@ pub fn spring_finalize(stmt: SpringStatement) {
 ///
 /// You don't have to call this function but just dropping (moving out) the connection object is enough.
 pub fn spring_close(pipeline: SpringPipeline) {
-    // just drop conn
+    // just drop pipeline
 }

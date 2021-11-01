@@ -12,9 +12,9 @@ use crate::stream_engine::pipeline::{pipeline_version::PipelineVersion, Pipeline
 
 use super::task::{task_graph::TaskGraph, Task};
 
-pub(in crate::stream_engine) trait WorkerState {}
+pub(crate) trait WorkerState {}
 
-pub(in crate::stream_engine) trait Scheduler {
+pub(crate) trait Scheduler {
     type W: WorkerState + Clone + Default;
 
     /// Called from main thread.
