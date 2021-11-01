@@ -5,6 +5,7 @@ mod flow_efficient_scheduler;
 
 pub(crate) use flow_efficient_scheduler::FlowEfficientScheduler;
 
+use crate::error::Result;
 use crate::stream_engine::pipeline::{pipeline_version::PipelineVersion, Pipeline};
 
 use super::task::{task_graph::TaskGraph, Task};

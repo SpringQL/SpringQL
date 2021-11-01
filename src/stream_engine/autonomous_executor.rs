@@ -7,6 +7,7 @@ pub(self) mod server;
 mod scheduler;
 mod worker_pool;
 
+use crate::error::Result;
 use std::sync::{Arc, RwLock};
 
 pub(in crate::stream_engine) use data::{CurrentTimestamp, RowRepository, Timestamp};

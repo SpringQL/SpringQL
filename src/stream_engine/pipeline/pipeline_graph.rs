@@ -80,12 +80,13 @@ impl PipelineGraph {
                     .stream_nodes
                     .get(&StreamName::virtual_root())
                     .expect("virtual root always available");
-                let downstream_node = self.stream_nodes.get(serving_to).ok_or_else(|| {
-                    SpringError::Sql(anyhow!(
-                        r#"downstream "{}" does not exist in pipeline"#,
-                        serving_to
-                    ))
-                })?;
+                let downstream_node =
+                    self.stream_nodes.get(serving_to.name()).ok_or_else(|| {
+                        SpringError::Sql(anyhow!(
+                            r#"downstream "{}" does not exist in pipeline"#,
+                            serving_to.name()
+                        ))
+                    })?;
                 let _ = self
                     .graph
                     .add_edge(*upstream_node, *downstream_node, Edge::Source(server));

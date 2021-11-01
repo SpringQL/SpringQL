@@ -157,14 +157,18 @@ impl Pipeline {
             .add_foreign_stream(ForeignStreamModel::fx_trade_source())
             .unwrap();
         pipeline
-            .add_server(ServerModel::fx_net_source(StreamName::fx_trade_source()))
+            .add_server(ServerModel::fx_net_source(Arc::new(
+                ForeignStreamModel::fx_trade_source(),
+            )))
             .unwrap();
 
         pipeline
             .add_foreign_stream(ForeignStreamModel::fx_trade_sink())
             .unwrap();
         pipeline
-            .add_server(ServerModel::fx_net_sink(StreamName::fx_trade_sink()))
+            .add_server(ServerModel::fx_net_sink(Arc::new(
+                ForeignStreamModel::fx_trade_sink(),
+            )))
             .unwrap();
 
         pipeline
@@ -282,14 +286,18 @@ impl ForeignStreamModel {
 }
 
 impl ServerModel {
-    pub(in crate::stream_engine) fn fx_net_source(serving_foreign_stream: StreamName) -> Self {
+    pub(in crate::stream_engine) fn fx_net_source(
+        serving_foreign_stream: Arc<ForeignStreamModel>,
+    ) -> Self {
         Self::new(
             ServerType::SourceNet,
             serving_foreign_stream,
             Options::fx_net_source_server(),
         )
     }
-    pub(in crate::stream_engine) fn fx_net_sink(serving_foreign_stream: StreamName) -> Self {
+    pub(in crate::stream_engine) fn fx_net_sink(
+        serving_foreign_stream: Arc<ForeignStreamModel>,
+    ) -> Self {
         Self::new(
             ServerType::SourceNet,
             serving_foreign_stream,

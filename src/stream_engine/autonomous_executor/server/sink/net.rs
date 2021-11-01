@@ -30,13 +30,15 @@ pub(in crate::stream_engine::autonomous_executor) struct NetSinkServerActive {
     tcp_stream_writer: BufWriter<TcpStream>, // TODO UDP
 }
 
-impl SinkServerStandby<NetSinkServerActive> for NetSinkServerStandby {
+impl SinkServerStandby for NetSinkServerStandby {
+    type Act = NetSinkServerActive;
+
     fn new(options: Options) -> Result<Self>
     where
         Self: Sized,
     {
         Ok(Self {
-            options: NetServerOptions::try_from(options)?,
+            options: NetServerOptions::try_from(&options)?,
         })
     }
 

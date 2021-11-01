@@ -40,7 +40,7 @@ impl NetSourceServerActive {
             .add("REMOTE_PORT", source.port().to_string())
             .build();
 
-        let server = NetSourceServerStandby::new(options).unwrap();
+        let server = NetSourceServerStandby::new(&options).unwrap();
         server.start().unwrap()
     }
 }
