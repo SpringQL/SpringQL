@@ -162,7 +162,10 @@ impl Scheduler for FlowEfficientScheduler {
 mod tests {
     use std::collections::VecDeque;
 
-    use crate::stream_engine::{autonomous_executor::task::task_id::TaskId, pipeline::Pipeline};
+    use crate::{
+        model::name::{PumpName, StreamName},
+        stream_engine::{autonomous_executor::task::task_id::TaskId, pipeline::Pipeline},
+    };
 
     use super::*;
 
@@ -198,7 +201,11 @@ mod tests {
     fn test_linear_pipeline() {
         t(
             Pipeline::fx_linear(),
-            vec![TaskId::fx_a(), TaskId::fx_b(), TaskId::fx_c()],
+            vec![
+                TaskId::from_source_server(StreamName::fx_trade_source()),
+                TaskId::from_pump(PumpName::fx_trade_p1()),
+                TaskId::from_sink_server(StreamName::fx_trade_sink()),
+            ],
         )
     }
 
