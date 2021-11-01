@@ -61,6 +61,7 @@ mod tests {
             autonomous_executor::{
                 data::foreign_row::format::json::JsonObject,
                 server::source::net::NetSourceServerActive,
+                test_support::foreign::source::TestSource,
             },
             dependency_injection::test_di::TestDI,
         },
@@ -74,8 +75,10 @@ mod tests {
         let j2 = JsonObject::fx_city_temperature_osaka();
         let j3 = JsonObject::fx_city_temperature_london();
 
+        let test_source = TestSource::start(vec![j1, j2, j3])?;
+
         let stream = Arc::new(ForeignStreamModel::fx_city_temperature_source());
-        let server = ServerModel::fx_net_source(stream);
+        let server = ServerModel::fx_net_source(stream, test_source.host_ip(), test_source.port());
         let pump = SourceTask::new(&server)?;
 
         assert_eq!(

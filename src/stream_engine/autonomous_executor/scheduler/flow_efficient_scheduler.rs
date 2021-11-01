@@ -97,9 +97,16 @@
 //!
 //! Selecting 1 from these schedule intelligently should lead to more memory reduction but current implementation always select first one (eagerly select leftmost outgoing edge).
 
-use crate::stream_engine::{
-    autonomous_executor::task::{task_graph::TaskGraph, Task},
-    pipeline::pipeline_version::PipelineVersion,
+use std::collections::HashSet;
+
+use petgraph::{graph::{DiGraph, NodeIndex}, visit::EdgeRef};
+
+use crate::{
+    model::name::StreamName,
+    stream_engine::{
+        autonomous_executor::task::{task_graph::TaskGraph, task_id::TaskId, Task},
+        pipeline::pipeline_version::PipelineVersion,
+    },
 };
 
 use super::{Scheduler, WorkerState};
@@ -122,10 +129,6 @@ impl Scheduler for FlowEfficientScheduler {
 
     fn _update_pipeline_version(&mut self, v: PipelineVersion) {
         self.pipeline_version = v;
-    }
-
-    fn _update_task_graph(&mut self, task_graph: TaskGraph) {
-        todo!()
     }
 
     fn next_task(&self, worker_state: CurrentTaskIdx) -> Option<(&Task, CurrentTaskIdx)> {
@@ -152,6 +155,61 @@ impl Scheduler for FlowEfficientScheduler {
                 ..worker_state
             };
             Some((current_task, next_worker_state))
+        }
+    }
+
+    fn _update_task_graph(&mut self, task_graph: TaskGraph) {
+        let graph = task_graph.as_petgraph();
+
+        let mut unvisited = graph
+            .edge_weights()
+            .into_iter()
+            .map(|task| task.id())
+            .collect::<HashSet<TaskId>>();
+
+        let mut seq_task_schedule = Vec::<Task>::new();
+
+        for leaf_node in Self::_leaf_nodes(graph) {
+            Self::_leaf_to_root_dfs_post_order(
+                leaf_node,
+                graph,
+                &mut seq_task_schedule,
+                &mut unvisited,
+            );
+        }
+
+        self.seq_task_schedule = seq_task_schedule;
+    }
+}
+
+impl FlowEfficientScheduler {
+    fn _leaf_nodes(graph: &DiGraph<StreamName, Task>) -> Vec<NodeIndex> {
+        graph
+            .node_indices()
+            .filter(|idx| graph.neighbors(*idx).next().is_none())
+            .collect()
+    }
+
+    fn _leaf_to_root_dfs_post_order(
+        cur_node: NodeIndex,
+        graph: &DiGraph<StreamName, Task>,
+        seq_task_schedule: &mut Vec<Task>,
+        unvisited: &mut HashSet<TaskId>,
+    ) {
+        let incoming_edges = graph.edges_directed(cur_node, petgraph::Direction::Incoming);
+        for incoming_edge in incoming_edges {
+            let task = incoming_edge.weight();
+
+            if unvisited.remove(&task.id()) {
+                let parent_node = incoming_edge.source();
+                Self::_leaf_to_root_dfs_post_order(
+                    parent_node,
+                    graph,
+                    seq_task_schedule,
+                    unvisited,
+                );
+                seq_task_schedule.push(task);
+            }
         }
     }
 }

@@ -1,4 +1,4 @@
-use std::sync::Arc;
+use std::{net::IpAddr, sync::Arc};
 
 use serde_json::json;
 
@@ -21,6 +21,7 @@ use crate::{
                 timestamp::Timestamp,
             },
             task::task_id::TaskId,
+            test_support::foreign::sink::TestSink,
         },
         pipeline::{
             stream_model::{stream_shape::StreamShape, StreamModel},
@@ -36,6 +37,8 @@ use crate::{
         },
     },
 };
+
+use super::foreign::source::TestSource;
 
 impl Timestamp {
     pub(in crate::stream_engine) fn fx_now() -> Self {
@@ -152,23 +155,30 @@ impl Pipeline {
     /// (0)--a-->[1]--b-->[2]--c-->
     /// ```
     pub(in crate::stream_engine) fn fx_linear() -> Self {
+        let test_source = TestSource::start(vec![]).unwrap();
+        let test_sink = TestSink::start().unwrap();
+
         let mut pipeline = Pipeline::default();
         pipeline
             .add_foreign_stream(ForeignStreamModel::fx_trade_source())
             .unwrap();
         pipeline
-            .add_server(ServerModel::fx_net_source(Arc::new(
-                ForeignStreamModel::fx_trade_source(),
-            )))
+            .add_server(ServerModel::fx_net_source(
+                Arc::new(ForeignStreamModel::fx_trade_source()),
+                test_source.host_ip(),
+                test_source.port(),
+            ))
             .unwrap();
 
         pipeline
             .add_foreign_stream(ForeignStreamModel::fx_trade_sink())
             .unwrap();
         pipeline
-            .add_server(ServerModel::fx_net_sink(Arc::new(
-                ForeignStreamModel::fx_trade_sink(),
-            )))
+            .add_server(ServerModel::fx_net_sink(
+                Arc::new(ForeignStreamModel::fx_trade_sink()),
+                test_sink.host_ip(),
+                test_sink.port(),
+            ))
             .unwrap();
 
         pipeline
@@ -288,20 +298,24 @@ impl ForeignStreamModel {
 impl ServerModel {
     pub(in crate::stream_engine) fn fx_net_source(
         serving_foreign_stream: Arc<ForeignStreamModel>,
+        remote_host: IpAddr,
+        remote_port: u16,
     ) -> Self {
         Self::new(
             ServerType::SourceNet,
             serving_foreign_stream,
-            Options::fx_net_source_server(),
+            Options::fx_net_source_server(remote_host, remote_port),
         )
     }
     pub(in crate::stream_engine) fn fx_net_sink(
         serving_foreign_stream: Arc<ForeignStreamModel>,
+        remote_host: IpAddr,
+        remote_port: u16,
     ) -> Self {
         Self::new(
             ServerType::SourceNet,
             serving_foreign_stream,
-            Options::fx_net_sink_server(),
+            Options::fx_net_sink_server(remote_host, remote_port),
         )
     }
 }
@@ -351,17 +365,25 @@ impl Options {
         OptionsBuilder::default().build()
     }
 
-    pub(in crate::stream_engine) fn fx_net_source_server() -> Self {
+    pub(in crate::stream_engine) fn fx_net_source_server(
+        remote_host: IpAddr,
+        remote_port: u16,
+    ) -> Self {
         OptionsBuilder::default()
             .add("PROTOCOL", "TCP")
-            // TODO cannot decide TestSource's remote host:port for ServerModel.
+            .add("REMOTE_HOST", remote_host.to_string())
+            .add("REMOTE_PORT", remote_port.to_string())
             .build()
     }
 
-    pub(in crate::stream_engine) fn fx_net_sink_server() -> Self {
+    pub(in crate::stream_engine) fn fx_net_sink_server(
+        remote_host: IpAddr,
+        remote_port: u16,
+    ) -> Self {
         OptionsBuilder::default()
             .add("PROTOCOL", "TCP")
-            // TODO cannot decide TestSink's remote host:port for ServerModel.
+            .add("REMOTE_HOST", remote_host.to_string())
+            .add("REMOTE_PORT", remote_port.to_string())
             .build()
     }
 }

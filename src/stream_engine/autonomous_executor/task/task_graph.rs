@@ -4,7 +4,7 @@
 //!
 //! Tasks are mapped to TaskGraph's edges. StreamName's are mapped to its nodes.
 
-use petgraph::graph::DiGraph;
+use petgraph::graph::{DiGraph, NodeIndex};
 
 use crate::{
     error::{Result, SpringError},
@@ -34,5 +34,11 @@ impl From<&PipelineGraph> for TaskGraph {
             },
         );
         Self(t_graph)
+    }
+}
+
+impl TaskGraph {
+    pub(in crate::stream_engine) fn as_petgraph(&self) -> &DiGraph<StreamName, Task> {
+        &self.0
     }
 }
