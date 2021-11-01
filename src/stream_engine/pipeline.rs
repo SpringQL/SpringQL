@@ -14,7 +14,7 @@ pub(in crate::stream_engine) mod pipeline_graph;
 pub(in crate::stream_engine) mod pipeline_version;
 
 use anyhow::anyhow;
-use std::collections::HashSet;
+use std::{collections::HashSet, sync::Arc};
 
 use crate::error::{Result, SpringError};
 use serde::{Deserialize, Serialize};
@@ -56,7 +56,10 @@ impl Pipeline {
     ///
     /// - [SpringError::Sql](crate::error::SpringError::Sql) when:
     ///   - Name of foreign stream is already used in the same pipeline
-    pub(super) fn add_foreign_stream(&mut self, foreign_stream: ForeignStreamModel) -> Result<()> {
+    pub(super) fn add_foreign_stream(
+        &mut self,
+        foreign_stream: Arc<ForeignStreamModel>,
+    ) -> Result<()> {
         self.update_version();
         self.register_name(foreign_stream.name().as_ref())?;
         self.graph.add_foreign_stream(foreign_stream)

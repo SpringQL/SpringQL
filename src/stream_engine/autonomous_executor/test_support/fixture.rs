@@ -158,35 +158,33 @@ impl Pipeline {
         let test_source = TestSource::start(vec![]).unwrap();
         let test_sink = TestSink::start().unwrap();
 
+        let fst_trade_source = Arc::new(ForeignStreamModel::fx_trade_source());
+        let fst_trade_sink = Arc::new(ForeignStreamModel::fx_trade_sink());
+
+        let server_trade_source = ServerModel::fx_net_source(
+            fst_trade_source.clone(),
+            test_source.host_ip(),
+            test_source.port(),
+        );
+        let server_trade_sink = ServerModel::fx_net_sink(
+            fst_trade_sink.clone(),
+            test_sink.host_ip(),
+            test_sink.port(),
+        );
+
+        let pump_trade_source_p1 = PumpModel::fx_passthrough_trade(
+            StreamName::fx_trade_source(),
+            StreamName::fx_trade_sink(),
+        );
+
         let mut pipeline = Pipeline::default();
-        pipeline
-            .add_foreign_stream(ForeignStreamModel::fx_trade_source())
-            .unwrap();
-        pipeline
-            .add_server(ServerModel::fx_net_source(
-                Arc::new(ForeignStreamModel::fx_trade_source()),
-                test_source.host_ip(),
-                test_source.port(),
-            ))
-            .unwrap();
+        pipeline.add_foreign_stream(fst_trade_source).unwrap();
+        pipeline.add_server(server_trade_source).unwrap();
 
-        pipeline
-            .add_foreign_stream(ForeignStreamModel::fx_trade_sink())
-            .unwrap();
-        pipeline
-            .add_server(ServerModel::fx_net_sink(
-                Arc::new(ForeignStreamModel::fx_trade_sink()),
-                test_sink.host_ip(),
-                test_sink.port(),
-            ))
-            .unwrap();
+        pipeline.add_foreign_stream(fst_trade_sink).unwrap();
+        pipeline.add_server(server_trade_sink).unwrap();
 
-        pipeline
-            .add_pump(PumpModel::fx_passthrough_trade(
-                StreamName::fx_trade_source(),
-                StreamName::fx_trade_sink(),
-            ))
-            .unwrap();
+        pipeline.add_pump(pump_trade_source_p1).unwrap();
 
         pipeline
     }

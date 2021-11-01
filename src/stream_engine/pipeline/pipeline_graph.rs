@@ -4,7 +4,7 @@
 pub(in crate::stream_engine) mod edge;
 pub(in crate::stream_engine) mod stream_node;
 
-use std::collections::HashMap;
+use std::{collections::HashMap, sync::Arc};
 
 use petgraph::graph::{DiGraph, NodeIndex};
 use serde::{Deserialize, Serialize};
@@ -43,7 +43,10 @@ impl Default for PipelineGraph {
 }
 
 impl PipelineGraph {
-    pub(super) fn add_foreign_stream(&mut self, foreign_stream: ForeignStreamModel) -> Result<()> {
+    pub(super) fn add_foreign_stream(
+        &mut self,
+        foreign_stream: Arc<ForeignStreamModel>,
+    ) -> Result<()> {
         let fst_name = foreign_stream.name().clone();
         let fst_node = self.graph.add_node(StreamNode::Foreign(foreign_stream));
         let _ = self.stream_nodes.insert(fst_name, fst_node);

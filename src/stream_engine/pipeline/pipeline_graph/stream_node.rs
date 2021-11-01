@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use serde::{Deserialize, Serialize};
 
 use crate::{
@@ -10,7 +12,7 @@ use crate::{
 #[derive(Eq, PartialEq, Debug, Serialize, Deserialize)]
 pub(in crate::stream_engine) enum StreamNode {
     Native(StreamModel),
-    Foreign(ForeignStreamModel),
+    Foreign(Arc<ForeignStreamModel>),
     VirtualRoot,
     VirtualLeaf { parent_foreign_stream: StreamName },
 }
