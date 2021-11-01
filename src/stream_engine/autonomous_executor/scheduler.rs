@@ -28,5 +28,5 @@ pub(in crate::stream_engine) trait Scheduler {
     fn _update_task_graph(&mut self, task_graph: TaskGraph);
 
     /// Called from worker threads.
-    fn next_task(&self, worker_state: Self::W) -> Option<(Task, Self::W)>;
+    fn next_task(&self, worker_state: Self::W) -> Option<(&Task, Self::W)>;
 }

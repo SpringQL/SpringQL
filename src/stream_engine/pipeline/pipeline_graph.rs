@@ -1,16 +1,18 @@
 //! A PipelineGraph has a "virtual root stream", who has outgoing edges to all source foreign streams.
 //! It also has "virtual leaf streams", who has an incoming edge from each sink foreign stream.
 
+pub(in crate::stream_engine) mod edge;
+pub(in crate::stream_engine) mod stream_node;
+
 use std::collections::HashMap;
 
 use petgraph::graph::{DiGraph, NodeIndex};
 use serde::{Deserialize, Serialize};
 
+use self::{edge::Edge, stream_node::StreamNode};
+
 use super::{
-    foreign_stream_model::{self, ForeignStreamModel},
-    pump_model::PumpModel,
-    server_model::ServerModel,
-    stream_model::StreamModel,
+    foreign_stream_model::ForeignStreamModel, pump_model::PumpModel, server_model::ServerModel,
 };
 use crate::{
     error::{Result, SpringError},
@@ -19,23 +21,9 @@ use crate::{
 };
 use anyhow::anyhow;
 
-#[derive(Eq, PartialEq, Debug, Serialize, Deserialize)]
-pub(super) enum StreamNode {
-    Native(StreamModel),
-    Foreign(ForeignStreamModel),
-    VirtualRoot,
-}
-
-#[derive(Eq, PartialEq, Debug, Serialize, Deserialize)]
-pub(super) enum PumpEdge {
-    Pump(PumpModel),
-    Source(ServerModel),
-    Sink(ServerModel),
-}
-
 #[derive(Debug, Serialize, Deserialize)]
 pub(in crate::stream_engine) struct PipelineGraph {
-    graph: DiGraph<StreamNode, PumpEdge>,
+    graph: DiGraph<StreamNode, Edge>,
     stream_nodes: HashMap<StreamName, NodeIndex>,
 }
 
@@ -78,7 +66,7 @@ impl PipelineGraph {
 
         let _ = self
             .graph
-            .add_edge(*upstream_node, *downstream_node, PumpEdge::Pump(pump));
+            .add_edge(*upstream_node, *downstream_node, Edge::Pump(pump));
 
         Ok(())
     }
@@ -98,11 +86,15 @@ impl PipelineGraph {
                         serving_to
                     ))
                 })?;
-                let _ =
-                    self.graph
-                        .add_edge(*upstream_node, *downstream_node, PumpEdge::Source(server));
+                let _ = self
+                    .graph
+                    .add_edge(*upstream_node, *downstream_node, Edge::Source(server));
             }
         }
         Ok(())
+    }
+
+    pub(in crate::stream_engine) fn as_petgraph(&self) -> &DiGraph<StreamNode, Edge> {
+        &self.graph
     }
 }

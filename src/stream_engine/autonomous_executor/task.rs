@@ -1,13 +1,18 @@
+pub(super) mod task_graph;
 pub(super) mod task_id;
 
-pub(super) mod task_graph;
+mod pump_task;
+mod source_task;
 
 use crate::error::Result;
 
-use self::task_id::TaskId;
+use self::{pump_task::PumpTask, source_task::SourceTask, task_id::TaskId};
 
-#[derive(Clone, Debug)]
-pub(in crate::stream_engine) enum Task {}
+#[derive(Debug)]
+pub(in crate::stream_engine) enum Task {
+    Pump(PumpTask),
+    Source(SourceTask),
+}
 
 impl Task {
     pub(super) fn id(&self) -> TaskId {

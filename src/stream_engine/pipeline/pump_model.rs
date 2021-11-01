@@ -1,4 +1,7 @@
-use crate::model::name::{PumpName, StreamName};
+use crate::{
+    model::name::{PumpName, StreamName},
+    stream_engine::autonomous_executor::task::Task,
+};
 use serde::{Deserialize, Serialize};
 
 #[derive(Eq, PartialEq, Debug, Serialize, Deserialize, new)]

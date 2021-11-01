@@ -128,15 +128,14 @@ impl Scheduler for FlowEfficientScheduler {
         todo!()
     }
 
-    fn next_task(&self, worker_state: CurrentTaskIdx) -> Option<(Task, CurrentTaskIdx)> {
+    fn next_task(&self, worker_state: CurrentTaskIdx) -> Option<(&Task, CurrentTaskIdx)> {
         if self.seq_task_schedule.is_empty() {
             None
         } else if worker_state.pipeline_version != self.pipeline_version {
             let current_task = self
                 .seq_task_schedule
                 .get(0)
-                .expect("index is managed in this function")
-                .clone();
+                .expect("index is managed in this function");
             let next_worker_state = CurrentTaskIdx {
                 pipeline_version: self.pipeline_version,
                 idx: 1 % self.seq_task_schedule.len(),
@@ -147,8 +146,7 @@ impl Scheduler for FlowEfficientScheduler {
             let current_task = self
                 .seq_task_schedule
                 .get(current_task_idx)
-                .expect("index is managed in this function")
-                .clone();
+                .expect("index is managed in this function");
             let next_worker_state = CurrentTaskIdx {
                 idx: (worker_state.idx + 1) % self.seq_task_schedule.len(),
                 ..worker_state

@@ -1,9 +1,10 @@
+pub(in crate::stream_engine) mod task;
+
 pub(self) mod data;
 pub(self) mod exec;
 pub(self) mod server;
 
 mod scheduler;
-mod task;
 mod worker_pool;
 
 use std::sync::{Arc, RwLock};

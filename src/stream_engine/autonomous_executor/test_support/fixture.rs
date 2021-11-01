@@ -257,6 +257,14 @@ impl StreamModel {
 }
 
 impl ForeignStreamModel {
+    pub(in crate::stream_engine) fn fx_city_temperature_source() -> Self {
+        Self::new(StreamModel::new(
+            StreamName::fx_city_temperature_source(),
+            Arc::new(StreamShape::fx_city_temperature()),
+            Options::fx_empty(),
+        ))
+    }
+
     pub(in crate::stream_engine) fn fx_trade_source() -> Self {
         Self::new(StreamModel::new(
             StreamName::fx_trade_source(),
@@ -303,6 +311,13 @@ impl StreamName {
     pub(in crate::stream_engine) fn fx_city_temperature() -> Self {
         StreamName::new("st_city_temperature".to_string())
     }
+    pub(in crate::stream_engine) fn fx_city_temperature_source() -> Self {
+        StreamName::new("st_city_temperature_source".to_string())
+    }
+    pub(in crate::stream_engine) fn fx_city_temperature_sink() -> Self {
+        StreamName::new("st_city_temperature_sink".to_string())
+    }
+
     pub(in crate::stream_engine) fn fx_trade() -> Self {
         StreamName::new("st_trade".to_string())
     }
