@@ -143,14 +143,13 @@ impl Row {
 
 impl QueryPlanNodeLeaf {
     pub(in crate::stream_engine) fn factory_with_pump_in<DI>(
-        di: Rc<DI>,
         pump_name: PumpName,
         input: Vec<Row>,
+        row_repo: &DI::RowRepositoryType,
     ) -> Self
     where
         DI: DependencyInjection,
     {
-        let row_repo = di.row_repository();
         let downstream_pumps = vec![pump_name.clone()];
 
         for row in input {

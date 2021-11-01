@@ -10,11 +10,10 @@ mod worker_pool;
 use crate::error::Result;
 use std::sync::{Arc, RwLock};
 
-pub(in crate::stream_engine) use data::{CurrentTimestamp, RowRepository, Timestamp};
+pub(in crate::stream_engine) use data::{
+    CurrentTimestamp, NaiveRowRepository, RowRepository, Timestamp,
+};
 pub(in crate::stream_engine) use scheduler::{FlowEfficientScheduler, Scheduler};
-
-#[cfg(test)]
-pub(crate) use data::TestRowRepository;
 
 use self::{
     scheduler::{scheduler_read::SchedulerRead, scheduler_write::SchedulerWrite},

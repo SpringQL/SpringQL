@@ -83,8 +83,7 @@ mod tests {
             expected: Vec<Timestamp>, // PKs; FIFO (left is the latest pushed)
         }
 
-        let di = TestDI::default();
-        let row_repo = di.row_repository();
+        let row_repo = <TestDI as DependencyInjection>::RowRepositoryType::default();
 
         let pump = PumpName::fx_trade_window();
         let downstream_pumps = vec![pump.clone()];

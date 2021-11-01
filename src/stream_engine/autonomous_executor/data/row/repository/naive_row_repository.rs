@@ -12,11 +12,11 @@ use super::RowRepository;
 
 /// Has similar structure as RowRepository's concept diagram.
 #[derive(Debug, Default)]
-pub(crate) struct TestRowRepository {
+pub(crate) struct NaiveRowRepository {
     pumps_buf: RefCell<HashMap<PumpName, VecDeque<Rc<Row>>>>,
 }
 
-impl RowRepository for TestRowRepository {
+impl RowRepository for NaiveRowRepository {
     fn collect_next(&self, pump: &PumpName) -> Result<Rc<Row>> {
         let row_ref = self
             .pumps_buf

@@ -1,10 +1,8 @@
-#[cfg(test)]
-pub(crate) mod test_row_repository;
+pub(crate) mod naive_row_repository;
 
 use std::rc::Rc;
 
-#[cfg(test)]
-pub(crate) use test_row_repository::TestRowRepository;
+pub(crate) use naive_row_repository::NaiveRowRepository;
 
 use crate::{error::Result, model::name::PumpName};
 
@@ -59,11 +57,11 @@ use super::Row;
 ///                     +- (Pump "s1_p2") ---> (Stream "s3")
 ///                         in buf: [r2]
 /// ```
-pub(crate) trait RowRepository {
+pub(crate) trait RowRepository: Default {
     /// Get the next RowRef from `pump`.
-    /// 
+    ///
     /// # Failure
-    /// 
+    ///
     /// - [SpringError::InputTimeout](crate::error::SpringError::InputTimeout) when:
     ///   - next row is not available within `timeout`
     fn collect_next(&self, pump: &PumpName) -> Result<Rc<Row>>;

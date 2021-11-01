@@ -6,21 +6,22 @@ use crate::stream_engine::{
 use super::DependencyInjection;
 
 #[derive(Debug)]
-pub(crate) struct TestDI {
+pub(crate) struct ProdDI {
     row_repo: NaiveRowRepository,
 }
 
-impl DependencyInjection for TestDI {
-    type CurrentTimestampType = TestCurrentTimestamp;
+impl DependencyInjection for ProdDI {
+    type CurrentTimestampType = SystemTimestamp;
     type RowRepositoryType = NaiveRowRepository;
     type SchedulerType = FlowEfficientScheduler;
 }
 
 #[derive(Debug)]
-pub(crate) struct TestCurrentTimestamp;
+pub(crate) struct SystemTimestamp;
 
-impl CurrentTimestamp for TestCurrentTimestamp {
+impl CurrentTimestamp for SystemTimestamp {
     fn now() -> Timestamp {
-        Timestamp::fx_now()
+        let t = chrono::offset::Utc::now().naive_utc();
+        Timestamp::new(t)
     }
 }

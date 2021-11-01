@@ -1,3 +1,5 @@
+pub(super) mod prod_di;
+
 #[cfg(test)]
 pub(super) mod test_di;
 
@@ -14,6 +16,4 @@ pub(super) trait DependencyInjection: 'static {
     // Autonomous executor
     type SchedulerType: Scheduler + Debug + Default + Sync + Send + 'static;
     type RowRepositoryType: RowRepository;
-
-    fn row_repository(&self) -> &Self::RowRepositoryType;
 }

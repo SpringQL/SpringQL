@@ -17,7 +17,7 @@ mod autonomous_executor;
 mod dependency_injection;
 mod pipeline;
 
-use autonomous_executor::{CurrentTimestamp, RowRepository, Scheduler};
+use autonomous_executor::{CurrentTimestamp, NaiveRowRepository, RowRepository, Scheduler};
 
 #[derive(Debug)]
 pub(crate) struct StreamEngine;
