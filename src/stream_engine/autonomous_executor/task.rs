@@ -6,7 +6,7 @@ use crate::error::Result;
 
 use self::task_id::TaskId;
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub(in crate::stream_engine) enum Task {}
 
 impl Task {

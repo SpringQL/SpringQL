@@ -4,7 +4,7 @@ use std::sync::{Arc, Mutex};
 
 use crate::stream_engine::dependency_injection::DependencyInjection;
 
-use self::worker::{worker_id::WorkerId, Worker};
+use self::worker::Worker;
 
 use super::scheduler::scheduler_read::SchedulerRead;
 
@@ -17,7 +17,7 @@ impl WorkerPool {
         scheduler_read: SchedulerRead<DI>,
     ) -> Self {
         let workers = (0..n_worker_threads)
-            .map(|i| Worker::new::<DI>(WorkerId::new(i as u64), scheduler_read.clone()))
+            .map(|i| Worker::new::<DI>(scheduler_read.clone()))
             .collect();
         Self(workers)
     }

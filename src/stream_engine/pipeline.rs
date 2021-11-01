@@ -11,28 +11,31 @@ pub(in crate::stream_engine) mod server_model;
 pub(in crate::stream_engine) mod stream_model;
 
 pub(in crate::stream_engine) mod pipeline_graph;
+pub(in crate::stream_engine) mod pipeline_version;
 
 use anyhow::anyhow;
-use std::collections::{HashMap, HashSet};
+use std::collections::HashSet;
 
-use crate::{
-    error::{Result, SpringError},
-    model::name::{PumpName, StreamName},
-};
+use crate::error::{Result, SpringError};
 use serde::{Deserialize, Serialize};
 
 use self::{
-    foreign_stream_model::ForeignStreamModel, pipeline_graph::PipelineGraph, pump_model::PumpModel,
-    server_model::ServerModel,
+    foreign_stream_model::ForeignStreamModel, pipeline_graph::PipelineGraph,
+    pipeline_version::PipelineVersion, pump_model::PumpModel, server_model::ServerModel,
 };
 
 #[derive(Debug, Default, Serialize, Deserialize)]
 pub(super) struct Pipeline {
+    version: PipelineVersion,
     object_names: HashSet<String>,
     graph: PipelineGraph,
 }
 
 impl Pipeline {
+    pub(super) fn version(&self) -> PipelineVersion {
+        self.version
+    }
+
     pub(super) fn as_graph(&self) -> &PipelineGraph {
         &self.graph
     }
@@ -44,6 +47,7 @@ impl Pipeline {
     ///   - Name of upstream stream is not found in pipeline
     ///   - Name of downstream stream is not found in pipeline
     pub(super) fn add_pump(&mut self, pump: PumpModel) -> Result<()> {
+        self.update_version();
         self.register_name(pump.name().as_ref())?;
         self.graph.add_pump(pump)
     }
@@ -53,6 +57,7 @@ impl Pipeline {
     /// - [SpringError::Sql](crate::error::SpringError::Sql) when:
     ///   - Name of foreign stream is already used in the same pipeline
     pub(super) fn add_foreign_stream(&mut self, foreign_stream: ForeignStreamModel) -> Result<()> {
+        self.update_version();
         self.register_name(foreign_stream.name().as_ref())?;
         self.graph.add_foreign_stream(foreign_stream)
     }
@@ -61,6 +66,7 @@ impl Pipeline {
     ///
     /// TODO
     pub(super) fn add_server(&mut self, server: ServerModel) -> Result<()> {
+        self.update_version();
         let serving_to = server.serving_foreign_stream();
         self.graph.add_server(server)
     }
@@ -78,5 +84,9 @@ impl Pipeline {
         } else {
             Ok(())
         }
+    }
+
+    fn update_version(&mut self) {
+        self.version.up();
     }
 }

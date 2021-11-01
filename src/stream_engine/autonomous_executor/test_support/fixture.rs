@@ -10,15 +10,6 @@ use crate::{
         sql_type::SqlType,
     },
     stream_engine::{
-        autonomous_executor::worker_pool::worker::worker_id::WorkerId,
-        dependency_injection::test_di::TestDI,
-        pipeline::{
-            foreign_stream_model::ForeignStreamModel,
-            pump_model::PumpModel,
-            server_model::{server_type::ServerType, ServerModel},
-        },
-    },
-    stream_engine::{
         autonomous_executor::{
             data::{
                 column::stream_column::StreamColumns,
@@ -34,6 +25,14 @@ use crate::{
         pipeline::{
             stream_model::{stream_shape::StreamShape, StreamModel},
             Pipeline,
+        },
+    },
+    stream_engine::{
+        dependency_injection::test_di::TestDI,
+        pipeline::{
+            foreign_stream_model::ForeignStreamModel,
+            pump_model::PumpModel,
+            server_model::{server_type::ServerType, ServerModel},
         },
     },
 };
@@ -453,12 +452,6 @@ impl StreamColumns {
 
     pub(in crate::stream_engine) fn fx_no_promoted_rowtime() -> Self {
         Self::factory_no_promoted_rowtime(12345)
-    }
-}
-
-impl WorkerId {
-    pub(in crate::stream_engine) fn fx_main_thread() -> Self {
-        Self::new(0)
     }
 }
 

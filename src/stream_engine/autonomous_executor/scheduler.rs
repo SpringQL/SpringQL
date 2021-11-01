@@ -5,23 +5,28 @@ mod flow_efficient_scheduler;
 
 pub(crate) use flow_efficient_scheduler::FlowEfficientScheduler;
 
-use crate::stream_engine::pipeline::Pipeline;
+use crate::stream_engine::pipeline::{pipeline_version::PipelineVersion, Pipeline};
 
-use super::{
-    task::{task_graph::TaskGraph, Task},
-    worker_pool::worker::worker_id::WorkerId,
-};
+use super::task::{task_graph::TaskGraph, Task};
+
+pub(in crate::stream_engine) trait WorkerState {}
 
 pub(in crate::stream_engine) trait Scheduler {
+    type W: WorkerState + Clone + Default;
+
     /// Called from main thread.
     fn update_pipeline(&mut self, pipeline: Pipeline) {
         let task_graph = TaskGraph::from(pipeline.as_graph());
-        self.update_task_graph(task_graph)
+        self._update_pipeline_version(pipeline.version());
+        self._update_task_graph(task_graph)
     }
 
     /// Called from main thread.
-    fn update_task_graph(&mut self, task_graph: TaskGraph);
+    fn _update_pipeline_version(&mut self, v: PipelineVersion);
+
+    /// Called from main thread.
+    fn _update_task_graph(&mut self, task_graph: TaskGraph);
 
     /// Called from worker threads.
-    fn next_task(&self, worker: WorkerId) -> Option<Task>;
+    fn next_task(&self, worker_state: Self::W) -> Option<(Task, Self::W)>;
 }

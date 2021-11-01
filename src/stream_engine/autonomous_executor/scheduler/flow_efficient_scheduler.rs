@@ -98,25 +98,63 @@
 //! Selecting 1 from these schedule intelligently should lead to more memory reduction but current implementation always select first one (eagerly select leftmost outgoing edge).
 
 use crate::stream_engine::{
-    autonomous_executor::{
-        task::{task_graph::TaskGraph, Task},
-        worker_pool::worker::worker_id::WorkerId,
-    },
-    pipeline::Pipeline,
+    autonomous_executor::task::{task_graph::TaskGraph, Task},
+    pipeline::pipeline_version::PipelineVersion,
 };
 
-use super::Scheduler;
+use super::{Scheduler, WorkerState};
+
+#[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Default)]
+pub(crate) struct CurrentTaskIdx {
+    pipeline_version: PipelineVersion,
+    idx: usize,
+}
+impl WorkerState for CurrentTaskIdx {}
 
 #[derive(Debug, Default)]
-pub(crate) struct FlowEfficientScheduler;
+pub(crate) struct FlowEfficientScheduler {
+    pipeline_version: PipelineVersion,
+    seq_task_schedule: Vec<Task>,
+}
 
 impl Scheduler for FlowEfficientScheduler {
-    fn update_task_graph(&mut self, task_graph: TaskGraph) {
+    type W = CurrentTaskIdx;
+
+    fn _update_pipeline_version(&mut self, v: PipelineVersion) {
+        self.pipeline_version = v;
+    }
+
+    fn _update_task_graph(&mut self, task_graph: TaskGraph) {
         todo!()
     }
 
-    fn next_task(&self, worker: WorkerId) -> Option<Task> {
-        todo!()
+    fn next_task(&self, worker_state: CurrentTaskIdx) -> Option<(Task, CurrentTaskIdx)> {
+        if self.seq_task_schedule.is_empty() {
+            None
+        } else if worker_state.pipeline_version != self.pipeline_version {
+            let current_task = self
+                .seq_task_schedule
+                .get(0)
+                .expect("index is managed in this function")
+                .clone();
+            let next_worker_state = CurrentTaskIdx {
+                pipeline_version: self.pipeline_version,
+                idx: 1 % self.seq_task_schedule.len(),
+            };
+            Some((current_task, next_worker_state))
+        } else {
+            let current_task_idx = worker_state.idx;
+            let current_task = self
+                .seq_task_schedule
+                .get(current_task_idx)
+                .expect("index is managed in this function")
+                .clone();
+            let next_worker_state = CurrentTaskIdx {
+                idx: (worker_state.idx + 1) % self.seq_task_schedule.len(),
+                ..worker_state
+            };
+            Some((current_task, next_worker_state))
+        }
     }
 }
 
@@ -131,22 +169,25 @@ mod tests {
     fn t(pipeline: Pipeline, expected: Vec<TaskId>) {
         let mut expected = expected.into_iter().collect::<VecDeque<_>>();
 
-        let worker_id = WorkerId::fx_main_thread();
+        let mut cur_task_idx = CurrentTaskIdx::default();
 
         let mut scheduler = FlowEfficientScheduler::default();
         scheduler.update_pipeline(pipeline);
 
-        if let Some(first_task) = scheduler.next_task(worker_id) {
+        if let Some((first_task, next_task_idx)) = scheduler.next_task(cur_task_idx) {
             assert_eq!(first_task.id(), expected.pop_front().unwrap());
+            cur_task_idx = next_task_idx;
 
             loop {
-                let next_task = scheduler
-                    .next_task(worker_id)
+                let (next_task, next_task_idx) = scheduler
+                    .next_task(cur_task_idx)
                     .expect("task must be infinitely provided");
                 if next_task == first_task {
                     return;
                 }
                 assert_eq!(next_task.id(), expected.pop_front().unwrap());
+
+                cur_task_idx = next_task_idx;
             }
         } else {
             assert!(expected.is_empty())
