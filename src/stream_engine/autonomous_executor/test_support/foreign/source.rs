@@ -38,7 +38,7 @@ impl TestSource {
     }
 
     fn stream_handler(mut stream: TcpStream, inputs: Vec<JsonObject>) -> Result<()> {
-        eprintln!(
+        log::info!(
             "[TestSource] Connection from {}",
             stream.peer_addr().unwrap()
         );
@@ -48,10 +48,10 @@ impl TestSource {
             json_s.push('\n');
             stream.write_all(json_s.as_bytes()).unwrap();
 
-            eprint!("[TestSource] Sent: {}", json_s);
+            log::info!("[TestSource] Sent: {}", json_s);
         }
 
-        eprintln!("[TestSource] No message left. Wait forever...");
+        log::info!("[TestSource] No message left. Wait forever...");
         thread::sleep(Duration::hours(1).to_std().unwrap());
 
         Ok(())
