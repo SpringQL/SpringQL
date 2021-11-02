@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 use std::sync::Arc;
 
 #[derive(Eq, PartialEq, Debug, Serialize, Deserialize, new)]
-pub(in crate::stream_engine) struct ForeignStreamModel(StreamModel);
+pub(crate) struct ForeignStreamModel(StreamModel);
 
 impl ForeignStreamModel {
     pub(in crate::stream_engine) fn name(&self) -> &StreamName {

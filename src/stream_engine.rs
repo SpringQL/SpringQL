@@ -96,42 +96,50 @@ mod tests {
         let fst_trade_sink = StreamName::factory("fst_trade_sink");
         let pu_trade_source_p1 = PumpName::factory("pu_trade_source_p1");
 
-        let engine = StreamEngine::new(2);
-        engine.alter_pipeline(
-            AlterPipelineCommand::fx_create_foreign_stream_trade_with_source_server(
+        let mut engine = StreamEngine::new(2);
+        engine
+            .alter_pipeline(
+                AlterPipelineCommand::fx_create_foreign_stream_trade_with_source_server(
+                    fst_trade_source.clone(),
+                    source.host_ip(),
+                    source.port(),
+                ),
+            )
+            .unwrap();
+        engine
+            .alter_pipeline(
+                AlterPipelineCommand::fx_create_foreign_stream_trade_with_sink_server(
+                    fst_trade_sink.clone(),
+                    sink.host_ip(),
+                    sink.port(),
+                ),
+            )
+            .unwrap();
+        engine
+            .alter_pipeline(AlterPipelineCommand::fx_create_pump(
+                pu_trade_source_p1.clone(),
                 fst_trade_source,
-                source.host_ip(),
-                source.port(),
-            ),
-        );
-        engine.alter_pipeline(
-            AlterPipelineCommand::fx_create_foreign_stream_trade_with_sink_server(
                 fst_trade_sink,
-                sink.host_ip(),
-                sink.port(),
-            ),
-        );
-        engine.alter_pipeline(AlterPipelineCommand::fx_create_pump(
-            pu_trade_source_p1,
-            fst_trade_source,
-            fst_trade_sink,
-            sink.host_ip(),
-            sink.port(),
-        ));
+            ))
+            .unwrap();
 
         assert!(matches!(
             sink.receive().unwrap_err(),
-            SpringError::ForeignSinkTimeout { .. }
+            SpringError::Unavailable { .. }
         ));
 
-        engine.alter_pipeline(AlterPipelineCommand::fx_alter_pump_start(
-            pu_trade_source_p1,
-        ));
+        engine
+            .alter_pipeline(AlterPipelineCommand::fx_alter_pump_start(
+                pu_trade_source_p1,
+            ))
+            .unwrap();
 
-        sink.expect_receive(vec![
-            json_oracle.into(),
-            json_ibm.into(),
-            json_google.into(),
-        ]);
+        assert_eq!(JsonObject::new(sink.receive().unwrap()), json_oracle);
+        assert_eq!(JsonObject::new(sink.receive().unwrap()), json_ibm);
+        assert_eq!(JsonObject::new(sink.receive().unwrap()), json_google);
+        assert!(matches!(
+            sink.receive().unwrap_err(),
+            SpringError::Unavailable { .. }
+        ));
     }
 }

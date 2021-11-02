@@ -23,6 +23,7 @@ use crate::{
             task::task_id::TaskId,
             test_support::foreign::sink::TestSink,
         },
+        command::alter_pipeline_command::AlterPipelineCommand,
         pipeline::{
             stream_model::{stream_shape::StreamShape, StreamModel},
             Pipeline,
@@ -724,5 +725,35 @@ impl StreamColumns {
 
     pub(in crate::stream_engine) fn fx_no_promoted_rowtime() -> Self {
         Self::factory_no_promoted_rowtime(12345)
+    }
+}
+
+impl AlterPipelineCommand {
+    pub(in crate::stream_engine) fn fx_create_foreign_stream_trade_with_source_server(
+        stream_name: StreamName,
+        source_server_host: IpAddr,
+        source_server_port: u16,
+    ) -> Self {
+        todo!()
+    }
+
+    pub(in crate::stream_engine) fn fx_create_foreign_stream_trade_with_sink_server(
+        stream_name: StreamName,
+        sink_server_host: IpAddr,
+        sink_server_port: u16,
+    ) -> Self {
+        todo!()
+    }
+
+    pub(in crate::stream_engine) fn fx_create_pump(
+        pump_name: PumpName,
+        upstream: StreamName,
+        downstream: StreamName,
+    ) -> Self {
+        todo!()
+    }
+
+    pub(in crate::stream_engine) fn fx_alter_pump_start(pump_name: PumpName) -> Self {
+        todo!()
     }
 }

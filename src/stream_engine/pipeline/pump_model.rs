@@ -5,7 +5,7 @@ use crate::{
 use serde::{Deserialize, Serialize};
 
 #[derive(Eq, PartialEq, Debug, Serialize, Deserialize, new)]
-pub(in crate::stream_engine) struct PumpModel {
+pub(crate) struct PumpModel {
     name: PumpName,
     upstream: StreamName,
     downstream: StreamName,
