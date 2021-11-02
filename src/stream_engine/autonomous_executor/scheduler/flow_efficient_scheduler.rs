@@ -169,7 +169,9 @@ impl Scheduler for FlowEfficientScheduler {
     }
 
     fn _notify_task_graph_update(&mut self, task_graph: TaskGraph) {
-        let graph = task_graph.as_petgraph();
+        self.task_graph = Arc::new(task_graph);
+
+        let graph = self.task_graph.as_petgraph();
 
         let mut unvisited = graph
             .edge_weights()
