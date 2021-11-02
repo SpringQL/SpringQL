@@ -126,10 +126,21 @@ mod tests {
             .send_row(ForeignSinkRow::fx_city_temperature_london())
             .unwrap();
 
-        sink.expect_receive(vec![
-            JsonObject::fx_city_temperature_tokyo().into(),
-            JsonObject::fx_city_temperature_osaka().into(),
-            JsonObject::fx_city_temperature_london().into(),
-        ]);
+        assert_eq!(
+            JsonObject::new(sink.receive().unwrap()),
+            JsonObject::fx_city_temperature_tokyo()
+        );
+        assert_eq!(
+            JsonObject::new(sink.receive().unwrap()),
+            JsonObject::fx_city_temperature_osaka()
+        );
+        assert_eq!(
+            JsonObject::new(sink.receive().unwrap()),
+            JsonObject::fx_city_temperature_london()
+        );
+        assert!(matches!(
+            sink.receive().unwrap_err(),
+            SpringError::Unavailable { .. }
+        ));
     }
 }

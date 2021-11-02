@@ -1,8 +1,11 @@
-use crate::error::Result;
+use anyhow::Context;
+
+use crate::error::{Result, SpringError};
 use std::io::{BufRead, BufReader};
 use std::net::{IpAddr, Shutdown, SocketAddr, TcpListener, TcpStream};
 use std::sync::mpsc;
 use std::thread::{self, JoinHandle};
+use std::time::Duration;
 
 pub struct TestSink {
     my_addr: SocketAddr,
@@ -41,17 +44,29 @@ impl TestSink {
         self.my_addr.port()
     }
 
-    /// # Panics
+    /// Non-blocking call.
     ///
-    /// If expectation and received rows are different
-    pub(in crate::stream_engine::autonomous_executor) fn expect_receive(
-        self,
-        expected: Vec<serde_json::Value>,
-    ) {
-        for expected_row in expected {
-            let received = self.rx.recv().unwrap();
-            assert_eq!(received, expected_row);
-        }
+    /// # Failures
+    ///
+    /// [SpringError::Unavailable](crate::error::SpringError::Unavailable) when sink server has not sent new row yet.
+    pub(in crate::stream_engine::autonomous_executor) fn receive(
+        &self,
+    ) -> Result<serde_json::Value> {
+        let timeout = Duration::from_millis(500);
+
+        let received = self
+            .rx
+            .try_recv()
+            .or_else(|_| {
+                thread::sleep(timeout);
+                self.rx.try_recv()
+            })
+            .context("sink server has not sent new row yet")
+            .map_err(|e| SpringError::Unavailable {
+                resource: "foreign row (sink)".to_string(),
+                source: e,
+            })?;
+        Ok(received)
     }
 
     fn stream_handler(stream: TcpStream, tx: mpsc::Sender<serde_json::Value>) {
