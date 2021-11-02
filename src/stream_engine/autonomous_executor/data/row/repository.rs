@@ -4,71 +4,85 @@ use std::rc::Rc;
 
 pub(crate) use naive_row_repository::NaiveRowRepository;
 
-use crate::{error::Result, model::name::PumpName};
+use crate::{
+    error::Result, model::name::PumpName, stream_engine::autonomous_executor::task::task_id::TaskId,
+};
 
 use super::Row;
 
 /// # Concept diagram
 ///
+/// `[1]` represents a stream. `--a-->` represents a task.
+///
 /// ```text
-/// ---> (Stream "s1") -+- (Pump "s1_p1") ---> (Stream "s2")
-///                     |   in buf: []
-///                     |
-///                     +- (Pump "s1_p2") ---> (Stream "s3")
-///                         in buf: []
+/// ---a---->[1]---b------------>[2]---d-------------->[4]---f---------->
+///           |    in buf: []          in buf: []       ^    in buf: []
+///           |                                         |
+///           +----c------------>[3]---e----------------+
+///                in buf: []          in buf: []
 /// ```
 ///
 /// ```text
-/// emit(r1, vec!["s1_p1", "s1_p2"]);
+/// emit(r1, vec!["b", "c"]);
 ///
-/// ---> (Stream "s1") -+- (Pump "s1_p1") ---> (Stream "s2")
-///                     |   in buf: [r1]
-///                     |
-///                     +- (Pump "s1_p2") ---> (Stream "s3")
-///                         in buf: [r1]
+/// ---a---->[1]---b------------>[2]---d-------------->[4]---f---------->
+///           |    in buf: [r1]        in buf: []       ^    in buf: []
+///           |                                         |
+///           +----c------------>[3]---e----------------+
+///                in buf: [r1]        in buf: []
 /// ```
 ///
 /// ```text
-/// collect_next("s1_p1");  // -> r1
+/// collect_next("b");  // -> r1
 ///
-/// ---> (Stream "s1") -+- (Pump "s1_p1") ---> (Stream "s2")
-///                     |   in buf: []
-///                     |
-///                     +- (Pump "s1_p2") ---> (Stream "s3")
-///                         in buf: [r1]
+/// ---a---->[1]---b------------>[2]---d-------------->[4]---f---------->
+///           |    in buf: []          in buf: []       ^    in buf: []
+///           |                                         |
+///           +----c------------>[3]---e----------------+
+///                in buf: [r1]        in buf: []
 /// ```
 ///
 /// ```text
-/// emit(r2, vec!["s1_p1", "s1_p2"]);
+/// emit(r2, vec!["b", "c"]);
 ///
-/// ---> (Stream "s1") -+- (Pump "s1_p1") ---> (Stream "s2")
-///                     |   in buf: [r2]
-///                     |
-///                     +- (Pump "s1_p2") ---> (Stream "s3")
-///                         in buf: [r2, r1]
+/// ---a---->[1]---b------------>[2]---d-------------->[4]---f---------->
+///           |    in buf: [r2]        in buf: []       ^    in buf: []
+///           |                                         |
+///           +----c------------>[3]---e----------------+
+///                in buf: [r2,r1]     in buf: []
 /// ```
 ///
 /// ```text
-/// collect_next("s1_p2");  // -> r1
+/// collect_next("c");  // -> r1
 ///
-/// ---> (Stream "s1") -+- (Pump "s1_p1") ---> (Stream "s2")
-///                     |   in buf: [r2]
-///                     |
-///                     +- (Pump "s1_p2") ---> (Stream "s3")
-///                         in buf: [r2]
+/// ---a---->[1]---b------------>[2]---d-------------->[4]---f---------->
+///           |    in buf: [r2]        in buf: []       ^    in buf: []
+///           |                                         |
+///           +----c------------>[3]---e----------------+
+///                in buf: [r2]        in buf: []
+/// ```
+///
+/// ```text
+/// emit(r3, "f");
+///
+/// ---a---->[1]---b------------>[2]---d-------------->[4]---f---------->
+///           |    in buf: [r2]        in buf: []       ^    in buf: [r3]
+///           |                                         |
+///           +----c------------>[3]---e----------------+
+///                in buf: [r2]        in buf: []
 /// ```
 pub(crate) trait RowRepository: Default {
-    /// Get the next RowRef from `pump`.
+    /// Get the next RowRef as `task`'s input.
     ///
     /// # Failure
     ///
     /// - [SpringError::InputTimeout](crate::error::SpringError::InputTimeout) when:
     ///   - next row is not available within `timeout`
-    fn collect_next(&self, pump: &PumpName) -> Result<Rc<Row>>;
+    fn collect_next(&self, task: &TaskId) -> Result<Rc<Row>>;
 
-    /// Gives `row_ref` to `dest_pumps`.
-    fn emit(&self, row_ref: Rc<Row>, downstream_pumps: &[PumpName]) -> Result<()>;
+    /// Gives `row_ref` to downstream tasks.
+    fn emit(&self, row_ref: Rc<Row>, downstream_tasks: &[TaskId]) -> Result<()>;
 
-    /// Move newly created `row` to `dest_pumps`.
-    fn emit_owned(&self, row: Row, downstream_pumps: &[PumpName]) -> Result<()>;
+    /// Move newly created `row` to downstream tasks.
+    fn emit_owned(&self, row: Row, downstream_tasks: &[TaskId]) -> Result<()>;
 }

@@ -20,13 +20,14 @@ use crate::{
                 row::Row,
                 timestamp::Timestamp,
             },
-            task::task_id::TaskId,
+            task::{task_graph::TaskGraph, task_id::TaskId},
             test_support::foreign::sink::TestSink,
         },
         command::alter_pipeline_command::{
             alter_pump_command::AlterPumpCommand, AlterPipelineCommand,
         },
         pipeline::{
+            pipeline_graph::PipelineGraph,
             stream_model::{stream_shape::StreamShape, StreamModel},
             Pipeline,
         },
@@ -762,5 +763,11 @@ impl AlterPipelineCommand {
 
     pub(in crate::stream_engine) fn fx_alter_pump_start(pump_name: PumpName) -> Self {
         Self::AlterPump(AlterPumpCommand::Start(pump_name))
+    }
+}
+
+impl TaskGraph {
+    pub(in crate::stream_engine) fn fx_empty() -> Self {
+        Self::from(&PipelineGraph::default())
     }
 }

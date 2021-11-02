@@ -17,7 +17,7 @@ use crate::{
     },
 };
 
-use super::{sink_task::SinkTask, source_task::SourceTask, Task};
+use super::{sink_task::SinkTask, source_task::SourceTask, task_id::TaskId, Task};
 
 #[derive(Debug)]
 pub(crate) struct TaskGraph(DiGraph<StreamName, Arc<Task>>);
@@ -43,6 +43,10 @@ impl From<&PipelineGraph> for TaskGraph {
 }
 
 impl TaskGraph {
+    pub(in crate::stream_engine) fn downstream_tasks(&self, task: TaskId) -> Vec<TaskId> {
+        todo!()
+    }
+
     pub(in crate::stream_engine) fn as_petgraph(&self) -> &DiGraph<StreamName, Arc<Task>> {
         &self.0
     }
