@@ -54,7 +54,7 @@ impl TaskGraph {
             .0
             .edge_references()
             .find_map(|t| (t.weight().id() == &task).then(|| t.target()))
-            .expect("task must be in TaskGraph");
+            .unwrap_or_else(|| panic!("task ({:?}) must be in TaskGraph:\n{:?}", task, self.0));
         let outgoing_edges = self
             .0
             .edges_directed(downstream_node, petgraph::Direction::Outgoing);
