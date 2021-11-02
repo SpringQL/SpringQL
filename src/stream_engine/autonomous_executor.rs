@@ -35,10 +35,13 @@ where
     DI: DependencyInjection,
 {
     /// Writer: Main thread. Write on pipeline update.
-    /// Reader: Worker threads. Read on task request.
     scheduler_write: SchedulerWrite<DI>,
+    /// Reader: Worker threads. Read on task request.
+    scheduler_read: SchedulerRead<DI>,
 
     worker_pool: WorkerPool,
+
+    row_repo: Arc<DI::RowRepositoryType>,
 }
 
 impl<DI> AutonomousExecutor<DI>
@@ -50,19 +53,22 @@ where
         let scheduler_write = SchedulerWrite::new(scheduler.clone());
         let scheduler_read = SchedulerRead::new(scheduler.clone());
 
+        let row_repo = Arc::new(DI::RowRepositoryType::default());
+
         Self {
             scheduler_write,
-            worker_pool: WorkerPool::new::<DI>(
-                n_worker_threads,
-                scheduler_read,
-                Arc::new(DI::RowRepositoryType::default()),
-            ),
+            scheduler_read: scheduler_read.clone(),
+            worker_pool: WorkerPool::new::<DI>(n_worker_threads, scheduler_read, row_repo.clone()),
+            row_repo,
         }
     }
 
     pub(in crate::stream_engine) fn notify_pipeline_update(&self, pipeline: Pipeline) {
         self.scheduler_write
             .write_lock()
-            .notify_pipeline_update(pipeline)
+            .notify_pipeline_update(pipeline);
+
+        self.row_repo
+            .reset(self.scheduler_read.read_lock().task_graph().all_tasks())
     }
 }

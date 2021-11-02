@@ -23,7 +23,12 @@ impl RowRepository for NaiveRowRepository {
             .lock()
             .expect("another thread sharing the same RowRepository internal got panic")
             .get_mut(task)
-            .unwrap()
+            .unwrap_or_else(|| {
+                panic!(
+                    "task ({:?}) has not yet registered to the RowRepository internal",
+                    task
+                )
+            })
             .pop_back()
             .context("next row not available")
             .map_err(|e| SpringError::InputTimeout {
@@ -39,13 +44,10 @@ impl RowRepository for NaiveRowRepository {
             .tasks_buf
             .lock()
             .expect("another thread sharing the same RowRepository internal got panic");
-        for pump in downstream_tasks {
-            // <https://github.com/rust-lang/rust-clippy/issues/5549>
-            #[allow(clippy::redundant_closure)]
+        for task in downstream_tasks {
             pumps_buf
-                .entry(pump.clone())
-                .or_insert_with(|| VecDeque::new())
-                .push_front(row_ref.clone());
+                .entry(task.clone())
+                .and_modify(|v| v.push_front(row_ref.clone()));
         }
 
         Ok(())
@@ -54,5 +56,14 @@ impl RowRepository for NaiveRowRepository {
     fn emit_owned(&self, row: Row, downstream_tasks: &[TaskId]) -> Result<()> {
         let row_ref = Arc::new(row);
         self.emit(row_ref, downstream_tasks)
+    }
+
+    fn reset(&self, tasks: Vec<TaskId>) {
+        let new_tasks_buf = tasks
+            .into_iter()
+            .map(|t| (t, VecDeque::new()))
+            .collect::<HashMap<TaskId, VecDeque<Arc<Row>>>>();
+
+        *self.tasks_buf.lock().expect("another thread sharing the same RowRepository internal got panic") = new_tasks_buf;
     }
 }

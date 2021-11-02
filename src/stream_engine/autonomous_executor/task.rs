@@ -31,9 +31,9 @@ impl Task {
 
     pub(super) fn run<DI: DependencyInjection>(&self, context: &TaskContext<DI>) -> Result<()> {
         match self {
-            Task::Pump(_) => todo!(),
+            Task::Pump(pump_task) => pump_task.run(context),
             Task::Source(source_task) => source_task.run(context),
-            Task::Sink(_) => todo!(),
+            Task::Sink(sink_task) => sink_task.run(context),
         }
     }
 }

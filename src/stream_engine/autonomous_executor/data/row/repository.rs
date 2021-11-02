@@ -10,6 +10,10 @@ use crate::{
 };
 use std::fmt::Debug;
 
+/// Rows in SpringQL are highly re-used around tasks in order to reduce working memory.
+///
+/// This nature is particularly effective for `WHERE` pumps and WINDOW pumps, who do not change either of rows' columns and values.
+///
 /// # Concept diagram
 ///
 /// `[1]` represents a stream. `--a-->` represents a task.
@@ -85,4 +89,7 @@ pub(crate) trait RowRepository: Debug + Default + Sync + Send {
 
     /// Move newly created `row` to downstream tasks.
     fn emit_owned(&self, row: Row, downstream_tasks: &[TaskId]) -> Result<()>;
+
+    /// Reset repository with new tasks.
+    fn reset(&self, tasks: Vec<TaskId>);
 }

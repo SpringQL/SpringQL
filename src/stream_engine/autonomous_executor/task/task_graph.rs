@@ -8,7 +8,7 @@ use std::sync::Arc;
 
 use petgraph::{
     graph::{DiGraph, NodeIndex},
-    visit::{EdgeRef, IntoEdgesDirected},
+    visit::{EdgeRef, IntoEdgeReferences, IntoEdgesDirected},
 };
 
 use crate::{
@@ -36,7 +36,9 @@ impl From<&PipelineGraph> for TaskGraph {
                     Edge::Source(server) => {
                         Task::Source(SourceTask::new(server).expect("TODO make this panic-free"))
                     }
-                    Edge::Sink(server) => Task::Sink(SinkTask::from(server)),
+                    Edge::Sink(server) => {
+                        Task::Sink(SinkTask::new(server).expect("TODO make this panic-free"))
+                    }
                 };
                 Arc::new(task)
             },
@@ -62,6 +64,10 @@ impl TaskGraph {
             .map(|edge| edge.weight().id())
             .cloned()
             .collect()
+    }
+
+    pub(in crate::stream_engine) fn all_tasks(&self) -> Vec<TaskId> {
+        self.0.edge_weights().map(|t| t.id()).cloned().collect()
     }
 
     pub(in crate::stream_engine) fn as_petgraph(&self) -> &DiGraph<StreamName, Arc<Task>> {
