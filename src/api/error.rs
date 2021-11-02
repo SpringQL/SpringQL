@@ -1,13 +1,12 @@
 //! Error type.
 
 pub mod foreign_info;
-pub mod responsibility;
 
 use thiserror::Error;
 
 use crate::model::name::PumpName;
 
-use self::{foreign_info::ForeignInfo, responsibility::SpringErrorResponsibility};
+use self::foreign_info::ForeignInfo;
 
 /// Result type
 pub type Result<T> = std::result::Result<T, SpringError>;
@@ -55,23 +54,4 @@ pub enum SpringError {
 
     #[error("SQL error")]
     Sql(anyhow::Error),
-}
-
-impl SpringError {
-    /// Get who is responsible for the error.
-    /// Used for error handling and bug reports.
-    pub fn responsibility(&self) -> SpringErrorResponsibility {
-        match self {
-            SpringError::ForeignIo { .. } => SpringErrorResponsibility::Foreign,
-
-            SpringError::ForeignSourceTimeout { .. }
-            | SpringError::InputTimeout { .. }
-            | SpringError::SpringQlCoreIo(_) => SpringErrorResponsibility::SpringQlCore,
-
-            SpringError::InvalidOption { .. }
-            | SpringError::InvalidFormat { .. }
-            | SpringError::Sql(_)
-            | SpringError::Unavailable { .. } => SpringErrorResponsibility::Client,
-        }
-    }
 }
