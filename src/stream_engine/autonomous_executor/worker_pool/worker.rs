@@ -9,11 +9,14 @@ use std::{
     time::Duration,
 };
 
-use crate::stream_engine::{
-    autonomous_executor::{
-        scheduler::scheduler_read::SchedulerRead, task::task_context::TaskContext, Scheduler,
+use crate::{
+    error::SpringError,
+    stream_engine::{
+        autonomous_executor::{
+            scheduler::scheduler_read::SchedulerRead, task::task_context::TaskContext, Scheduler,
+        },
+        dependency_injection::DependencyInjection,
     },
-    dependency_injection::DependencyInjection,
 };
 
 use self::worker_id::WorkerId;
@@ -61,12 +64,26 @@ impl Worker {
                     task.id().clone(),
                     row_repo.clone(),
                 );
-                task.run(&context).unwrap_or_else(|e| {
-                    log::error!("Error while executing task: {}", e);
-                })
+                task.run(&context).unwrap_or_else(Self::handle_error)
             } else {
                 thread::sleep(Duration::from_millis(TASK_WAIT_MSEC))
             }
+        }
+    }
+
+    fn handle_error(e: SpringError) {
+        match e {
+            SpringError::ForeignSourceTimeout { .. } | SpringError::InputTimeout { .. } => {
+                log::debug!("{:?}", e)
+            }
+
+            SpringError::ForeignIo { .. }
+            | SpringError::SpringQlCoreIo(_)
+            | SpringError::Unavailable { .. } => log::warn!("{:?}", e),
+
+            SpringError::InvalidOption { .. }
+            | SpringError::InvalidFormat { .. }
+            | SpringError::Sql(_) => log::error!("{:?}", e),
         }
     }
 }
