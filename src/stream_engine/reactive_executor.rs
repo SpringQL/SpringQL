@@ -14,7 +14,7 @@ impl ReactiveExecutor {
         &mut self,
         command: AlterPipelineCommand,
     ) -> Result<Pipeline> {
-        let new_pipeline = Self::new_pipeline(self.pipeline, command)?;
+        let new_pipeline = Self::new_pipeline(self.pipeline.clone(), command)?;
         self.pipeline = new_pipeline;
         Ok(self.pipeline.clone())
     }

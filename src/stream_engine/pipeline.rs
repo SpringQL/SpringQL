@@ -25,7 +25,7 @@ use self::{
     stream_model::StreamModel,
 };
 
-#[derive(Debug, Default, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, Serialize, Deserialize)]
 pub(crate) struct Pipeline {
     version: PipelineVersion,
     object_names: HashSet<String>,

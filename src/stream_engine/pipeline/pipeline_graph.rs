@@ -22,7 +22,7 @@ use crate::{
 };
 use anyhow::anyhow;
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub(in crate::stream_engine) struct PipelineGraph {
     graph: DiGraph<StreamNode, Edge>,
     stream_nodes: HashMap<StreamName, NodeIndex>,
