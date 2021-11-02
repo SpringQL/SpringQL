@@ -1,7 +1,7 @@
 use super::{
     command::alter_pipeline_command::AlterPipelineCommand,
     dependency_injection::DependencyInjection,
-    pipeline::{self, server_model::ServerModel, Pipeline},
+    pipeline::{self, pump_model::PumpModel, server_model::ServerModel, Pipeline},
 };
 use crate::error::Result;
 
@@ -29,7 +29,7 @@ impl ReactiveExecutor {
             AlterPipelineCommand::CreateForeignStream(server) => {
                 Self::create_foreign_stream(pipeline, server)
             }
-            AlterPipelineCommand::CreatePump(_) => todo!(),
+            AlterPipelineCommand::CreatePump(pump) => Self::create_pump(pipeline, pump),
             AlterPipelineCommand::AlterPump(_) => todo!(),
         }
     }
@@ -38,6 +38,11 @@ impl ReactiveExecutor {
         let fst = server.serving_foreign_stream();
         pipeline.add_foreign_stream(fst)?;
         pipeline.add_server(server)?;
+        Ok(pipeline)
+    }
+
+    fn create_pump(mut pipeline: Pipeline, pump: PumpModel) -> Result<Pipeline> {
+        pipeline.add_pump(pump)?;
         Ok(pipeline)
     }
 }
