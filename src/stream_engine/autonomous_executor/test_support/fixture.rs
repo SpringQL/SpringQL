@@ -23,7 +23,9 @@ use crate::{
             task::task_id::TaskId,
             test_support::foreign::sink::TestSink,
         },
-        command::alter_pipeline_command::AlterPipelineCommand,
+        command::alter_pipeline_command::{
+            alter_pump_command::AlterPumpCommand, AlterPipelineCommand,
+        },
         pipeline::{
             stream_model::{stream_shape::StreamShape, StreamModel},
             Pipeline,
@@ -734,7 +736,9 @@ impl AlterPipelineCommand {
         source_server_host: IpAddr,
         source_server_port: u16,
     ) -> Self {
-        todo!()
+        let stream = Arc::new(ForeignStreamModel::fx_trade_with_name(stream_name));
+        let server = ServerModel::fx_net_source(stream, source_server_host, source_server_port);
+        Self::CreateForeignStream(server)
     }
 
     pub(in crate::stream_engine) fn fx_create_foreign_stream_trade_with_sink_server(
@@ -742,7 +746,9 @@ impl AlterPipelineCommand {
         sink_server_host: IpAddr,
         sink_server_port: u16,
     ) -> Self {
-        todo!()
+        let stream = Arc::new(ForeignStreamModel::fx_trade_with_name(stream_name));
+        let server = ServerModel::fx_net_sink(stream, sink_server_host, sink_server_port);
+        Self::CreateForeignStream(server)
     }
 
     pub(in crate::stream_engine) fn fx_create_pump(
@@ -750,10 +756,11 @@ impl AlterPipelineCommand {
         upstream: StreamName,
         downstream: StreamName,
     ) -> Self {
-        todo!()
+        let pump = PumpModel::fx_passthrough_trade(pump_name, upstream, downstream);
+        Self::CreatePump(pump)
     }
 
     pub(in crate::stream_engine) fn fx_alter_pump_start(pump_name: PumpName) -> Self {
-        todo!()
+        Self::AlterPump(AlterPumpCommand::Start(pump_name))
     }
 }

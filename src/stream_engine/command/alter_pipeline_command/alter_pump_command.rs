@@ -1,5 +1,7 @@
+use crate::model::name::PumpName;
+
 #[derive(Eq, PartialEq, Debug)]
 pub(crate) enum AlterPumpCommand {
-    Start,
-    Stop,
+    Start(PumpName),
+    Stop(PumpName),
 }

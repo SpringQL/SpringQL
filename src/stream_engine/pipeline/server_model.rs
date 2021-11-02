@@ -12,7 +12,7 @@ use super::{foreign_stream_model::ForeignStreamModel, stream_model::StreamModel}
 
 /// See: <https://docs.sqlstream.com/sql-reference-guide/create-statements/createserver/#prebuilt-server-objects-available-in-sserver>
 #[derive(Eq, PartialEq, Debug, Serialize, Deserialize, new)]
-pub(in crate::stream_engine) struct ServerModel {
+pub(crate) struct ServerModel {
     server_type: ServerType,
     serving_foreign_stream: Arc<ForeignStreamModel>,
     options: Options,
