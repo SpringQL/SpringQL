@@ -5,15 +5,13 @@ use std::io::Write;
 use std::net::{IpAddr, Shutdown, SocketAddr, TcpListener, TcpStream};
 use std::thread::{self, JoinHandle};
 
-pub struct TestSource {
+pub(in crate::stream_engine) struct TestSource {
     my_addr: SocketAddr,
     conn_thread: JoinHandle<()>,
 }
 
 impl TestSource {
-    pub(in crate::stream_engine::autonomous_executor) fn start(
-        inputs: Vec<JsonObject>,
-    ) -> Result<Self> {
+    pub(in crate::stream_engine) fn start(inputs: Vec<JsonObject>) -> Result<Self> {
         let listener = TcpListener::bind("127.0.0.1:0").unwrap();
         let my_addr = listener.local_addr().unwrap();
 

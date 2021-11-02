@@ -4,7 +4,7 @@ use springql_core::low_level_rs::*;
 
 #[ignore]
 #[test]
-fn test_source_sink() -> Result<()> {
+fn test_e2e_source_sink() -> Result<()> {
     let mut pipeline = spring_open()?;
 
     let ddls = vec![

@@ -1,6 +1,7 @@
 pub(in crate::stream_engine) mod task;
 
-pub(self) mod data;
+pub(super) mod data;
+
 pub(self) mod exec;
 pub(self) mod server;
 

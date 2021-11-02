@@ -15,7 +15,7 @@ pub struct TestSink {
 }
 
 impl TestSink {
-    pub(in crate::stream_engine::autonomous_executor) fn start() -> Result<Self> {
+    pub(in crate::stream_engine) fn start() -> Result<Self> {
         let listener = TcpListener::bind("127.0.0.1:0").unwrap();
         let my_addr = listener.local_addr().unwrap();
 
@@ -49,9 +49,7 @@ impl TestSink {
     /// # Failures
     ///
     /// [SpringError::Unavailable](crate::error::SpringError::Unavailable) when sink server has not sent new row yet.
-    pub(in crate::stream_engine::autonomous_executor) fn receive(
-        &self,
-    ) -> Result<serde_json::Value> {
+    pub(in crate::stream_engine) fn receive(&self) -> Result<serde_json::Value> {
         let timeout = Duration::from_millis(500);
 
         let received = self

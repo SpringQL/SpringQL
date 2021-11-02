@@ -23,7 +23,11 @@ mod reactive_executor;
 use crate::error::Result;
 use autonomous_executor::{CurrentTimestamp, NaiveRowRepository, RowRepository, Scheduler};
 
-use self::{autonomous_executor::AutonomousExecutor, command::alter_pipeline_command::AlterPipelineCommand, dependency_injection::DependencyInjection, pipeline::Pipeline, reactive_executor::ReactiveExecutor};
+use self::{
+    autonomous_executor::AutonomousExecutor, command::alter_pipeline_command::AlterPipelineCommand,
+    dependency_injection::DependencyInjection, pipeline::Pipeline,
+    reactive_executor::ReactiveExecutor,
+};
 
 #[cfg(not(test))]
 pub(crate) type StreamEngine = StreamEngineDI<dependency_injection::prod_di::ProdDI>;
@@ -58,5 +62,76 @@ where
         let pipeline = self.reactive_executor.alter_pipeline(command)?;
         self.autonomous_executor.notify_pipeline_update(pipeline);
         Ok(())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::autonomous_executor::test_support::foreign::source::TestSource;
+    use super::*;
+    use crate::{
+        error::SpringError,
+        model::name::{PumpName, StreamName},
+        stream_engine::autonomous_executor::{
+            data::foreign_row::format::json::JsonObject, test_support::foreign::sink::TestSink,
+        },
+    };
+
+    #[test]
+    fn test_stream_engine_source_sink() {
+        let json_oracle = JsonObject::fx_trade_oracle();
+        let json_ibm = JsonObject::fx_trade_ibm();
+        let json_google = JsonObject::fx_trade_google();
+
+        let source = TestSource::start(vec![
+            json_oracle.clone(),
+            json_ibm.clone(),
+            json_google.clone(),
+        ])
+        .unwrap();
+
+        let sink = TestSink::start().unwrap();
+
+        let fst_trade_source = StreamName::factory("fst_trade_source");
+        let fst_trade_sink = StreamName::factory("fst_trade_sink");
+        let pu_trade_source_p1 = PumpName::factory("pu_trade_source_p1");
+
+        let engine = StreamEngine::new(2);
+        engine.alter_pipeline(
+            AlterPipelineCommand::fx_create_foreign_stream_trade_with_source_server(
+                fst_trade_source,
+                source.host_ip(),
+                source.port(),
+            ),
+        );
+        engine.alter_pipeline(
+            AlterPipelineCommand::fx_create_foreign_stream_trade_with_sink_server(
+                fst_trade_sink,
+                sink.host_ip(),
+                sink.port(),
+            ),
+        );
+        engine.alter_pipeline(AlterPipelineCommand::fx_create_pump(
+            pu_trade_source_p1,
+            fst_trade_source,
+            fst_trade_sink,
+            sink.host_ip(),
+            sink.port(),
+        ));
+
+        assert!(matches!(
+            sink.receive().unwrap_err(),
+            SpringError::ForeignSinkTimeout { .. }
+        ));
+
+        engine.alter_pipeline(AlterPipelineCommand::fx_alter_pump_start(
+            pu_trade_source_p1,
+        ));
+
+        sink.expect_receive(vec![
+            json_oracle.into(),
+            json_ibm.into(),
+            json_google.into(),
+        ]);
     }
 }
