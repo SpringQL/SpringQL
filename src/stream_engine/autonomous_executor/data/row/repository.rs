@@ -90,6 +90,7 @@ pub(crate) trait RowRepository: Debug + Default + Sync + Send {
 
     /// Gives `row_ref` to downstream tasks.
     fn emit(&self, row_ref: Arc<Row>, downstream_tasks: &[TaskId]) -> Result<()> {
+        debug_assert!(!downstream_tasks.is_empty());
         log::debug!(
             "[RowRepository] emit({:?}, {:?})",
             row_ref,
@@ -101,6 +102,7 @@ pub(crate) trait RowRepository: Debug + Default + Sync + Send {
 
     /// Move newly created `row` to downstream tasks.
     fn emit_owned(&self, row: Row, downstream_tasks: &[TaskId]) -> Result<()> {
+        debug_assert!(!downstream_tasks.is_empty());
         log::debug!(
             "[RowRepository] emit_owned({:?}, {:?})",
             row,
