@@ -6,7 +6,10 @@
 
 use std::sync::Arc;
 
-use petgraph::graph::{DiGraph, NodeIndex};
+use petgraph::{
+    graph::{DiGraph, NodeIndex},
+    visit::{EdgeRef, IntoEdgesDirected},
+};
 
 use crate::{
     error::{Result, SpringError},
@@ -43,8 +46,22 @@ impl From<&PipelineGraph> for TaskGraph {
 }
 
 impl TaskGraph {
+    /// # Panics
+    ///
+    /// `task` is not found in this TaskGraph
     pub(in crate::stream_engine) fn downstream_tasks(&self, task: TaskId) -> Vec<TaskId> {
-        todo!()
+        let downstream_node = self
+            .0
+            .edge_references()
+            .find_map(|t| (t.weight().id() == &task).then(|| t.target()))
+            .expect("task must be in TaskGraph");
+        let outgoing_edges = self
+            .0
+            .edges_directed(downstream_node, petgraph::Direction::Outgoing);
+        outgoing_edges
+            .map(|edge| edge.weight().id())
+            .cloned()
+            .collect()
     }
 
     pub(in crate::stream_engine) fn as_petgraph(&self) -> &DiGraph<StreamName, Arc<Task>> {
