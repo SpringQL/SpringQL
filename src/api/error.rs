@@ -28,9 +28,9 @@ pub enum SpringError {
         source: anyhow::Error,
     },
 
-    #[error("Timeout when getting an input from a stream ({pump_name})")]
+    #[error("Timeout when getting an input from a stream ({task_name})")]
     InputTimeout {
-        pump_name: PumpName,
+        task_name: String,
         source: anyhow::Error,
     },
 

@@ -5,37 +5,37 @@ use std::rc::Rc;
 use anyhow::Context;
 
 use crate::error::{Result, SpringError};
-use crate::model::name::PumpName;
 use crate::stream_engine::autonomous_executor::data::row::Row;
+use crate::stream_engine::autonomous_executor::task::task_id::TaskId;
 
 use super::RowRepository;
 
 /// Has similar structure as RowRepository's concept diagram.
 #[derive(Debug, Default)]
 pub(crate) struct NaiveRowRepository {
-    pumps_buf: RefCell<HashMap<PumpName, VecDeque<Rc<Row>>>>,
+    tasks_buf: RefCell<HashMap<TaskId, VecDeque<Rc<Row>>>>,
 }
 
 impl RowRepository for NaiveRowRepository {
-    fn collect_next(&self, pump: &PumpName) -> Result<Rc<Row>> {
+    fn collect_next(&self, task: &TaskId) -> Result<Rc<Row>> {
         let row_ref = self
-            .pumps_buf
+            .tasks_buf
             .borrow_mut()
-            .get_mut(pump)
+            .get_mut(task)
             .unwrap()
             .pop_back()
             .context("next row not available")
             .map_err(|e| SpringError::InputTimeout {
                 source: e,
-                pump_name: pump.clone(),
+                task_name: task.to_string(),
             })?;
 
         Ok(row_ref)
     }
 
-    fn emit(&self, row_ref: Rc<Row>, downstream_pumps: &[PumpName]) -> Result<()> {
-        let mut pumps_buf = self.pumps_buf.borrow_mut();
-        for pump in downstream_pumps {
+    fn emit(&self, row_ref: Rc<Row>, downstream_tasks: &[TaskId]) -> Result<()> {
+        let mut pumps_buf = self.tasks_buf.borrow_mut();
+        for pump in downstream_tasks {
             // <https://github.com/rust-lang/rust-clippy/issues/5549>
             #[allow(clippy::redundant_closure)]
             pumps_buf
@@ -47,8 +47,8 @@ impl RowRepository for NaiveRowRepository {
         Ok(())
     }
 
-    fn emit_owned(&self, row: Row, downstream_pumps: &[PumpName]) -> Result<()> {
+    fn emit_owned(&self, row: Row, downstream_tasks: &[TaskId]) -> Result<()> {
         let row_ref = Rc::new(row);
-        self.emit(row_ref, downstream_pumps)
+        self.emit(row_ref, downstream_tasks)
     }
 }

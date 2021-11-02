@@ -2,16 +2,12 @@ use std::{net::IpAddr, sync::Arc};
 
 use serde_json::json;
 
-use crate::{
-    model::{
+use crate::{model::{
         column::{column_data_type::ColumnDataType, column_definition::ColumnDefinition},
         name::{ColumnName, PumpName, StreamName},
         option::{options_builder::OptionsBuilder, Options},
         sql_type::SqlType,
-    },
-    stream_engine::{
-        autonomous_executor::{
-            data::{
+    }, stream_engine::{autonomous_executor::{data::{
                 column::stream_column::StreamColumns,
                 foreign_row::{
                     foreign_sink_row::ForeignSinkRow, foreign_source_row::ForeignSourceRow,
@@ -19,24 +15,18 @@ use crate::{
                 },
                 row::Row,
                 timestamp::Timestamp,
-            },
-            task::task_id::TaskId,
-            test_support::foreign::sink::TestSink,
-        },
-        pipeline::{
+            }, task::{task_context::TaskContext, task_graph::TaskGraph, task_id::TaskId}, test_support::foreign::sink::TestSink}, dependency_injection::DependencyInjection, pipeline::{
+            pipeline_graph::PipelineGraph,
             stream_model::{stream_shape::StreamShape, StreamModel},
             Pipeline,
-        },
-    },
-    stream_engine::{
+        }}, stream_engine::{
         dependency_injection::test_di::TestDI,
         pipeline::{
             foreign_stream_model::ForeignStreamModel,
             pump_model::PumpModel,
             server_model::{server_type::ServerType, ServerModel},
         },
-    },
-};
+    }};
 
 use super::foreign::source::TestSource;
 
@@ -724,5 +714,11 @@ impl StreamColumns {
 
     pub(in crate::stream_engine) fn fx_no_promoted_rowtime() -> Self {
         Self::factory_no_promoted_rowtime(12345)
+    }
+}
+
+impl TaskGraph {
+    pub(in crate::stream_engine) fn fx_empty() -> Self {
+        Self::from(&PipelineGraph::default())
     }
 }

@@ -64,12 +64,15 @@ mod tests {
     use crate::{
         model::name::{ColumnName, PumpName},
         stream_engine::{
-            autonomous_executor::data::{row::Row, value::sql_value::SqlValue},
-            RowRepository,
-        },
-        stream_engine::{
             autonomous_executor::Timestamp,
             dependency_injection::{test_di::TestDI, DependencyInjection},
+        },
+        stream_engine::{
+            autonomous_executor::{
+                data::{row::Row, value::sql_value::SqlValue},
+                task::task_id::TaskId,
+            },
+            RowRepository,
         },
     };
 
@@ -86,7 +89,7 @@ mod tests {
         let row_repo = <TestDI as DependencyInjection>::RowRepositoryType::default();
 
         let pump = PumpName::fx_trade_window();
-        let downstream_pumps = vec![pump.clone()];
+        let task = TaskId::from_pump(pump);
 
         let op = SlidingWindowOperation::TimeBased {
             lower_bound: Duration::minutes(5),
@@ -209,8 +212,8 @@ mod tests {
             expected,
         } in test_cases
         {
-            row_repo.emit_owned(row, &downstream_pumps).unwrap();
-            let in_row = row_repo.collect_next(&pump).unwrap();
+            row_repo.emit_owned(row, &[task.clone()]).unwrap();
+            let in_row = row_repo.collect_next(&task).unwrap();
             let window = executor.run(in_row).unwrap();
 
             let got_pks = window
