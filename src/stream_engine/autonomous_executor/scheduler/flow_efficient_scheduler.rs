@@ -231,7 +231,7 @@ mod tests {
 
     use super::*;
 
-    fn t(pipeline: Arc<Pipeline>, expected: Vec<TaskId>) {
+    fn t(pipeline: Pipeline, expected: Vec<TaskId>) {
         let mut expected = expected.into_iter().collect::<VecDeque<_>>();
 
         let mut cur_task_idx = CurrentTaskIdx::default();
@@ -264,7 +264,7 @@ mod tests {
     #[test]
     fn test_linear_pipeline() {
         t(
-            Arc::new(Pipeline::fx_linear()),
+            Pipeline::fx_linear(),
             vec![
                 TaskId::from_source_server(StreamName::factory("fst_1")),
                 TaskId::from_pump(PumpName::factory("pu_b")),
@@ -276,7 +276,7 @@ mod tests {
     #[test]
     fn test_pipeline_with_split() {
         t(
-            Arc::new(Pipeline::fx_split()),
+            Pipeline::fx_split(),
             vec![
                 TaskId::from_source_server(StreamName::factory("fst_1")),
                 TaskId::from_pump(PumpName::factory("pu_c")),
@@ -291,7 +291,7 @@ mod tests {
     #[test]
     fn test_pipeline_with_merge() {
         t(
-            Arc::new(Pipeline::fx_split_merge()),
+            Pipeline::fx_split_merge(),
             vec![
                 TaskId::from_source_server(StreamName::factory("fst_2")),
                 TaskId::from_pump(PumpName::factory("pu_d")),
@@ -305,7 +305,7 @@ mod tests {
     #[test]
     fn test_complex_pipeline() {
         t(
-            Arc::new(Pipeline::fx_complex()),
+            Pipeline::fx_complex(),
             vec![
                 TaskId::from_source_server(StreamName::factory("fst_1")),
                 TaskId::from_pump(PumpName::factory("pu_c")),

@@ -40,6 +40,8 @@ pub(crate) type StreamEngine = StreamEngineDI<dependency_injection::test_di::Tes
 /// External components (sql-processor) call Access Methods to change stream engine's states and get result from it.
 #[derive(Debug)]
 pub(crate) struct StreamEngineDI<DI: DependencyInjection> {
+    pipeline: Pipeline,
+
     reactive_executor: ReactiveExecutor,
     autonomous_executor: AutonomousExecutor<DI>,
 }
@@ -50,6 +52,7 @@ where
 {
     pub(crate) fn new(n_worker_threads: usize) -> Self {
         Self {
+            pipeline: Pipeline::default(),
             reactive_executor: ReactiveExecutor::default(),
             autonomous_executor: AutonomousExecutor::new(n_worker_threads),
         }

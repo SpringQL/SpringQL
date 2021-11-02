@@ -18,7 +18,7 @@ pub(crate) trait Scheduler {
     type W: WorkerState + Clone + Default;
 
     /// Called from main thread.
-    fn notify_pipeline_update(&mut self, pipeline: Arc<Pipeline>) {
+    fn notify_pipeline_update(&mut self, pipeline: Pipeline) {
         let task_graph = TaskGraph::from(pipeline.as_graph());
         self._notify_pipeline_version(pipeline.version());
         self._notify_task_graph_update(task_graph)
