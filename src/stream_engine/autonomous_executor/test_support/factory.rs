@@ -7,11 +7,6 @@ use crate::{
         query_plan::query_plan_node::{operation::LeafOperation, QueryPlanNodeLeaf},
     },
     stream_engine::{
-        autonomous_executor::Timestamp,
-        dependency_injection::{test_di::TestDI, DependencyInjection},
-        pipeline::stream_model::StreamModel,
-    },
-    stream_engine::{
         autonomous_executor::{
             data::{
                 column::stream_column::StreamColumns,
@@ -28,6 +23,14 @@ use crate::{
         },
         pipeline::stream_model::stream_shape::StreamShape,
         RowRepository,
+    },
+    stream_engine::{
+        autonomous_executor::{
+            task::{task_context::TaskContext, task_id::TaskId},
+            Timestamp,
+        },
+        dependency_injection::{test_di::TestDI, DependencyInjection},
+        pipeline::stream_model::StreamModel,
     },
 };
 
@@ -142,22 +145,22 @@ impl Row {
 }
 
 impl QueryPlanNodeLeaf {
-    pub(in crate::stream_engine) fn factory_with_pump_in<DI>(
-        pump_name: PumpName,
+    pub(in crate::stream_engine) fn factory_with_task_in<DI>(
         input: Vec<Row>,
-        row_repo: &DI::RowRepositoryType,
+        context: &TaskContext<DI>,
     ) -> Self
     where
         DI: DependencyInjection,
     {
-        let downstream_pumps = vec![pump_name.clone()];
-
         for row in input {
-            row_repo.emit_owned(row, &downstream_pumps).unwrap();
+            context
+                .row_repository()
+                .emit_owned(row, &[context.task()])
+                .unwrap();
         }
 
         Self {
-            op: LeafOperation::Collect { pump: pump_name },
+            op: LeafOperation::Collect,
         }
     }
 }
@@ -171,5 +174,15 @@ impl StreamName {
 impl PumpName {
     pub(in crate::stream_engine) fn factory(name: &str) -> Self {
         Self::new(name.to_string())
+    }
+}
+
+impl<DI: DependencyInjection> TaskContext<DI> {
+    pub(in crate::stream_engine) fn factory(task: TaskId, downstream_tasks: Vec<TaskId>) -> Self {
+        Self::_test_factory(
+            task,
+            downstream_tasks,
+            Arc::new(DI::RowRepositoryType::default()),
+        )
     }
 }

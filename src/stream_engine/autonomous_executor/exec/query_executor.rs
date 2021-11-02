@@ -2,8 +2,12 @@ use std::rc::Rc;
 
 use self::{final_row::FinalRow, node_executor_tree::NodeExecutorTree};
 use crate::{
-    error::Result, model::query_plan::QueryPlan,
-    stream_engine::dependency_injection::DependencyInjection,
+    error::Result,
+    model::query_plan::QueryPlan,
+    stream_engine::{
+        autonomous_executor::task::task_context::TaskContext,
+        dependency_injection::DependencyInjection,
+    },
 };
 
 mod final_row;
@@ -30,9 +34,9 @@ impl QueryExecutor {
     ///   - Input from a source stream is not available within timeout period.
     pub(super) fn run<DI: DependencyInjection>(
         &mut self,
-        row_repo: &DI::RowRepositoryType,
+        context: &TaskContext<DI>,
     ) -> Result<FinalRow> {
-        self.node_executor_tree.run::<DI>(row_repo)
+        self.node_executor_tree.run::<DI>(context)
     }
 }
 
@@ -41,15 +45,15 @@ impl QueryExecutor {
     fn run_expect<DI: DependencyInjection>(
         &mut self,
         expected: Vec<FinalRow>,
-        row_repo: &DI::RowRepositoryType,
+        context: &TaskContext<DI>,
     ) {
         use crate::error::SpringError;
 
         for expected_row in expected {
-            assert_eq!(self.run::<DI>(row_repo).unwrap(), expected_row);
+            assert_eq!(self.run::<DI>(context).unwrap(), expected_row);
         }
         assert!(matches!(
-            self.run::<DI>(row_repo).unwrap_err(),
+            self.run::<DI>(context).unwrap_err(),
             SpringError::InputTimeout { .. }
         ));
     }
@@ -57,17 +61,20 @@ impl QueryExecutor {
 
 #[cfg(test)]
 mod tests {
-    use std::rc::Rc;
+    use std::{rc::Rc, sync::Arc};
 
     use crate::{
         model::{
-            name::PumpName,
+            name::{PumpName, StreamName},
             query_plan::{
                 query_plan_node::{QueryPlanNode, QueryPlanNodeLeaf},
                 QueryPlan,
             },
         },
-        stream_engine::autonomous_executor::data::row::{self, Row},
+        stream_engine::autonomous_executor::{
+            data::row::{self, Row},
+            task::{task_graph::TaskGraph, task_id::TaskId},
+        },
         stream_engine::dependency_injection::test_di::TestDI,
     };
 
@@ -75,24 +82,25 @@ mod tests {
 
     #[test]
     fn test_query_executor_collect() {
-        let row_repo = <TestDI as DependencyInjection>::RowRepositoryType::default();
+        let task = TaskId::from_source_server(StreamName::fx_trade_source());
+        let pump_trade_p1 = PumpName::fx_trade_p1();
+        let downstream_tasks = vec![TaskId::from_pump(pump_trade_p1)];
+        let context = TaskContext::factory(task, downstream_tasks);
 
         // CREATE STREAM trade(
         //   "timestamp" TIMESTAMP NOT NULL AS ROWTIME,
         //   "ticker" TEXT NOT NULL,
         //   "amount" INTEGER NOT NULL
         // );
-        let pump_trade_p1 = PumpName::fx_trade_p1();
 
         // SELECT timestamp, ticker, amount FROM trade;
-        let query_plan_leaf = QueryPlanNodeLeaf::factory_with_pump_in::<TestDI>(
-            pump_trade_p1,
+        let query_plan_leaf = QueryPlanNodeLeaf::factory_with_task_in::<TestDI>(
             vec![
                 Row::fx_trade_oracle(),
                 Row::fx_trade_ibm(),
                 Row::fx_trade_google(),
             ],
-            &row_repo,
+            &context,
         );
 
         let query_plan = QueryPlan::new(Rc::new(QueryPlanNode::Leaf(query_plan_leaf)));
@@ -104,7 +112,7 @@ mod tests {
                 FinalRow::Preserved(Rc::new(Row::fx_trade_ibm())),
                 FinalRow::Preserved(Rc::new(Row::fx_trade_google())),
             ],
-            &row_repo,
+            &context,
         );
     }
 }

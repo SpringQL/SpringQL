@@ -10,7 +10,7 @@ use crate::model::name::ColumnName;
 use crate::stream_engine::autonomous_executor::data::value::sql_value::nn_sql_value::NnSqlValue;
 use crate::stream_engine::dependency_injection::DependencyInjection;
 
-pub(crate) use repository::{NaiveRowRepository, RowRepository};
+pub(in crate::stream_engine) use repository::{NaiveRowRepository, RowRepository};
 
 /// Row that enables "zero-copy stream".
 ///

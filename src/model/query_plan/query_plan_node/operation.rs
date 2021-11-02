@@ -7,7 +7,7 @@ pub(crate) trait Operation {}
 /// Leaf operations, which generates rows from a stream
 #[derive(Clone, Eq, PartialEq, Debug)]
 pub(crate) enum LeafOperation {
-    Collect { pump: PumpName },
+    Collect,
 }
 impl Operation for LeafOperation {}
 

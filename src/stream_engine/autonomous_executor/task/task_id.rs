@@ -14,3 +14,9 @@ impl TaskId {
         Self(format!("task-SinkServerFrom-{}", incoming_stream))
     }
 }
+
+impl ToString for TaskId {
+    fn to_string(&self) -> String {
+        self.0.clone()
+    }
+}
