@@ -75,10 +75,13 @@ mod tests {
         stream_engine::autonomous_executor::{
             data::foreign_row::format::json::JsonObject, test_support::foreign::sink::TestSink,
         },
+        test_support::setup::setup_test_logger,
     };
 
     #[test]
     fn test_stream_engine_source_sink() {
+        setup_test_logger();
+
         let json_oracle = JsonObject::fx_trade_oracle();
         let json_ibm = JsonObject::fx_trade_ibm();
         let json_google = JsonObject::fx_trade_google();

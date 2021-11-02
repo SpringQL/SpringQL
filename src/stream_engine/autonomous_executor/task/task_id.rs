@@ -1,3 +1,5 @@
+use std::fmt::Display;
+
 use crate::model::name::{PumpName, StreamName};
 
 #[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, new)]
@@ -15,8 +17,8 @@ impl TaskId {
     }
 }
 
-impl ToString for TaskId {
-    fn to_string(&self) -> String {
-        self.0.clone()
+impl Display for TaskId {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.0)
     }
 }

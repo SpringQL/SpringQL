@@ -5,14 +5,17 @@
 #[macro_use]
 extern crate derive_new;
 
-static PIPELINE_CREATED: Lazy<Mutex<bool>> = Lazy::new(|| Mutex::new(false));
-
 pub(crate) mod model;
 pub(crate) mod stream_engine;
 
 mod api;
 
+pub use api::*;
+
+use once_cell::sync::Lazy;
 use std::sync::Mutex;
 
-pub use api::*;
-use once_cell::sync::Lazy;
+static PIPELINE_CREATED: Lazy<Mutex<bool>> = Lazy::new(|| Mutex::new(false));
+
+#[cfg(test)]
+mod test_support;

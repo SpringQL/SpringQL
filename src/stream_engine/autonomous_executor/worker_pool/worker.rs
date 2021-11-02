@@ -1,3 +1,5 @@
+pub(in crate::stream_engine::autonomous_executor) mod worker_id;
+
 // TODO config
 const TASK_WAIT_MSEC: u64 = 100;
 
@@ -14,6 +16,8 @@ use crate::stream_engine::{
     dependency_injection::DependencyInjection,
 };
 
+use self::worker_id::WorkerId;
+
 #[derive(Debug)]
 pub(super) struct Worker {
     stop_button: mpsc::SyncSender<()>,
@@ -21,18 +25,20 @@ pub(super) struct Worker {
 
 impl Worker {
     pub(super) fn new<DI: DependencyInjection>(
+        id: WorkerId,
         scheduler_read: SchedulerRead<DI>,
         row_repo: Arc<DI::RowRepositoryType>,
     ) -> Self {
         let (stop_button, stop_receiver) = mpsc::sync_channel(0);
 
         let _ = thread::spawn(move || {
-            Self::main_loop::<DI>(scheduler_read.clone(), row_repo.clone(), stop_receiver)
+            Self::main_loop::<DI>(id, scheduler_read.clone(), row_repo.clone(), stop_receiver)
         });
         Self { stop_button }
     }
 
     fn main_loop<DI: DependencyInjection>(
+        id: WorkerId,
         scheduler: SchedulerRead<DI>,
         row_repo: Arc<DI::RowRepositoryType>,
         stop_receiver: mpsc::Receiver<()>,
@@ -40,10 +46,14 @@ impl Worker {
         let mut cur_worker_state =
             <<DI as DependencyInjection>::SchedulerType as Scheduler>::W::default();
 
+        log::debug!("[Worker#{}] Started", id);
+
         while stop_receiver.try_recv().is_err() {
             if let Some((task, next_worker_state)) =
                 scheduler.read_lock().next_task(cur_worker_state.clone())
             {
+                log::debug!("[Worker#{}] Scheduled task:{}", id, task.id());
+
                 cur_worker_state = next_worker_state;
 
                 let context = TaskContext::<DI>::new(

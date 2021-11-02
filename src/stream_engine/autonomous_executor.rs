@@ -24,7 +24,7 @@ use self::{
 use super::{dependency_injection::DependencyInjection, pipeline::Pipeline};
 
 #[cfg(test)]
-pub mod test_support;
+pub(super) mod test_support;
 
 /// Executor of pipeline's stream data.
 ///
