@@ -1,4 +1,5 @@
 use std::rc::Rc;
+use std::sync::Arc;
 
 use crate::error::Result;
 use crate::model::name::PumpName;
@@ -16,7 +17,7 @@ impl CollectExecutor {
     >(
         &self,
         context: &TaskContext<DI>,
-    ) -> Result<Rc<Row>> {
+    ) -> Result<Arc<Row>> {
         context.row_repository().collect_next(&context.task())
     }
 }

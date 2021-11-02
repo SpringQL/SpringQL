@@ -108,9 +108,9 @@ mod tests {
 
         executor.run_expect::<TestDI>(
             vec![
-                FinalRow::Preserved(Rc::new(Row::fx_trade_oracle())),
-                FinalRow::Preserved(Rc::new(Row::fx_trade_ibm())),
-                FinalRow::Preserved(Rc::new(Row::fx_trade_google())),
+                FinalRow::Preserved(Arc::new(Row::fx_trade_oracle())),
+                FinalRow::Preserved(Arc::new(Row::fx_trade_ibm())),
+                FinalRow::Preserved(Arc::new(Row::fx_trade_google())),
             ],
             &context,
         );

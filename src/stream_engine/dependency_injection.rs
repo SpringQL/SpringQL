@@ -14,6 +14,6 @@ pub(crate) trait DependencyInjection: 'static {
     type CurrentTimestampType: CurrentTimestamp;
 
     // Autonomous executor
-    type SchedulerType: Scheduler + Debug + Default + Sync + Send + 'static;
+    type SchedulerType: Scheduler;
     type RowRepositoryType: RowRepository;
 }

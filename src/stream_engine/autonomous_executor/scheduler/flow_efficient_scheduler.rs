@@ -107,7 +107,11 @@ use petgraph::{
 use crate::{
     model::name::StreamName,
     stream_engine::{
-        autonomous_executor::task::{task_graph::TaskGraph, task_id::TaskId, Task},
+        autonomous_executor::task::{
+            task_graph::{self, TaskGraph},
+            task_id::TaskId,
+            Task,
+        },
         pipeline::pipeline_version::PipelineVersion,
     },
 };
@@ -124,6 +128,7 @@ impl WorkerState for CurrentTaskIdx {}
 #[derive(Debug, Default)]
 pub(crate) struct FlowEfficientScheduler {
     pipeline_version: PipelineVersion,
+    task_graph: Arc<TaskGraph>,
     seq_task_schedule: Vec<Arc<Task>>,
 }
 
@@ -185,6 +190,10 @@ impl Scheduler for FlowEfficientScheduler {
         }
 
         self.seq_task_schedule = seq_task_schedule;
+    }
+
+    fn task_graph(&self) -> Arc<TaskGraph> {
+        self.task_graph.clone()
     }
 }
 

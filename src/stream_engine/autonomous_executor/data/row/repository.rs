@@ -1,14 +1,14 @@
 pub(crate) mod naive_row_repository;
 
-use std::rc::Rc;
+use std::{rc::Rc, sync::Arc};
 
 pub(crate) use naive_row_repository::NaiveRowRepository;
 
+use super::Row;
 use crate::{
     error::Result, model::name::PumpName, stream_engine::autonomous_executor::task::task_id::TaskId,
 };
-
-use super::Row;
+use std::fmt::Debug;
 
 /// # Concept diagram
 ///
@@ -71,17 +71,17 @@ use super::Row;
 ///           +----c------------>[3]---e----------------+
 ///                in buf: [r2]        in buf: []
 /// ```
-pub(crate) trait RowRepository: Default {
+pub(crate) trait RowRepository: Debug + Default + Sync + Send {
     /// Get the next RowRef as `task`'s input.
     ///
     /// # Failure
     ///
     /// - [SpringError::InputTimeout](crate::error::SpringError::InputTimeout) when:
     ///   - next row is not available within `timeout`
-    fn collect_next(&self, task: &TaskId) -> Result<Rc<Row>>;
+    fn collect_next(&self, task: &TaskId) -> Result<Arc<Row>>;
 
     /// Gives `row_ref` to downstream tasks.
-    fn emit(&self, row_ref: Rc<Row>, downstream_tasks: &[TaskId]) -> Result<()>;
+    fn emit(&self, row_ref: Arc<Row>, downstream_tasks: &[TaskId]) -> Result<()>;
 
     /// Move newly created `row` to downstream tasks.
     fn emit_owned(&self, row: Row, downstream_tasks: &[TaskId]) -> Result<()>;

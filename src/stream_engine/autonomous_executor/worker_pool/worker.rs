@@ -8,7 +8,9 @@ use std::{
 };
 
 use crate::stream_engine::{
-    autonomous_executor::{scheduler::scheduler_read::SchedulerRead, Scheduler},
+    autonomous_executor::{
+        scheduler::scheduler_read::SchedulerRead, task::task_context::TaskContext, Scheduler,
+    },
     dependency_injection::DependencyInjection,
 };
 
@@ -18,24 +20,38 @@ pub(super) struct Worker {
 }
 
 impl Worker {
-    pub(super) fn new<DI: DependencyInjection>(scheduler_read: SchedulerRead<DI>) -> Self {
+    pub(super) fn new<DI: DependencyInjection>(
+        scheduler_read: SchedulerRead<DI>,
+        row_repo: Arc<DI::RowRepositoryType>,
+    ) -> Self {
         let (stop_button, stop_receiver) = mpsc::sync_channel(0);
 
-        let _ = thread::spawn(move || Self::main_loop::<DI>(scheduler_read.clone(), stop_receiver));
+        let _ = thread::spawn(move || {
+            Self::main_loop::<DI>(scheduler_read.clone(), row_repo.clone(), stop_receiver)
+        });
         Self { stop_button }
     }
 
     fn main_loop<DI: DependencyInjection>(
         scheduler: SchedulerRead<DI>,
+        row_repo: Arc<DI::RowRepositoryType>,
         stop_receiver: mpsc::Receiver<()>,
     ) {
-        let mut cur_ws = <<DI as DependencyInjection>::SchedulerType as Scheduler>::W::default();
+        let mut cur_worker_state =
+            <<DI as DependencyInjection>::SchedulerType as Scheduler>::W::default();
 
         while stop_receiver.try_recv().is_err() {
-            if let Some((task, next_ws)) = scheduler.read_lock().next_task(cur_ws.clone()) {
-                cur_ws = next_ws;
+            if let Some((task, next_worker_state)) =
+                scheduler.read_lock().next_task(cur_worker_state.clone())
+            {
+                cur_worker_state = next_worker_state;
 
-                task.run().unwrap_or_else(|e| {
+                let context = TaskContext::<DI>::new(
+                    scheduler.read_lock().task_graph().as_ref(),
+                    task.id().clone(),
+                    row_repo.clone(),
+                );
+                task.run(&context).unwrap_or_else(|e| {
                     log::error!("Error while executing task: {}", e);
                 })
             } else {

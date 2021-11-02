@@ -52,11 +52,17 @@ where
 
         Self {
             scheduler_write,
-            worker_pool: WorkerPool::new::<DI>(n_worker_threads, scheduler_read),
+            worker_pool: WorkerPool::new::<DI>(
+                n_worker_threads,
+                scheduler_read,
+                Arc::new(DI::RowRepositoryType::default()),
+            ),
         }
     }
 
     pub(in crate::stream_engine) fn notify_pipeline_update(&self, pipeline: Pipeline) {
-        self.scheduler_write.write_lock().notify_pipeline_update(pipeline)
+        self.scheduler_write
+            .write_lock()
+            .notify_pipeline_update(pipeline)
     }
 }

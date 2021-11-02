@@ -15,9 +15,10 @@ impl WorkerPool {
     pub(super) fn new<DI: DependencyInjection>(
         n_worker_threads: usize,
         scheduler_read: SchedulerRead<DI>,
+        row_repo: Arc<DI::RowRepositoryType>,
     ) -> Self {
         let workers = (0..n_worker_threads)
-            .map(|i| Worker::new::<DI>(scheduler_read.clone()))
+            .map(|i| Worker::new::<DI>(scheduler_read.clone(), row_repo.clone()))
             .collect();
         Self(workers)
     }

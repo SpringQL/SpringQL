@@ -19,7 +19,7 @@ use crate::{
 
 use super::{sink_task::SinkTask, source_task::SourceTask, task_id::TaskId, Task};
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub(crate) struct TaskGraph(DiGraph<StreamName, Arc<Task>>);
 
 impl From<&PipelineGraph> for TaskGraph {

@@ -6,9 +6,12 @@ mod pump_task;
 mod sink_task;
 mod source_task;
 
-use crate::error::Result;
+use crate::{error::Result, stream_engine::dependency_injection::DependencyInjection};
 
-use self::{pump_task::PumpTask, sink_task::SinkTask, source_task::SourceTask, task_id::TaskId};
+use self::{
+    pump_task::PumpTask, sink_task::SinkTask, source_task::SourceTask, task_context::TaskContext,
+    task_id::TaskId,
+};
 
 #[derive(Debug)]
 pub(crate) enum Task {
@@ -26,10 +29,10 @@ impl Task {
         }
     }
 
-    pub(super) fn run(&self) -> Result<()> {
+    pub(super) fn run<DI: DependencyInjection>(&self, context: &TaskContext<DI>) -> Result<()> {
         match self {
             Task::Pump(_) => todo!(),
-            Task::Source(source_task) => source_task.run(),
+            Task::Source(source_task) => source_task.run(context),
             Task::Sink(_) => todo!(),
         }
     }

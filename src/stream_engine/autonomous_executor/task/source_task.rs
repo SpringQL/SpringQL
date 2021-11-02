@@ -9,11 +9,13 @@ use crate::stream_engine::autonomous_executor::server::source::net::NetSourceSer
 use crate::stream_engine::autonomous_executor::server::source::{
     SourceServerActive, SourceServerStandby,
 };
+use crate::stream_engine::autonomous_executor::RowRepository;
 use crate::stream_engine::dependency_injection::DependencyInjection;
 use crate::stream_engine::pipeline::foreign_stream_model::ForeignStreamModel;
 use crate::stream_engine::pipeline::server_model::server_type::ServerType;
 use crate::stream_engine::pipeline::server_model::ServerModel;
 
+use super::task_context::TaskContext;
 use super::task_id::TaskId;
 
 #[derive(Debug)]
@@ -50,8 +52,14 @@ impl SourceTask {
         })
     }
 
-    pub(in crate::stream_engine::autonomous_executor) fn run(&self) -> Result<()> {
-        todo!()
+    pub(in crate::stream_engine::autonomous_executor) fn run<DI: DependencyInjection>(
+        &self,
+        context: &TaskContext<DI>,
+    ) -> Result<()> {
+        let row = self.collect_next::<DI>()?;
+        context
+            .row_repository()
+            .emit_owned(row, &context.downstream_tasks())
     }
 
     fn collect_next<DI: DependencyInjection>(&self) -> Result<Row> {

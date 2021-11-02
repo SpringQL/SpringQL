@@ -1,6 +1,7 @@
 mod node_executor;
 
 use std::rc::Rc;
+use std::sync::Arc;
 
 use self::node_executor::collect_executor::CollectExecutor;
 use self::node_executor::{CollectNodeExecutor, NodeExecutor};
@@ -66,7 +67,7 @@ impl NodeExecutorTree {
         executor: &NodeExecutor,
         latest_new_row: &mut Option<NewRow>,
         context: &TaskContext<DI>,
-    ) -> Result<Rc<Row>> {
+    ) -> Result<Arc<Row>> {
         match executor {
             NodeExecutor::Collect(e) => match e {
                 CollectNodeExecutor::Collect(executor) => executor.run::<DI>(context),

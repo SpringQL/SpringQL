@@ -7,7 +7,7 @@ use crate::{
     },
 };
 use chrono::Duration;
-use std::{collections::VecDeque, rc::Rc};
+use std::{collections::VecDeque, rc::Rc, sync::Arc};
 
 #[derive(Debug)]
 pub(in crate::stream_engine::autonomous_executor::exec::query_executor) struct SlidingWindowExecutor
@@ -33,7 +33,7 @@ impl SlidingWindowExecutor {
     /// Mutates internal window state.
     pub(in crate::stream_engine::autonomous_executor::exec::query_executor) fn run(
         &mut self,
-        input: Rc<Row>,
+        input: Arc<Row>,
     ) -> Result<&RowWindow> {
         let input_ts = input.rowtime();
         let lower_bound_ts = input_ts - self.window_width;
