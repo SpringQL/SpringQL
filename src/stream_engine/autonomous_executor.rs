@@ -64,11 +64,8 @@ where
     }
 
     pub(in crate::stream_engine) fn notify_pipeline_update(&self, pipeline: Pipeline) {
-        self.scheduler_write
-            .write_lock()
-            .notify_pipeline_update(pipeline);
-
-        self.row_repo
-            .reset(self.scheduler_read.read_lock().task_graph().all_tasks())
+        let mut scheduler = self.scheduler_write.write_lock(); // enter write lock (worker stops task execution)
+        self.row_repo.reset(scheduler.task_graph().all_tasks());
+        scheduler.notify_pipeline_update(pipeline)
     }
 }
