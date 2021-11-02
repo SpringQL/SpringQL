@@ -52,15 +52,15 @@ impl Worker {
         log::debug!("[Worker#{}] Started", id);
 
         while stop_receiver.try_recv().is_err() {
-            if let Some((task, next_worker_state)) =
-                scheduler.read_lock().next_task(cur_worker_state.clone())
-            {
+            let scheduler = scheduler.read_lock();
+
+            if let Some((task, next_worker_state)) = scheduler.next_task(cur_worker_state.clone()) {
                 log::debug!("[Worker#{}] Scheduled task:{}", id, task.id());
 
                 cur_worker_state = next_worker_state;
 
                 let context = TaskContext::<DI>::new(
-                    scheduler.read_lock().task_graph().as_ref(),
+                    scheduler.task_graph().as_ref(),
                     task.id().clone(),
                     row_repo.clone(),
                 );
@@ -74,7 +74,7 @@ impl Worker {
     fn handle_error(e: SpringError) {
         match e {
             SpringError::ForeignSourceTimeout { .. } | SpringError::InputTimeout { .. } => {
-                log::debug!("{:?}", e)
+                log::trace!("{:?}", e)
             }
 
             SpringError::ForeignIo { .. }
