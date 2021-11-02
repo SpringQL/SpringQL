@@ -23,14 +23,13 @@ impl RowRepository for NaiveRowRepository {
             .lock()
             .expect("another thread sharing the same RowRepository internal got panic")
             .get_mut(task)
-            .unwrap_or_else(|| {
-                panic!(
+            .with_context(|| {
+                format!(
                     "task ({:?}) has not yet registered to the RowRepository internal",
                     task
                 )
             })
-            .pop_back()
-            .context("next row not available")
+            .and_then(|rows| rows.pop_back().context("next row not available"))
             .map_err(|e| SpringError::InputTimeout {
                 source: e,
                 task_name: task.to_string(),
