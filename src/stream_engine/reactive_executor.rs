@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use super::{
     command::alter_pipeline_command::AlterPipelineCommand,
     dependency_injection::DependencyInjection,
@@ -10,14 +12,16 @@ use crate::error::Result;
 /// All methods (recursive) are called from main thread.
 #[derive(Debug, Default)]
 pub(in crate::stream_engine) struct ReactiveExecutor {
-    pipeline: Pipeline,
+    pipeline: Arc<Pipeline>,
 }
 
 impl ReactiveExecutor {
     pub(in crate::stream_engine) fn alter_pipeline(
-        &self,
+        &mut self,
         command: AlterPipelineCommand,
-    ) -> Result<Pipeline> {
-        todo!()
+    ) -> Result<Arc<Pipeline>> {
+        let new_pipeline = todo!();
+        self.pipeline = Arc::new(new_pipeline);
+        Ok(self.pipeline.clone())
     }
 }
