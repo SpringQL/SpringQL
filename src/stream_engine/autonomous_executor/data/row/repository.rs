@@ -82,14 +82,38 @@ pub(crate) trait RowRepository: Debug + Default + Sync + Send {
     ///
     /// - [SpringError::InputTimeout](crate::error::SpringError::InputTimeout) when:
     ///   - next row is not available within `timeout`
-    fn collect_next(&self, task: &TaskId) -> Result<Arc<Row>>;
+    fn collect_next(&self, task: &TaskId) -> Result<Arc<Row>> {
+        log::debug!("[RowRepository] collect_next({:?})", task);
+        self._collect_next(task)
+    }
+    fn _collect_next(&self, task: &TaskId) -> Result<Arc<Row>>;
 
     /// Gives `row_ref` to downstream tasks.
-    fn emit(&self, row_ref: Arc<Row>, downstream_tasks: &[TaskId]) -> Result<()>;
+    fn emit(&self, row_ref: Arc<Row>, downstream_tasks: &[TaskId]) -> Result<()> {
+        log::debug!(
+            "[RowRepository] emit({:?}, {:?})",
+            row_ref,
+            downstream_tasks
+        );
+        self._emit(row_ref, downstream_tasks)
+    }
+    fn _emit(&self, row_ref: Arc<Row>, downstream_tasks: &[TaskId]) -> Result<()>;
 
     /// Move newly created `row` to downstream tasks.
-    fn emit_owned(&self, row: Row, downstream_tasks: &[TaskId]) -> Result<()>;
+    fn emit_owned(&self, row: Row, downstream_tasks: &[TaskId]) -> Result<()> {
+        log::debug!(
+            "[RowRepository] emit_owned({:?}, {:?})",
+            row,
+            downstream_tasks
+        );
+        self._emit_owned(row, downstream_tasks)
+    }
+    fn _emit_owned(&self, row: Row, downstream_tasks: &[TaskId]) -> Result<()>;
 
     /// Reset repository with new tasks.
-    fn reset(&self, tasks: Vec<TaskId>);
+    fn reset(&self, tasks: Vec<TaskId>) {
+        log::debug!("[RowRepository] reset({:?})", tasks);
+        self._reset(tasks)
+    }
+    fn _reset(&self, tasks: Vec<TaskId>);
 }

@@ -17,7 +17,7 @@ pub(crate) struct NaiveRowRepository {
 }
 
 impl RowRepository for NaiveRowRepository {
-    fn collect_next(&self, task: &TaskId) -> Result<Arc<Row>> {
+    fn _collect_next(&self, task: &TaskId) -> Result<Arc<Row>> {
         let row_ref = self
             .tasks_buf
             .lock()
@@ -39,7 +39,7 @@ impl RowRepository for NaiveRowRepository {
         Ok(row_ref)
     }
 
-    fn emit(&self, row_ref: Arc<Row>, downstream_tasks: &[TaskId]) -> Result<()> {
+    fn _emit(&self, row_ref: Arc<Row>, downstream_tasks: &[TaskId]) -> Result<()> {
         let mut pumps_buf = self
             .tasks_buf
             .lock()
@@ -53,17 +53,21 @@ impl RowRepository for NaiveRowRepository {
         Ok(())
     }
 
-    fn emit_owned(&self, row: Row, downstream_tasks: &[TaskId]) -> Result<()> {
+    fn _emit_owned(&self, row: Row, downstream_tasks: &[TaskId]) -> Result<()> {
         let row_ref = Arc::new(row);
         self.emit(row_ref, downstream_tasks)
     }
 
-    fn reset(&self, tasks: Vec<TaskId>) {
+    fn _reset(&self, tasks: Vec<TaskId>) {
         let new_tasks_buf = tasks
             .into_iter()
             .map(|t| (t, VecDeque::new()))
             .collect::<HashMap<TaskId, VecDeque<Arc<Row>>>>();
 
-        *self.tasks_buf.lock().expect("another thread sharing the same RowRepository internal got panic") = new_tasks_buf;
+        *self
+            .tasks_buf
+            .lock()
+            .expect("another thread sharing the same RowRepository internal got panic") =
+            new_tasks_buf;
     }
 }
