@@ -50,6 +50,10 @@ impl SourceTask {
         })
     }
 
+    pub(in crate::stream_engine::autonomous_executor) fn run(&self) -> Result<()> {
+        todo!()
+    }
+
     fn collect_next<DI: DependencyInjection>(&self) -> Result<Row> {
         let foreign_row = self
             .upstream_server

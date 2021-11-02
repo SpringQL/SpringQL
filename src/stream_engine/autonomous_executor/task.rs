@@ -26,7 +26,11 @@ impl Task {
     }
 
     pub(super) fn run(&self) -> Result<()> {
-        todo!()
+        match self {
+            Task::Pump(_) => todo!(),
+            Task::Source(source_task) => source_task.run(),
+            Task::Sink(_) => todo!(),
+        }
     }
 }
 

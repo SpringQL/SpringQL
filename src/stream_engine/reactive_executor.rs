@@ -1,4 +1,8 @@
-use super::{command::alter_pipeline_command::AlterPipelineCommand, dependency_injection::DependencyInjection, pipeline::{self, Pipeline, server_model::ServerModel}};
+use super::{
+    command::alter_pipeline_command::AlterPipelineCommand,
+    dependency_injection::DependencyInjection,
+    pipeline::{self, server_model::ServerModel, Pipeline},
+};
 use crate::error::Result;
 
 /// Executor of pipeline management.
@@ -30,7 +34,10 @@ impl ReactiveExecutor {
         }
     }
 
-    fn create_foreign_stream(pipeline: Pipeline, server: ServerModel) -> Result<Pipeline> {
-        todo!()
+    fn create_foreign_stream(mut pipeline: Pipeline, server: ServerModel) -> Result<Pipeline> {
+        let fst = server.serving_foreign_stream();
+        pipeline.add_foreign_stream(fst)?;
+        pipeline.add_server(server)?;
+        Ok(pipeline)
     }
 }
