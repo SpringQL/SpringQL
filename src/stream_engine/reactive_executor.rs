@@ -30,7 +30,6 @@ impl ReactiveExecutor {
                 Self::create_foreign_stream(pipeline, server)
             }
             AlterPipelineCommand::CreatePump(pump) => Self::create_pump(pipeline, pump),
-            AlterPipelineCommand::AlterPump(_) => todo!(),
         }
     }
 

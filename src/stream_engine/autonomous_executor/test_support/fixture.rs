@@ -760,10 +760,6 @@ impl AlterPipelineCommand {
         let pump = PumpModel::fx_passthrough_trade(pump_name, upstream, downstream);
         Self::CreatePump(pump)
     }
-
-    pub(in crate::stream_engine) fn fx_alter_pump_start(pump_name: PumpName) -> Self {
-        Self::AlterPump(AlterPumpCommand::Start(pump_name))
-    }
 }
 
 impl TaskGraph {

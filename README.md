@@ -118,11 +118,9 @@ Unfortunately, you cannot see records from `"st_trade_oracle"` directly because 
 You might realize that `"timestamp"` column has changed into `"ts"` and `ROWTIME` keyword disappears.
 A sink does not have a concept of `ROWTIME` so it is meaningless to specify `ROWTIME` keyword to output foreign stream.
 
-After activating 2 pumps, you can finally get output stream.
+You can finally get output stream.
 
 ```sql
-⛲> ALTER PUMP "pu_filter_oracle", "pu_oracle_to_sink" START;
-
 ⛲> SELECT "ts", "ticker", "amount" FROM "fst_trade_oracle";
 Output are written to: `fst_trade_oracle.log` ...
 ```
@@ -189,12 +187,6 @@ void setup_pipeline(spring_pipeline *pipeline) {
     "CREATE PUMP \"pu_oracle_to_sink\" AS"
     "  INSERT INTO \"fst_trade_oracle\" (\"ts\", \"ticker\", \"amount\")"
     "  SELECT STREAM \"timestamp\", \"ticker\", \"amount\" FROM \"st_trade_oracle\";"
-  );
-  int r = spring_step(stmt);
-  assert(r, SPRING_OK);
-
-  spring_stmt *stmt = spring_prepare(
-    "ALTER PUMP \"pu_filter_oracle\", \"pu_oracle_to_sink\" START;"
   );
   int r = spring_step(stmt);
   assert(r, SPRING_OK);

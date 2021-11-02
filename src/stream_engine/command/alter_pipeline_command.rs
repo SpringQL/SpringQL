@@ -12,5 +12,4 @@ pub(crate) enum AlterPipelineCommand {
     CreateStream(StreamModel),
     CreateForeignStream(ServerModel),
     CreatePump(PumpModel),
-    AlterPump(AlterPumpCommand),
 }
