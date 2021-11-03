@@ -17,10 +17,7 @@ use crate::{
             },
             server::{
                 server_repository::ServerRepository,
-                source::{
-                    net::{NetSourceServerActive, NetSourceServerStandby},
-                    SourceServerStandby,
-                },
+                source::{net::NetSourceServerInstance, SourceServerInstance},
             },
             test_support::foreign::source::TestSource,
         },
@@ -36,7 +33,7 @@ use crate::{
     },
 };
 
-impl NetSourceServerActive {
+impl NetSourceServerInstance {
     pub(in crate::stream_engine) fn factory_with_test_source(inputs: Vec<JsonObject>) -> Self {
         let source = TestSource::start(inputs).unwrap();
 
@@ -46,8 +43,7 @@ impl NetSourceServerActive {
             .add("REMOTE_PORT", source.port().to_string())
             .build();
 
-        let server = NetSourceServerStandby::new(&options).unwrap();
-        server.start().unwrap()
+        NetSourceServerInstance::start(&options).unwrap()
     }
 }
 

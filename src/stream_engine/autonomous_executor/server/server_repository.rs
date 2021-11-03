@@ -4,23 +4,22 @@ use std::{
 };
 
 use super::{
-    sink::{net::NetSinkServerStandby, SinkServerActive, SinkServerStandby},
-    source::{SourceServerActive, SourceServerStandby},
+    sink::{net::NetSinkServerStandby, SinkServerInstance, SinkServerStandby},
+    source::SourceServerInstance,
 };
-use crate::error::Result;
+use crate::{
+    error::Result, stream_engine::autonomous_executor::server::source::net::NetSourceServerInstance,
+};
 use crate::{
     model::name::ServerName,
-    stream_engine::{
-        autonomous_executor::server::source::net::NetSourceServerStandby,
-        pipeline::server_model::{server_type::ServerType, ServerModel},
-    },
+    stream_engine::pipeline::server_model::{server_type::ServerType, ServerModel},
 };
 
 #[allow(clippy::type_complexity)]
 #[derive(Debug, Default)]
 pub(in crate::stream_engine) struct ServerRepository {
-    sources: RwLock<HashMap<ServerName, Arc<Mutex<Box<dyn SourceServerActive>>>>>,
-    sinks: RwLock<HashMap<ServerName, Arc<Mutex<Box<dyn SinkServerActive>>>>>,
+    sources: RwLock<HashMap<ServerName, Arc<Mutex<Box<dyn SourceServerInstance>>>>>,
+    sinks: RwLock<HashMap<ServerName, Arc<Mutex<Box<dyn SinkServerInstance>>>>>,
 }
 
 impl ServerRepository {
@@ -48,10 +47,9 @@ impl ServerRepository {
                 if sources.get(server_model.name()).is_some() {
                     Ok(())
                 } else {
-                    let server = NetSourceServerStandby::new(server_model.options())?;
-                    let server = server.start()?;
+                    let server = NetSourceServerInstance::start(server_model.options())?;
                     let server = Box::new(server);
-                    let server = Arc::new(Mutex::new(server as Box<dyn SourceServerActive>));
+                    let server = Arc::new(Mutex::new(server as Box<dyn SourceServerInstance>));
                     let _ = sources.insert(server_model.name().clone(), server);
                     log::debug!(
                         "[ServerRepository] registered source server: {}",
@@ -67,7 +65,7 @@ impl ServerRepository {
                     let server = NetSinkServerStandby::new(server_model.options())?;
                     let server = server.start()?;
                     let server = Box::new(server);
-                    let server = Arc::new(Mutex::new(server as Box<dyn SinkServerActive>));
+                    let server = Arc::new(Mutex::new(server as Box<dyn SinkServerInstance>));
                     let _ = sinks.insert(server_model.name().clone(), server);
                     log::debug!(
                         "[ServerRepository] registered sink server: {}",
@@ -85,7 +83,7 @@ impl ServerRepository {
     pub(in crate::stream_engine::autonomous_executor) fn get_source_server(
         &self,
         server_name: &ServerName,
-    ) -> Arc<Mutex<Box<dyn SourceServerActive>>> {
+    ) -> Arc<Mutex<Box<dyn SourceServerInstance>>> {
         self.sources
             .read()
             .expect("another thread sharing the same internal got panic")
@@ -100,7 +98,7 @@ impl ServerRepository {
     pub(in crate::stream_engine::autonomous_executor) fn get_sink_server(
         &self,
         server_name: &ServerName,
-    ) -> Arc<Mutex<Box<dyn SinkServerActive>>> {
+    ) -> Arc<Mutex<Box<dyn SinkServerInstance>>> {
         self.sinks
             .read()
             .expect("another thread sharing the same internal got panic")

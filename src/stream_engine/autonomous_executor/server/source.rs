@@ -6,22 +6,16 @@ use std::fmt::Debug;
 
 pub(in crate::stream_engine) mod net;
 
-pub(in crate::stream_engine) trait SourceServerStandby {
-    type Act: SourceServerActive + Sized;
-
-    fn new(options: &Options) -> Result<Self>
+/// Active: ready to provide ForeignSourceRow.
+pub(in crate::stream_engine) trait SourceServerInstance:
+    Debug + Sync + Send + 'static
+{
+    /// Blocks until the server is ready to provide ForeignSourceRow.
+    fn start(options: &Options) -> Result<Self>
     where
         Self: Sized;
 
-    /// Blocks until the server is ready to provide ForeignSourceRow.
-    fn start(self) -> Result<Self::Act>;
-}
-
-/// Active: ready to provide ForeignSourceRow.
-pub(in crate::stream_engine) trait SourceServerActive:
-    Debug + Sync + Send + 'static
-{
-    /// Returns currently available foreign row.
+    /// Returns currently available foreign row from foreign source.
     ///
     /// # Failure
     ///

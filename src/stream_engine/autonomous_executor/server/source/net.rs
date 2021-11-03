@@ -14,7 +14,7 @@ use crate::{
     },
 };
 
-use super::{SourceServerActive, SourceServerStandby};
+use super::SourceServerInstance;
 
 // TODO config
 const CONNECT_TIMEOUT_SECS: u64 = 1;
@@ -26,35 +26,20 @@ enum Protocol {
 }
 
 #[derive(Debug)]
-pub(in crate::stream_engine) struct NetSourceServerStandby {
-    options: NetServerOptions,
-}
-
-#[derive(Debug)]
-pub(in crate::stream_engine) struct NetSourceServerActive {
+pub(in crate::stream_engine) struct NetSourceServerInstance {
     foreign_addr: SocketAddr,
     tcp_stream_reader: BufReader<TcpStream>, // TODO UDP
     options: NetServerOptions,
 }
 
-impl SourceServerStandby for NetSourceServerStandby {
-    type Act = NetSourceServerActive;
-
-    fn new(options: &Options) -> Result<Self>
-    where
-        Self: Sized,
-    {
-        Ok(Self {
-            options: NetServerOptions::try_from(options)?,
-        })
-    }
-
+impl SourceServerInstance for NetSourceServerInstance {
     /// # Failure
     ///
     /// - [SpringError::ForeignIo](crate::error::SpringError::ForeignIo)
-    fn start(self) -> Result<NetSourceServerActive> {
-        let options = self.options.clone();
-        let sock_addr = SocketAddr::new(self.options.remote_host, self.options.remote_port);
+    /// - [SpringError::InvalidOption](crate::error::SpringError::InvalidOption)
+    fn start(options: &Options) -> Result<Self> {
+        let options = NetServerOptions::try_from(options)?;
+        let sock_addr = SocketAddr::new(options.remote_host, options.remote_port);
 
         let tcp_stream =
             TcpStream::connect_timeout(&sock_addr, Duration::from_secs(CONNECT_TIMEOUT_SECS))
@@ -75,15 +60,13 @@ impl SourceServerStandby for NetSourceServerStandby {
 
         log::info!("[NetSourceServerActive] Ready to read from {}", sock_addr);
 
-        Ok(NetSourceServerActive {
+        Ok(NetSourceServerInstance {
             tcp_stream_reader,
             foreign_addr: sock_addr,
             options,
         })
     }
-}
 
-impl SourceServerActive for NetSourceServerActive {
     fn next_row(&mut self) -> Result<ForeignSourceRow> {
         let mut json_s = String::new();
 
@@ -107,7 +90,7 @@ impl SourceServerActive for NetSourceServerActive {
     }
 }
 
-impl NetSourceServerActive {
+impl NetSourceServerInstance {
     fn parse_resp(&self, json_s: &str) -> Result<ForeignSourceRow> {
         let json_v = serde_json::from_str(json_s)
             .with_context(|| {
@@ -127,7 +110,7 @@ impl NetSourceServerActive {
     }
 }
 
-impl NetSourceServerActive {}
+impl NetSourceServerInstance {}
 
 #[cfg(test)]
 mod tests {
@@ -150,8 +133,7 @@ mod tests {
             .add("REMOTE_PORT", source.port().to_string())
             .build();
 
-        let server = NetSourceServerStandby::new(&options)?;
-        let mut server = server.start()?;
+        let mut server = NetSourceServerInstance::start(&options)?;
 
         assert_eq!(server.next_row()?, ForeignSourceRow::from_json(j2));
         assert_eq!(server.next_row()?, ForeignSourceRow::from_json(j3));

@@ -6,7 +6,7 @@ use std::fmt::Debug;
 pub(in crate::stream_engine) mod net;
 
 pub(in crate::stream_engine) trait SinkServerStandby {
-    type Act: SinkServerActive;
+    type Act: SinkServerInstance;
 
     fn new(options: &Options) -> Result<Self>
     where
@@ -17,7 +17,7 @@ pub(in crate::stream_engine) trait SinkServerStandby {
 }
 
 /// Active: ready to accept ForeignSinkRow.
-pub(in crate::stream_engine) trait SinkServerActive:
+pub(in crate::stream_engine) trait SinkServerInstance:
     Debug + Sync + Send + 'static
 {
     /// # Failure
