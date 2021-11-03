@@ -6,12 +6,12 @@ use crate::error::{Result, SpringError};
 
 use super::Options;
 
-#[derive(Eq, PartialEq, Debug)]
+#[derive(Clone, Eq, PartialEq, Debug)]
 pub(crate) enum NetProtocol {
     Tcp,
 }
 
-#[derive(Eq, PartialEq, Debug)]
+#[derive(Clone, Eq, PartialEq, Debug)]
 pub(crate) struct NetServerOptions {
     pub(crate) protocol: NetProtocol,
     pub(crate) remote_host: IpAddr,

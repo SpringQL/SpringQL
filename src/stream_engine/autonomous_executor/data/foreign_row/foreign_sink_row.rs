@@ -14,7 +14,7 @@ use super::format::json::JsonObject;
 ///
 /// Immediately converted from Row on stream-engine boundary.
 #[derive(Eq, PartialEq, Debug)]
-pub(in crate::stream_engine::autonomous_executor) struct ForeignSinkRow(JsonObject);
+pub(in crate::stream_engine) struct ForeignSinkRow(JsonObject);
 
 impl From<ForeignSinkRow> for JsonObject {
     fn from(foreign_output_row: ForeignSinkRow) -> Self {

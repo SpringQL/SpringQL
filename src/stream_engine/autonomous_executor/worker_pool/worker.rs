@@ -13,7 +13,8 @@ use crate::{
     error::SpringError,
     stream_engine::{
         autonomous_executor::{
-            scheduler::scheduler_read::SchedulerRead, task::task_context::TaskContext, Scheduler,
+            scheduler::scheduler_read::SchedulerRead, server::server_repository::ServerRepository,
+            task::task_context::TaskContext, Scheduler,
         },
         dependency_injection::DependencyInjection,
     },
@@ -31,11 +32,18 @@ impl Worker {
         id: WorkerId,
         scheduler_read: SchedulerRead<DI>,
         row_repo: Arc<DI::RowRepositoryType>,
+        server_repo: Arc<ServerRepository>,
     ) -> Self {
         let (stop_button, stop_receiver) = mpsc::sync_channel(0);
 
         let _ = thread::spawn(move || {
-            Self::main_loop::<DI>(id, scheduler_read.clone(), row_repo.clone(), stop_receiver)
+            Self::main_loop::<DI>(
+                id,
+                scheduler_read.clone(),
+                row_repo,
+                server_repo,
+                stop_receiver,
+            )
         });
         Self { stop_button }
     }
@@ -44,6 +52,7 @@ impl Worker {
         id: WorkerId,
         scheduler: SchedulerRead<DI>,
         row_repo: Arc<DI::RowRepositoryType>,
+        server_repo: Arc<ServerRepository>,
         stop_receiver: mpsc::Receiver<()>,
     ) {
         let mut cur_worker_state =
@@ -63,6 +72,7 @@ impl Worker {
                     scheduler.task_graph().as_ref(),
                     task.id().clone(),
                     row_repo.clone(),
+                    server_repo.clone(),
                 );
 
                 task.run(&context).unwrap_or_else(Self::handle_error)

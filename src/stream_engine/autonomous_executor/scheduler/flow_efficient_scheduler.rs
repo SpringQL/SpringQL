@@ -108,7 +108,6 @@ use crate::{
     model::name::StreamName,
     stream_engine::{
         autonomous_executor::{
-            server::source,
             task::{
                 task_graph::{self, TaskGraph},
                 task_id::TaskId,
@@ -237,26 +236,16 @@ impl FlowEfficientScheduler {
         for incoming_edge in incoming_edges {
             let task = incoming_edge.weight();
 
-            if !unvisited.remove(&task.id()) {
+            if !unvisited.remove(&task.id()) 
                 // already visited
-                break;
-            } else if let Task::Source(source_task) = task.as_ref() {
-                if Self::_orphan_source_task(incoming_edge, graph) {
-                    // orphan source task should not be started
-                    break
-                } else {
-                    // wake it up since all downstream tasks are Started
-                    source_task
-                        .write()
-                        .expect("another thread sharing the same source task got panic")
-                        .start()?;
-                    seq_task_schedule.push(task.clone());
-                }
-            } else if matches!(task.state(), TaskState::Stopped)
-                || !Self::_all_parent_pumps_started(incoming_edge, graph)
-            {
+
+                || matches!(task.state(), TaskState::Stopped)  
                 // Do not schedule parent tasks even if they are STARTED (until all tasks throughout source-to-sink get STARTED)
                 // in order not to create buffered WIP rows.
+
+                || !Self::_all_parent_started(incoming_edge, graph)
+                // all incoming tasks must be STARTED for this task to be scheduled.
+            {
                 break;
             } else {
                 let parent_node = incoming_edge.source();
@@ -273,15 +262,14 @@ impl FlowEfficientScheduler {
         Ok(())
     }
 
-    fn _all_parent_pumps_started(
+    fn _all_parent_started(
         edge_ref: EdgeReference<Arc<Task>>,
         graph: &DiGraph<StreamName, Arc<Task>>,
     ) -> bool {
         let parent_node = edge_ref.source();
-        let parent_edges = graph.edges_directed(parent_node, petgraph::Direction::Incoming);
+        let mut parent_edges = graph.edges_directed(parent_node, petgraph::Direction::Incoming);
         parent_edges
-            .filter(|parent_edge| matches!(parent_edge.weight().as_ref(), &Task::Pump(_)))
-            .all(|parent_pump_edge| matches!(parent_pump_edge.weight().state(), TaskState::Started))
+            .all(|parent_edge| matches!(parent_edge.weight().state(), TaskState::Started))
     }
 
     fn _orphan_source_task(

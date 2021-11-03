@@ -20,12 +20,12 @@ const CONNECT_TIMEOUT_SECS: u64 = 1;
 const WRITE_TIMEOUT_MSECS: u64 = 100;
 
 #[derive(Debug)]
-pub(in crate::stream_engine::autonomous_executor) struct NetSinkServerStandby {
+pub(in crate::stream_engine) struct NetSinkServerStandby {
     options: NetServerOptions,
 }
 
 #[derive(Debug)]
-pub(in crate::stream_engine::autonomous_executor) struct NetSinkServerActive {
+pub(in crate::stream_engine) struct NetSinkServerActive {
     foreign_addr: SocketAddr,
     tcp_stream_writer: BufWriter<TcpStream>, // TODO UDP
 }

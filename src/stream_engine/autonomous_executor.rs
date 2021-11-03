@@ -1,9 +1,8 @@
+pub(in crate::stream_engine) mod server;
 pub(in crate::stream_engine) mod task;
 
 pub(super) mod data;
-
 pub(self) mod exec;
-pub(self) mod server;
 
 mod scheduler;
 mod worker_pool;
@@ -18,6 +17,7 @@ pub(in crate::stream_engine) use scheduler::{FlowEfficientScheduler, Scheduler};
 
 use self::{
     scheduler::{scheduler_read::SchedulerRead, scheduler_write::SchedulerWrite},
+    server::server_repository::ServerRepository,
     worker_pool::WorkerPool,
 };
 
@@ -54,11 +54,17 @@ where
         let scheduler_read = SchedulerRead::new(scheduler.clone());
 
         let row_repo = Arc::new(DI::RowRepositoryType::default());
+        let server_repo = Arc::new(ServerRepository::default());
 
         Self {
             scheduler_write,
             scheduler_read: scheduler_read.clone(),
-            worker_pool: WorkerPool::new::<DI>(n_worker_threads, scheduler_read, row_repo.clone()),
+            worker_pool: WorkerPool::new::<DI>(
+                n_worker_threads,
+                scheduler_read,
+                row_repo.clone(),
+                server_repo,
+            ),
             row_repo,
         }
     }

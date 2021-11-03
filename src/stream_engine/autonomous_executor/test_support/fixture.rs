@@ -29,6 +29,7 @@ use crate::{
         pipeline::{
             pipeline_graph::PipelineGraph,
             pump_model::pump_state::PumpState,
+            server_model::server_state::ServerState,
             stream_model::{stream_shape::StreamShape, StreamModel},
             Pipeline,
         },
@@ -166,8 +167,11 @@ impl Pipeline {
             "fst_1",
         )));
 
-        let server_a =
-            ServerModel::fx_net_source(fst_1.clone(), test_source.host_ip(), test_source.port());
+        let server_a = ServerModel::fx_net_source_started(
+            fst_1.clone(),
+            test_source.host_ip(),
+            test_source.port(),
+        );
 
         let mut pipeline = Pipeline::default();
         pipeline.add_foreign_stream(fst_1).unwrap();
@@ -189,8 +193,11 @@ impl Pipeline {
             "fst_2",
         )));
 
-        let server_a =
-            ServerModel::fx_net_source(fst_1.clone(), test_source.host_ip(), test_source.port());
+        let server_a = ServerModel::fx_net_source_started(
+            fst_1.clone(),
+            test_source.host_ip(),
+            test_source.port(),
+        );
         let server_c =
             ServerModel::fx_net_sink(fst_2.clone(), test_sink.host_ip(), test_sink.port());
 
@@ -227,8 +234,11 @@ impl Pipeline {
             "fst_2",
         )));
 
-        let server_a =
-            ServerModel::fx_net_source(fst_1.clone(), test_source.host_ip(), test_source.port());
+        let server_a = ServerModel::fx_net_source_started(
+            fst_1.clone(),
+            test_source.host_ip(),
+            test_source.port(),
+        );
         let server_c =
             ServerModel::fx_net_sink(fst_2.clone(), test_sink.host_ip(), test_sink.port());
 
@@ -275,10 +285,16 @@ impl Pipeline {
             "fst_4",
         )));
 
-        let server_a =
-            ServerModel::fx_net_source(fst_1.clone(), test_source.host_ip(), test_source.port());
-        let server_b =
-            ServerModel::fx_net_source(fst_2.clone(), test_source.host_ip(), test_source.port());
+        let server_a = ServerModel::fx_net_source_started(
+            fst_1.clone(),
+            test_source.host_ip(),
+            test_source.port(),
+        );
+        let server_b = ServerModel::fx_net_source_started(
+            fst_2.clone(),
+            test_source.host_ip(),
+            test_source.port(),
+        );
 
         let server_e =
             ServerModel::fx_net_sink(fst_3.clone(), test_sink1.host_ip(), test_sink1.port());
@@ -337,10 +353,16 @@ impl Pipeline {
             "fst_3",
         )));
 
-        let server_a =
-            ServerModel::fx_net_source(fst_1.clone(), test_source.host_ip(), test_source.port());
-        let server_b =
-            ServerModel::fx_net_source(fst_2.clone(), test_source.host_ip(), test_source.port());
+        let server_a = ServerModel::fx_net_source_started(
+            fst_1.clone(),
+            test_source.host_ip(),
+            test_source.port(),
+        );
+        let server_b = ServerModel::fx_net_source_started(
+            fst_2.clone(),
+            test_source.host_ip(),
+            test_source.port(),
+        );
 
         let server_e =
             ServerModel::fx_net_sink(fst_3.clone(), test_sink.host_ip(), test_sink.port());
@@ -405,10 +427,16 @@ impl Pipeline {
             "fst_9",
         )));
 
-        let server_a =
-            ServerModel::fx_net_source(fst_1.clone(), test_source.host_ip(), test_source.port());
-        let server_b =
-            ServerModel::fx_net_source(fst_2.clone(), test_source.host_ip(), test_source.port());
+        let server_a = ServerModel::fx_net_source_started(
+            fst_1.clone(),
+            test_source.host_ip(),
+            test_source.port(),
+        );
+        let server_b = ServerModel::fx_net_source_started(
+            fst_2.clone(),
+            test_source.host_ip(),
+            test_source.port(),
+        );
 
         let server_l =
             ServerModel::fx_net_sink(fst_8.clone(), test_sink.host_ip(), test_sink.port());
@@ -581,12 +609,13 @@ impl ForeignStreamModel {
 }
 
 impl ServerModel {
-    pub(in crate::stream_engine) fn fx_net_source(
+    pub(in crate::stream_engine) fn fx_net_source_started(
         serving_foreign_stream: Arc<ForeignStreamModel>,
         remote_host: IpAddr,
         remote_port: u16,
     ) -> Self {
         Self::new(
+            ServerState::Started,
             ServerType::SourceNet,
             serving_foreign_stream,
             Options::fx_net_source_server(remote_host, remote_port),
@@ -598,6 +627,7 @@ impl ServerModel {
         remote_port: u16,
     ) -> Self {
         Self::new(
+            ServerState::Started,
             ServerType::SinkNet,
             serving_foreign_stream,
             Options::fx_net_sink_server(remote_host, remote_port),
@@ -645,6 +675,10 @@ impl StreamName {
 }
 
 impl PumpName {
+    pub(in crate::stream_engine) fn fx_city_temperature_p1() -> Self {
+        Self::new("pu_city_temperature_p1".to_string())
+    }
+
     pub(in crate::stream_engine) fn fx_trade_p1() -> Self {
         Self::new("pu_trade_p1".to_string())
     }
@@ -803,7 +837,8 @@ impl AlterPipelineCommand {
         source_server_port: u16,
     ) -> Self {
         let stream = Arc::new(ForeignStreamModel::fx_trade_with_name(stream_name));
-        let server = ServerModel::fx_net_source(stream, source_server_host, source_server_port);
+        let server =
+            ServerModel::fx_net_source_started(stream, source_server_host, source_server_port);
         Self::CreateForeignStream(server)
     }
 

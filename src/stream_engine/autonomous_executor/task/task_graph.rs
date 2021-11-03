@@ -33,9 +33,7 @@ impl From<&PipelineGraph> for TaskGraph {
             |_, edge| {
                 let task = match edge {
                     Edge::Pump(pump) => Task::Pump(PumpTask::from(pump)),
-                    Edge::Source(server) => {
-                        Task::Source(RwLock::new(SourceTask::new(server.clone())))
-                    }
+                    Edge::Source(server) => Task::Source(SourceTask::from(server)),
                     Edge::Sink(server) => {
                         Task::Sink(SinkTask::new(server).expect("TODO make this panic-free"))
                     }

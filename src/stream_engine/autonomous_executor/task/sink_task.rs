@@ -3,11 +3,9 @@ use std::sync::{Arc, Mutex};
 use super::task_state::TaskState;
 use super::{task_context::TaskContext, task_id::TaskId};
 use crate::error::Result;
-use crate::stream_engine::autonomous_executor::server::sink::net::NetSinkServerStandby;
-use crate::stream_engine::autonomous_executor::server::sink::{
-    SinkServerActive, SinkServerStandby,
-};
 use crate::stream_engine::pipeline::server_model::server_type::ServerType;
+use crate::stream_engine::autonomous_executor::server::sink::net::NetSinkServerStandby;
+use crate::stream_engine::autonomous_executor::server::sink::{SinkServerActive, SinkServerStandby};
 use crate::stream_engine::{
     autonomous_executor::{
         data::{foreign_row::foreign_sink_row::ForeignSinkRow, row::Row},

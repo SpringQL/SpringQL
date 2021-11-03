@@ -3,9 +3,9 @@ use crate::model::option::Options;
 use crate::stream_engine::autonomous_executor::data::foreign_row::foreign_sink_row::ForeignSinkRow;
 use std::fmt::Debug;
 
-pub(in crate::stream_engine::autonomous_executor) mod net;
+pub(in crate::stream_engine) mod net;
 
-pub(in crate::stream_engine::autonomous_executor) trait SinkServerStandby {
+pub(in crate::stream_engine) trait SinkServerStandby {
     type Act: SinkServerActive;
 
     fn new(options: &Options) -> Result<Self>
@@ -17,8 +17,8 @@ pub(in crate::stream_engine::autonomous_executor) trait SinkServerStandby {
 }
 
 /// Active: ready to accept ForeignSinkRow.
-pub(in crate::stream_engine::autonomous_executor) trait SinkServerActive:
-    Debug + Sync + Send
+pub(in crate::stream_engine) trait SinkServerActive:
+    Debug + Sync + Send + 'static
 {
     /// # Failure
     ///
