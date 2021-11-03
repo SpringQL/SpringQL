@@ -157,6 +157,25 @@ impl ForeignSinkRow {
 
 impl Pipeline {
     /// ```text
+    /// (0)--a-->[1]
+    /// ```
+    pub(in crate::stream_engine) fn fx_source_only() -> Self {
+        let test_source = TestSource::start(vec![]).unwrap();
+
+        let fst_1 = Arc::new(ForeignStreamModel::fx_trade_with_name(StreamName::factory(
+            "fst_1",
+        )));
+
+        let server_a =
+            ServerModel::fx_net_source(fst_1.clone(), test_source.host_ip(), test_source.port());
+
+        let mut pipeline = Pipeline::default();
+        pipeline.add_foreign_stream(fst_1).unwrap();
+        pipeline.add_server(server_a).unwrap();
+        pipeline
+    }
+
+    /// ```text
     /// (0)--a-->[1]--b(STOPPED)-->[2]--c-->
     /// ```
     pub(in crate::stream_engine) fn fx_linear_stopped() -> Self {

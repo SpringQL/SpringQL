@@ -301,6 +301,11 @@ mod tests {
     }
 
     #[test]
+    fn test_source_only_pipeline() {
+        t(Pipeline::fx_source_only(), vec![])
+    }
+
+    #[test]
     fn test_linear_pipeline_stopped() {
         t(Pipeline::fx_linear_stopped(), vec![])
     }
