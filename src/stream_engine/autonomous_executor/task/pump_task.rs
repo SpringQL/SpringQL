@@ -1,3 +1,4 @@
+use super::task_state::TaskState;
 use super::{task_context::TaskContext, task_id::TaskId};
 use crate::error::Result;
 use crate::stream_engine::autonomous_executor::RowRepository;
@@ -8,18 +9,26 @@ use crate::stream_engine::{
 #[derive(Debug)]
 pub(crate) struct PumpTask {
     id: TaskId,
+    state: TaskState,
 }
 
 impl From<&PumpModel> for PumpTask {
     fn from(pump: &PumpModel) -> Self {
         let id = TaskId::from_pump(pump.name().clone());
-        Self { id }
+        Self {
+            id,
+            state: TaskState::Stopped,
+        }
     }
 }
 
 impl PumpTask {
     pub(in crate::stream_engine) fn id(&self) -> &TaskId {
         &self.id
+    }
+
+    pub(in crate::stream_engine) fn state(&self) -> &TaskState {
+        &self.state
     }
 
     pub(in crate::stream_engine::autonomous_executor) fn run<DI: DependencyInjection>(

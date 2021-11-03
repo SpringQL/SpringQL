@@ -1,5 +1,6 @@
 use std::sync::{Arc, Mutex};
 
+use super::task_state::TaskState;
 use super::{task_context::TaskContext, task_id::TaskId};
 use crate::error::Result;
 use crate::stream_engine::autonomous_executor::server::sink::net::NetSinkServerStandby;
@@ -19,6 +20,7 @@ use crate::stream_engine::{
 #[derive(Debug)]
 pub(crate) struct SinkTask {
     id: TaskId,
+    state: TaskState,
 
     /// 1 server can be shared to 2 or more foreign streams.
     downstream_server: Arc<Mutex<Box<dyn SinkServerActive>>>,
@@ -37,12 +39,17 @@ impl SinkTask {
         };
         Ok(Self {
             id,
+            state: TaskState::Stopped,
             downstream_server: Arc::new(Mutex::new(downstream_server)),
         })
     }
 
     pub(in crate::stream_engine) fn id(&self) -> &TaskId {
         &self.id
+    }
+
+    pub(in crate::stream_engine) fn state(&self) -> &TaskState {
+        &self.state
     }
 
     pub(in crate::stream_engine::autonomous_executor) fn run<DI: DependencyInjection>(
@@ -52,7 +59,7 @@ impl SinkTask {
         let row_repo = context.row_repository();
 
         let row = row_repo.collect_next(&context.task())?;
-        let row = row.fixme_clone();  // Ahhhhhhhhhhhhhh
+        let row = row.fixme_clone(); // Ahhhhhhhhhhhhhh
 
         self.emit(row)
     }

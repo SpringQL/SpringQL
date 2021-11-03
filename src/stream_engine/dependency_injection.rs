@@ -9,7 +9,7 @@ use std::fmt::Debug;
 /// Compile-time dependency injection.
 ///
 /// FIXME remove dependent traits
-pub(crate) trait DependencyInjection: 'static {
+pub(crate) trait DependencyInjection: Debug + 'static {
     // Mainly for testable mock
     type CurrentTimestampType: CurrentTimestamp;
 

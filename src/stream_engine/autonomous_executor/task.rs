@@ -1,6 +1,7 @@
 pub(super) mod task_context;
 pub(super) mod task_graph;
 pub(super) mod task_id;
+pub(super) mod task_state;
 
 mod pump_task;
 mod sink_task;
@@ -8,10 +9,7 @@ mod source_task;
 
 use crate::{error::Result, stream_engine::dependency_injection::DependencyInjection};
 
-use self::{
-    pump_task::PumpTask, sink_task::SinkTask, source_task::SourceTask, task_context::TaskContext,
-    task_id::TaskId,
-};
+use self::{pump_task::PumpTask, sink_task::SinkTask, source_task::SourceTask, task_context::TaskContext, task_id::TaskId, task_state::TaskState};
 
 #[derive(Debug)]
 pub(crate) enum Task {
@@ -26,6 +24,14 @@ impl Task {
             Task::Pump(t) => t.id(),
             Task::Source(s) => s.id(),
             Task::Sink(s) => s.id(),
+        }
+    }
+
+    pub(super) fn state(&self) -> &TaskState {
+        match self {
+            Task::Pump(t) => t.state(),
+            Task::Source(s) => s.state(),
+            Task::Sink(s) => s.state(),
         }
     }
 

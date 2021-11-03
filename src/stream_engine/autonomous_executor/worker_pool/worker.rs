@@ -64,6 +64,8 @@ impl Worker {
                     task.id().clone(),
                     row_repo.clone(),
                 );
+                log::error!("[Worker#{}] task graph:{:?}", id, scheduler.task_graph());
+
                 task.run(&context).unwrap_or_else(Self::handle_error)
             } else {
                 thread::sleep(Duration::from_millis(TASK_WAIT_MSEC))

@@ -17,10 +17,12 @@ use crate::stream_engine::pipeline::server_model::ServerModel;
 
 use super::task_context::TaskContext;
 use super::task_id::TaskId;
+use super::task_state::TaskState;
 
 #[derive(Debug)]
 pub(crate) struct SourceTask {
     id: TaskId,
+    state: TaskState,
 
     /// 1 server can be shared to 2 or more foreign streams.
     upstream_server: Arc<Mutex<Box<dyn SourceServerActive>>>,
@@ -31,6 +33,10 @@ pub(crate) struct SourceTask {
 impl SourceTask {
     pub(in crate::stream_engine) fn id(&self) -> &TaskId {
         &self.id
+    }
+
+    pub(in crate::stream_engine) fn state(&self) -> &TaskState {
+        &self.state
     }
 
     pub(in crate::stream_engine) fn new(server: &ServerModel) -> Result<Self> {
@@ -47,6 +53,7 @@ impl SourceTask {
 
         Ok(Self {
             id,
+            state: TaskState::Stopped,
             upstream_server: Arc::new(Mutex::new(upstream_server)),
             downstream,
         })
