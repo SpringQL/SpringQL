@@ -191,8 +191,6 @@ impl PipelineGraph {
             .any(|edge| matches!(edge.weight(), Edge::Sink(_)))
         {
             true
-        } else if outgoing_edges.clone().count() == 0 {
-            false
         } else {
             outgoing_edges.any(|started_edge| {
                 let next_node = started_edge.target();
