@@ -28,6 +28,7 @@ use crate::{
         },
         pipeline::{
             pipeline_graph::PipelineGraph,
+            pump_model::pump_state::PumpState,
             stream_model::{stream_shape::StreamShape, StreamModel},
             Pipeline,
         },
@@ -553,7 +554,7 @@ impl PumpModel {
         upstream: StreamName,
         downstream: StreamName,
     ) -> Self {
-        Self::new(name, upstream, downstream)
+        Self::new(name, PumpState::Stopped, upstream, downstream)
     }
 }
 

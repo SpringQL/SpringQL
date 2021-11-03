@@ -22,7 +22,6 @@ use super::task_state::TaskState;
 #[derive(Debug)]
 pub(crate) struct SourceTask {
     id: TaskId,
-    state: TaskState,
 
     /// 1 server can be shared to 2 or more foreign streams.
     upstream_server: Arc<Mutex<Box<dyn SourceServerActive>>>,
@@ -35,8 +34,9 @@ impl SourceTask {
         &self.id
     }
 
-    pub(in crate::stream_engine) fn state(&self) -> &TaskState {
-        &self.state
+    pub(in crate::stream_engine) fn state(&self) -> TaskState {
+        // server is always STARTED (not necessarily scheduled until all downstream pumps get STARTED)
+        TaskState::Started
     }
 
     pub(in crate::stream_engine) fn new(server: &ServerModel) -> Result<Self> {
@@ -53,7 +53,6 @@ impl SourceTask {
 
         Ok(Self {
             id,
-            state: TaskState::Stopped,
             upstream_server: Arc::new(Mutex::new(upstream_server)),
             downstream,
         })

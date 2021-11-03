@@ -9,7 +9,10 @@ mod source_task;
 
 use crate::{error::Result, stream_engine::dependency_injection::DependencyInjection};
 
-use self::{pump_task::PumpTask, sink_task::SinkTask, source_task::SourceTask, task_context::TaskContext, task_id::TaskId, task_state::TaskState};
+use self::{
+    pump_task::PumpTask, sink_task::SinkTask, source_task::SourceTask, task_context::TaskContext,
+    task_id::TaskId, task_state::TaskState,
+};
 
 #[derive(Debug)]
 pub(crate) enum Task {
@@ -27,9 +30,9 @@ impl Task {
         }
     }
 
-    pub(super) fn state(&self) -> &TaskState {
+    pub(super) fn state(&self) -> TaskState {
         match self {
-            Task::Pump(t) => t.state(),
+            Task::Pump(t) => t.state().clone(),
             Task::Source(s) => s.state(),
             Task::Sink(s) => s.state(),
         }

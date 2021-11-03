@@ -17,7 +17,7 @@ impl From<&PumpModel> for PumpTask {
         let id = TaskId::from_pump(pump.name().clone());
         Self {
             id,
-            state: TaskState::Stopped,
+            state: TaskState::from(pump.state()),
         }
     }
 }

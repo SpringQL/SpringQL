@@ -48,8 +48,9 @@ impl SinkTask {
         &self.id
     }
 
-    pub(in crate::stream_engine) fn state(&self) -> &TaskState {
-        &self.state
+    pub(in crate::stream_engine) fn state(&self) -> TaskState {
+        // server is always STARTED (not necessarily scheduled until all upwnstream pumps get STARTED)
+        TaskState::Started
     }
 
     pub(in crate::stream_engine::autonomous_executor) fn run<DI: DependencyInjection>(
