@@ -26,12 +26,12 @@ pub(crate) struct SinkTask {
 }
 
 impl SinkTask {
-    pub(in crate::stream_engine) fn new(server_model: &ServerModel) -> Result<Self> {
+    pub(in crate::stream_engine) fn new(server_model: &ServerModel) -> Self {
         let id = TaskId::from_sink_server(server_model.serving_foreign_stream().name().clone());
-        Ok(Self {
+        Self {
             id,
             server_name: server_model.name().clone(),
-        })
+        }
     }
 
     pub(in crate::stream_engine) fn id(&self) -> &TaskId {
