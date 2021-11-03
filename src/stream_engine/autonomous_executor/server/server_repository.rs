@@ -80,7 +80,12 @@ impl ServerRepository {
         &self,
         server_name: &ServerName,
     ) -> Arc<Mutex<Box<dyn SourceServerActive>>> {
-        todo!()
+        self.sources
+            .read()
+            .expect("another thread sharing the same internal got panic")
+            .get(server_name)
+            .unwrap_or_else(|| panic!("server name ({}) not registered yet", server_name))
+            .clone()
     }
 
     /// # Panics
@@ -90,6 +95,11 @@ impl ServerRepository {
         &self,
         server_name: &ServerName,
     ) -> Arc<Mutex<Box<dyn SinkServerActive>>> {
-        todo!()
+        self.sinks
+            .read()
+            .expect("another thread sharing the same internal got panic")
+            .get(server_name)
+            .unwrap_or_else(|| panic!("server name ({}) not registered yet", server_name))
+            .clone()
     }
 }
