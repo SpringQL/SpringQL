@@ -6,7 +6,7 @@ use std::{
 
 use anyhow::Context;
 
-use super::{SinkServerActive, SinkServerStandby};
+use super::SinkServerInstance;
 use crate::{
     error::{foreign_info::ForeignInfo, Result, SpringError},
     model::option::{server_options::NetServerOptions, Options},
@@ -20,30 +20,16 @@ const CONNECT_TIMEOUT_SECS: u64 = 1;
 const WRITE_TIMEOUT_MSECS: u64 = 100;
 
 #[derive(Debug)]
-pub(in crate::stream_engine) struct NetSinkServerStandby {
+pub(in crate::stream_engine) struct NetSinkServerInstance {
+    foreign_addr: SocketAddr,
+    tcp_stream_writer: BufWriter<TcpStream>, // TODO UDP
     options: NetServerOptions,
 }
 
-#[derive(Debug)]
-pub(in crate::stream_engine) struct NetSinkServerActive {
-    foreign_addr: SocketAddr,
-    tcp_stream_writer: BufWriter<TcpStream>, // TODO UDP
-}
-
-impl SinkServerStandby for NetSinkServerStandby {
-    type Act = NetSinkServerActive;
-
-    fn new(options: &Options) -> Result<Self>
-    where
-        Self: Sized,
-    {
-        Ok(Self {
-            options: NetServerOptions::try_from(options)?,
-        })
-    }
-
-    fn start(self) -> Result<NetSinkServerActive> {
-        let sock_addr = SocketAddr::new(self.options.remote_host, self.options.remote_port);
+impl SinkServerInstance for NetSinkServerInstance {
+    fn start(options: &Options) -> Result<Self> {
+        let options = NetServerOptions::try_from(options)?;
+        let sock_addr = SocketAddr::new(options.remote_host, options.remote_port);
 
         let tcp_stream =
             TcpStream::connect_timeout(&sock_addr, Duration::from_secs(CONNECT_TIMEOUT_SECS))
@@ -62,22 +48,21 @@ impl SinkServerStandby for NetSinkServerStandby {
 
         let tcp_stream_writer = BufWriter::new(tcp_stream);
 
-        log::info!("[NetSinkServerActive] Ready to write into {}", sock_addr);
+        log::info!("[NetSinkServerInstance] Ready to write into {}", sock_addr);
 
-        Ok(NetSinkServerActive {
+        Ok(Self {
             tcp_stream_writer,
             foreign_addr: sock_addr,
+            options,
         })
     }
-}
 
-impl SinkServerActive for NetSinkServerActive {
     fn send_row(&mut self, row: ForeignSinkRow) -> Result<()> {
         let mut json_s = JsonObject::from(row).to_string();
         json_s.push('\n');
 
         log::info!(
-            "[NetSinkServerActive] Writing message to remote: {}",
+            "[NetSinkServerInstance] Writing message to remote: {}",
             json_s
         );
 
@@ -120,8 +105,7 @@ mod tests {
             .add("REMOTE_PORT", sink.port().to_string())
             .build();
 
-        let server = NetSinkServerStandby::new(&options).unwrap();
-        let mut server = server.start().unwrap();
+        let mut server = NetSinkServerInstance::start(&options).unwrap();
 
         server
             .send_row(ForeignSinkRow::fx_city_temperature_tokyo())

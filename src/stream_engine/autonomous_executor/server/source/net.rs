@@ -58,9 +58,9 @@ impl SourceServerInstance for NetSourceServerInstance {
 
         let tcp_stream_reader = BufReader::new(tcp_stream);
 
-        log::info!("[NetSourceServerActive] Ready to read from {}", sock_addr);
+        log::info!("[NetSourceServerInstance] Ready to read from {}", sock_addr);
 
-        Ok(NetSourceServerInstance {
+        Ok(Self {
             tcp_stream_reader,
             foreign_addr: sock_addr,
             options,

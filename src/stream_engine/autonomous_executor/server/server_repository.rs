@@ -3,12 +3,12 @@ use std::{
     sync::{Arc, Mutex, RwLock},
 };
 
-use super::{
-    sink::{net::NetSinkServerStandby, SinkServerInstance, SinkServerStandby},
-    source::SourceServerInstance,
-};
+use super::{sink::SinkServerInstance, source::SourceServerInstance};
 use crate::{
-    error::Result, stream_engine::autonomous_executor::server::source::net::NetSourceServerInstance,
+    error::Result,
+    stream_engine::autonomous_executor::server::{
+        sink::net::NetSinkServerInstance, source::net::NetSourceServerInstance,
+    },
 };
 use crate::{
     model::name::ServerName,
@@ -62,8 +62,7 @@ impl ServerRepository {
                 if sinks.get(server_model.name()).is_some() {
                     Ok(())
                 } else {
-                    let server = NetSinkServerStandby::new(server_model.options())?;
-                    let server = server.start()?;
+                    let server = NetSinkServerInstance::start(server_model.options())?;
                     let server = Box::new(server);
                     let server = Arc::new(Mutex::new(server as Box<dyn SinkServerInstance>));
                     let _ = sinks.insert(server_model.name().clone(), server);

@@ -5,21 +5,14 @@ use std::fmt::Debug;
 
 pub(in crate::stream_engine) mod net;
 
-pub(in crate::stream_engine) trait SinkServerStandby {
-    type Act: SinkServerInstance;
-
-    fn new(options: &Options) -> Result<Self>
-    where
-        Self: Sized;
-
-    /// Blocks until the server is ready to accept ForeignSinkRow.
-    fn start(self) -> Result<Self::Act>;
-}
-
-/// Active: ready to accept ForeignSinkRow.
 pub(in crate::stream_engine) trait SinkServerInstance:
     Debug + Sync + Send + 'static
 {
+    /// Blocks until the server is ready to send ForeignSinkRow to foreign sink.
+    fn start(options: &Options) -> Result<Self>
+    where
+        Self: Sized;
+
     /// # Failure
     ///
     /// - [SpringError::ForeignSourceTimeout](crate::error::SpringError::ForeignSourceTimeout) when:
