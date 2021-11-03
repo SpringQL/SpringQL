@@ -79,28 +79,23 @@ mod tests {
         test_support::setup::setup_test_logger,
     };
 
-    #[test]
-    fn test_stream_engine_source_sink() {
+    /// Returns sink output in reached order
+    fn t_stream_engine_source_sink(
+        source_inputs: Vec<JsonObject>,
+        n_worker_threads: usize,
+    ) -> Vec<JsonObject> {
         setup_test_logger();
 
-        let json_oracle = JsonObject::fx_trade_oracle();
-        let json_ibm = JsonObject::fx_trade_ibm();
-        let json_google = JsonObject::fx_trade_google();
+        let source_inputs_len = source_inputs.len();
 
-        let source = TestSource::start(vec![
-            json_oracle.clone(),
-            json_ibm.clone(),
-            json_google.clone(),
-        ])
-        .unwrap();
-
+        let source = TestSource::start(source_inputs).unwrap();
         let sink = TestSink::start().unwrap();
 
         let fst_trade_source = StreamName::factory("fst_trade_source");
         let fst_trade_sink = StreamName::factory("fst_trade_sink");
         let pu_trade_source_p1 = PumpName::factory("pu_trade_source_p1");
 
-        let mut engine = StreamEngine::new(2);
+        let mut engine = StreamEngine::new(n_worker_threads);
         engine
             .alter_pipeline(
                 AlterPipelineCommand::fx_create_foreign_stream_trade_with_source_server(
@@ -138,17 +133,36 @@ mod tests {
             ))
             .unwrap();
 
-        let got1 = JsonObject::new(sink.receive().unwrap());
-        let got2 = JsonObject::new(sink.receive().unwrap());
-        let got3 = JsonObject::new(sink.receive().unwrap());
+        let mut received = Vec::new();
+        for _ in 0..source_inputs_len {
+            received.push(JsonObject::new(sink.receive().unwrap()));
+        }
         assert!(matches!(
             sink.receive().unwrap_err(),
             SpringError::Unavailable { .. }
         ));
 
+        received
+    }
+
+    #[test]
+    fn test_stream_engine_source_sink_multi_thread() {
+        setup_test_logger();
+
+        let json_oracle = JsonObject::fx_trade_oracle();
+        let json_ibm = JsonObject::fx_trade_ibm();
+        let json_google = JsonObject::fx_trade_google();
+
+        let received = t_stream_engine_source_sink(
+            vec![json_oracle.clone(), json_ibm.clone(), json_google.clone()],
+            2,
+        );
+
         // a worker might be faster than the other.
-        assert!([json_oracle.clone(), json_ibm.clone(), json_google.clone()].contains(&got1));
-        assert!([json_oracle.clone(), json_ibm.clone(), json_google.clone()].contains(&got2));
-        assert!([json_oracle, json_ibm, json_google].contains(&got3));
+        assert!([json_oracle.clone(), json_ibm.clone(), json_google.clone()]
+            .contains(received.get(0).unwrap()));
+        assert!([json_oracle.clone(), json_ibm.clone(), json_google.clone()]
+            .contains(received.get(1).unwrap()));
+        assert!([json_oracle, json_ibm, json_google].contains(received.get(2).unwrap()));
     }
 }
