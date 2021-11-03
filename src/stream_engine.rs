@@ -146,6 +146,24 @@ mod tests {
     }
 
     #[test]
+    fn test_stream_engine_source_sink_single_thread() {
+        setup_test_logger();
+
+        let json_oracle = JsonObject::fx_trade_oracle();
+        let json_ibm = JsonObject::fx_trade_ibm();
+        let json_google = JsonObject::fx_trade_google();
+
+        let received = t_stream_engine_source_sink(
+            vec![json_oracle.clone(), json_ibm.clone(), json_google.clone()],
+            1,
+        );
+
+        assert_eq!(received.get(0).unwrap(), &json_oracle);
+        assert_eq!(received.get(1).unwrap(), &json_ibm);
+        assert_eq!(received.get(2).unwrap(), &json_google);
+    }
+
+    #[test]
     fn test_stream_engine_source_sink_multi_thread() {
         setup_test_logger();
 
