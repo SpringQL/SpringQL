@@ -76,16 +76,19 @@ mod tests {
             task::{task_graph::TaskGraph, task_id::TaskId},
         },
         stream_engine::dependency_injection::test_di::TestDI,
+        test_support::setup::setup_test_logger,
     };
 
     use super::*;
 
     #[test]
     fn test_query_executor_collect() {
+        setup_test_logger();
+
         let task = TaskId::from_source_server(StreamName::fx_trade_source());
         let pump_trade_p1 = PumpName::fx_trade_p1();
         let downstream_tasks = vec![TaskId::from_pump(pump_trade_p1)];
-        let context = TaskContext::factory(task, downstream_tasks);
+        let context = TaskContext::factory_with_1_level_downstreams(task, downstream_tasks);
 
         // CREATE STREAM trade(
         //   "timestamp" TIMESTAMP NOT NULL AS ROWTIME,
@@ -108,9 +111,9 @@ mod tests {
 
         executor.run_expect::<TestDI>(
             vec![
-                FinalRow::Preserved(Rc::new(Row::fx_trade_oracle())),
-                FinalRow::Preserved(Rc::new(Row::fx_trade_ibm())),
-                FinalRow::Preserved(Rc::new(Row::fx_trade_google())),
+                FinalRow::Preserved(Arc::new(Row::fx_trade_oracle())),
+                FinalRow::Preserved(Arc::new(Row::fx_trade_ibm())),
+                FinalRow::Preserved(Arc::new(Row::fx_trade_google())),
             ],
             &context,
         );

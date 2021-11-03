@@ -6,23 +6,30 @@ pub(in crate::stream_engine) mod stream_node;
 
 use std::{collections::HashMap, sync::Arc};
 
-use petgraph::graph::{DiGraph, NodeIndex};
+use petgraph::{
+    graph::{DiGraph, EdgeReference, NodeIndex},
+    visit::{EdgeRef, IntoEdgeReferences, IntoEdgesDirected},
+};
 use serde::{Deserialize, Serialize};
 
 use self::{edge::Edge, stream_node::StreamNode};
 
 use super::{
-    foreign_stream_model::ForeignStreamModel, pump_model::PumpModel, server_model::ServerModel,
+    foreign_stream_model::ForeignStreamModel,
+    pump_model::PumpModel,
+    server_model::{server_state::ServerState, ServerModel},
     stream_model::StreamModel,
 };
 use crate::{
     error::{Result, SpringError},
-    model::name::StreamName,
-    stream_engine::pipeline::server_model::server_type::ServerType,
+    model::name::{PumpName, StreamName},
+    stream_engine::pipeline::{
+        pump_model::pump_state::PumpState, server_model::server_type::ServerType,
+    },
 };
 use anyhow::anyhow;
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub(in crate::stream_engine) struct PipelineGraph {
     graph: DiGraph<StreamNode, Edge>,
     stream_nodes: HashMap<StreamName, NodeIndex>,
@@ -61,6 +68,15 @@ impl PipelineGraph {
         Ok(())
     }
 
+    pub(super) fn get_pump(&self, name: &PumpName) -> Result<&PumpModel> {
+        let edge = self._find_pump(name)?;
+        if let Edge::Pump(pump) = edge.weight() {
+            Ok(pump)
+        } else {
+            unreachable!()
+        }
+    }
+
     pub(super) fn add_pump(&mut self, pump: PumpModel) -> Result<()> {
         let upstream_node = self.stream_nodes.get(pump.upstream()).ok_or_else(|| {
             SpringError::Sql(anyhow!(
@@ -79,6 +95,15 @@ impl PipelineGraph {
             .graph
             .add_edge(*upstream_node, *downstream_node, Edge::Pump(pump));
 
+        Ok(())
+    }
+
+    pub(super) fn remove_pump(&mut self, name: &PumpName) -> Result<()> {
+        let edge_idx = {
+            let edge = self._find_pump(name)?;
+            edge.id()
+        };
+        self.graph.remove_edge(edge_idx);
         Ok(())
     }
 
@@ -120,7 +145,57 @@ impl PipelineGraph {
         Ok(())
     }
 
+    pub(in crate::stream_engine) fn source_server_state(
+        &self,
+        serving_foreign_stream: &StreamName,
+    ) -> ServerState {
+        let fst_node = self
+            .graph
+            .node_indices()
+            .find(|n| &self.graph[*n].name() == serving_foreign_stream)
+            .unwrap();
+
+        if self._at_least_one_started_path_to_sink(fst_node) {
+            ServerState::Started
+        } else {
+            ServerState::Stopped
+        }
+    }
+
     pub(in crate::stream_engine) fn as_petgraph(&self) -> &DiGraph<StreamNode, Edge> {
         &self.graph
+    }
+
+    fn _find_pump(&self, name: &PumpName) -> Result<EdgeReference<Edge>> {
+        self.graph
+            .edge_references()
+            .find_map(|edge| {
+                if let Edge::Pump(pump) = edge.weight() {
+                    (pump.name() == name).then(|| edge)
+                } else {
+                    None
+                }
+            })
+            .ok_or_else(|| {
+                SpringError::Sql(anyhow!(r#"pump "{}" does not exist in pipeline"#, name))
+            })
+    }
+
+    fn _at_least_one_started_path_to_sink(&self, node: NodeIndex) -> bool {
+        let mut outgoing_edges = self
+            .graph
+            .edges_directed(node, petgraph::Direction::Outgoing);
+
+        if outgoing_edges
+            .clone()
+            .any(|edge| matches!(edge.weight(), Edge::Sink(_)))
+        {
+            true
+        } else {
+            outgoing_edges.any(|started_edge| {
+                let next_node = started_edge.target();
+                self._at_least_one_started_path_to_sink(next_node)
+            })
+        }
     }
 }

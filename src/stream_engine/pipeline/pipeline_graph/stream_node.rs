@@ -9,7 +9,7 @@ use crate::{
     },
 };
 
-#[derive(Eq, PartialEq, Debug, Serialize, Deserialize)]
+#[derive(Clone, Eq, PartialEq, Debug, Serialize, Deserialize)]
 pub(in crate::stream_engine) enum StreamNode {
     Native(Arc<StreamModel>),
     Foreign(Arc<ForeignStreamModel>),

@@ -1,4 +1,5 @@
 //! Execute ServerModel.
 
-pub(in crate::stream_engine::autonomous_executor) mod sink;
-pub(in crate::stream_engine::autonomous_executor) mod source;
+pub(in crate::stream_engine) mod server_repository;
+pub(in crate::stream_engine) mod sink;
+pub(in crate::stream_engine) mod source;

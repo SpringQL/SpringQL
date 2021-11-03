@@ -9,11 +9,11 @@ use std::fmt::Debug;
 /// Compile-time dependency injection.
 ///
 /// FIXME remove dependent traits
-pub(super) trait DependencyInjection: 'static {
+pub(crate) trait DependencyInjection: Debug + 'static {
     // Mainly for testable mock
     type CurrentTimestampType: CurrentTimestamp;
 
     // Autonomous executor
-    type SchedulerType: Scheduler + Debug + Default + Sync + Send + 'static;
+    type SchedulerType: Scheduler;
     type RowRepositoryType: RowRepository;
 }

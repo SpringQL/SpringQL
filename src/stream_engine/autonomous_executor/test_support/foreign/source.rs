@@ -5,15 +5,13 @@ use std::io::Write;
 use std::net::{IpAddr, Shutdown, SocketAddr, TcpListener, TcpStream};
 use std::thread::{self, JoinHandle};
 
-pub struct TestSource {
+pub(in crate::stream_engine) struct TestSource {
     my_addr: SocketAddr,
     conn_thread: JoinHandle<()>,
 }
 
 impl TestSource {
-    pub(in crate::stream_engine::autonomous_executor) fn start(
-        inputs: Vec<JsonObject>,
-    ) -> Result<Self> {
+    pub(in crate::stream_engine) fn start(inputs: Vec<JsonObject>) -> Result<Self> {
         let listener = TcpListener::bind("127.0.0.1:0").unwrap();
         let my_addr = listener.local_addr().unwrap();
 
@@ -40,7 +38,7 @@ impl TestSource {
     }
 
     fn stream_handler(mut stream: TcpStream, inputs: Vec<JsonObject>) -> Result<()> {
-        eprintln!(
+        log::info!(
             "[TestSource] Connection from {}",
             stream.peer_addr().unwrap()
         );
@@ -50,10 +48,10 @@ impl TestSource {
             json_s.push('\n');
             stream.write_all(json_s.as_bytes()).unwrap();
 
-            eprint!("[TestSource] Sent: {}", json_s);
+            log::info!("[TestSource] Sent: {}", json_s);
         }
 
-        eprintln!("[TestSource] No message left. Wait forever...");
+        log::info!("[TestSource] No message left. Wait forever...");
         thread::sleep(Duration::hours(1).to_std().unwrap());
 
         Ok(())

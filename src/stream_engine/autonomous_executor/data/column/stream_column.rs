@@ -15,7 +15,7 @@ use std::{sync::Arc, vec};
 /// Column values in a stream.
 ///
 /// Should keep as small size as possible because all Row has this inside.
-#[derive(PartialEq, Debug)]
+#[derive(Clone, PartialEq, Debug)]
 pub(in crate::stream_engine::autonomous_executor) struct StreamColumns {
     stream_shape: Arc<StreamShape>,
 

@@ -9,7 +9,7 @@ use crate::{
 };
 
 #[derive(Clone, Eq, PartialEq, Debug, new)]
-pub(in crate::stream_engine::autonomous_executor) struct JsonObject(serde_json::Value);
+pub(in crate::stream_engine) struct JsonObject(serde_json::Value);
 
 impl ToString for JsonObject {
     fn to_string(&self) -> String {

@@ -18,7 +18,7 @@ use super::format::json::JsonObject;
 pub(in crate::stream_engine) struct ForeignSourceRow(JsonObject);
 
 impl ForeignSourceRow {
-    pub(in crate::stream_engine::autonomous_executor) fn from_json(json: JsonObject) -> Self {
+    pub(in crate::stream_engine) fn from_json(json: JsonObject) -> Self {
         Self(json)
     }
 

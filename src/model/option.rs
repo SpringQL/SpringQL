@@ -10,7 +10,7 @@ use std::collections::HashMap;
 use self::options_builder::OptionsBuilder;
 
 /// Options in CREATE statement.
-#[derive(Eq, PartialEq, Debug, Serialize, Deserialize)]
+#[derive(Clone, Eq, PartialEq, Debug, Serialize, Deserialize)]
 pub(crate) struct Options(HashMap<String, String>);
 
 impl Options {

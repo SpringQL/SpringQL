@@ -70,6 +70,16 @@ impl Row {
     ) -> Result<&SqlValue> {
         self.cols.get(column_name)
     }
+
+    /// # TODO
+    ///
+    /// Never clone Row. RowRepository should return Row for sink to reduce copy: <https://gh01.base.toyota-tokyo.tech/SpringQL/SpringQL/issues/42>
+    pub(in crate::stream_engine::autonomous_executor) fn fixme_clone(&self) -> Self {
+        Self {
+            arrival_rowtime: self.arrival_rowtime.clone(),
+            cols: self.cols.clone(),
+        }
+    }
 }
 
 impl PartialOrd for Row {

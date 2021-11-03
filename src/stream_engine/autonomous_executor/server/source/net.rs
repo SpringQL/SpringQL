@@ -9,12 +9,15 @@ use anyhow::Context;
 use crate::{
     error::{foreign_info::ForeignInfo, Result, SpringError},
     model::option::{server_options::NetServerOptions, Options},
-    stream_engine::autonomous_executor::data::foreign_row::{
-        foreign_source_row::ForeignSourceRow, format::json::JsonObject,
+    stream_engine::{
+        autonomous_executor::data::foreign_row::{
+            foreign_source_row::ForeignSourceRow, format::json::JsonObject,
+        },
+        pipeline::server_model::server_type::ServerType,
     },
 };
 
-use super::{SourceServerActive, SourceServerStandby};
+use super::{SourceServerActive, SourceServerSeed, SourceServerStandby};
 
 // TODO config
 const CONNECT_TIMEOUT_SECS: u64 = 1;
@@ -26,14 +29,15 @@ enum Protocol {
 }
 
 #[derive(Debug)]
-pub(in crate::stream_engine::autonomous_executor) struct NetSourceServerStandby {
+pub(in crate::stream_engine) struct NetSourceServerStandby {
     options: NetServerOptions,
 }
 
 #[derive(Debug)]
-pub(in crate::stream_engine::autonomous_executor) struct NetSourceServerActive {
+pub(in crate::stream_engine) struct NetSourceServerActive {
     foreign_addr: SocketAddr,
     tcp_stream_reader: BufReader<TcpStream>, // TODO UDP
+    options: NetServerOptions,
 }
 
 impl SourceServerStandby for NetSourceServerStandby {
@@ -52,6 +56,7 @@ impl SourceServerStandby for NetSourceServerStandby {
     ///
     /// - [SpringError::ForeignIo](crate::error::SpringError::ForeignIo)
     fn start(self) -> Result<NetSourceServerActive> {
+        let options = self.options.clone();
         let sock_addr = SocketAddr::new(self.options.remote_host, self.options.remote_port);
 
         let tcp_stream =
@@ -71,9 +76,12 @@ impl SourceServerStandby for NetSourceServerStandby {
 
         let tcp_stream_reader = BufReader::new(tcp_stream);
 
+        log::info!("[NetSourceServerActive] Ready to read from {}", sock_addr);
+
         Ok(NetSourceServerActive {
             tcp_stream_reader,
             foreign_addr: sock_addr,
+            options,
         })
     }
 }
