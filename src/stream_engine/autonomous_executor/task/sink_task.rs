@@ -3,9 +3,13 @@ use std::sync::{Arc, Mutex};
 use super::task_state::TaskState;
 use super::{task_context::TaskContext, task_id::TaskId};
 use crate::error::Result;
-use crate::stream_engine::pipeline::server_model::server_type::ServerType;
+use crate::model::name::ServerName;
 use crate::stream_engine::autonomous_executor::server::sink::net::NetSinkServerStandby;
-use crate::stream_engine::autonomous_executor::server::sink::{SinkServerActive, SinkServerStandby};
+use crate::stream_engine::autonomous_executor::server::sink::{
+    SinkServerActive, SinkServerStandby,
+};
+use crate::stream_engine::pipeline::server_model;
+use crate::stream_engine::pipeline::server_model::server_type::ServerType;
 use crate::stream_engine::{
     autonomous_executor::{
         data::{foreign_row::foreign_sink_row::ForeignSinkRow, row::Row},
@@ -18,27 +22,15 @@ use crate::stream_engine::{
 #[derive(Debug)]
 pub(crate) struct SinkTask {
     id: TaskId,
-    state: TaskState,
-
-    /// 1 server can be shared to 2 or more foreign streams.
-    downstream_server: Arc<Mutex<Box<dyn SinkServerActive>>>,
+    server_name: ServerName,
 }
 
 impl SinkTask {
-    pub(in crate::stream_engine) fn new(server: &ServerModel) -> Result<Self> {
-        let id = TaskId::from_sink_server(server.serving_foreign_stream().name().clone());
-        let downstream_server = match server.server_type() {
-            ServerType::SinkNet => {
-                let server_standby = NetSinkServerStandby::new(server.options())?;
-                let server_active = server_standby.start()?;
-                Box::new(server_active)
-            }
-            ServerType::SourceNet => unreachable!("source type server ({:?}) for SinkTask", server),
-        };
+    pub(in crate::stream_engine) fn new(server_model: &ServerModel) -> Result<Self> {
+        let id = TaskId::from_sink_server(server_model.serving_foreign_stream().name().clone());
         Ok(Self {
             id,
-            state: TaskState::Stopped,
-            downstream_server: Arc::new(Mutex::new(downstream_server)),
+            server_name: server_model.name().clone(),
         })
     }
 
@@ -60,14 +52,21 @@ impl SinkTask {
         let row = row_repo.collect_next(&context.task())?;
         let row = row.fixme_clone(); // Ahhhhhhhhhhhhhh
 
-        self.emit(row)
+        self.emit::<DI>(row, context)
     }
 
-    fn emit(&self, row: Row) -> Result<()> {
+    fn emit<DI: DependencyInjection>(&self, row: Row, context: &TaskContext<DI>) -> Result<()> {
         let f_row = ForeignSinkRow::from(row);
-        self.downstream_server
+
+        let sink_server = context
+            .server_repository()
+            .get_sink_server(&self.server_name);
+
+        sink_server
             .lock()
             .expect("other worker threads sharing the same sink server must not get panic")
-            .send_row(f_row)
+            .send_row(f_row)?;
+
+        Ok(())
     }
 }
