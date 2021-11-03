@@ -2,7 +2,7 @@ use anyhow::Context;
 
 use super::SqlConvertible;
 use crate::error::{Result, SpringError};
-use crate::stream_engine::autonomous_executor::data::value::sql_value::nn_sql_value::NnSqlValue;
+use crate::stream_engine::autonomous_executor::row::value::sql_value::nn_sql_value::NnSqlValue;
 
 impl SqlConvertible for i16 {
     fn into_sql_value(self) -> NnSqlValue {
@@ -68,7 +68,7 @@ impl SqlConvertible for i64 {
 mod tests_i32 {
     use crate::{
         error::Result,
-        stream_engine::autonomous_executor::data::value::sql_value::nn_sql_value::NnSqlValue,
+        stream_engine::autonomous_executor::row::value::sql_value::nn_sql_value::NnSqlValue,
     };
 
     #[test]

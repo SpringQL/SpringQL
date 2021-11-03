@@ -4,7 +4,7 @@ use crate::{
     error::{Result, SpringError},
     model::{column::column_definition::ColumnDefinition, name::ColumnName},
     stream_engine::{
-        autonomous_executor::data::{
+        autonomous_executor::row::{
             column_values::ColumnValues, timestamp::Timestamp, value::sql_value::SqlValue,
         },
         pipeline::stream_model::stream_shape::StreamShape,
@@ -144,7 +144,7 @@ impl IntoIterator for StreamColumns {
 
 #[cfg(test)]
 mod tests {
-    use crate::stream_engine::autonomous_executor::data::value::sql_value::nn_sql_value::NnSqlValue;
+    use crate::stream_engine::autonomous_executor::row::value::sql_value::nn_sql_value::NnSqlValue;
 
     use super::*;
 

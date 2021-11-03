@@ -7,7 +7,7 @@ use super::{
 };
 use crate::error::Result;
 use crate::model::name::ColumnName;
-use crate::stream_engine::autonomous_executor::data::value::sql_value::nn_sql_value::NnSqlValue;
+use crate::stream_engine::autonomous_executor::row::value::sql_value::nn_sql_value::NnSqlValue;
 use crate::stream_engine::dependency_injection::DependencyInjection;
 
 pub(in crate::stream_engine) use repository::{NaiveRowRepository, RowRepository};
@@ -32,7 +32,7 @@ impl Row {
     where
         DI: DependencyInjection,
     {
-        use crate::stream_engine::autonomous_executor::data::timestamp::current_timestamp::CurrentTimestamp;
+        use crate::stream_engine::autonomous_executor::row::timestamp::current_timestamp::CurrentTimestamp;
 
         let arrival_rowtime = if cols.promoted_rowtime().is_some() {
             None

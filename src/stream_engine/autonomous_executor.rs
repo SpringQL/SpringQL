@@ -1,8 +1,8 @@
 pub(in crate::stream_engine) mod server_instance;
 pub(in crate::stream_engine) mod task;
 
-pub(super) mod data;
 pub(self) mod exec;
+pub(super) mod row;
 
 mod scheduler;
 mod worker_pool;
@@ -10,7 +10,7 @@ mod worker_pool;
 use crate::error::Result;
 use std::sync::{Arc, RwLock};
 
-pub(in crate::stream_engine) use data::{
+pub(in crate::stream_engine) use row::{
     CurrentTimestamp, NaiveRowRepository, RowRepository, Timestamp,
 };
 pub(in crate::stream_engine) use scheduler::{FlowEfficientScheduler, Scheduler};

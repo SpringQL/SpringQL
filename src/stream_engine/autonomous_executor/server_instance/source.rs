@@ -1,6 +1,6 @@
 use crate::{
     error::Result, model::option::Options,
-    stream_engine::autonomous_executor::data::foreign_row::foreign_source_row::ForeignSourceRow,
+    stream_engine::autonomous_executor::row::foreign_row::foreign_source_row::ForeignSourceRow,
 };
 use std::fmt::Debug;
 

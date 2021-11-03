@@ -73,7 +73,7 @@ mod tests {
         error::SpringError,
         model::name::{PumpName, StreamName},
         stream_engine::autonomous_executor::{
-            data::foreign_row::format::json::JsonObject, test_support::foreign::sink::TestSink,
+            row::foreign_row::format::json::JsonObject, test_support::foreign::sink::TestSink,
         },
         test_support::setup::setup_test_logger,
     };

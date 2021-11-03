@@ -4,7 +4,7 @@ use std::sync::{Arc, Mutex};
 use anyhow::Context;
 
 use crate::error::{Result, SpringError};
-use crate::stream_engine::autonomous_executor::data::row::Row;
+use crate::stream_engine::autonomous_executor::row::row::Row;
 use crate::stream_engine::autonomous_executor::task::task_id::TaskId;
 
 use super::RowRepository;

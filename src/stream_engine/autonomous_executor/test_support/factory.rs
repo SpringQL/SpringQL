@@ -8,7 +8,7 @@ use crate::{
     },
     stream_engine::{
         autonomous_executor::{
-            data::{
+            row::{
                 column::stream_column::StreamColumns,
                 column_values::ColumnValues,
                 foreign_row::format::json::JsonObject,

@@ -73,7 +73,7 @@ mod tests {
         stream_engine::{autonomous_executor::Timestamp, dependency_injection::test_di::TestDI},
         stream_engine::{
             autonomous_executor::{
-                data::{row::Row, value::sql_value::SqlValue},
+                row::{row::Row, value::sql_value::SqlValue},
                 task::task_id::TaskId,
             },
             RowRepository,

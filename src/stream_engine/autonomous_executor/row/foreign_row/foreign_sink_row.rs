@@ -1,4 +1,4 @@
-use crate::stream_engine::autonomous_executor::data::row::Row;
+use crate::stream_engine::autonomous_executor::row::row::Row;
 
 use super::format::json::JsonObject;
 
@@ -35,7 +35,7 @@ mod tests {
 
     use crate::{
         model::name::ColumnName,
-        stream_engine::autonomous_executor::{data::value::sql_value::SqlValue, Timestamp},
+        stream_engine::autonomous_executor::{row::value::sql_value::SqlValue, Timestamp},
     };
 
     use super::*;

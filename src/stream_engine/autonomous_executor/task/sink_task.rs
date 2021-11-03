@@ -4,7 +4,7 @@ use crate::error::Result;
 use crate::model::name::ServerName;
 use crate::stream_engine::{
     autonomous_executor::{
-        data::{foreign_row::foreign_sink_row::ForeignSinkRow, row::Row},
+        row::{foreign_row::foreign_sink_row::ForeignSinkRow, row::Row},
         RowRepository,
     },
     dependency_injection::DependencyInjection,

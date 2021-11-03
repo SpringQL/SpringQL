@@ -9,7 +9,7 @@ use anyhow::Context;
 use crate::{
     error::{foreign_info::ForeignInfo, Result, SpringError},
     model::option::{server_options::NetServerOptions, Options},
-    stream_engine::autonomous_executor::data::foreign_row::{
+    stream_engine::autonomous_executor::row::foreign_row::{
         foreign_source_row::ForeignSourceRow, format::json::JsonObject,
     },
 };
@@ -116,7 +116,7 @@ impl NetSourceServerInstance {}
 mod tests {
     use super::*;
     use crate::model::option::options_builder::OptionsBuilder;
-    use crate::stream_engine::autonomous_executor::data::foreign_row::format::json::JsonObject;
+    use crate::stream_engine::autonomous_executor::row::foreign_row::format::json::JsonObject;
     use crate::stream_engine::autonomous_executor::test_support::foreign::source::TestSource;
 
     #[test]

@@ -11,7 +11,7 @@ use crate::{
     },
     stream_engine::{
         autonomous_executor::{
-            data::{
+            row::{
                 column::stream_column::StreamColumns,
                 foreign_row::{
                     foreign_sink_row::ForeignSinkRow, foreign_source_row::ForeignSourceRow,

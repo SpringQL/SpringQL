@@ -3,7 +3,7 @@ use std::sync::Arc;
 
 use crate::error::Result;
 use crate::model::name::ServerName;
-use crate::stream_engine::autonomous_executor::data::row::Row;
+use crate::stream_engine::autonomous_executor::row::row::Row;
 use crate::stream_engine::autonomous_executor::RowRepository;
 use crate::stream_engine::dependency_injection::DependencyInjection;
 use crate::stream_engine::pipeline::foreign_stream_model::ForeignStreamModel;
