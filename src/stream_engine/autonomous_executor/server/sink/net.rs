@@ -62,6 +62,8 @@ impl SinkServerStandby for NetSinkServerStandby {
 
         let tcp_stream_writer = BufWriter::new(tcp_stream);
 
+        log::info!("[NetSinkServerActive] Ready to write into {}", sock_addr);
+
         Ok(NetSinkServerActive {
             tcp_stream_writer,
             foreign_addr: sock_addr,
@@ -73,6 +75,8 @@ impl SinkServerActive for NetSinkServerActive {
     fn send_row(&mut self, row: ForeignSinkRow) -> Result<()> {
         let mut json_s = JsonObject::from(row).to_string();
         json_s.push('\n');
+
+        log::info!("[NetSinkServerActive] Writing message to remote: {}", json_s);
 
         self.tcp_stream_writer
             .write_all(json_s.as_bytes())
