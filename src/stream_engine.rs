@@ -120,9 +120,20 @@ mod tests {
             .unwrap();
         engine
             .alter_pipeline(AlterPipelineCommand::fx_create_pump(
-                pu_trade_source_p1,
+                pu_trade_source_p1.clone(),
                 fst_trade_source,
                 fst_trade_sink,
+            ))
+            .unwrap();
+
+        assert!(matches!(
+            sink.receive().unwrap_err(),
+            SpringError::Unavailable { .. }
+        ));
+
+        engine
+            .alter_pipeline(AlterPipelineCommand::fx_alter_pump_start(
+                pu_trade_source_p1,
             ))
             .unwrap();
 

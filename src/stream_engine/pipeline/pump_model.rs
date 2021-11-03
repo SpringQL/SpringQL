@@ -33,4 +33,11 @@ impl PumpModel {
     pub(in crate::stream_engine) fn downstream(&self) -> &StreamName {
         &self.downstream
     }
+
+    pub(in crate::stream_engine) fn started(&self) -> Self {
+        Self {
+            state: PumpState::Started,
+            ..self.clone()
+        }
+    }
 }

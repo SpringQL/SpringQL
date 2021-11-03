@@ -6,7 +6,10 @@ pub(in crate::stream_engine) mod stream_node;
 
 use std::{collections::HashMap, sync::Arc};
 
-use petgraph::graph::{DiGraph, NodeIndex};
+use petgraph::{
+    graph::{DiGraph, EdgeReference, NodeIndex},
+    visit::{EdgeRef, IntoEdgeReferences},
+};
 use serde::{Deserialize, Serialize};
 
 use self::{edge::Edge, stream_node::StreamNode};
@@ -17,7 +20,7 @@ use super::{
 };
 use crate::{
     error::{Result, SpringError},
-    model::name::StreamName,
+    model::name::{PumpName, StreamName},
     stream_engine::pipeline::server_model::server_type::ServerType,
 };
 use anyhow::anyhow;
@@ -61,6 +64,15 @@ impl PipelineGraph {
         Ok(())
     }
 
+    pub(super) fn get_pump(&self, name: &PumpName) -> Result<&PumpModel> {
+        let edge = self._find_pump(name)?;
+        if let Edge::Pump(pump) = edge.weight() {
+            Ok(pump)
+        } else {
+            unreachable!()
+        }
+    }
+
     pub(super) fn add_pump(&mut self, pump: PumpModel) -> Result<()> {
         let upstream_node = self.stream_nodes.get(pump.upstream()).ok_or_else(|| {
             SpringError::Sql(anyhow!(
@@ -79,6 +91,15 @@ impl PipelineGraph {
             .graph
             .add_edge(*upstream_node, *downstream_node, Edge::Pump(pump));
 
+        Ok(())
+    }
+
+    pub(super) fn remove_pump(&mut self, name: &PumpName) -> Result<()> {
+        let edge_idx = {
+            let edge = self._find_pump(name)?;
+            edge.id()
+        };
+        self.graph.remove_edge(edge_idx);
         Ok(())
     }
 
@@ -122,5 +143,20 @@ impl PipelineGraph {
 
     pub(in crate::stream_engine) fn as_petgraph(&self) -> &DiGraph<StreamNode, Edge> {
         &self.graph
+    }
+
+    pub(super) fn _find_pump(&self, name: &PumpName) -> Result<EdgeReference<Edge>> {
+        self.graph
+            .edge_references()
+            .find_map(|edge| {
+                if let Edge::Pump(pump) = edge.weight() {
+                    (pump.name() == name).then(|| edge)
+                } else {
+                    None
+                }
+            })
+            .ok_or_else(|| {
+                SpringError::Sql(anyhow!(r#"pump "{}" does not exist in pipeline"#, name))
+            })
     }
 }

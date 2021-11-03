@@ -1,9 +1,14 @@
 use super::{
     command::alter_pipeline_command::AlterPipelineCommand,
     dependency_injection::DependencyInjection,
-    pipeline::{self, pump_model::PumpModel, server_model::ServerModel, Pipeline},
+    pipeline::{
+        self,
+        pump_model::{pump_state::PumpState, PumpModel},
+        server_model::ServerModel,
+        Pipeline,
+    },
 };
-use crate::error::Result;
+use crate::{error::Result, model::name::PumpName};
 
 /// Executor of pipeline management.
 ///
@@ -30,6 +35,9 @@ impl ReactiveExecutor {
                 Self::create_foreign_stream(pipeline, server)
             }
             AlterPipelineCommand::CreatePump(pump) => Self::create_pump(pipeline, pump),
+            AlterPipelineCommand::AlterPump { name, state } => {
+                Self::alter_pump(pipeline, name, state)
+            }
         }
     }
 
@@ -42,6 +50,14 @@ impl ReactiveExecutor {
 
     fn create_pump(mut pipeline: Pipeline, pump: PumpModel) -> Result<Pipeline> {
         pipeline.add_pump(pump)?;
+        Ok(pipeline)
+    }
+
+    fn alter_pump(mut pipeline: Pipeline, name: PumpName, state: PumpState) -> Result<Pipeline> {
+        let pump = pipeline.get_pump(&name)?;
+        let new_pump = pump.started();
+        pipeline.remove_pump(&name)?;
+        pipeline.add_pump(new_pump)?;
         Ok(pipeline)
     }
 }
