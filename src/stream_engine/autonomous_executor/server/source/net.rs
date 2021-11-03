@@ -71,6 +71,8 @@ impl SourceServerStandby for NetSourceServerStandby {
 
         let tcp_stream_reader = BufReader::new(tcp_stream);
 
+        log::info!("[NetSourceServerActive] Ready to read from {}", sock_addr);
+
         Ok(NetSourceServerActive {
             tcp_stream_reader,
             foreign_addr: sock_addr,

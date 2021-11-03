@@ -62,6 +62,8 @@ impl SourceTask {
         &self,
         context: &TaskContext<DI>,
     ) -> Result<()> {
+        debug_assert!(!context.downstream_tasks().is_empty());
+
         let row = self.collect_next::<DI>()?;
         context
             .row_repository()
