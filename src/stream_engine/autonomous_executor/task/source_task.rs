@@ -121,7 +121,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_foreign_input_pump() -> Result<()> {
+    fn test_source_task() -> Result<()> {
         let j1 = JsonObject::fx_city_temperature_tokyo();
         let j2 = JsonObject::fx_city_temperature_osaka();
         let j3 = JsonObject::fx_city_temperature_london();
@@ -130,22 +130,24 @@ mod tests {
 
         let stream = Arc::new(ForeignStreamModel::fx_city_temperature_source());
         let server = ServerModel::fx_net_source(stream, test_source.host_ip(), test_source.port());
-        let pump = SourceTask::new(server);
+
+        let mut source = SourceTask::new(server);
+        source.start()?;
 
         assert_eq!(
-            pump.collect_next::<TestDI>()?,
+            source.collect_next::<TestDI>()?,
             Row::fx_city_temperature_tokyo()
         );
         assert_eq!(
-            pump.collect_next::<TestDI>()?,
+            source.collect_next::<TestDI>()?,
             Row::fx_city_temperature_osaka()
         );
         assert_eq!(
-            pump.collect_next::<TestDI>()?,
+            source.collect_next::<TestDI>()?,
             Row::fx_city_temperature_london()
         );
         assert!(matches!(
-            pump.collect_next::<TestDI>().unwrap_err(),
+            source.collect_next::<TestDI>().unwrap_err(),
             SpringError::ForeignSourceTimeout { .. }
         ));
 
