@@ -101,7 +101,7 @@ use std::{collections::HashSet, sync::Arc};
 
 use petgraph::{
     graph::{DiGraph, EdgeReference, NodeIndex},
-    visit::EdgeRef,
+    visit::{EdgeRef, IntoEdgesDirected},
 };
 
 use crate::{
@@ -230,6 +230,7 @@ impl FlowEfficientScheduler {
             let task = incoming_edge.weight();
             if matches!(task.state(), TaskState::Stopped)
                 || !Self::_all_parents_started(incoming_edge, graph)
+                || Self::_orphan_source_task(incoming_edge, graph)
             {
                 // Do not scheduler parent tasks even if they are STARTED (until all tasks throughout source-to-sink get STARTED)
                 // in order not to create buffered WIP rows.
@@ -256,6 +257,27 @@ impl FlowEfficientScheduler {
         let parent_node = edge_ref.source();
         let mut parent_edges = graph.edges_directed(parent_node, petgraph::Direction::Incoming);
         parent_edges.all(|parent_edge| matches!(parent_edge.weight().state(), TaskState::Started))
+    }
+
+    fn _orphan_source_task(
+        edge_ref: EdgeReference<Arc<Task>>,
+        graph: &DiGraph<StreamName, Arc<Task>>,
+    ) -> bool {
+        Self::_is_root(edge_ref.source(), graph) && Self::_is_leaf(edge_ref.target(), graph)
+    }
+
+    fn _is_root(node: NodeIndex, graph: &DiGraph<StreamName, Arc<Task>>) -> bool {
+        graph
+            .edges_directed(node, petgraph::Direction::Incoming)
+            .next()
+            .is_none()
+    }
+
+    fn _is_leaf(node: NodeIndex, graph: &DiGraph<StreamName, Arc<Task>>) -> bool {
+        graph
+            .edges_directed(node, petgraph::Direction::Outgoing)
+            .next()
+            .is_none()
     }
 }
 
