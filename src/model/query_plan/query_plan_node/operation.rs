@@ -1,7 +1,5 @@
 use chrono::Duration;
 
-use crate::model::name::PumpName;
-
 pub(crate) trait Operation {}
 
 /// Leaf operations, which generates rows from a stream

@@ -4,15 +4,11 @@
 //!
 //! Tasks are mapped to TaskGraph's edges. StreamName's are mapped to its nodes.
 
-use std::sync::{Arc, RwLock};
+use std::sync::Arc;
 
-use petgraph::{
-    graph::{DiGraph, NodeIndex},
-    visit::{EdgeRef, IntoEdgeReferences, IntoEdgesDirected},
-};
+use petgraph::{graph::DiGraph, visit::EdgeRef};
 
 use crate::{
-    error::{Result, SpringError},
     model::name::StreamName,
     stream_engine::{
         autonomous_executor::task::pump_task::PumpTask,

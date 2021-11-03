@@ -1,8 +1,6 @@
 use super::{
     command::alter_pipeline_command::AlterPipelineCommand,
-    dependency_injection::DependencyInjection,
     pipeline::{
-        self,
         pump_model::{pump_state::PumpState, PumpModel},
         server_model::ServerModel,
         Pipeline,

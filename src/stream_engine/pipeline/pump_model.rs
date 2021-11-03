@@ -1,9 +1,6 @@
 pub(crate) mod pump_state;
 
-use crate::{
-    model::name::{PumpName, StreamName},
-    stream_engine::autonomous_executor::task::Task,
-};
+use crate::model::name::{PumpName, StreamName};
 use serde::{Deserialize, Serialize};
 
 use self::pump_state::PumpState;

@@ -1,21 +1,10 @@
 use crate::{
-    error::Result,
-    model::option::Options,
-    stream_engine::{
-        autonomous_executor::data::foreign_row::foreign_source_row::ForeignSourceRow,
-        pipeline::server_model::server_type::ServerType,
-    },
+    error::Result, model::option::Options,
+    stream_engine::autonomous_executor::data::foreign_row::foreign_source_row::ForeignSourceRow,
 };
-use serde::{Deserialize, Serialize};
 use std::fmt::Debug;
 
 pub(in crate::stream_engine) mod net;
-
-#[derive(Serialize, Deserialize, new)]
-pub(in crate::stream_engine) struct SourceServerSeed {
-    pub(in crate::stream_engine) server_type: ServerType,
-    pub(in crate::stream_engine) options: Options,
-}
 
 pub(in crate::stream_engine) trait SourceServerStandby {
     type Act: SourceServerActive + Sized;

@@ -1,6 +1,6 @@
 use std::{
     io::{self, BufRead, BufReader},
-    net::{IpAddr, SocketAddr, TcpStream},
+    net::{SocketAddr, TcpStream},
     time::Duration,
 };
 
@@ -9,15 +9,12 @@ use anyhow::Context;
 use crate::{
     error::{foreign_info::ForeignInfo, Result, SpringError},
     model::option::{server_options::NetServerOptions, Options},
-    stream_engine::{
-        autonomous_executor::data::foreign_row::{
-            foreign_source_row::ForeignSourceRow, format::json::JsonObject,
-        },
-        pipeline::server_model::server_type::ServerType,
+    stream_engine::autonomous_executor::data::foreign_row::{
+        foreign_source_row::ForeignSourceRow, format::json::JsonObject,
     },
 };
 
-use super::{SourceServerActive, SourceServerSeed, SourceServerStandby};
+use super::{SourceServerActive, SourceServerStandby};
 
 // TODO config
 const CONNECT_TIMEOUT_SECS: u64 = 1;

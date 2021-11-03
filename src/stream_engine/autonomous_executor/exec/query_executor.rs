@@ -1,5 +1,3 @@
-use std::rc::Rc;
-
 use self::{final_row::FinalRow, node_executor_tree::NodeExecutorTree};
 use crate::{
     error::Result,
@@ -71,10 +69,7 @@ mod tests {
                 QueryPlan,
             },
         },
-        stream_engine::autonomous_executor::{
-            data::row::{self, Row},
-            task::{task_graph::TaskGraph, task_id::TaskId},
-        },
+        stream_engine::autonomous_executor::{data::row::Row, task::task_id::TaskId},
         stream_engine::dependency_injection::test_di::TestDI,
         test_support::setup::setup_test_logger,
     };

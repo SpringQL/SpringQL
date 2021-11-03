@@ -1,22 +1,15 @@
 pub(in crate::stream_engine) mod server_state;
 pub(in crate::stream_engine) mod server_type;
 
-use std::sync::{Arc, Mutex};
+use std::sync::Arc;
 
 use serde::{Deserialize, Serialize};
 
 use self::{server_state::ServerState, server_type::ServerType};
 
-use crate::model::{
-    name::{ServerName, StreamName},
-    option::Options,
-};
+use crate::model::{name::ServerName, option::Options};
 
-use super::{
-    foreign_stream_model::ForeignStreamModel,
-    pipeline_graph::{self, PipelineGraph},
-    stream_model::StreamModel,
-};
+use super::{foreign_stream_model::ForeignStreamModel, pipeline_graph::PipelineGraph};
 
 /// See: <https://docs.sqlstream.com/sql-reference-guide/create-statements/createserver/#prebuilt-server-objects-available-in-sserver>
 #[derive(Clone, PartialEq, Eq, Debug, Serialize, Deserialize)]

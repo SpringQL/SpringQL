@@ -1,13 +1,11 @@
 pub(crate) mod naive_row_repository;
 
-use std::{rc::Rc, sync::Arc};
+use std::sync::Arc;
 
 pub(crate) use naive_row_repository::NaiveRowRepository;
 
 use super::Row;
-use crate::{
-    error::Result, model::name::PumpName, stream_engine::autonomous_executor::task::task_id::TaskId,
-};
+use crate::{error::Result, stream_engine::autonomous_executor::task::task_id::TaskId};
 use std::fmt::Debug;
 
 /// Rows in SpringQL are highly re-used around tasks in order to reduce working memory.

@@ -3,7 +3,6 @@ use crate::{
     model::query_plan::query_plan_node::operation::SlidingWindowOperation,
     stream_engine::{
         autonomous_executor::{
-            data::row::Row,
             exec::query_executor::{interm_row::PreservedRow, row_window::RowWindow},
             task::task_context::TaskContext,
             RowRepository,
@@ -12,7 +11,7 @@ use crate::{
     },
 };
 use chrono::Duration;
-use std::{collections::VecDeque, rc::Rc, sync::Arc};
+use std::collections::VecDeque;
 
 #[derive(Debug)]
 pub(in crate::stream_engine::autonomous_executor::exec::query_executor) struct SlidingWindowExecutor
@@ -71,10 +70,7 @@ mod tests {
 
     use crate::{
         model::name::{ColumnName, PumpName},
-        stream_engine::{
-            autonomous_executor::Timestamp,
-            dependency_injection::{test_di::TestDI, DependencyInjection},
-        },
+        stream_engine::{autonomous_executor::Timestamp, dependency_injection::test_di::TestDI},
         stream_engine::{
             autonomous_executor::{
                 data::{row::Row, value::sql_value::SqlValue},

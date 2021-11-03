@@ -1,4 +1,4 @@
-use std::{rc::Rc, sync::Arc};
+use std::sync::Arc;
 
 use crate::{
     model::{
@@ -33,7 +33,6 @@ use crate::{
             Timestamp,
         },
         dependency_injection::{test_di::TestDI, DependencyInjection},
-        pipeline::stream_model::StreamModel,
     },
 };
 

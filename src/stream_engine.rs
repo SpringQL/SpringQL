@@ -21,7 +21,7 @@ mod pipeline;
 mod reactive_executor;
 
 use crate::error::Result;
-use autonomous_executor::{CurrentTimestamp, NaiveRowRepository, RowRepository, Scheduler};
+use autonomous_executor::{CurrentTimestamp, RowRepository, Scheduler};
 
 use self::{
     autonomous_executor::AutonomousExecutor, command::alter_pipeline_command::AlterPipelineCommand,
