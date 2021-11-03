@@ -178,11 +178,16 @@ impl PumpName {
 }
 
 impl<DI: DependencyInjection> TaskContext<DI> {
-    pub(in crate::stream_engine) fn factory(task: TaskId, downstream_tasks: Vec<TaskId>) -> Self {
-        Self::_test_factory(
-            task,
-            downstream_tasks,
-            Arc::new(DI::RowRepositoryType::default()),
-        )
+    pub(in crate::stream_engine) fn factory_with_1_level_downstreams(
+        task: TaskId,
+        downstream_tasks: Vec<TaskId>,
+    ) -> Self {
+        let row_repo = DI::RowRepositoryType::default();
+
+        let mut tasks = downstream_tasks.clone();
+        tasks.push(task.clone());
+        row_repo.reset(tasks);
+
+        Self::_test_factory(task, downstream_tasks, Arc::new(row_repo))
     }
 }
