@@ -822,7 +822,7 @@ impl AlterPipelineCommand {
         upstream: StreamName,
         downstream: StreamName,
     ) -> Self {
-        let pump = PumpModel::fx_passthrough_trade(pump_name, upstream, downstream);
+        let pump = PumpModel::fx_passthrough_trade_stopped(pump_name, upstream, downstream);
         Self::CreatePump(pump)
     }
 
