@@ -193,6 +193,16 @@ impl Scheduler for FlowEfficientScheduler {
         }
 
         self.seq_task_schedule = seq_task_schedule;
+
+        log::debug!(
+            "[FlowEfficientScheduler] new schedule [{}]; from task graph {:?}",
+            self.seq_task_schedule
+                .iter()
+                .map(|task| task.id().to_string())
+                .collect::<Vec<_>>()
+                .join(", "),
+            self.task_graph
+        );
     }
 
     fn task_graph(&self) -> Arc<TaskGraph> {
