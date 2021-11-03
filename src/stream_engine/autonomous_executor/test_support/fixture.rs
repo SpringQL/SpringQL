@@ -157,6 +157,44 @@ impl ForeignSinkRow {
 
 impl Pipeline {
     /// ```text
+    /// (0)--a-->[1]--b(STOPPED)-->[2]--c-->
+    /// ```
+    pub(in crate::stream_engine) fn fx_linear_stopped() -> Self {
+        let test_source = TestSource::start(vec![]).unwrap();
+        let test_sink = TestSink::start().unwrap();
+
+        let fst_1 = Arc::new(ForeignStreamModel::fx_trade_with_name(StreamName::factory(
+            "fst_1",
+        )));
+        let fst_2 = Arc::new(ForeignStreamModel::fx_trade_with_name(StreamName::factory(
+            "fst_2",
+        )));
+
+        let server_a =
+            ServerModel::fx_net_source(fst_1.clone(), test_source.host_ip(), test_source.port());
+        let server_c =
+            ServerModel::fx_net_sink(fst_2.clone(), test_sink.host_ip(), test_sink.port());
+
+        let pu_b = PumpModel::fx_passthrough_trade_stopped(
+            PumpName::factory("pu_b"),
+            fst_1.name().clone(),
+            fst_2.name().clone(),
+        );
+
+        let mut pipeline = Pipeline::default();
+
+        pipeline.add_foreign_stream(fst_1).unwrap();
+        pipeline.add_foreign_stream(fst_2).unwrap();
+
+        pipeline.add_server(server_a).unwrap();
+        pipeline.add_server(server_c).unwrap();
+
+        pipeline.add_pump(pu_b).unwrap();
+
+        pipeline
+    }
+
+    /// ```text
     /// (0)--a-->[1]--b-->[2]--c-->
     /// ```
     pub(in crate::stream_engine) fn fx_linear() -> Self {
@@ -550,6 +588,13 @@ impl ServerModel {
 
 impl PumpModel {
     pub(in crate::stream_engine) fn fx_passthrough_trade(
+        name: PumpName,
+        upstream: StreamName,
+        downstream: StreamName,
+    ) -> Self {
+        Self::new(name, PumpState::Started, upstream, downstream)
+    }
+    pub(in crate::stream_engine) fn fx_passthrough_trade_stopped(
         name: PumpName,
         upstream: StreamName,
         downstream: StreamName,
