@@ -16,6 +16,7 @@ use crate::{
     },
 };
 
+#[allow(clippy::type_complexity)]
 #[derive(Debug, Default)]
 pub(in crate::stream_engine) struct ServerRepository {
     sources: RwLock<HashMap<ServerName, Arc<Mutex<Box<dyn SourceServerActive>>>>>,
