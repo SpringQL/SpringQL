@@ -1,9 +1,14 @@
 use crate::{
     error::Result,
     model::query_plan::query_plan_node::operation::SlidingWindowOperation,
-    stream_engine::autonomous_executor::{
-        data::row::Row,
-        exec::query_executor::{interm_row::PreservedRow, row_window::RowWindow},
+    stream_engine::{
+        autonomous_executor::{
+            data::row::Row,
+            exec::query_executor::{interm_row::PreservedRow, row_window::RowWindow},
+            task::task_context::TaskContext,
+            RowRepository,
+        },
+        dependency_injection::DependencyInjection,
     },
 };
 use chrono::Duration;
@@ -31,10 +36,13 @@ impl SlidingWindowExecutor {
     }
 
     /// Mutates internal window state.
-    pub(in crate::stream_engine::autonomous_executor::exec::query_executor) fn run(
+    pub(in crate::stream_engine::autonomous_executor::exec::query_executor) fn run<
+        DI: DependencyInjection,
+    >(
         &mut self,
-        input: Arc<Row>,
+        context: &TaskContext<DI>,
     ) -> Result<&RowWindow> {
+        let input = context.row_repository().collect_next(&context.task())?;
         let input_ts = input.rowtime();
         let lower_bound_ts = input_ts - self.window_width;
 
@@ -85,8 +93,6 @@ mod tests {
             input: Row,               // PK: timestamp
             expected: Vec<Timestamp>, // PKs; FIFO (left is the latest pushed)
         }
-
-        let row_repo = <TestDI as DependencyInjection>::RowRepositoryType::default();
 
         let pump = PumpName::fx_trade_window();
         let task = TaskId::from_pump(pump);
@@ -212,9 +218,18 @@ mod tests {
             expected,
         } in test_cases
         {
-            row_repo.emit_owned(row, &[task.clone()]).unwrap();
-            let in_row = row_repo.collect_next(&task).unwrap();
-            let window = executor.run(in_row).unwrap();
+            let context = TaskContext::<TestDI>::factory_with_1_level_downstreams(
+                task.clone(),
+                vec![TaskId::from_pump(PumpName::new(
+                    "pu_dummy_window_output".to_string(),
+                ))],
+            );
+            context
+                .row_repository()
+                .emit_owned(row, &[task.clone()])
+                .unwrap();
+
+            let window = executor.run(&context).unwrap();
 
             let got_pks = window
                 .inner()
