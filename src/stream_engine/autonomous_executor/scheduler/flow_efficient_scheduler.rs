@@ -271,27 +271,6 @@ impl FlowEfficientScheduler {
         parent_edges
             .all(|parent_edge| matches!(parent_edge.weight().state(), TaskState::Started))
     }
-
-    fn _orphan_source_task(
-        edge_ref: EdgeReference<Arc<Task>>,
-        graph: &DiGraph<StreamName, Arc<Task>>,
-    ) -> bool {
-        Self::_is_root(edge_ref.source(), graph) && Self::_is_leaf(edge_ref.target(), graph)
-    }
-
-    fn _is_root(node: NodeIndex, graph: &DiGraph<StreamName, Arc<Task>>) -> bool {
-        graph
-            .edges_directed(node, petgraph::Direction::Incoming)
-            .next()
-            .is_none()
-    }
-
-    fn _is_leaf(node: NodeIndex, graph: &DiGraph<StreamName, Arc<Task>>) -> bool {
-        graph
-            .edges_directed(node, petgraph::Direction::Outgoing)
-            .next()
-            .is_none()
-    }
 }
 
 #[cfg(test)]
