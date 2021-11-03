@@ -19,6 +19,7 @@ use std::{collections::HashSet, sync::Arc};
 use crate::{
     error::{Result, SpringError},
     model::name::PumpName,
+    stream_engine::pipeline::pipeline_graph::edge::Edge,
 };
 use serde::{Deserialize, Serialize};
 
@@ -48,7 +49,7 @@ impl Pipeline {
     ///
     /// - [SpringError::Sql](crate::error::SpringError::Sql) when:
     ///   - Pump is not registered in pipeline
-    pub(super) fn get_pump(& self, pump: &PumpName) -> Result<&PumpModel> {
+    pub(super) fn get_pump(&self, pump: &PumpName) -> Result<&PumpModel> {
         self.graph.get_pump(pump)
     }
 
@@ -103,6 +104,17 @@ impl Pipeline {
     pub(super) fn add_server(&mut self, server: ServerModel) -> Result<()> {
         self.update_version();
         self.graph.add_server(server)
+    }
+
+    pub(super) fn all_servers(&self) -> Vec<&ServerModel> {
+        self.graph
+            .as_petgraph()
+            .edge_references()
+            .filter_map(|edge| match edge.weight() {
+                Edge::Pump(_) => None,
+                Edge::Source(s) | Edge::Sink(s) => Some(s),
+            })
+            .collect()
     }
 
     /// # Failure

@@ -23,50 +23,50 @@ pub(in crate::stream_engine) struct ServerRepository {
 }
 
 impl ServerRepository {
+    /// Do nothing if a server with the same name already exists.
+    ///
     /// # Failures
     ///
-    /// - [SpringError::ForeignIo](crate::error::SpringError::ForeignIo) whem:
+    /// - [SpringError::ForeignIo](crate::error::SpringError::ForeignIo) when:
     ///   - failed to start server.
-    ///
-    /// # Panics
-    ///
-    /// Same named server_model is already registered
     pub(in crate::stream_engine::autonomous_executor) fn register(
         &self,
         server_model: &ServerModel,
     ) -> Result<()> {
+
+        let mut sources = self
+            .sources
+            .write()
+            .expect("another thread sharing the same internal got panic");
+        let mut sinks = self
+            .sinks
+            .write()
+            .expect("another thread sharing the same internal got panic");
+
         match server_model.server_type() {
             ServerType::SourceNet => {
-                let server = NetSourceServerStandby::new(server_model.options())?;
-                let server = server.start()?;
-                let server = Box::new(server);
-                let server = Arc::new(Mutex::new(server as Box<dyn SourceServerActive>));
-                if self
-                    .sources
-                    .write()
-                    .expect("another thread sharing the same internal got panic")
-                    .insert(server_model.name().clone(), server)
-                    .is_some()
-                {
-                    panic!("server_model with same name is already registered");
+                if sources.get(server_model.name()).is_some() {
+                    Ok(())
                 } else {
+                    let server = NetSourceServerStandby::new(server_model.options())?;
+                    let server = server.start()?;
+                    let server = Box::new(server);
+                    let server = Arc::new(Mutex::new(server as Box<dyn SourceServerActive>));
+                    let _ = sources.insert(server_model.name().clone(), server);
+                    log::debug!("[ServerRepository] registered source server: {}", server_model.name());
                     Ok(())
                 }
             }
             ServerType::SinkNet => {
-                let server = NetSinkServerStandby::new(server_model.options())?;
-                let server = server.start()?;
-                let server = Box::new(server);
-                let server = Arc::new(Mutex::new(server as Box<dyn SinkServerActive>));
-                if self
-                    .sinks
-                    .write()
-                    .expect("another thread sharing the same internal got panic")
-                    .insert(server_model.name().clone(), server)
-                    .is_some()
-                {
-                    panic!("server_model with same name is already registered");
+                if sinks.get(server_model.name()).is_some() {
+                    Ok(())
                 } else {
+                    let server = NetSinkServerStandby::new(server_model.options())?;
+                    let server = server.start()?;
+                    let server = Box::new(server);
+                    let server = Arc::new(Mutex::new(server as Box<dyn SinkServerActive>));
+                    let _ = sinks.insert(server_model.name().clone(), server);
+                    log::debug!("[ServerRepository] registered sink server: {}", server_model.name());
                     Ok(())
                 }
             }

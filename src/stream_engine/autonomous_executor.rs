@@ -42,6 +42,7 @@ where
     worker_pool: WorkerPool,
 
     row_repo: Arc<DI::RowRepositoryType>,
+    server_repo: Arc<ServerRepository>,
 }
 
 impl<DI> AutonomousExecutor<DI>
@@ -63,9 +64,10 @@ where
                 n_worker_threads,
                 scheduler_read,
                 row_repo.clone(),
-                server_repo,
+                server_repo.clone(),
             ),
             row_repo,
+            server_repo,
         }
     }
 
@@ -79,6 +81,12 @@ where
         // 3. (Worker cannot get read lock to schedule to start next task)
 
         self.row_repo.reset(scheduler.task_graph().all_tasks());
+
+        pipeline
+            .all_servers()
+            .into_iter()
+            .try_for_each(|server_model| self.server_repo.register(server_model))?;
+
         scheduler.notify_pipeline_update(pipeline)
     }
 }
