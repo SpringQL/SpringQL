@@ -20,12 +20,19 @@ use super::task_id::TaskId;
 use super::task_state::TaskState;
 
 #[derive(Debug)]
+enum SourceTaskState {
+    Stopped,
+    Started {
+        /// 1 server can be shared to 2 or more foreign streams.
+        upstream_server: Arc<Mutex<Box<dyn SourceServerActive>>>,
+    },
+}
+
+#[derive(Debug)]
 pub(crate) struct SourceTask {
     id: TaskId,
-
-    /// 1 server can be shared to 2 or more foreign streams.
-    upstream_server: Arc<Mutex<Box<dyn SourceServerActive>>>,
-
+    server_model: ServerModel,
+    state: SourceTaskState,
     downstream: Arc<ForeignStreamModel>,
 }
 
@@ -35,27 +42,38 @@ impl SourceTask {
     }
 
     pub(in crate::stream_engine) fn state(&self) -> TaskState {
-        // server is always STARTED (not necessarily scheduled until all downstream pumps get STARTED)
-        TaskState::Started
+        match self.state {
+            SourceTaskState::Stopped => TaskState::Stopped,
+            SourceTaskState::Started { .. } => TaskState::Started,
+        }
     }
 
-    pub(in crate::stream_engine) fn new(server: &ServerModel) -> Result<Self> {
+    pub(in crate::stream_engine) fn new(server: ServerModel) -> Self {
         let id = TaskId::from_source_server(server.serving_foreign_stream().name().clone());
-        let upstream_server = match server.server_type() {
+        let downstream = server.serving_foreign_stream().clone();
+        Self {
+            id,
+            server_model: server,
+            state: SourceTaskState::Stopped,
+            downstream,
+        }
+    }
+
+    pub(in crate::stream_engine) fn start(&mut self) -> Result<()> {
+        let upstream_server = match self.server_model.server_type() {
             ServerType::SourceNet => {
-                let server_standby = NetSourceServerStandby::new(server.options())?;
+                let server_standby = NetSourceServerStandby::new(self.server_model.options())?;
                 let server_active = server_standby.start()?;
                 Box::new(server_active)
             }
-            ServerType::SinkNet => unreachable!("sink type server ({:?}) for SourceTask", server),
+            ServerType::SinkNet => {
+                unreachable!("sink type server ({:?}) for SourceTask", self.server_model)
+            }
         };
-        let downstream = server.serving_foreign_stream().clone();
-
-        Ok(Self {
-            id,
+        self.state = SourceTaskState::Started {
             upstream_server: Arc::new(Mutex::new(upstream_server)),
-            downstream,
-        })
+        };
+        Ok(())
     }
 
     pub(in crate::stream_engine::autonomous_executor) fn run<DI: DependencyInjection>(
@@ -71,12 +89,18 @@ impl SourceTask {
     }
 
     fn collect_next<DI: DependencyInjection>(&self) -> Result<Row> {
-        let foreign_row = self
-            .upstream_server
-            .lock()
-            .expect("other worker threads sharing the same server must not get panic")
-            .next_row()?;
-        foreign_row.into_row::<DI>(self.downstream.shape())
+        if let SourceTaskState::Started {
+            ref upstream_server,
+        } = self.state
+        {
+            let foreign_row = upstream_server
+                .lock()
+                .expect("other worker threads sharing the same server must not get panic")
+                .next_row()?;
+            foreign_row.into_row::<DI>(self.downstream.shape())
+        } else {
+            unreachable!()
+        }
     }
 }
 
@@ -106,7 +130,7 @@ mod tests {
 
         let stream = Arc::new(ForeignStreamModel::fx_city_temperature_source());
         let server = ServerModel::fx_net_source(stream, test_source.host_ip(), test_source.port());
-        let pump = SourceTask::new(&server)?;
+        let pump = SourceTask::new(server);
 
         assert_eq!(
             pump.collect_next::<TestDI>()?,

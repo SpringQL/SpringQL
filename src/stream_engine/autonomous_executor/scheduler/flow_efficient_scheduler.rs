@@ -97,23 +97,26 @@
 //!
 //! Selecting 1 from these schedule intelligently should lead to more memory reduction but current implementation always select first one (eagerly select leftmost outgoing edge).
 
-use std::{collections::HashSet, sync::Arc};
-
+use crate::error::Result;
 use petgraph::{
     graph::{DiGraph, EdgeReference, NodeIndex},
     visit::{EdgeRef, IntoEdgesDirected},
 };
+use std::{collections::HashSet, sync::Arc};
 
 use crate::{
     model::name::StreamName,
     stream_engine::{
-        autonomous_executor::task::{
-            task_graph::{self, TaskGraph},
-            task_id::TaskId,
-            task_state::TaskState,
-            Task,
+        autonomous_executor::{
+            server::source,
+            task::{
+                task_graph::{self, TaskGraph},
+                task_id::TaskId,
+                task_state::TaskState,
+                Task,
+            },
         },
-        pipeline::pipeline_version::PipelineVersion,
+        pipeline::{pipeline_graph::edge::Edge, pipeline_version::PipelineVersion},
     },
 };
 
@@ -169,7 +172,11 @@ impl Scheduler for FlowEfficientScheduler {
         }
     }
 
-    fn _notify_task_graph_update(&mut self, task_graph: TaskGraph) {
+    /// # Failure
+    ///
+    /// - [SpringError::ForeignIo](crate::error::SpringError::ForeignIo) when:
+    ///   - failed to start a source server.
+    fn _notify_task_graph_update(&mut self, task_graph: TaskGraph) -> Result<()> {
         self.task_graph = Arc::new(task_graph);
 
         let graph = self.task_graph.as_petgraph();
@@ -178,7 +185,6 @@ impl Scheduler for FlowEfficientScheduler {
             .edge_weights()
             .into_iter()
             .map(|task| task.id())
-            .cloned()
             .collect::<HashSet<TaskId>>();
 
         let mut seq_task_schedule = Vec::<Arc<Task>>::new();
@@ -189,7 +195,7 @@ impl Scheduler for FlowEfficientScheduler {
                 graph,
                 &mut seq_task_schedule,
                 &mut unvisited,
-            );
+            )?;
         }
 
         self.seq_task_schedule = seq_task_schedule;
@@ -203,6 +209,8 @@ impl Scheduler for FlowEfficientScheduler {
                 .join(", "),
             self.task_graph
         );
+
+        Ok(())
     }
 
     fn task_graph(&self) -> Arc<TaskGraph> {
@@ -224,39 +232,56 @@ impl FlowEfficientScheduler {
         graph: &DiGraph<StreamName, Arc<Task>>,
         seq_task_schedule: &mut Vec<Arc<Task>>,
         unvisited: &mut HashSet<TaskId>,
-    ) {
+    ) -> Result<()> {
         let incoming_edges = graph.edges_directed(cur_node, petgraph::Direction::Incoming);
         for incoming_edge in incoming_edges {
             let task = incoming_edge.weight();
-            if matches!(task.state(), TaskState::Stopped)
-                || !Self::_all_parents_started(incoming_edge, graph)
-                || Self::_orphan_source_task(incoming_edge, graph)
+
+            if !unvisited.remove(&task.id()) {
+                // already visited
+                break;
+            } else if let Task::Source(source_task) = task.as_ref() {
+                if Self::_orphan_source_task(incoming_edge, graph) {
+                    // orphan source task should not be started
+                    break
+                } else {
+                    // wake it up since all downstream tasks are Started
+                    source_task
+                        .write()
+                        .expect("another thread sharing the same source task got panic")
+                        .start()?;
+                    seq_task_schedule.push(task.clone());
+                }
+            } else if matches!(task.state(), TaskState::Stopped)
+                || !Self::_all_parent_pumps_started(incoming_edge, graph)
             {
-                // Do not scheduler parent tasks even if they are STARTED (until all tasks throughout source-to-sink get STARTED)
+                // Do not schedule parent tasks even if they are STARTED (until all tasks throughout source-to-sink get STARTED)
                 // in order not to create buffered WIP rows.
                 break;
-            } else if unvisited.remove(task.id()) {
+            } else {
                 let parent_node = incoming_edge.source();
                 Self::_leaf_to_root_dfs_post_order(
                     parent_node,
                     graph,
                     seq_task_schedule,
                     unvisited,
-                );
+                )?;
                 seq_task_schedule.push(task.clone());
-            } else {
-                // task is STARTED and already visited. do nothing
             }
         }
+
+        Ok(())
     }
 
-    fn _all_parents_started(
+    fn _all_parent_pumps_started(
         edge_ref: EdgeReference<Arc<Task>>,
         graph: &DiGraph<StreamName, Arc<Task>>,
     ) -> bool {
         let parent_node = edge_ref.source();
-        let mut parent_edges = graph.edges_directed(parent_node, petgraph::Direction::Incoming);
-        parent_edges.all(|parent_edge| matches!(parent_edge.weight().state(), TaskState::Started))
+        let parent_edges = graph.edges_directed(parent_node, petgraph::Direction::Incoming);
+        parent_edges
+            .filter(|parent_edge| matches!(parent_edge.weight().as_ref(), &Task::Pump(_)))
+            .all(|parent_pump_edge| matches!(parent_pump_edge.weight().state(), TaskState::Started))
     }
 
     fn _orphan_source_task(
@@ -301,7 +326,7 @@ mod tests {
         scheduler.notify_pipeline_update(pipeline);
 
         if let Some((first_task, next_task_idx)) = scheduler.next_task(cur_task_idx) {
-            assert_eq!(first_task.id(), &expected.pop_front().unwrap());
+            assert_eq!(first_task.id(), expected.pop_front().unwrap());
             cur_task_idx = next_task_idx;
 
             loop {
@@ -313,7 +338,7 @@ mod tests {
                 }
 
                 let expected_next = expected.pop_front().unwrap();
-                assert_eq!(next_task.id(), &expected_next);
+                assert_eq!(next_task.id(), expected_next);
 
                 cur_task_idx = next_task_idx;
             }

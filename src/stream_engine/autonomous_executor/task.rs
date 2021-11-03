@@ -7,6 +7,8 @@ mod pump_task;
 mod sink_task;
 mod source_task;
 
+use std::sync::RwLock;
+
 use crate::{error::Result, stream_engine::dependency_injection::DependencyInjection};
 
 use self::{
@@ -17,23 +19,30 @@ use self::{
 #[derive(Debug)]
 pub(crate) enum Task {
     Pump(PumpTask),
-    Source(SourceTask),
+    Source(RwLock<SourceTask>),
     Sink(SinkTask),
 }
 
 impl Task {
-    pub(super) fn id(&self) -> &TaskId {
+    pub(super) fn id(&self) -> TaskId {
         match self {
-            Task::Pump(t) => t.id(),
-            Task::Source(s) => s.id(),
-            Task::Sink(s) => s.id(),
+            Task::Pump(t) => t.id().clone(),
+            Task::Source(s) => s
+                .read()
+                .expect("another thread sharing the same source task got panic")
+                .id()
+                .clone(),
+            Task::Sink(s) => s.id().clone(),
         }
     }
 
     pub(super) fn state(&self) -> TaskState {
         match self {
             Task::Pump(t) => t.state().clone(),
-            Task::Source(s) => s.state(),
+            Task::Source(s) => s
+                .read()
+                .expect("another thread sharing the same source task got panic")
+                .state(),
             Task::Sink(s) => s.state(),
         }
     }
@@ -41,7 +50,10 @@ impl Task {
     pub(super) fn run<DI: DependencyInjection>(&self, context: &TaskContext<DI>) -> Result<()> {
         match self {
             Task::Pump(pump_task) => pump_task.run(context),
-            Task::Source(source_task) => source_task.run(context),
+            Task::Source(source_task) => source_task
+                .read()
+                .expect("another thread sharing the same source task got panic")
+                .run(context),
             Task::Sink(sink_task) => sink_task.run(context),
         }
     }
