@@ -108,10 +108,6 @@ impl SourceServerActive for NetSourceServerActive {
 
         self.parse_resp(&json_s)
     }
-
-    fn seed(&self) -> SourceServerSeed {
-        todo!()
-    }
 }
 
 impl NetSourceServerActive {

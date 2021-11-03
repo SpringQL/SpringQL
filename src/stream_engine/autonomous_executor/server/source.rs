@@ -42,6 +42,4 @@ pub(in crate::stream_engine) trait SourceServerActive:
     ///   - Failed to parse response from remote source.
     ///   - Unknown foreign error.
     fn next_row(&mut self) -> Result<ForeignSourceRow>;
-
-    fn seed(&self) -> SourceServerSeed;
 }
