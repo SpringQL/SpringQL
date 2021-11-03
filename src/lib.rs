@@ -13,9 +13,9 @@ mod api;
 pub use api::*;
 
 use once_cell::sync::Lazy;
-use std::sync::Mutex;
+use std::sync::atomic::AtomicBool;
 
-static PIPELINE_CREATED: Lazy<Mutex<bool>> = Lazy::new(|| Mutex::new(false));
+static PIPELINE_CREATED: Lazy<AtomicBool> = Lazy::new(|| AtomicBool::new(false));
 
 #[cfg(test)]
 mod test_support;

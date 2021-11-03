@@ -1,8 +1,6 @@
-use std::rc::Rc;
 use std::sync::Arc;
 
 use crate::error::Result;
-use crate::model::name::PumpName;
 use crate::stream_engine::autonomous_executor::data::row::Row;
 use crate::stream_engine::autonomous_executor::task::task_context::TaskContext;
 use crate::stream_engine::dependency_injection::DependencyInjection;

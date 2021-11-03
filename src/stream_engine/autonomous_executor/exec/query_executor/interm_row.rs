@@ -1,4 +1,4 @@
-use std::{rc::Rc, sync::Arc};
+use std::sync::Arc;
 
 use crate::stream_engine::autonomous_executor::data::row::Row;
 

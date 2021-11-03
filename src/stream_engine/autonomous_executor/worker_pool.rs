@@ -1,6 +1,6 @@
 pub(super) mod worker;
 
-use std::sync::{Arc, Mutex};
+use std::sync::Arc;
 
 use crate::stream_engine::dependency_injection::DependencyInjection;
 

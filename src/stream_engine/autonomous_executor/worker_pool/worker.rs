@@ -4,7 +4,7 @@ pub(in crate::stream_engine::autonomous_executor) mod worker_id;
 const TASK_WAIT_MSEC: u64 = 100;
 
 use std::{
-    sync::{mpsc, Arc, Mutex},
+    sync::{mpsc, Arc},
     thread,
     time::Duration,
 };

@@ -76,7 +76,10 @@ impl SinkServerActive for NetSinkServerActive {
         let mut json_s = JsonObject::from(row).to_string();
         json_s.push('\n');
 
-        log::info!("[NetSinkServerActive] Writing message to remote: {}", json_s);
+        log::info!(
+            "[NetSinkServerActive] Writing message to remote: {}",
+            json_s
+        );
 
         self.tcp_stream_writer
             .write_all(json_s.as_bytes())

@@ -1,8 +1,6 @@
 use super::{
     command::alter_pipeline_command::AlterPipelineCommand,
-    dependency_injection::DependencyInjection,
     pipeline::{
-        self,
         pump_model::{pump_state::PumpState, PumpModel},
         server_model::ServerModel,
         Pipeline,
@@ -28,7 +26,7 @@ impl ReactiveExecutor {
         Ok(self.pipeline.clone())
     }
 
-    fn new_pipeline(pipeline: Pipeline, command: AlterPipelineCommand) -> Result<Pipeline> {
+    fn new_pipeline(mut pipeline: Pipeline, command: AlterPipelineCommand) -> Result<Pipeline> {
         match command {
             AlterPipelineCommand::CreateStream(_) => todo!(),
             AlterPipelineCommand::CreateForeignStream(server) => {
@@ -36,7 +34,8 @@ impl ReactiveExecutor {
             }
             AlterPipelineCommand::CreatePump(pump) => Self::create_pump(pipeline, pump),
             AlterPipelineCommand::AlterPump { name, state } => {
-                Self::alter_pump(pipeline, name, state)
+                Self::alter_pump(&mut pipeline, name, state)?;
+                Ok(pipeline)
             }
         }
     }
@@ -53,11 +52,18 @@ impl ReactiveExecutor {
         Ok(pipeline)
     }
 
-    fn alter_pump(mut pipeline: Pipeline, name: PumpName, state: PumpState) -> Result<Pipeline> {
-        let pump = pipeline.get_pump(&name)?;
+    fn alter_pump(pipeline: &mut Pipeline, name: PumpName, state: PumpState) -> Result<()> {
+        let pump = pipeline.get_pump(&name)?.clone();
+        match (pump.state(), state) {
+            (PumpState::Stopped, PumpState::Started) => Self::_alter_pump_start(pipeline, &pump),
+            (PumpState::Started, PumpState::Stopped) => todo!(),
+            _ => Ok(()),
+        }
+    }
+    fn _alter_pump_start(pipeline: &mut Pipeline, pump: &PumpModel) -> Result<()> {
         let new_pump = pump.started();
-        pipeline.remove_pump(&name)?;
+        pipeline.remove_pump(pump.name())?;
         pipeline.add_pump(new_pump)?;
-        Ok(pipeline)
+        Ok(())
     }
 }

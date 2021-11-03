@@ -21,7 +21,7 @@ mod pipeline;
 mod reactive_executor;
 
 use crate::error::Result;
-use autonomous_executor::{CurrentTimestamp, NaiveRowRepository, RowRepository, Scheduler};
+use autonomous_executor::{CurrentTimestamp, RowRepository, Scheduler};
 
 use self::{
     autonomous_executor::AutonomousExecutor, command::alter_pipeline_command::AlterPipelineCommand,
@@ -61,8 +61,7 @@ where
     pub(crate) fn alter_pipeline(&mut self, command: AlterPipelineCommand) -> Result<()> {
         log::debug!("[StreamEngine] alter_pipeline({:?})", command);
         let pipeline = self.reactive_executor.alter_pipeline(command)?;
-        self.autonomous_executor.notify_pipeline_update(pipeline);
-        Ok(())
+        self.autonomous_executor.notify_pipeline_update(pipeline)
     }
 }
 

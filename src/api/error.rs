@@ -4,8 +4,6 @@ pub mod foreign_info;
 
 use thiserror::Error;
 
-use crate::model::name::PumpName;
-
 use self::foreign_info::ForeignInfo;
 
 /// Result type

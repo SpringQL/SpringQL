@@ -52,7 +52,7 @@ where
     pub(in crate::stream_engine) fn new(n_worker_threads: usize) -> Self {
         let scheduler = Arc::new(RwLock::new(DI::SchedulerType::default()));
         let scheduler_write = SchedulerWrite::new(scheduler.clone());
-        let scheduler_read = SchedulerRead::new(scheduler.clone());
+        let scheduler_read = SchedulerRead::new(scheduler);
 
         let row_repo = Arc::new(DI::RowRepositoryType::default());
         let server_repo = Arc::new(ServerRepository::default());

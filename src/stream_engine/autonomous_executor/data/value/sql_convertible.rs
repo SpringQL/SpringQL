@@ -3,7 +3,10 @@ mod int;
 mod text;
 mod timestamp;
 
-use crate::{error::{Result, SpringError}, stream_engine::autonomous_executor::Timestamp};
+use crate::{
+    error::{Result, SpringError},
+    stream_engine::autonomous_executor::Timestamp,
+};
 use anyhow::anyhow;
 use std::any::type_name;
 

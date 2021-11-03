@@ -16,6 +16,7 @@ use crate::{
     },
 };
 
+#[allow(clippy::type_complexity)]
 #[derive(Debug, Default)]
 pub(in crate::stream_engine) struct ServerRepository {
     sources: RwLock<HashMap<ServerName, Arc<Mutex<Box<dyn SourceServerActive>>>>>,
@@ -33,7 +34,6 @@ impl ServerRepository {
         &self,
         server_model: &ServerModel,
     ) -> Result<()> {
-
         let mut sources = self
             .sources
             .write()
@@ -53,7 +53,10 @@ impl ServerRepository {
                     let server = Box::new(server);
                     let server = Arc::new(Mutex::new(server as Box<dyn SourceServerActive>));
                     let _ = sources.insert(server_model.name().clone(), server);
-                    log::debug!("[ServerRepository] registered source server: {}", server_model.name());
+                    log::debug!(
+                        "[ServerRepository] registered source server: {}",
+                        server_model.name()
+                    );
                     Ok(())
                 }
             }
@@ -66,7 +69,10 @@ impl ServerRepository {
                     let server = Box::new(server);
                     let server = Arc::new(Mutex::new(server as Box<dyn SinkServerActive>));
                     let _ = sinks.insert(server_model.name().clone(), server);
-                    log::debug!("[ServerRepository] registered sink server: {}", server_model.name());
+                    log::debug!(
+                        "[ServerRepository] registered sink server: {}",
+                        server_model.name()
+                    );
                     Ok(())
                 }
             }

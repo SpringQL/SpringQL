@@ -7,8 +7,6 @@ mod pump_task;
 mod sink_task;
 mod source_task;
 
-use std::sync::{Arc, Mutex, RwLock};
-
 use crate::{error::Result, stream_engine::dependency_injection::DependencyInjection};
 
 use self::{

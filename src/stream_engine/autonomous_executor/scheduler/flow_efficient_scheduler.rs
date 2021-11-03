@@ -100,22 +100,17 @@
 use crate::error::Result;
 use petgraph::{
     graph::{DiGraph, EdgeReference, NodeIndex},
-    visit::{EdgeRef, IntoEdgesDirected},
+    visit::EdgeRef,
 };
 use std::{collections::HashSet, sync::Arc};
 
 use crate::{
     model::name::StreamName,
     stream_engine::{
-        autonomous_executor::{
-            task::{
-                task_graph::{self, TaskGraph},
-                task_id::TaskId,
-                task_state::TaskState,
-                Task,
-            },
+        autonomous_executor::task::{
+            task_graph::TaskGraph, task_id::TaskId, task_state::TaskState, Task,
         },
-        pipeline::{pipeline_graph::edge::Edge, pipeline_version::PipelineVersion},
+        pipeline::pipeline_version::PipelineVersion,
     },
 };
 
@@ -236,15 +231,10 @@ impl FlowEfficientScheduler {
         for incoming_edge in incoming_edges {
             let task = incoming_edge.weight();
 
-            if !unvisited.remove(&task.id()) 
-                // already visited
-
-                || matches!(task.state(), TaskState::Stopped)  
-                // Do not schedule parent tasks even if they are STARTED (until all tasks throughout source-to-sink get STARTED)
-                // in order not to create buffered WIP rows.
-
-                || !Self::_all_parent_started(incoming_edge, graph)
-                // all incoming tasks must be STARTED for this task to be scheduled.
+            if !unvisited.remove(&task.id())  // already visited
+            || matches!(task.state(), TaskState::Stopped)  // Do not schedule parent tasks even if they are STARTED (until all tasks throughout source-to-sink get STARTED) in order not to create buffered WIP rows.
+            || !Self::_all_parent_started(incoming_edge, graph)
+            // all incoming tasks must be STARTED for this task to be scheduled.
             {
                 break;
             } else {
@@ -268,8 +258,7 @@ impl FlowEfficientScheduler {
     ) -> bool {
         let parent_node = edge_ref.source();
         let mut parent_edges = graph.edges_directed(parent_node, petgraph::Direction::Incoming);
-        parent_edges
-            .all(|parent_edge| matches!(parent_edge.weight().state(), TaskState::Started))
+        parent_edges.all(|parent_edge| matches!(parent_edge.weight().state(), TaskState::Started))
     }
 }
 
@@ -290,7 +279,7 @@ mod tests {
         let mut cur_task_idx = CurrentTaskIdx::default();
 
         let mut scheduler = FlowEfficientScheduler::default();
-        scheduler.notify_pipeline_update(pipeline);
+        scheduler.notify_pipeline_update(pipeline).unwrap();
 
         if let Some((first_task, next_task_idx)) = scheduler.next_task(cur_task_idx) {
             assert_eq!(first_task.id(), expected.pop_front().unwrap());

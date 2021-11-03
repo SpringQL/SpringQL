@@ -76,7 +76,7 @@ impl Row {
     /// Never clone Row. RowRepository should return Row for sink to reduce copy: <https://gh01.base.toyota-tokyo.tech/SpringQL/SpringQL/issues/42>
     pub(in crate::stream_engine::autonomous_executor) fn fixme_clone(&self) -> Self {
         Self {
-            arrival_rowtime: self.arrival_rowtime.clone(),
+            arrival_rowtime: self.arrival_rowtime,
             cols: self.cols.clone(),
         }
     }

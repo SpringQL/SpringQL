@@ -1,12 +1,4 @@
-use std::{collections::HashMap, rc::Rc};
-
-use crate::{
-    error::Result,
-    stream_engine::{
-        autonomous_executor::data::{column::stream_column::StreamColumns, row::Row},
-        pipeline::stream_model::stream_shape::StreamShape,
-    },
-};
+use crate::stream_engine::autonomous_executor::data::row::Row;
 
 use super::format::json::JsonObject;
 

@@ -4,6 +4,8 @@
 //!
 //! C API and high-level Rust API are provided separately.
 
+use std::sync::atomic::Ordering;
+
 use anyhow::anyhow;
 
 use crate::{
@@ -56,16 +58,15 @@ pub enum SpringStepSuccess {
 /// - [SpringError::Unavailable](crate::error::SpringError::Unavailable) when:
 ///   - Pipeline is already open.
 pub fn spring_open() -> Result<SpringPipeline> {
-    let mut created = PIPELINE_CREATED
-        .lock()
-        .expect("another thread calling spring_open() seems get panic");
-    if *created {
+    let created = PIPELINE_CREATED.load(Ordering::SeqCst);
+
+    if created {
         return Err(SpringError::Unavailable {
             source: anyhow!("pipeline already open"),
             resource: "pipeline".to_string(),
         });
     }
-    *created = true;
+    PIPELINE_CREATED.store(true, Ordering::SeqCst);
 
     let engine = StreamEngine::new(N_WORKER_THREADS);
     Ok(SpringPipeline { engine })

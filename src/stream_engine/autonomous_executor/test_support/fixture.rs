@@ -20,16 +20,13 @@ use crate::{
                 row::Row,
                 timestamp::Timestamp,
             },
-            task::{task_graph::TaskGraph, task_id::TaskId},
+            task::task_graph::TaskGraph,
             test_support::foreign::sink::TestSink,
         },
-        command::alter_pipeline_command::{
-            alter_pump_command::AlterPumpCommand, AlterPipelineCommand,
-        },
+        command::alter_pipeline_command::AlterPipelineCommand,
         pipeline::{
             pipeline_graph::PipelineGraph,
             pump_model::pump_state::PumpState,
-            server_model::server_state::ServerState,
             stream_model::{stream_shape::StreamShape, StreamModel},
             Pipeline,
         },
