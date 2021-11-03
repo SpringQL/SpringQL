@@ -67,7 +67,11 @@ where
         &self,
         pipeline: Pipeline,
     ) -> Result<()> {
-        let mut scheduler = self.scheduler_write.write_lock(); // enter write lock (worker stops task execution)
+        let mut scheduler = self.scheduler_write.write_lock();
+        // 1. Worker executing main_loop (having read lock to scheduler) continues its task.
+        // 2. Enter write lock.
+        // 3. (Worker cannot get read lock to schedule to start next task)
+
         self.row_repo.reset(scheduler.task_graph().all_tasks());
         scheduler.notify_pipeline_update(pipeline)
     }
