@@ -1,4 +1,4 @@
-use crate::stream_engine::autonomous_executor::row::row::Row;
+use crate::stream_engine::autonomous_executor::row::Row;
 
 use super::format::json::JsonObject;
 

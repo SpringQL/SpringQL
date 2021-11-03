@@ -70,13 +70,13 @@ mod tests {
 
     use crate::{
         model::name::{ColumnName, PumpName},
-        stream_engine::{autonomous_executor::Timestamp, dependency_injection::test_di::TestDI},
         stream_engine::{
-            autonomous_executor::{
-                row::{row::Row, value::sql_value::SqlValue},
-                task::task_id::TaskId,
-            },
+            autonomous_executor::{row::value::sql_value::SqlValue, task::task_id::TaskId},
             RowRepository,
+        },
+        stream_engine::{
+            autonomous_executor::{row::Row, Timestamp},
+            dependency_injection::test_di::TestDI,
         },
     };
 

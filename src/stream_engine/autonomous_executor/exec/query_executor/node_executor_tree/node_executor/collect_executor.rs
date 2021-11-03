@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use crate::error::Result;
-use crate::stream_engine::autonomous_executor::row::row::Row;
+use crate::stream_engine::autonomous_executor::row::Row;
 use crate::stream_engine::autonomous_executor::task::task_context::TaskContext;
 use crate::stream_engine::dependency_injection::DependencyInjection;
 use crate::stream_engine::RowRepository;

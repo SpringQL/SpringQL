@@ -69,7 +69,7 @@ mod tests {
                 QueryPlan,
             },
         },
-        stream_engine::autonomous_executor::{row::row::Row, task::task_id::TaskId},
+        stream_engine::autonomous_executor::{row::Row, task::task_id::TaskId},
         stream_engine::dependency_injection::test_di::TestDI,
         test_support::setup::setup_test_logger,
     };

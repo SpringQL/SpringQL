@@ -3,7 +3,7 @@ use std::sync::Arc;
 use crate::{
     error::Result,
     stream_engine::{
-        autonomous_executor::row::{column::stream_column::StreamColumns, row::Row},
+        autonomous_executor::row::{column::stream_column::StreamColumns, Row},
         dependency_injection::DependencyInjection,
         pipeline::stream_model::stream_shape::StreamShape,
     },

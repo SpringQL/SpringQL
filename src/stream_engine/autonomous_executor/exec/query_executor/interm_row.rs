@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use crate::stream_engine::autonomous_executor::row::row::Row;
+use crate::stream_engine::autonomous_executor::row::Row;
 
 /// Intermediate row appearing only in a QueryPlan.
 ///

@@ -12,7 +12,7 @@ use crate::error::Result;
 use crate::model::query_plan::query_plan_node::operation::LeafOperation;
 use crate::model::query_plan::query_plan_node::QueryPlanNode;
 use crate::model::query_plan::QueryPlan;
-use crate::stream_engine::autonomous_executor::row::row::Row;
+use crate::stream_engine::autonomous_executor::row::Row;
 use crate::stream_engine::autonomous_executor::task::task_context::TaskContext;
 use crate::stream_engine::dependency_injection::DependencyInjection;
 

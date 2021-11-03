@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use crate::stream_engine::autonomous_executor::row::row::Row;
+use crate::stream_engine::autonomous_executor::row::Row;
 
 #[derive(PartialEq, Debug, new)]
 pub(in crate::stream_engine::autonomous_executor::exec) enum FinalRow {
