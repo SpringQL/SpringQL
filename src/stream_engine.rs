@@ -138,12 +138,17 @@ mod tests {
             ))
             .unwrap();
 
-        assert_eq!(JsonObject::new(sink.receive().unwrap()), json_oracle);
-        assert_eq!(JsonObject::new(sink.receive().unwrap()), json_ibm);
-        assert_eq!(JsonObject::new(sink.receive().unwrap()), json_google);
+        let got1 = JsonObject::new(sink.receive().unwrap());
+        let got2 = JsonObject::new(sink.receive().unwrap());
+        let got3 = JsonObject::new(sink.receive().unwrap());
         assert!(matches!(
             sink.receive().unwrap_err(),
             SpringError::Unavailable { .. }
         ));
+
+        // a worker might be faster than the other.
+        assert!([json_oracle.clone(), json_ibm.clone(), json_google.clone()].contains(&got1));
+        assert!([json_oracle.clone(), json_ibm.clone(), json_google.clone()].contains(&got2));
+        assert!([json_oracle, json_ibm, json_google].contains(&got3));
     }
 }
