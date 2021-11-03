@@ -15,7 +15,7 @@ use crate::{
                 row::Row,
                 value::sql_value::{nn_sql_value::NnSqlValue, SqlValue},
             },
-            server::{
+            server_instance::{
                 server_repository::ServerRepository,
                 source::{net::NetSourceServerInstance, SourceServerInstance},
             },

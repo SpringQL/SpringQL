@@ -1,4 +1,4 @@
-pub(in crate::stream_engine) mod server;
+pub(in crate::stream_engine) mod server_instance;
 pub(in crate::stream_engine) mod task;
 
 pub(super) mod data;
@@ -17,7 +17,7 @@ pub(in crate::stream_engine) use scheduler::{FlowEfficientScheduler, Scheduler};
 
 use self::{
     scheduler::{scheduler_read::SchedulerRead, scheduler_write::SchedulerWrite},
-    server::server_repository::ServerRepository,
+    server_instance::server_repository::ServerRepository,
     worker_pool::WorkerPool,
 };
 

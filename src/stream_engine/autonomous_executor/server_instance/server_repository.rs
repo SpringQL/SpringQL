@@ -6,7 +6,7 @@ use std::{
 use super::{sink::SinkServerInstance, source::SourceServerInstance};
 use crate::{
     error::Result,
-    stream_engine::autonomous_executor::server::{
+    stream_engine::autonomous_executor::server_instance::{
         sink::net::NetSinkServerInstance, source::net::NetSourceServerInstance,
     },
 };

@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use crate::stream_engine::{
-    autonomous_executor::server::server_repository::ServerRepository,
+    autonomous_executor::server_instance::server_repository::ServerRepository,
     dependency_injection::DependencyInjection,
 };
 
