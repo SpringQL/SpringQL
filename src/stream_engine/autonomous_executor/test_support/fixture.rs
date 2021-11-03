@@ -615,7 +615,6 @@ impl ServerModel {
         remote_port: u16,
     ) -> Self {
         Self::new(
-            ServerState::Started,
             ServerType::SourceNet,
             serving_foreign_stream,
             Options::fx_net_source_server(remote_host, remote_port),
@@ -627,7 +626,6 @@ impl ServerModel {
         remote_port: u16,
     ) -> Self {
         Self::new(
-            ServerState::Started,
             ServerType::SinkNet,
             serving_foreign_stream,
             Options::fx_net_sink_server(remote_host, remote_port),

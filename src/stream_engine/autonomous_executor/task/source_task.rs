@@ -13,6 +13,7 @@ use crate::stream_engine::autonomous_executor::server::source::{
 use crate::stream_engine::autonomous_executor::{server, RowRepository};
 use crate::stream_engine::dependency_injection::DependencyInjection;
 use crate::stream_engine::pipeline::foreign_stream_model::ForeignStreamModel;
+use crate::stream_engine::pipeline::pipeline_graph::{self, PipelineGraph};
 use crate::stream_engine::pipeline::server_model::server_type::ServerType;
 use crate::stream_engine::pipeline::server_model::ServerModel;
 
@@ -28,20 +29,21 @@ pub(crate) struct SourceTask {
     downstream: Arc<ForeignStreamModel>,
 }
 
-impl From<&ServerModel> for SourceTask {
-    fn from(server_model: &ServerModel) -> Self {
+impl SourceTask {
+    pub(in crate::stream_engine) fn new(
+        server_model: &ServerModel,
+        pipeline_graph: &PipelineGraph,
+    ) -> Self {
         let id = TaskId::from_source_server(server_model.serving_foreign_stream().name().clone());
         let downstream = server_model.serving_foreign_stream();
         Self {
             id,
-            state: TaskState::from(server_model.state()),
+            state: TaskState::from(&server_model.state(pipeline_graph)),
             server_name: server_model.name().clone(),
             downstream,
         }
     }
-}
 
-impl SourceTask {
     pub(in crate::stream_engine) fn id(&self) -> &TaskId {
         &self.id
     }

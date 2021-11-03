@@ -26,14 +26,14 @@ use super::{sink_task::SinkTask, source_task::SourceTask, task_id::TaskId, Task}
 pub(crate) struct TaskGraph(DiGraph<StreamName, Arc<Task>>);
 
 impl From<&PipelineGraph> for TaskGraph {
-    fn from(p_graph: &PipelineGraph) -> Self {
-        let p_graph = p_graph.as_petgraph();
+    fn from(pipeline_graph: &PipelineGraph) -> Self {
+        let p_graph = pipeline_graph.as_petgraph();
         let t_graph = p_graph.map(
             |_, stream_node| stream_node.name(),
             |_, edge| {
                 let task = match edge {
                     Edge::Pump(pump) => Task::Pump(PumpTask::from(pump)),
-                    Edge::Source(server) => Task::Source(SourceTask::from(server)),
+                    Edge::Source(server) => Task::Source(SourceTask::new(server, pipeline_graph)),
                     Edge::Sink(server) => {
                         Task::Sink(SinkTask::new(server).expect("TODO make this panic-free"))
                     }

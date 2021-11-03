@@ -8,20 +8,24 @@ use std::{collections::HashMap, sync::Arc};
 
 use petgraph::{
     graph::{DiGraph, EdgeReference, NodeIndex},
-    visit::{EdgeRef, IntoEdgeReferences},
+    visit::{EdgeRef, IntoEdgeReferences, IntoEdgesDirected},
 };
 use serde::{Deserialize, Serialize};
 
 use self::{edge::Edge, stream_node::StreamNode};
 
 use super::{
-    foreign_stream_model::ForeignStreamModel, pump_model::PumpModel, server_model::ServerModel,
+    foreign_stream_model::ForeignStreamModel,
+    pump_model::PumpModel,
+    server_model::{server_state::ServerState, ServerModel},
     stream_model::StreamModel,
 };
 use crate::{
     error::{Result, SpringError},
     model::name::{PumpName, StreamName},
-    stream_engine::pipeline::server_model::server_type::ServerType,
+    stream_engine::pipeline::{
+        pump_model::pump_state::PumpState, server_model::server_type::ServerType,
+    },
 };
 use anyhow::anyhow;
 
@@ -141,11 +145,28 @@ impl PipelineGraph {
         Ok(())
     }
 
+    pub(in crate::stream_engine) fn source_server_state(
+        &self,
+        serving_foreign_stream: &StreamName,
+    ) -> ServerState {
+        let fst_node = self
+            .graph
+            .node_indices()
+            .find(|n| &self.graph[*n].name() == serving_foreign_stream)
+            .unwrap();
+
+        if self._at_least_one_started_path_to_sink(fst_node) {
+            ServerState::Started
+        } else {
+            ServerState::Stopped
+        }
+    }
+
     pub(in crate::stream_engine) fn as_petgraph(&self) -> &DiGraph<StreamNode, Edge> {
         &self.graph
     }
 
-    pub(super) fn _find_pump(&self, name: &PumpName) -> Result<EdgeReference<Edge>> {
+    fn _find_pump(&self, name: &PumpName) -> Result<EdgeReference<Edge>> {
         self.graph
             .edge_references()
             .find_map(|edge| {
@@ -158,5 +179,25 @@ impl PipelineGraph {
             .ok_or_else(|| {
                 SpringError::Sql(anyhow!(r#"pump "{}" does not exist in pipeline"#, name))
             })
+    }
+
+    fn _at_least_one_started_path_to_sink(&self, node: NodeIndex) -> bool {
+        let mut outgoing_edges = self
+            .graph
+            .edges_directed(node, petgraph::Direction::Outgoing);
+
+        if outgoing_edges
+            .clone()
+            .any(|edge| matches!(edge.weight(), Edge::Sink(_)))
+        {
+            true
+        } else if outgoing_edges.clone().count() == 0 {
+            false
+        } else {
+            outgoing_edges.any(|started_edge| {
+                let next_node = started_edge.target();
+                self._at_least_one_started_path_to_sink(next_node)
+            })
+        }
     }
 }
