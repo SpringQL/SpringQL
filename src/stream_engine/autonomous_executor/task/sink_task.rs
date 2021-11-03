@@ -47,7 +47,7 @@ impl SinkTask {
     }
 
     pub(in crate::stream_engine) fn state(&self) -> TaskState {
-        // server is always STARTED (not necessarily scheduled until all upwnstream pumps get STARTED)
+        // server is always STARTED (not necessarily scheduled until all upstream pumps get STARTED)
         TaskState::Started
     }
 
