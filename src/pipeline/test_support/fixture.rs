@@ -7,7 +7,10 @@ use crate::pipeline::{
     pump_model::pump_state::PumpState,
     pump_model::PumpModel,
     relation::{
-        column::{column_data_type::ColumnDataType, column_definition::ColumnDefinition},
+        column::{
+            column_constraint::ColumnConstraint, column_data_type::ColumnDataType,
+            column_definition::ColumnDefinition,
+        },
         sql_type::SqlType,
     },
     server_model::{server_type::ServerType, ServerModel},
@@ -391,30 +394,24 @@ impl Pipeline {
 
 impl StreamShape {
     pub(crate) fn fx_city_temperature() -> Self {
-        Self::new(
-            vec![
-                ColumnDefinition::fx_timestamp(),
-                ColumnDefinition::fx_city(),
-                ColumnDefinition::fx_temperature(),
-            ],
-            Some(ColumnName::fx_timestamp()),
-        )
+        Self::new(vec![
+            ColumnDefinition::fx_timestamp(),
+            ColumnDefinition::fx_city(),
+            ColumnDefinition::fx_temperature(),
+        ])
         .unwrap()
     }
     pub(crate) fn fx_trade() -> Self {
-        Self::new(
-            vec![
-                ColumnDefinition::fx_timestamp(),
-                ColumnDefinition::fx_ticker(),
-                ColumnDefinition::fx_amount(),
-            ],
-            Some(ColumnName::fx_timestamp()),
-        )
+        Self::new(vec![
+            ColumnDefinition::fx_timestamp(),
+            ColumnDefinition::fx_ticker(),
+            ColumnDefinition::fx_amount(),
+        ])
         .unwrap()
     }
 
     pub(crate) fn fx_no_promoted_rowtime() -> Self {
-        Self::new(vec![ColumnDefinition::fx_amount()], None).unwrap()
+        Self::new(vec![ColumnDefinition::fx_amount()]).unwrap()
     }
 }
 
@@ -506,23 +503,26 @@ impl PumpModel {
 
 impl ColumnDefinition {
     pub(crate) fn fx_timestamp() -> Self {
-        Self::new(ColumnDataType::fx_timestamp())
+        Self::new(
+            ColumnDataType::fx_timestamp(),
+            vec![ColumnConstraint::Rowtime],
+        )
     }
 
     pub(crate) fn fx_city() -> Self {
-        Self::new(ColumnDataType::fx_city())
+        Self::new(ColumnDataType::fx_city(), vec![])
     }
 
     pub(crate) fn fx_temperature() -> Self {
-        Self::new(ColumnDataType::fx_temperature())
+        Self::new(ColumnDataType::fx_temperature(), vec![])
     }
 
     pub(crate) fn fx_ticker() -> Self {
-        Self::new(ColumnDataType::fx_ticker())
+        Self::new(ColumnDataType::fx_ticker(), vec![])
     }
 
     pub(crate) fn fx_amount() -> Self {
-        Self::new(ColumnDataType::fx_amount())
+        Self::new(ColumnDataType::fx_amount(), vec![])
     }
 }
 
