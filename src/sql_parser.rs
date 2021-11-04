@@ -64,4 +64,39 @@ mod tests {
             Command::AlterPipeline(AlterPipelineCommand::CreateForeignStream(expected_server))
         );
     }
+
+    #[test]
+    fn test_create_sink_stream() {
+        let parser = SqlParser::default();
+
+        let sql = "
+            CREATE SINK STREAM sink_trade (
+              ts TIMESTAMP NOT NULL ROWTIME,    
+              ticker TEXT NOT NULL,
+              amount INTEGER NOT NULL
+            ) SERVER NET_SERVER OPTIONS (
+              REMOTE_PORT '17890'
+            );
+            ";
+        let command = parser.parse(sql).unwrap();
+
+        let expected_shape = StreamShape::fx_trade();
+        let expected_options = OptionsBuilder::default()
+            .add("REMOTE_PORT", "17890")
+            .build();
+        let expected_stream = ForeignStreamModel::new(StreamModel::new(
+            StreamName::new("sink_trade".to_string()),
+            Arc::new(expected_shape),
+        ));
+        let expected_server = ServerModel::new(
+            ServerType::SinkNet,
+            Arc::new(expected_stream),
+            expected_options,
+        );
+
+        assert_eq!(
+            command,
+            Command::AlterPipeline(AlterPipelineCommand::CreateForeignStream(expected_server))
+        );
+    }
 }
