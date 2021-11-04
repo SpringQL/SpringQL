@@ -97,6 +97,12 @@ impl PestParserImpl {
             Self::parse_create_pump_command,
             Command::AlterPipeline,
         )?)
+        .or(try_parse_child(
+            &mut params,
+            Rule::alter_pump_command,
+            Self::parse_alter_pump_command,
+            Command::AlterPipeline,
+        )?)
         .ok_or_else(|| {
             SpringError::Sql(anyhow!(
                 "Does not match any child rule of command: {}",
@@ -259,6 +265,26 @@ impl PestParserImpl {
         );
 
         Ok(AlterPipelineCommand::CreatePump(pump))
+    }
+
+    /*
+     * ----------------------------------------------------------------------------
+     * ALTER PUMP
+     * ----------------------------------------------------------------------------
+     */
+
+    fn parse_alter_pump_command(mut params: FnParseParams) -> Result<AlterPipelineCommand> {
+        let pump_name = parse_child(
+            &mut params,
+            Rule::pump_name,
+            &Self::parse_pump_name,
+            &identity,
+        )?;
+
+        Ok(AlterPipelineCommand::AlterPump {
+            name: pump_name,
+            state: PumpState::Started,
+        })
     }
 
     /*

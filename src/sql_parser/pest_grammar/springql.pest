@@ -21,6 +21,7 @@
 // In this case, only "A" matches with query `ABSOLUTE` (eager matching).
 keyword = { 
     ^"AS"
+    | ^"ALTER"
     | ^"BIGINT"
     | ^"CREATE"
     | ^"FROM"
@@ -37,6 +38,7 @@ keyword = {
     | ^"SINK"
     | ^"SMALLINT"
     | ^"SOURCE"
+    | ^"START"
     | ^"STREAM"
     | ^"TEXT"
     | ^"TIMESTAMP"
@@ -286,6 +288,7 @@ command = {
         create_source_stream_command
         | create_sink_stream_command
         | create_pump_command
+        | alter_pump_command
     )
     ~ ";"?
     ~ EOI
@@ -339,6 +342,18 @@ create_pump_command = {
     ~ column_name ~ ("," ~ column_name)*
     ~ ")"
     ~ select_stream_command
+}
+
+/*
+ * ----------------------------------------------------------------------------
+ * ALTER PUMP
+ * ----------------------------------------------------------------------------
+ */
+
+alter_pump_command = {
+    ^"ALTER" ~ ^"PUMP"
+    ~ pump_name
+    ~ ^"START"
 }
 
 /*
