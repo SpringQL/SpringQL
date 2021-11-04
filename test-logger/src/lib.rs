@@ -1,7 +1,7 @@
 use std::sync::Once;
 
 /// setup env_logger for test.
-pub(crate) fn setup_test_logger() {
+pub fn setup_test_logger() {
     static INIT: Once = Once::new();
 
     INIT.call_once(|| {

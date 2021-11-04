@@ -11,9 +11,6 @@ pub(crate) mod stream_engine;
 
 mod api;
 
-#[cfg(test)]
-mod test_support;
-
 pub use api::*;
 
 use once_cell::sync::Lazy;

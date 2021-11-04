@@ -3,6 +3,7 @@ use springql_core::error::Result;
 use springql_core::low_level_rs::*;
 use test_foreign_service::sink::TestForeignSink;
 use test_foreign_service::source::TestForeignSource;
+use test_logger::setup_test_logger;
 
 fn apply_ddls(ddls: &[String]) -> SpringPipeline {
     let pipeline = spring_open().unwrap();
@@ -23,6 +24,8 @@ fn drain_from_sink(sink: &TestForeignSink) -> Vec<serde_json::Value> {
 
 #[test]
 fn test_e2e_source_sink() -> Result<()> {
+    setup_test_logger();
+
     let json_oracle = json!({
         "ts": "2021-11-04 23:02:52.123456789",
         "ticker": "ORCL",

@@ -31,6 +31,7 @@ pest_derive = "2.1"
 
 [dev-dependencies]
 test-foreign-service = {path = "../test-foreign-service"}
+test-logger = {path = "../test-logger"}
 
 pretty_assertions = "1.0"
 

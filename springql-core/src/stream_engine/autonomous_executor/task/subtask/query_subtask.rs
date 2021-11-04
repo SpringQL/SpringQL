@@ -61,6 +61,8 @@ impl QuerySubtask {
 mod tests {
     use std::{rc::Rc, sync::Arc};
 
+    use test_logger::setup_test_logger;
+
     use crate::{
         pipeline::name::{PumpName, StreamName},
         stream_engine::autonomous_executor::{row::Row, task::task_id::TaskId},
@@ -69,7 +71,6 @@ mod tests {
             QueryPlan,
         },
         stream_engine::dependency_injection::test_di::TestDI,
-        test_support::setup::setup_test_logger,
     };
 
     use super::*;

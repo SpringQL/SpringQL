@@ -66,12 +66,12 @@ where
 #[cfg(test)]
 mod tests {
     use test_foreign_service::{sink::TestForeignSink, source::TestForeignSource};
+    use test_logger::setup_test_logger;
 
     use super::*;
     use crate::{
         pipeline::name::{PumpName, StreamName},
         stream_engine::autonomous_executor::row::foreign_row::format::json::JsonObject,
-        test_support::setup::setup_test_logger,
     };
 
     /// Returns sink output in reached order
