@@ -13,8 +13,9 @@ use crate::{
     error::SpringError,
     stream_engine::{
         autonomous_executor::{
-            scheduler::scheduler_read::SchedulerRead, server::server_repository::ServerRepository,
-            task::task_context::TaskContext, Scheduler,
+            scheduler::scheduler_read::SchedulerRead,
+            server_instance::server_repository::ServerRepository, task::task_context::TaskContext,
+            Scheduler,
         },
         dependency_injection::DependencyInjection,
     },

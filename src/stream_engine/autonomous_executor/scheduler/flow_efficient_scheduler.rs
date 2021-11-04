@@ -97,21 +97,18 @@
 //!
 //! Selecting 1 from these schedule intelligently should lead to more memory reduction but current implementation always select first one (eagerly select leftmost outgoing edge).
 
-use crate::error::Result;
+use crate::{
+    error::Result,
+    pipeline::{name::StreamName, pipeline_version::PipelineVersion},
+};
 use petgraph::{
     graph::{DiGraph, EdgeReference, NodeIndex},
     visit::EdgeRef,
 };
 use std::{collections::HashSet, sync::Arc};
 
-use crate::{
-    model::name::StreamName,
-    stream_engine::{
-        autonomous_executor::task::{
-            task_graph::TaskGraph, task_id::TaskId, task_state::TaskState, Task,
-        },
-        pipeline::pipeline_version::PipelineVersion,
-    },
+use crate::stream_engine::autonomous_executor::task::{
+    task_graph::TaskGraph, task_id::TaskId, task_state::TaskState, Task,
 };
 
 use super::{Scheduler, WorkerState};
@@ -267,8 +264,11 @@ mod tests {
     use std::collections::VecDeque;
 
     use crate::{
-        model::name::{PumpName, StreamName},
-        stream_engine::{autonomous_executor::task::task_id::TaskId, pipeline::Pipeline},
+        pipeline::{name::PumpName, Pipeline},
+        stream_engine::autonomous_executor::{
+            task::task_id::TaskId,
+            test_support::foreign::{sink::TestSink, source::TestSource},
+        },
     };
 
     use super::*;
@@ -305,18 +305,39 @@ mod tests {
 
     #[test]
     fn test_source_only_pipeline() {
-        t(Pipeline::fx_source_only(), vec![])
+        let test_source = TestSource::start(vec![]).unwrap();
+        t(
+            Pipeline::fx_source_only(test_source.host_ip(), test_source.port()),
+            vec![],
+        )
     }
 
     #[test]
     fn test_linear_pipeline_stopped() {
-        t(Pipeline::fx_linear_stopped(), vec![])
+        let test_source = TestSource::start(vec![]).unwrap();
+        let test_sink = TestSink::start().unwrap();
+        t(
+            Pipeline::fx_linear_stopped(
+                test_source.host_ip(),
+                test_source.port(),
+                test_sink.host_ip(),
+                test_sink.port(),
+            ),
+            vec![],
+        )
     }
 
     #[test]
     fn test_linear_pipeline() {
+        let test_source = TestSource::start(vec![]).unwrap();
+        let test_sink = TestSink::start().unwrap();
         t(
-            Pipeline::fx_linear(),
+            Pipeline::fx_linear(
+                test_source.host_ip(),
+                test_source.port(),
+                test_sink.host_ip(),
+                test_sink.port(),
+            ),
             vec![
                 TaskId::from_source_server(StreamName::factory("fst_1")),
                 TaskId::from_pump(PumpName::factory("pu_b")),
@@ -327,8 +348,19 @@ mod tests {
 
     #[test]
     fn test_pipeline_with_split() {
+        let test_source = TestSource::start(vec![]).unwrap();
+        let test_sink1 = TestSink::start().unwrap();
+        let test_sink2 = TestSink::start().unwrap();
+
         t(
-            Pipeline::fx_split(),
+            Pipeline::fx_split(
+                test_source.host_ip(),
+                test_source.port(),
+                test_sink1.host_ip(),
+                test_sink1.port(),
+                test_sink2.host_ip(),
+                test_sink2.port(),
+            ),
             vec![
                 TaskId::from_source_server(StreamName::factory("fst_1")),
                 TaskId::from_pump(PumpName::factory("pu_c")),
@@ -342,8 +374,15 @@ mod tests {
 
     #[test]
     fn test_pipeline_with_merge() {
+        let test_source = TestSource::start(vec![]).unwrap();
+        let test_sink = TestSink::start().unwrap();
         t(
-            Pipeline::fx_split_merge(),
+            Pipeline::fx_split_merge(
+                test_source.host_ip(),
+                test_source.port(),
+                test_sink.host_ip(),
+                test_sink.port(),
+            ),
             vec![
                 TaskId::from_source_server(StreamName::factory("fst_2")),
                 TaskId::from_pump(PumpName::factory("pu_d")),
@@ -356,8 +395,18 @@ mod tests {
 
     #[test]
     fn test_complex_pipeline() {
+        let test_source = TestSource::start(vec![]).unwrap();
+        let test_sink1 = TestSink::start().unwrap();
+        let test_sink2 = TestSink::start().unwrap();
         t(
-            Pipeline::fx_complex(),
+            Pipeline::fx_complex(
+                test_source.host_ip(),
+                test_source.port(),
+                test_sink1.host_ip(),
+                test_sink1.port(),
+                test_sink2.host_ip(),
+                test_sink2.port(),
+            ),
             vec![
                 TaskId::from_source_server(StreamName::factory("fst_1")),
                 TaskId::from_pump(PumpName::factory("pu_c")),

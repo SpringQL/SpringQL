@@ -7,7 +7,7 @@ use crate::stream_engine::dependency_injection::DependencyInjection;
 use self::worker::{worker_id::WorkerId, Worker};
 
 use super::{
-    scheduler::scheduler_read::SchedulerRead, server::server_repository::ServerRepository,
+    scheduler::scheduler_read::SchedulerRead, server_instance::server_repository::ServerRepository,
 };
 
 #[derive(Debug)]

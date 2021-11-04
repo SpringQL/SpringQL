@@ -1,4 +1,4 @@
-use crate::model::name::PumpName;
+use crate::pipeline::name::PumpName;
 
 #[derive(Eq, PartialEq, Debug)]
 pub(crate) enum AlterPumpCommand {

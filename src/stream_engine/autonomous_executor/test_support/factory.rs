@@ -1,30 +1,28 @@
 use std::sync::Arc;
 
 use crate::{
-    model::{
-        name::{ColumnName, PumpName, StreamName},
-        option::options_builder::OptionsBuilder,
-        query_plan::query_plan_node::{operation::LeafOperation, QueryPlanNodeLeaf},
+    pipeline::{
+        name::ColumnName, option::options_builder::OptionsBuilder,
+        stream_model::stream_shape::StreamShape,
+    },
+    stream_engine::command::query_plan::query_plan_node::{
+        operation::LeafOperation, QueryPlanNodeLeaf,
     },
     stream_engine::{
         autonomous_executor::{
-            data::{
+            row::{
                 column::stream_column::StreamColumns,
                 column_values::ColumnValues,
                 foreign_row::format::json::JsonObject,
-                row::Row,
                 value::sql_value::{nn_sql_value::NnSqlValue, SqlValue},
+                Row,
             },
-            server::{
+            server_instance::{
                 server_repository::ServerRepository,
-                source::{
-                    net::{NetSourceServerActive, NetSourceServerStandby},
-                    SourceServerStandby,
-                },
+                source::{net::NetSourceServerInstance, SourceServerInstance},
             },
             test_support::foreign::source::TestSource,
         },
-        pipeline::stream_model::stream_shape::StreamShape,
         RowRepository,
     },
     stream_engine::{
@@ -36,7 +34,7 @@ use crate::{
     },
 };
 
-impl NetSourceServerActive {
+impl NetSourceServerInstance {
     pub(in crate::stream_engine) fn factory_with_test_source(inputs: Vec<JsonObject>) -> Self {
         let source = TestSource::start(inputs).unwrap();
 
@@ -46,8 +44,7 @@ impl NetSourceServerActive {
             .add("REMOTE_PORT", source.port().to_string())
             .build();
 
-        let server = NetSourceServerStandby::new(&options).unwrap();
-        server.start().unwrap()
+        NetSourceServerInstance::start(&options).unwrap()
     }
 }
 
@@ -164,18 +161,6 @@ impl QueryPlanNodeLeaf {
         Self {
             op: LeafOperation::Collect,
         }
-    }
-}
-
-impl StreamName {
-    pub(in crate::stream_engine) fn factory(name: &str) -> Self {
-        Self::new(name.to_string())
-    }
-}
-
-impl PumpName {
-    pub(in crate::stream_engine) fn factory(name: &str) -> Self {
-        Self::new(name.to_string())
     }
 }
 

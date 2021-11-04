@@ -17,16 +17,14 @@ pub(crate) mod command;
 
 mod autonomous_executor;
 mod dependency_injection;
-mod pipeline;
 mod reactive_executor;
 
-use crate::error::Result;
+use crate::{error::Result, pipeline::Pipeline};
 use autonomous_executor::{CurrentTimestamp, RowRepository, Scheduler};
 
 use self::{
     autonomous_executor::AutonomousExecutor, command::alter_pipeline_command::AlterPipelineCommand,
-    dependency_injection::DependencyInjection, pipeline::Pipeline,
-    reactive_executor::ReactiveExecutor,
+    dependency_injection::DependencyInjection, reactive_executor::ReactiveExecutor,
 };
 
 #[cfg(not(test))]
@@ -71,9 +69,9 @@ mod tests {
     use super::*;
     use crate::{
         error::SpringError,
-        model::name::{PumpName, StreamName},
+        pipeline::name::{PumpName, StreamName},
         stream_engine::autonomous_executor::{
-            data::foreign_row::format::json::JsonObject, test_support::foreign::sink::TestSink,
+            row::foreign_row::format::json::JsonObject, test_support::foreign::sink::TestSink,
         },
         test_support::setup::setup_test_logger,
     };

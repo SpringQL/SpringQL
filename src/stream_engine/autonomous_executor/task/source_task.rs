@@ -2,13 +2,13 @@ use std::fmt::Debug;
 use std::sync::Arc;
 
 use crate::error::Result;
-use crate::model::name::ServerName;
-use crate::stream_engine::autonomous_executor::data::row::Row;
+use crate::pipeline::foreign_stream_model::ForeignStreamModel;
+use crate::pipeline::name::ServerName;
+use crate::pipeline::pipeline_graph::PipelineGraph;
+use crate::pipeline::server_model::ServerModel;
+use crate::stream_engine::autonomous_executor::row::Row;
 use crate::stream_engine::autonomous_executor::RowRepository;
 use crate::stream_engine::dependency_injection::DependencyInjection;
-use crate::stream_engine::pipeline::foreign_stream_model::ForeignStreamModel;
-use crate::stream_engine::pipeline::pipeline_graph::PipelineGraph;
-use crate::stream_engine::pipeline::server_model::ServerModel;
 
 use super::task_context::TaskContext;
 use super::task_id::TaskId;

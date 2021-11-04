@@ -8,7 +8,7 @@ use std::fmt::Debug;
 use std::sync::Arc;
 
 use crate::error::Result;
-use crate::stream_engine::pipeline::{pipeline_version::PipelineVersion, Pipeline};
+use crate::pipeline::{pipeline_version::PipelineVersion, Pipeline};
 
 use super::task::{task_graph::TaskGraph, Task};
 

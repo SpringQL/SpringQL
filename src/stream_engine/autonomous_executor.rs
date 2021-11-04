@@ -1,27 +1,26 @@
-pub(in crate::stream_engine) mod server;
+pub(in crate::stream_engine) mod server_instance;
 pub(in crate::stream_engine) mod task;
 
-pub(super) mod data;
-pub(self) mod exec;
+pub(super) mod row;
 
 mod scheduler;
 mod worker_pool;
 
-use crate::error::Result;
+use crate::{error::Result, pipeline::Pipeline};
 use std::sync::{Arc, RwLock};
 
-pub(in crate::stream_engine) use data::{
+pub(in crate::stream_engine) use row::{
     CurrentTimestamp, NaiveRowRepository, RowRepository, Timestamp,
 };
 pub(in crate::stream_engine) use scheduler::{FlowEfficientScheduler, Scheduler};
 
 use self::{
     scheduler::{scheduler_read::SchedulerRead, scheduler_write::SchedulerWrite},
-    server::server_repository::ServerRepository,
+    server_instance::server_repository::ServerRepository,
     worker_pool::WorkerPool,
 };
 
-use super::{dependency_injection::DependencyInjection, pipeline::Pipeline};
+use super::dependency_injection::DependencyInjection;
 
 #[cfg(test)]
 pub(super) mod test_support;
