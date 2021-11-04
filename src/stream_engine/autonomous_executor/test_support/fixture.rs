@@ -47,7 +47,7 @@ impl Timestamp {
 impl JsonObject {
     pub(in crate::stream_engine) fn fx_city_temperature_tokyo() -> Self {
         Self::new(json!({
-            "timestamp": Timestamp::fx_ts1().to_string(),
+            "ts": Timestamp::fx_ts1().to_string(),
             "city": "Tokyo",
             "temperature": 21,
         }))
@@ -55,7 +55,7 @@ impl JsonObject {
 
     pub(in crate::stream_engine) fn fx_city_temperature_osaka() -> Self {
         Self::new(json!({
-            "timestamp": Timestamp::fx_ts2().to_string(),
+            "ts": Timestamp::fx_ts2().to_string(),
             "city": "Osaka",
             "temperature": 23,
         }))
@@ -63,7 +63,7 @@ impl JsonObject {
 
     pub(in crate::stream_engine) fn fx_city_temperature_london() -> Self {
         Self::new(json!({
-            "timestamp": Timestamp::fx_ts3().to_string(),
+            "ts": Timestamp::fx_ts3().to_string(),
             "city": "London",
             "temperature": 13,
         }))
@@ -71,7 +71,7 @@ impl JsonObject {
 
     pub(in crate::stream_engine) fn fx_trade_oracle() -> Self {
         Self::new(json!({
-            "timestamp": Timestamp::fx_ts1().to_string(),
+            "ts": Timestamp::fx_ts1().to_string(),
             "ticker": "ORCL",
             "amount": 20,
         }))
@@ -79,7 +79,7 @@ impl JsonObject {
 
     pub(in crate::stream_engine) fn fx_trade_ibm() -> Self {
         Self::new(json!({
-            "timestamp": Timestamp::fx_ts2().to_string(),
+            "ts": Timestamp::fx_ts2().to_string(),
             "ticker": "IBM",
             "amount": 30,
         }))
@@ -87,7 +87,7 @@ impl JsonObject {
 
     pub(in crate::stream_engine) fn fx_trade_google() -> Self {
         Self::new(json!({
-            "timestamp": Timestamp::fx_ts3().to_string(),
+            "ts": Timestamp::fx_ts3().to_string(),
             "ticker": "GOOGL",
             "amount": 100,
         }))

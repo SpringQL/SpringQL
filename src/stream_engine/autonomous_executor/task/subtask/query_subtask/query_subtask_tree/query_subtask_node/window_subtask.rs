@@ -230,7 +230,7 @@ mod tests {
                 .map(|got_row| {
                     let got_sql_value = got_row
                         .as_ref()
-                        .get(&ColumnName::new("timestamp".to_string()))
+                        .get(&ColumnName::fx_timestamp())
                         .unwrap();
                     if let SqlValue::NotNull(got_nn_sql_value) = got_sql_value {
                         got_nn_sql_value.unpack()

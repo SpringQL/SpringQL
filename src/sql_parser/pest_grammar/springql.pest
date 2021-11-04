@@ -1,0 +1,369 @@
+/*
+ * Whole syntax definition of SpringQL.
+ *
+ * This file is written in PEG (Parsing expression grammars) and
+ * programmatically parsed by pest (https://github.com/pest-parser/pest).
+ *
+ * This file consists of sections (decorated with `===...`). and subsections (decoated with `---...`).
+ *
+ * The entry point of SpringQL's syntax is `command`.
+ * See `Commands` section.
+ */
+
+/*
+ * ================================================================================================
+ * Keywords:
+ * ================================================================================================
+ */
+
+// Beware of substrings.
+//   NG) ^"A" | ^"ABSOLUTE"
+// In this case, only "A" matches with query `ABSOLUTE` (eager matching).
+keyword = { 
+    ^"BIGINT"
+    | ^"CREATE"
+    | ^"INTEGER"
+    | ^"NOT"
+    | ^"NULL"
+    | ^"OPTIONS"
+    | ^"ROWTIME"
+    | ^"SERVER"
+    | ^"SMALLINT"
+    | ^"SOURCE"
+    | ^"STREAM"
+    | ^"TEXT"
+    | ^"TIMESTAMP"
+}
+
+/*
+ * ================================================================================================
+ * Lexical Structure:
+ *
+ * Defined almost independently from other SQL syntaxes.
+ * This provides the ability to use UTF-8 characters for objects name like
+ * table names and column names.
+ * ================================================================================================
+ */
+
+WHITESPACE = _{ " " | "\t" | NEWLINE } // TODO: add `FORM FEED`
+
+sql_language_character = _{
+    rich_utf8_letter
+    | DECIMAL_NUMBER
+}
+
+sql_special_character = _{
+    "!"
+    | "\""
+    | "#"
+    | "$"
+    | "%"
+    | "&"
+    | "'"
+    | "("
+    | ")"
+    | "*"
+    | "+"
+    | ","
+    | "-"
+    | "."
+    | "/"
+    | ":"
+    | ";"
+    | "<"
+    | "="
+    | ">"
+    | "?"
+    | "@"
+    | "["
+    | "\\"
+    | "]"
+    | "^"
+    | "`"
+    | "{"
+    | "|"
+    | "}"
+    | "~"
+}
+
+// Enables intuitive table / column names even for non-native English speakers.
+//
+// See:
+// pest's built-in character classes: https://pest.rs/book/grammars/built-ins.html#general-categories
+// Unicode's General Category: http://www.unicode.org/reports/tr44/#General_Category_Values
+rich_utf8_letter = _{
+    !sql_special_character ~ (
+        LETTER
+        | MARK
+        | PUNCTUATION
+        | SYMBOL
+        | LETTER_NUMBER
+        | OTHER_NUMBER
+    )
+}
+
+string_character = _{
+    !"'"
+    ~ ANY
+}
+
+/*
+ * ----------------------------------------------------------------------------
+ * Constants
+ * ----------------------------------------------------------------------------
+ */
+
+constant = {
+    null_constant
+    | numeric_constant
+    | string_constant
+}
+
+null_constant = {
+    ^"NULL"
+}
+
+numeric_constant = {
+    integer_constant
+}
+
+integer_constant = @{
+    DECIMAL_NUMBER+
+}
+
+string_constant = {
+    "'" ~ string_content ~ "'"
+}
+
+string_content = @{
+    string_character*
+}
+
+/*
+ * ----------------------------------------------------------------------------
+ * Operators
+ * ----------------------------------------------------------------------------
+ */
+
+unary_operator = {
+    "-"
+}
+
+binary_operator = {
+    "="
+}
+
+/*
+ * ================================================================================================
+ * Identifier:
+ *
+ * Defined independently from other SQL syntaxes.
+ * ================================================================================================
+ */
+
+identifier = @{
+    // does not start with a keyword.
+    (
+        !keyword ~ (
+            identifier_start ~ identifier_part*
+        )
+    )
+    // starts with a keyword but followed by other letters.
+    | ( keyword ~ identifier_part+ )
+}
+
+identifier_start = _{
+    rich_utf8_letter
+}
+
+identifier_part = _{
+    identifier_start
+    | DECIMAL_NUMBER
+}
+
+/*
+ * ================================================================================================
+ * Value Expressions:
+ *
+ * Extracted subset of terms and categories from PostgreSQL
+ * (https://www.postgresql.org/docs/12/sql-expressions.html).
+ * ================================================================================================
+ */
+
+condition = {
+    expression
+}
+
+expression = {
+    sub_expression ~ (binary_operator ~ expression)?
+}
+// To avoid left-recursion
+sub_expression = {
+    constant
+    | column_reference
+    | (unary_operator ~ expression)
+}
+
+/*
+ * ----------------------------------------------------------------------------
+ * Column References
+ * (https://www.postgresql.org/docs/12/sql-expressions.html#SQL-EXPRESSIONS-COLUMN-REFS)
+ * ----------------------------------------------------------------------------
+ */
+
+column_reference = {
+    (correlation ~ ".")? ~ column_name
+}
+
+/*
+ * ================================================================================================
+ * Data Types:
+ *
+ * Extracted subset of terms and categories from PostgreSQL
+ * (https://www.postgresql.org/docs/12/datatype.html).
+ * ================================================================================================
+ */
+
+data_type = {
+    integer_type
+    | character_type
+    | timestamp_type
+}
+
+/*
+ * ----------------------------------------------------------------------------
+ * Integer Types
+ * (https://www.postgresql.org/docs/12/datatype-numeric.html#DATATYPE-INT)
+ * ----------------------------------------------------------------------------
+ */
+
+integer_type = {
+    ^"SMALLINT"
+    | ^"INTEGER"
+    | ^"BIGINT"
+}
+
+/*
+ * ----------------------------------------------------------------------------
+ * Character Types
+ * (https://www.postgresql.org/docs/12/datatype-character.html)
+ * ----------------------------------------------------------------------------
+ */
+
+character_type = {
+    ^"TEXT"
+}
+
+/*
+ * ----------------------------------------------------------------------------
+ * Timestamp Types
+ * ----------------------------------------------------------------------------
+ */
+
+timestamp_type = {
+    ^"TIMESTAMP"
+}
+
+/*
+ * ================================================================================================
+ * Commands:
+ *
+ * Basically extracted subset of terms and categories from sqlstream
+ * (https://docs.sqlstream.com/sql-reference-guide/).
+ * ================================================================================================
+ */
+
+// The entry point of SpringQL.
+command = {
+    SOI ~ (
+        create_source_stream_command
+    )
+    ~ ";"?
+    ~ EOI
+}
+
+/*
+ * ----------------------------------------------------------------------------
+ * CREATE SOURCE STREAM
+ * ----------------------------------------------------------------------------
+ */
+
+create_source_stream_command = {
+    ^"CREATE" ~ ^"SOURCE" ~ ^"STREAM"
+    ~ foreign_stream_name
+    ~ "("
+    ~ column_definition ~ ("," ~ column_definition)*
+    ~ ")"
+    ~ ^"SERVER" ~ server_name
+    ~ option_specifications?
+}
+
+/*
+ * ----------------------------------------------------------------------------
+ * Names
+ * ----------------------------------------------------------------------------
+ */
+
+foreign_stream_name = {
+    identifier
+}
+
+server_name = {
+    identifier
+}
+
+column_name = {
+    identifier
+}
+
+option_name = {
+    identifier
+}
+
+correlation = {
+    identifier
+}
+
+/*
+ * ----------------------------------------------------------------------------
+ * Constraints
+ * ----------------------------------------------------------------------------
+ */
+
+column_constraint = {
+    ^"NOT NULL"
+    | ^"ROWTIME"
+}
+
+/*
+ * ----------------------------------------------------------------------------
+ * Column Definitions
+ * ----------------------------------------------------------------------------
+ */
+
+column_definition = {
+    column_name
+    ~ data_type
+    ~ column_constraint*
+}
+
+/*
+ * ----------------------------------------------------------------------------
+ * Option Specifications
+ * ----------------------------------------------------------------------------
+ */
+
+option_specifications = {
+    ^"OPTIONS"
+    ~ "("
+    ~ option_specification ~ ("," ~ option_specification)*
+    ~ ")"
+}
+
+option_specification = {
+    option_name ~ option_value
+}
+
+option_value = {
+    string_constant
+}

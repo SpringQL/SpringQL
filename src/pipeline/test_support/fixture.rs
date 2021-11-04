@@ -7,7 +7,10 @@ use crate::pipeline::{
     pump_model::pump_state::PumpState,
     pump_model::PumpModel,
     relation::{
-        column::{column_data_type::ColumnDataType, column_definition::ColumnDefinition},
+        column::{
+            column_constraint::ColumnConstraint, column_data_type::ColumnDataType,
+            column_definition::ColumnDefinition,
+        },
         sql_type::SqlType,
     },
     server_model::{server_type::ServerType, ServerModel},
@@ -391,86 +394,36 @@ impl Pipeline {
 
 impl StreamShape {
     pub(crate) fn fx_city_temperature() -> Self {
-        Self::new(
-            vec![
-                ColumnDefinition::fx_timestamp(),
-                ColumnDefinition::fx_city(),
-                ColumnDefinition::fx_temperature(),
-            ],
-            Some(ColumnName::new("timestamp".to_string())),
-        )
+        Self::new(vec![
+            ColumnDefinition::fx_timestamp(),
+            ColumnDefinition::fx_city(),
+            ColumnDefinition::fx_temperature(),
+        ])
         .unwrap()
     }
     pub(crate) fn fx_trade() -> Self {
-        Self::new(
-            vec![
-                ColumnDefinition::fx_timestamp(),
-                ColumnDefinition::fx_ticker(),
-                ColumnDefinition::fx_amount(),
-            ],
-            Some(ColumnName::new("timestamp".to_string())),
-        )
+        Self::new(vec![
+            ColumnDefinition::fx_timestamp(),
+            ColumnDefinition::fx_ticker(),
+            ColumnDefinition::fx_amount(),
+        ])
         .unwrap()
     }
 
     pub(crate) fn fx_no_promoted_rowtime() -> Self {
-        Self::new(vec![ColumnDefinition::fx_amount()], None).unwrap()
+        Self::new(vec![ColumnDefinition::fx_amount()]).unwrap()
     }
 }
 
 impl StreamModel {
-    pub(crate) fn fx_city_temperature() -> Self {
-        Self::new(
-            StreamName::fx_city_temperature(),
-            Arc::new(StreamShape::fx_city_temperature()),
-            Options::fx_empty(),
-        )
-    }
-
-    pub(crate) fn fx_trade() -> Self {
-        Self::new(
-            StreamName::fx_trade(),
-            Arc::new(StreamShape::fx_trade()),
-            Options::fx_empty(),
-        )
-    }
-
     pub(crate) fn fx_trade_with_name(name: StreamName) -> Self {
-        Self::new(name, Arc::new(StreamShape::fx_trade()), Options::fx_empty())
+        Self::new(name, Arc::new(StreamShape::fx_trade()))
     }
 }
 
 impl ForeignStreamModel {
-    pub(crate) fn fx_city_temperature_source() -> Self {
-        Self::new(StreamModel::new(
-            StreamName::fx_city_temperature_source(),
-            Arc::new(StreamShape::fx_city_temperature()),
-            Options::fx_empty(),
-        ))
-    }
-
-    pub(crate) fn fx_trade_source() -> Self {
-        Self::new(StreamModel::new(
-            StreamName::fx_trade_source(),
-            Arc::new(StreamShape::fx_trade()),
-            Options::fx_empty(),
-        ))
-    }
-
-    pub(crate) fn fx_trade_sink() -> Self {
-        Self::new(StreamModel::new(
-            StreamName::fx_trade_sink(),
-            Arc::new(StreamShape::fx_trade()),
-            Options::fx_empty(),
-        ))
-    }
-
     pub(crate) fn fx_trade_with_name(name: StreamName) -> Self {
-        Self::new(StreamModel::new(
-            name,
-            Arc::new(StreamShape::fx_trade()),
-            Options::fx_empty(),
-        ))
+        Self::new(StreamModel::new(name, Arc::new(StreamShape::fx_trade())))
     }
 }
 
@@ -518,33 +471,32 @@ impl PumpModel {
 
 impl ColumnDefinition {
     pub(crate) fn fx_timestamp() -> Self {
-        Self::new(ColumnDataType::fx_timestamp())
+        Self::new(
+            ColumnDataType::fx_timestamp(),
+            vec![ColumnConstraint::Rowtime],
+        )
     }
 
     pub(crate) fn fx_city() -> Self {
-        Self::new(ColumnDataType::fx_city())
+        Self::new(ColumnDataType::fx_city(), vec![])
     }
 
     pub(crate) fn fx_temperature() -> Self {
-        Self::new(ColumnDataType::fx_temperature())
+        Self::new(ColumnDataType::fx_temperature(), vec![])
     }
 
     pub(crate) fn fx_ticker() -> Self {
-        Self::new(ColumnDataType::fx_ticker())
+        Self::new(ColumnDataType::fx_ticker(), vec![])
     }
 
     pub(crate) fn fx_amount() -> Self {
-        Self::new(ColumnDataType::fx_amount())
+        Self::new(ColumnDataType::fx_amount(), vec![])
     }
 }
 
 impl ColumnDataType {
     pub(crate) fn fx_timestamp() -> Self {
-        Self::new(
-            ColumnName::new("timestamp".to_string()),
-            SqlType::timestamp(),
-            false,
-        )
+        Self::new(ColumnName::fx_timestamp(), SqlType::timestamp(), false)
     }
 
     pub(crate) fn fx_city() -> Self {
@@ -570,17 +522,19 @@ impl ColumnDataType {
     pub(crate) fn fx_amount() -> Self {
         Self::new(
             ColumnName::new("amount".to_string()),
-            SqlType::small_int(),
+            SqlType::integer(),
             false,
         )
     }
 }
 
-impl Options {
-    pub(crate) fn fx_empty() -> Self {
-        OptionsBuilder::default().build()
+impl ColumnName {
+    pub(crate) fn fx_timestamp() -> Self {
+        Self::new("ts".to_string())
     }
+}
 
+impl Options {
     pub(crate) fn fx_net_source_server(remote_host: IpAddr, remote_port: u16) -> Self {
         OptionsBuilder::default()
             .add("PROTOCOL", "TCP")
@@ -599,37 +553,14 @@ impl Options {
 }
 
 impl StreamName {
-    pub(crate) fn fx_city_temperature() -> Self {
-        StreamName::new("st_city_temperature".to_string())
-    }
-    pub(crate) fn fx_city_temperature_source() -> Self {
-        StreamName::new("st_city_temperature_source".to_string())
-    }
-    pub(crate) fn fx_city_temperature_sink() -> Self {
-        StreamName::new("st_city_temperature_sink".to_string())
-    }
-
-    pub(crate) fn fx_trade() -> Self {
-        StreamName::new("st_trade".to_string())
-    }
     pub(crate) fn fx_trade_source() -> Self {
         StreamName::new("fst_trade_source".to_string())
-    }
-    pub(crate) fn fx_trade_sink() -> Self {
-        StreamName::new("fst_trade_sink".to_string())
     }
 }
 
 impl PumpName {
-    pub(crate) fn fx_city_temperature_p1() -> Self {
-        Self::new("pu_city_temperature_p1".to_string())
-    }
-
     pub(crate) fn fx_trade_p1() -> Self {
         Self::new("pu_trade_p1".to_string())
-    }
-    pub(crate) fn fx_trade2_p1() -> Self {
-        Self::new("pu_trade2_p1".to_string())
     }
     pub(crate) fn fx_trade_window() -> Self {
         Self::new("pu_trade_window".to_string())

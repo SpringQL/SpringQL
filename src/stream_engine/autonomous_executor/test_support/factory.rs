@@ -57,7 +57,7 @@ impl StreamColumns {
         let mut column_values = ColumnValues::default();
         column_values
             .insert(
-                ColumnName::new("timestamp".to_string()),
+                ColumnName::fx_timestamp(),
                 SqlValue::NotNull(NnSqlValue::Timestamp(timestamp)),
             )
             .unwrap();
@@ -85,7 +85,7 @@ impl StreamColumns {
         let mut column_values = ColumnValues::default();
         column_values
             .insert(
-                ColumnName::new("timestamp".to_string()),
+                ColumnName::fx_timestamp(),
                 SqlValue::NotNull(NnSqlValue::Timestamp(timestamp)),
             )
             .unwrap();

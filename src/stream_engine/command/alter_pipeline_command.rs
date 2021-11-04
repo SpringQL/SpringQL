@@ -7,7 +7,7 @@ use crate::pipeline::{
     stream_model::StreamModel,
 };
 
-#[derive(Eq, PartialEq, Debug)]
+#[derive(Clone, Eq, PartialEq, Debug)]
 pub(crate) enum AlterPipelineCommand {
     CreateStream(StreamModel),
     CreateForeignStream(ServerModel),

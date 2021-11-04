@@ -3,8 +3,8 @@ use serde::{Deserialize, Serialize};
 
 use crate::{
     error::{Result, SpringError},
-    pipeline::name::ColumnName,
     pipeline::relation::sql_type::SqlType,
+    pipeline::{name::ColumnName, relation::column::column_constraint::ColumnConstraint},
 };
 
 use crate::pipeline::relation::column::column_definition::ColumnDefinition;
@@ -19,10 +19,12 @@ impl StreamShape {
     /// # Failure
     ///
     /// - [SpringError::Sql](crate::error::SpringError::Sql) when:
-    ///   - `rowtime` column does not exist in `cols`.
-    ///   - `rowtime` column in `cols` is not a `TIMESTAMP NOT NULL` type.
-    pub(in crate) fn new(cols: Vec<ColumnDefinition>, rowtime: Option<ColumnName>) -> Result<Self> {
-        let _ = if let Some(rowtime_col) = &rowtime {
+    ///   - ROWTIME column in `cols` is not a `TIMESTAMP NOT NULL` type.
+    ///   - 2 or more column have ROWTIME constraints
+    pub(in crate) fn new(cols: Vec<ColumnDefinition>) -> Result<Self> {
+        let promoted_rowtime = Self::extract_promoted_rowtime(&cols)?;
+
+        let _ = if let Some(rowtime_col) = &promoted_rowtime {
             Self::validate_rowtime_column(rowtime_col, &cols)
         } else {
             Ok(())
@@ -30,7 +32,7 @@ impl StreamShape {
 
         Ok(Self {
             cols,
-            promoted_rowtime: rowtime,
+            promoted_rowtime,
         })
     }
 
@@ -40,6 +42,33 @@ impl StreamShape {
 
     pub(crate) fn columns(&self) -> &[ColumnDefinition] {
         &self.cols
+    }
+
+    fn extract_promoted_rowtime(cols: &[ColumnDefinition]) -> Result<Option<ColumnName>> {
+        let rowtime_cdts = cols
+            .iter()
+            .filter_map(|cd| {
+                cd.column_constraints()
+                    .iter()
+                    .any(|cc| matches!(cc, ColumnConstraint::Rowtime))
+                    .then(|| cd.column_data_type())
+            })
+            .collect::<Vec<_>>();
+
+        if rowtime_cdts.len() == 0 {
+            Ok(None)
+        } else if rowtime_cdts.len() == 1 {
+            Ok(Some(rowtime_cdts[0].column_name().clone()))
+        } else {
+            Err(SpringError::Sql(anyhow!(
+                "multiple columns ({}) have ROWTIME constraints",
+                rowtime_cdts
+                    .iter()
+                    .map(|cdt| cdt.column_name().to_string())
+                    .collect::<Vec<_>>()
+                    .join(",")
+            )))
+        }
     }
 
     fn validate_rowtime_column(rowtime_col: &ColumnName, cols: &[ColumnDefinition]) -> Result<()> {
@@ -82,36 +111,20 @@ mod tests {
 
     #[test]
     fn test_rowtime() {
-        let _ = StreamShape::new(
-            vec![ColumnDefinition::fx_timestamp()],
-            Some(ColumnName::new("timestamp".to_string())),
-        )
-        .expect("should succeed");
-    }
-
-    #[test]
-    fn test_rowtime_not_found() {
-        assert!(matches!(
-            StreamShape::new(
-                vec![ColumnDefinition::fx_timestamp(),],
-                Some(ColumnName::new("invalid_ts_name".to_string())),
-            )
-            .unwrap_err(),
-            SpringError::Sql(_)
-        ));
+        let _ = StreamShape::new(vec![ColumnDefinition::fx_timestamp()]).expect("should succeed");
     }
 
     #[test]
     fn test_rowtime_not_timestamp_type() {
         assert!(matches!(
-            StreamShape::new(
-                vec![ColumnDefinition::new(ColumnDataType::new(
-                    ColumnName::new("timestamp".to_string()),
+            StreamShape::new(vec![ColumnDefinition::new(
+                ColumnDataType::new(
+                    ColumnName::fx_timestamp(),
                     SqlType::integer(), // not a timestamp type
                     false
-                ))],
-                Some(ColumnName::new("timestamp".to_string())),
-            )
+                ),
+                vec![ColumnConstraint::Rowtime]
+            )],)
             .unwrap_err(),
             SpringError::Sql(_)
         ));
@@ -120,14 +133,14 @@ mod tests {
     #[test]
     fn test_rowtime_nullable_timestamp_type() {
         assert!(matches!(
-            StreamShape::new(
-                vec![ColumnDefinition::new(ColumnDataType::new(
-                    ColumnName::new("timestamp".to_string()),
+            StreamShape::new(vec![ColumnDefinition::new(
+                ColumnDataType::new(
+                    ColumnName::fx_timestamp(),
                     SqlType::timestamp(),
                     true // nullable
-                ))],
-                Some(ColumnName::new("timestamp".to_string())),
-            )
+                ),
+                vec![ColumnConstraint::Rowtime]
+            )],)
             .unwrap_err(),
             SpringError::Sql(_)
         ));

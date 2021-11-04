@@ -5,13 +5,12 @@ use std::sync::Arc;
 
 use self::stream_shape::StreamShape;
 
-use super::{name::StreamName, option::Options};
+use super::name::StreamName;
 
-#[derive(Eq, PartialEq, Debug, Serialize, Deserialize, new)]
+#[derive(Clone, Eq, PartialEq, Debug, Serialize, Deserialize, new)]
 pub(crate) struct StreamModel {
     name: StreamName,
     shape: Arc<StreamShape>,
-    options: Options,
 }
 
 impl StreamModel {
