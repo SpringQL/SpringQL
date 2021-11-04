@@ -108,7 +108,7 @@ impl PestParserImpl {
     ) -> Result<AlterPipelineCommand> {
         let foreign_stream_name = parse_child(
             &mut params,
-            Rule::foreign_stream_name,
+            Rule::stream_name,
             Self::parse_stream_name,
             identity,
         )?;
@@ -164,7 +164,7 @@ impl PestParserImpl {
     fn parse_create_sink_stream_command(mut params: FnParseParams) -> Result<AlterPipelineCommand> {
         let foreign_stream_name = parse_child(
             &mut params,
-            Rule::foreign_stream_name,
+            Rule::stream_name,
             Self::parse_stream_name,
             identity,
         )?;
