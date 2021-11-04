@@ -124,4 +124,24 @@ mod tests {
             Command::AlterPipeline(AlterPipelineCommand::CreatePump(expected_pump))
         );
     }
+
+    #[test]
+    fn test_alter_pump_start() {
+        let parser = SqlParser::default();
+
+        let sql = "
+            ALTER PUMP pu_passthrough START;
+            ";
+        let command = parser.parse(sql).unwrap();
+
+        let expected_pump = PumpName::new("pu_passthrough".to_string());
+
+        assert_eq!(
+            command,
+            Command::AlterPipeline(AlterPipelineCommand::AlterPump {
+                name: expected_pump,
+                state: PumpState::Started,
+            })
+        );
+    }
 }
