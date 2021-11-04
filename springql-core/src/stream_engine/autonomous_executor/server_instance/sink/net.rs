@@ -87,17 +87,17 @@ impl SinkServerInstance for NetSinkServerInstance {
 
 #[cfg(test)]
 mod tests {
+    use test_foreign_service::sink::TestForeignSink;
+
     use super::*;
     use crate::{
         pipeline::option::options_builder::OptionsBuilder,
-        stream_engine::autonomous_executor::{
-            row::foreign_row::format::json::JsonObject, test_support::foreign::sink::TestSink,
-        },
+        stream_engine::autonomous_executor::row::foreign_row::format::json::JsonObject,
     };
 
     #[test]
     fn test_sink_server_tcp() {
-        let sink = TestSink::start().unwrap();
+        let sink = TestForeignSink::start().unwrap();
 
         let options = OptionsBuilder::default()
             .add("PROTOCOL", "TCP")
@@ -129,9 +129,6 @@ mod tests {
             JsonObject::new(sink.receive().unwrap()),
             JsonObject::fx_city_temperature_london()
         );
-        assert!(matches!(
-            sink.receive().unwrap_err(),
-            SpringError::Unavailable { .. }
-        ));
+        assert!(sink.receive().is_err());
     }
 }

@@ -1,5 +1,7 @@
 use std::sync::Arc;
 
+use test_foreign_service::source::TestForeignSource;
+
 use crate::{
     pipeline::{
         name::ColumnName, option::options_builder::OptionsBuilder,
@@ -13,7 +15,6 @@ use crate::{
             row::{
                 column::stream_column::StreamColumns,
                 column_values::ColumnValues,
-                foreign_row::format::json::JsonObject,
                 value::sql_value::{nn_sql_value::NnSqlValue, SqlValue},
                 Row,
             },
@@ -21,7 +22,6 @@ use crate::{
                 server_repository::ServerRepository,
                 source::{net::NetSourceServerInstance, SourceServerInstance},
             },
-            test_support::foreign::source::TestSource,
         },
         RowRepository,
     },
@@ -35,8 +35,10 @@ use crate::{
 };
 
 impl NetSourceServerInstance {
-    pub(in crate::stream_engine) fn factory_with_test_source(inputs: Vec<JsonObject>) -> Self {
-        let source = TestSource::start(inputs).unwrap();
+    pub(in crate::stream_engine) fn factory_with_test_source(
+        inputs: Vec<serde_json::Value>,
+    ) -> Self {
+        let source = TestForeignSource::start(inputs).unwrap();
 
         let options = OptionsBuilder::default()
             .add("PROTOCOL", "TCP")

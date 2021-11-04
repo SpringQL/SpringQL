@@ -1,21 +1,19 @@
-use crate::error::Result;
-use crate::stream_engine::autonomous_executor::row::foreign_row::format::json::JsonObject;
+use anyhow::Result;
 use chrono::Duration;
 use std::io::Write;
 use std::net::{IpAddr, Shutdown, SocketAddr, TcpListener, TcpStream};
-use std::thread::{self, JoinHandle};
+use std::thread;
 
-pub(in crate::stream_engine) struct TestSource {
+pub struct TestForeignSource {
     my_addr: SocketAddr,
-    conn_thread: JoinHandle<()>,
 }
 
-impl TestSource {
-    pub(in crate::stream_engine) fn start(inputs: Vec<JsonObject>) -> Result<Self> {
+impl TestForeignSource {
+    pub fn start(inputs: Vec<serde_json::Value>) -> Result<Self> {
         let listener = TcpListener::bind("127.0.0.1:0").unwrap();
         let my_addr = listener.local_addr().unwrap();
 
-        let conn_thread = thread::spawn(move || {
+        let _ = thread::spawn(move || {
             for stream in listener.incoming() {
                 let stream = stream.unwrap();
                 stream.shutdown(Shutdown::Read).unwrap();
@@ -23,10 +21,7 @@ impl TestSource {
             }
         });
 
-        Ok(Self {
-            my_addr,
-            conn_thread,
-        })
+        Ok(Self { my_addr })
     }
 
     pub fn host_ip(&self) -> IpAddr {
@@ -37,9 +32,9 @@ impl TestSource {
         self.my_addr.port()
     }
 
-    fn stream_handler(mut stream: TcpStream, inputs: Vec<JsonObject>) -> Result<()> {
+    fn stream_handler(mut stream: TcpStream, inputs: Vec<serde_json::Value>) -> Result<()> {
         log::info!(
-            "[TestSource] Connection from {}",
+            "[TestForeignSource] Connection from {}",
             stream.peer_addr().unwrap()
         );
 
@@ -48,10 +43,10 @@ impl TestSource {
             json_s.push('\n');
             stream.write_all(json_s.as_bytes()).unwrap();
 
-            log::info!("[TestSource] Sent: {}", json_s);
+            log::info!("[TestForeignSource] Sent: {}", json_s);
         }
 
-        log::info!("[TestSource] No message left. Wait forever...");
+        log::info!("[TestForeignSource] No message left. Wait forever...");
         thread::sleep(Duration::hours(1).to_std().unwrap());
 
         Ok(())

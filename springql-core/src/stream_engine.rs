@@ -65,28 +65,26 @@ where
 
 #[cfg(test)]
 mod tests {
-    use super::autonomous_executor::test_support::foreign::source::TestSource;
+    use test_foreign_service::{sink::TestForeignSink, source::TestForeignSource};
+
     use super::*;
     use crate::{
-        error::SpringError,
         pipeline::name::{PumpName, StreamName},
-        stream_engine::autonomous_executor::{
-            row::foreign_row::format::json::JsonObject, test_support::foreign::sink::TestSink,
-        },
+        stream_engine::autonomous_executor::row::foreign_row::format::json::JsonObject,
         test_support::setup::setup_test_logger,
     };
 
     /// Returns sink output in reached order
     fn t_stream_engine_source_sink(
-        source_inputs: Vec<JsonObject>,
+        source_inputs: Vec<serde_json::Value>,
         n_worker_threads: usize,
-    ) -> Vec<JsonObject> {
+    ) -> Vec<serde_json::Value> {
         setup_test_logger();
 
         let source_inputs_len = source_inputs.len();
 
-        let source = TestSource::start(source_inputs).unwrap();
-        let sink = TestSink::start().unwrap();
+        let source = TestForeignSource::start(source_inputs).unwrap();
+        let sink = TestForeignSink::start().unwrap();
 
         let fst_trade_source = StreamName::factory("fst_trade_source");
         let fst_trade_sink = StreamName::factory("fst_trade_sink");
@@ -119,10 +117,7 @@ mod tests {
             ))
             .unwrap();
 
-        assert!(matches!(
-            sink.receive().unwrap_err(),
-            SpringError::Unavailable { .. }
-        ));
+        assert!(sink.receive().is_err());
 
         engine
             .alter_pipeline(AlterPipelineCommand::fx_alter_pump_start(
@@ -132,12 +127,9 @@ mod tests {
 
         let mut received = Vec::new();
         for _ in 0..source_inputs_len {
-            received.push(JsonObject::new(sink.receive().unwrap()));
+            received.push(sink.receive().unwrap());
         }
-        assert!(matches!(
-            sink.receive().unwrap_err(),
-            SpringError::Unavailable { .. }
-        ));
+        assert!(sink.receive().is_err());
 
         received
     }
@@ -146,9 +138,9 @@ mod tests {
     fn test_stream_engine_source_sink_single_thread() {
         setup_test_logger();
 
-        let json_oracle = JsonObject::fx_trade_oracle();
-        let json_ibm = JsonObject::fx_trade_ibm();
-        let json_google = JsonObject::fx_trade_google();
+        let json_oracle: serde_json::Value = JsonObject::fx_trade_oracle().into();
+        let json_ibm: serde_json::Value = JsonObject::fx_trade_ibm().into();
+        let json_google: serde_json::Value = JsonObject::fx_trade_google().into();
 
         let received = t_stream_engine_source_sink(
             vec![json_oracle.clone(), json_ibm.clone(), json_google.clone()],
@@ -164,9 +156,9 @@ mod tests {
     fn test_stream_engine_source_sink_multi_thread() {
         setup_test_logger();
 
-        let json_oracle = JsonObject::fx_trade_oracle();
-        let json_ibm = JsonObject::fx_trade_ibm();
-        let json_google = JsonObject::fx_trade_google();
+        let json_oracle: serde_json::Value = JsonObject::fx_trade_oracle().into();
+        let json_ibm: serde_json::Value = JsonObject::fx_trade_ibm().into();
+        let json_google: serde_json::Value = JsonObject::fx_trade_google().into();
 
         let received = t_stream_engine_source_sink(
             vec![json_oracle.clone(), json_ibm.clone(), json_google.clone()],

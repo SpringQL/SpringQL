@@ -263,12 +263,11 @@ impl FlowEfficientScheduler {
 mod tests {
     use std::collections::VecDeque;
 
+    use test_foreign_service::{sink::TestForeignSink, source::TestForeignSource};
+
     use crate::{
         pipeline::{name::PumpName, Pipeline},
-        stream_engine::autonomous_executor::{
-            task::task_id::TaskId,
-            test_support::foreign::{sink::TestSink, source::TestSource},
-        },
+        stream_engine::autonomous_executor::task::task_id::TaskId,
     };
 
     use super::*;
@@ -305,7 +304,7 @@ mod tests {
 
     #[test]
     fn test_source_only_pipeline() {
-        let test_source = TestSource::start(vec![]).unwrap();
+        let test_source = TestForeignSource::start(vec![]).unwrap();
         t(
             Pipeline::fx_source_only(test_source.host_ip(), test_source.port()),
             vec![],
@@ -314,8 +313,8 @@ mod tests {
 
     #[test]
     fn test_linear_pipeline_stopped() {
-        let test_source = TestSource::start(vec![]).unwrap();
-        let test_sink = TestSink::start().unwrap();
+        let test_source = TestForeignSource::start(vec![]).unwrap();
+        let test_sink = TestForeignSink::start().unwrap();
         t(
             Pipeline::fx_linear_stopped(
                 test_source.host_ip(),
@@ -329,8 +328,8 @@ mod tests {
 
     #[test]
     fn test_linear_pipeline() {
-        let test_source = TestSource::start(vec![]).unwrap();
-        let test_sink = TestSink::start().unwrap();
+        let test_source = TestForeignSource::start(vec![]).unwrap();
+        let test_sink = TestForeignSink::start().unwrap();
         t(
             Pipeline::fx_linear(
                 test_source.host_ip(),
@@ -348,9 +347,9 @@ mod tests {
 
     #[test]
     fn test_pipeline_with_split() {
-        let test_source = TestSource::start(vec![]).unwrap();
-        let test_sink1 = TestSink::start().unwrap();
-        let test_sink2 = TestSink::start().unwrap();
+        let test_source = TestForeignSource::start(vec![]).unwrap();
+        let test_sink1 = TestForeignSink::start().unwrap();
+        let test_sink2 = TestForeignSink::start().unwrap();
 
         t(
             Pipeline::fx_split(
@@ -374,8 +373,8 @@ mod tests {
 
     #[test]
     fn test_pipeline_with_merge() {
-        let test_source = TestSource::start(vec![]).unwrap();
-        let test_sink = TestSink::start().unwrap();
+        let test_source = TestForeignSource::start(vec![]).unwrap();
+        let test_sink = TestForeignSink::start().unwrap();
         t(
             Pipeline::fx_split_merge(
                 test_source.host_ip(),
@@ -395,9 +394,9 @@ mod tests {
 
     #[test]
     fn test_complex_pipeline() {
-        let test_source = TestSource::start(vec![]).unwrap();
-        let test_sink1 = TestSink::start().unwrap();
-        let test_sink2 = TestSink::start().unwrap();
+        let test_source = TestForeignSource::start(vec![]).unwrap();
+        let test_sink1 = TestForeignSink::start().unwrap();
+        let test_sink2 = TestForeignSink::start().unwrap();
         t(
             Pipeline::fx_complex(
                 test_source.host_ip(),
