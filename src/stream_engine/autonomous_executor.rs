@@ -1,7 +1,6 @@
 pub(in crate::stream_engine) mod server_instance;
 pub(in crate::stream_engine) mod task;
 
-pub(self) mod exec;
 pub(super) mod row;
 
 mod scheduler;

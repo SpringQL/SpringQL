@@ -6,7 +6,7 @@ use crate::stream_engine::autonomous_executor::row::Row;
 ///
 /// This row is an output from a QueryPlan's operation and is **not changed** by the operation.
 #[derive(Clone, PartialEq, Debug, new)]
-pub(super) struct PreservedRow(Arc<Row>);
+pub(in crate::stream_engine::autonomous_executor) struct PreservedRow(Arc<Row>);
 
 impl AsRef<Row> for PreservedRow {
     fn as_ref(&self) -> &Row {

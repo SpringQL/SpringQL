@@ -3,8 +3,10 @@ use crate::{
     model::query_plan::query_plan_node::operation::SlidingWindowOperation,
     stream_engine::{
         autonomous_executor::{
-            exec::query_executor::{interm_row::PreservedRow, row_window::RowWindow},
-            task::task_context::TaskContext,
+            task::{
+                subtask::query_executor::{interm_row::PreservedRow, row_window::RowWindow},
+                task_context::TaskContext,
+            },
             RowRepository,
         },
         dependency_injection::DependencyInjection,
@@ -14,14 +16,13 @@ use chrono::Duration;
 use std::collections::VecDeque;
 
 #[derive(Debug)]
-pub(in crate::stream_engine::autonomous_executor::exec::query_executor) struct SlidingWindowExecutor
-{
+pub(in crate::stream_engine::autonomous_executor) struct SlidingWindowExecutor {
     window: RowWindow,
     window_width: Duration, // TODO row-based sliding window
 }
 
 impl SlidingWindowExecutor {
-    pub(in crate::stream_engine::autonomous_executor::exec::query_executor) fn register(
+    pub(in crate::stream_engine::autonomous_executor) fn register(
         op: &SlidingWindowOperation,
     ) -> Self {
         let window_width = match op {
@@ -35,9 +36,7 @@ impl SlidingWindowExecutor {
     }
 
     /// Mutates internal window state.
-    pub(in crate::stream_engine::autonomous_executor::exec::query_executor) fn run<
-        DI: DependencyInjection,
-    >(
+    pub(in crate::stream_engine::autonomous_executor) fn run<DI: DependencyInjection>(
         &mut self,
         context: &TaskContext<DI>,
     ) -> Result<&RowWindow> {
@@ -68,17 +67,7 @@ mod tests {
 
     use std::str::FromStr;
 
-    use crate::{
-        model::name::{ColumnName, PumpName},
-        stream_engine::{
-            autonomous_executor::{row::value::sql_value::SqlValue, task::task_id::TaskId},
-            RowRepository,
-        },
-        stream_engine::{
-            autonomous_executor::{row::Row, Timestamp},
-            dependency_injection::test_di::TestDI,
-        },
-    };
+    use crate::{model::name::{ColumnName, PumpName}, stream_engine::autonomous_executor::{Timestamp, row::{Row, value::sql_value::SqlValue}, task::{task_context::TaskContext, task_id::TaskId}}, stream_engine::dependency_injection::test_di::TestDI};
 
     use super::*;
 
