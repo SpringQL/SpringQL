@@ -15,11 +15,11 @@ mod row_window;
 
 /// Process input row 1-by-1.
 #[derive(Debug)]
-pub(super) struct QueryExecutor {
+pub(super) struct QuerySubtask {
     node_executor_tree: NodeExecutorTree,
 }
 
-impl QueryExecutor {
+impl QuerySubtask {
     pub(super) fn register(query_plan: QueryPlan) -> Self {
         Self {
             node_executor_tree: NodeExecutorTree::compile(query_plan),
@@ -39,7 +39,7 @@ impl QueryExecutor {
 }
 
 #[cfg(test)]
-impl QueryExecutor {
+impl QuerySubtask {
     fn run_expect<DI: DependencyInjection>(
         &mut self,
         expected: Vec<FinalRow>,
@@ -77,7 +77,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_query_executor_collect() {
+    fn test_query_subtask_collect() {
         setup_test_logger();
 
         let task = TaskId::from_source_server(StreamName::fx_trade_source());
@@ -102,7 +102,7 @@ mod tests {
         );
 
         let query_plan = QueryPlan::new(Rc::new(QueryPlanNode::Leaf(query_plan_leaf)));
-        let mut executor = QueryExecutor::register(query_plan);
+        let mut executor = QuerySubtask::register(query_plan);
 
         executor.run_expect::<TestDI>(
             vec![

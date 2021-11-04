@@ -4,7 +4,7 @@ use crate::{
     stream_engine::{
         autonomous_executor::{
             task::{
-                subtask::query_executor::{interm_row::PreservedRow, row_window::RowWindow},
+                subtask::query_subtask::{interm_row::PreservedRow, row_window::RowWindow},
                 task_context::TaskContext,
             },
             RowRepository,
@@ -67,7 +67,15 @@ mod tests {
 
     use std::str::FromStr;
 
-    use crate::{model::name::{ColumnName, PumpName}, stream_engine::autonomous_executor::{Timestamp, row::{Row, value::sql_value::SqlValue}, task::{task_context::TaskContext, task_id::TaskId}}, stream_engine::dependency_injection::test_di::TestDI};
+    use crate::{
+        model::name::{ColumnName, PumpName},
+        stream_engine::autonomous_executor::{
+            row::{value::sql_value::SqlValue, Row},
+            task::{task_context::TaskContext, task_id::TaskId},
+            Timestamp,
+        },
+        stream_engine::dependency_injection::test_di::TestDI,
+    };
 
     use super::*;
 
