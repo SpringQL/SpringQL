@@ -20,8 +20,9 @@ mod tests {
     use crate::{
         pipeline::{
             foreign_stream_model::ForeignStreamModel,
-            name::StreamName,
+            name::{PumpName, StreamName},
             option::options_builder::OptionsBuilder,
+            pump_model::{pump_state::PumpState, PumpModel},
             server_model::{server_type::ServerType, ServerModel},
             stream_model::{stream_shape::StreamShape, StreamModel},
         },
@@ -97,6 +98,30 @@ mod tests {
         assert_eq!(
             command,
             Command::AlterPipeline(AlterPipelineCommand::CreateForeignStream(expected_server))
+        );
+    }
+
+    #[test]
+    fn test_create_pump() {
+        let parser = SqlParser::default();
+
+        let sql = "
+            CREATE PUMP pu_passthrough AS
+              INSERT INTO sink_trade (ts, ticker, amount)
+              SELECT STREAM ts, ticker, amount FROM source_trade;
+            ";
+        let command = parser.parse(sql).unwrap();
+
+        let expected_pump = PumpModel::new(
+            PumpName::new("pu_passthrough".to_string()),
+            PumpState::Stopped,
+            StreamName::new("source_trade".to_string()),
+            StreamName::new("sink_trade".to_string()),
+        );
+
+        assert_eq!(
+            command,
+            Command::AlterPipeline(AlterPipelineCommand::CreatePump(expected_pump))
         );
     }
 }
