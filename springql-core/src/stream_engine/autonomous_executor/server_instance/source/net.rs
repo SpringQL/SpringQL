@@ -114,10 +114,11 @@ impl NetSourceServerInstance {}
 
 #[cfg(test)]
 mod tests {
+    use test_foreign_service::source::TestForeignSource;
+
     use super::*;
     use crate::pipeline::option::options_builder::OptionsBuilder;
     use crate::stream_engine::autonomous_executor::row::foreign_row::format::json::JsonObject;
-    use crate::stream_engine::autonomous_executor::test_support::foreign::source::TestSource;
 
     #[test]
     fn test_source_server_tcp() -> crate::error::Result<()> {
@@ -125,7 +126,12 @@ mod tests {
         let j2 = JsonObject::fx_city_temperature_osaka();
         let j3 = JsonObject::fx_city_temperature_london();
 
-        let source = TestSource::start(vec![j2.clone(), j3.clone(), j1.clone()])?;
+        let source = TestForeignSource::start(vec![
+            serde_json::Value::from(j2.clone()),
+            serde_json::Value::from(j3.clone()),
+            serde_json::Value::from(j1.clone()),
+        ])
+        .unwrap();
 
         let options = OptionsBuilder::default()
             .add("PROTOCOL", "TCP")
