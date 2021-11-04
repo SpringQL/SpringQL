@@ -12,6 +12,7 @@ use anyhow::anyhow;
 
 use crate::{
     error::{Result, SpringError},
+    sql_parser::SqlParser,
     stream_engine::command::Command,
     PIPELINE_CREATED,
 };
@@ -28,6 +29,7 @@ const N_WORKER_THREADS: usize = 2;
 #[derive(Debug)]
 pub struct SpringPipeline {
     engine: EngineMutex,
+    parser: SqlParser,
 }
 
 /// Prepared statement.
@@ -76,7 +78,9 @@ pub fn spring_open() -> Result<SpringPipeline> {
     PIPELINE_CREATED.store(true, Ordering::SeqCst);
 
     let engine = EngineMutex::new(N_WORKER_THREADS);
-    Ok(SpringPipeline { engine })
+    let parser = SqlParser::default();
+
+    Ok(SpringPipeline { engine, parser })
 }
 
 /// Creates a prepared statement.
@@ -89,7 +93,7 @@ pub fn spring_open() -> Result<SpringPipeline> {
 /// - [SpringError::InvalidOption](crate::error::SpringError::Sql) when:
 ///   - `OPTIONS` in `CREATE` statement includes invalid key or value.
 pub fn spring_prepare(pipeline: &SpringPipeline, sql: &str) -> Result<SpringStatement> {
-    let command = todo!();
+    let command = pipeline.parser.parse(sql)?;
     Ok(SpringStatement {
         engine: pipeline.engine.clone(),
         command,
