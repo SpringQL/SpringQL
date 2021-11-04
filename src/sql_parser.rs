@@ -38,7 +38,7 @@ mod tests {
 
         let sql = "
             CREATE SOURCE STREAM source_trade (
-              timestamp TIMESTAMP NOT NULL ROWTIME,    
+              ts TIMESTAMP NOT NULL ROWTIME,    
               ticker TEXT NOT NULL,
               amount INTEGER NOT NULL
             ) SERVER NET_SERVER OPTIONS (

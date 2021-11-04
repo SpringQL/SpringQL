@@ -529,7 +529,7 @@ impl ColumnDefinition {
 impl ColumnDataType {
     pub(crate) fn fx_timestamp() -> Self {
         Self::new(
-            ColumnName::new("timestamp".to_string()),
+            ColumnName::new("ts".to_string()),
             SqlType::timestamp(),
             false,
         )
