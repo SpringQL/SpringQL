@@ -74,8 +74,8 @@ fn test_e2e_source_sink() -> Result<()> {
           REMOTE_PORT '{remote_port}'
         );
         ",
-            remote_host = test_source.host_ip(),
-            remote_port = test_source.port()
+            remote_host = test_sink.host_ip(),
+            remote_port = test_sink.port()
         ),
         "
         CREATE PUMP pu_passthrough AS
@@ -92,7 +92,10 @@ fn test_e2e_source_sink() -> Result<()> {
     let _pipeline = apply_ddls(&ddls);
     let sink_received = drain_from_sink(&test_sink);
 
-    assert_eq!(source_input, sink_received);
+    // because worker takes source input in multi-thread, order may be changed
+    assert!(sink_received.contains(source_input.get(0).unwrap()));
+    assert!(sink_received.contains(source_input.get(1).unwrap()));
+    assert!(sink_received.contains(source_input.get(2).unwrap()));
 
     Ok(())
 }
