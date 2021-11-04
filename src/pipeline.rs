@@ -11,6 +11,7 @@ pub(crate) mod option;
 pub(crate) mod pipeline_graph;
 pub(crate) mod pipeline_version;
 pub(crate) mod pump_model;
+pub(crate) mod relation;
 pub(crate) mod server_model;
 pub(crate) mod stream_model;
 

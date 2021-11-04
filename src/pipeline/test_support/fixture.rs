@@ -1,20 +1,18 @@
 use std::{net::IpAddr, sync::Arc};
 
-use crate::{
-    model::{
+use crate::pipeline::{
+    foreign_stream_model::ForeignStreamModel,
+    name::{ColumnName, PumpName, StreamName},
+    option::{options_builder::OptionsBuilder, Options},
+    pump_model::pump_state::PumpState,
+    pump_model::PumpModel,
+    relation::{
         column::{column_data_type::ColumnDataType, column_definition::ColumnDefinition},
         sql_type::SqlType,
     },
-    pipeline::{
-        foreign_stream_model::ForeignStreamModel,
-        name::{ColumnName, PumpName, StreamName},
-        option::{options_builder::OptionsBuilder, Options},
-        pump_model::pump_state::PumpState,
-        pump_model::PumpModel,
-        server_model::{server_type::ServerType, ServerModel},
-        stream_model::{stream_shape::StreamShape, StreamModel},
-        Pipeline,
-    },
+    server_model::{server_type::ServerType, ServerModel},
+    stream_model::{stream_shape::StreamShape, StreamModel},
+    Pipeline,
 };
 
 impl Pipeline {

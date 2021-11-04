@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-use crate::{model::sql_type::SqlType, pipeline::name::ColumnName};
+use crate::{pipeline::name::ColumnName, pipeline::relation::sql_type::SqlType};
 
 /// Column with data type.
 #[derive(Eq, PartialEq, Hash, Debug, Serialize, Deserialize, new)]

@@ -3,11 +3,11 @@ use serde::{Deserialize, Serialize};
 
 use crate::{
     error::{Result, SpringError},
-    model::sql_type::SqlType,
     pipeline::name::ColumnName,
+    pipeline::relation::sql_type::SqlType,
 };
 
-use crate::model::column::column_definition::ColumnDefinition;
+use crate::pipeline::relation::column::column_definition::ColumnDefinition;
 
 #[derive(Eq, PartialEq, Debug, Serialize, Deserialize)]
 pub(crate) struct StreamShape {
@@ -76,7 +76,7 @@ impl StreamShape {
 
 #[cfg(test)]
 mod tests {
-    use crate::model::column::column_data_type::ColumnDataType;
+    use crate::pipeline::relation::column::column_data_type::ColumnDataType;
 
     use super::*;
 
