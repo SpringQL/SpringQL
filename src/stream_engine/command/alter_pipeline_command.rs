@@ -2,7 +2,7 @@ pub(crate) mod alter_pump_command;
 
 use crate::{
     model::name::PumpName,
-    stream_engine::pipeline::{
+    pipeline::{
         pump_model::{pump_state::PumpState, PumpModel},
         server_model::ServerModel,
         stream_model::StreamModel,

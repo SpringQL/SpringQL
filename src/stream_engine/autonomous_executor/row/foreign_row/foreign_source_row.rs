@@ -2,10 +2,10 @@ use std::sync::Arc;
 
 use crate::{
     error::Result,
+    pipeline::stream_model::stream_shape::StreamShape,
     stream_engine::{
         autonomous_executor::row::{column::stream_column::StreamColumns, Row},
         dependency_injection::DependencyInjection,
-        pipeline::stream_model::stream_shape::StreamShape,
     },
 };
 

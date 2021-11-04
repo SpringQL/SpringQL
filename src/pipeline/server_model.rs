@@ -1,5 +1,5 @@
-pub(in crate::stream_engine) mod server_state;
-pub(in crate::stream_engine) mod server_type;
+pub(crate) mod server_state;
+pub(crate) mod server_type;
 
 use std::sync::Arc;
 
@@ -21,7 +21,7 @@ pub(crate) struct ServerModel {
 }
 
 impl ServerModel {
-    pub(in crate::stream_engine) fn new(
+    pub(crate) fn new(
         server_type: ServerType,
         serving_foreign_stream: Arc<ForeignStreamModel>,
         options: Options,
@@ -34,23 +34,23 @@ impl ServerModel {
         }
     }
 
-    pub(in crate::stream_engine) fn name(&self) -> &ServerName {
+    pub(crate) fn name(&self) -> &ServerName {
         &self.name
     }
 
-    pub(in crate::stream_engine) fn state(&self, pipeline_graph: &PipelineGraph) -> ServerState {
+    pub(crate) fn state(&self, pipeline_graph: &PipelineGraph) -> ServerState {
         pipeline_graph.source_server_state(self.serving_foreign_stream.name())
     }
 
-    pub(in crate::stream_engine) fn server_type(&self) -> &ServerType {
+    pub(crate) fn server_type(&self) -> &ServerType {
         &self.server_type
     }
 
-    pub(in crate::stream_engine) fn serving_foreign_stream(&self) -> Arc<ForeignStreamModel> {
+    pub(crate) fn serving_foreign_stream(&self) -> Arc<ForeignStreamModel> {
         self.serving_foreign_stream.clone()
     }
 
-    pub(in crate::stream_engine) fn options(&self) -> &Options {
+    pub(crate) fn options(&self) -> &Options {
         &self.options
     }
 }

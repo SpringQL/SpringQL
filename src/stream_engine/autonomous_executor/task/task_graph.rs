@@ -10,10 +10,8 @@ use petgraph::{graph::DiGraph, visit::EdgeRef};
 
 use crate::{
     model::name::StreamName,
-    stream_engine::{
-        autonomous_executor::task::pump_task::PumpTask,
-        pipeline::pipeline_graph::{edge::Edge, PipelineGraph},
-    },
+    pipeline::pipeline_graph::{edge::Edge, PipelineGraph},
+    stream_engine::autonomous_executor::task::pump_task::PumpTask,
 };
 
 use super::{sink_task::SinkTask, source_task::SourceTask, task_id::TaskId, Task};

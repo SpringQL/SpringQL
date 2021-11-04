@@ -15,23 +15,23 @@ pub(crate) struct PumpModel {
 }
 
 impl PumpModel {
-    pub(in crate::stream_engine) fn name(&self) -> &PumpName {
+    pub(crate) fn name(&self) -> &PumpName {
         &self.name
     }
 
-    pub(in crate::stream_engine) fn state(&self) -> &PumpState {
+    pub(crate) fn state(&self) -> &PumpState {
         &self.state
     }
 
-    pub(in crate::stream_engine) fn upstream(&self) -> &StreamName {
+    pub(crate) fn upstream(&self) -> &StreamName {
         &self.upstream
     }
 
-    pub(in crate::stream_engine) fn downstream(&self) -> &StreamName {
+    pub(crate) fn downstream(&self) -> &StreamName {
         &self.downstream
     }
 
-    pub(in crate::stream_engine) fn started(&self) -> Self {
+    pub(crate) fn started(&self) -> Self {
         Self {
             state: PumpState::Started,
             ..self.clone()

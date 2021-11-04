@@ -6,7 +6,7 @@ use serde::{Deserialize, Serialize};
 pub(crate) struct PipelineVersion(u64);
 
 impl PipelineVersion {
-    pub(in crate::stream_engine) fn up(&mut self) {
+    pub(crate) fn up(&mut self) {
         self.0 += 1;
     }
 }

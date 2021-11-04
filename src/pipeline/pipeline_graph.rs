@@ -1,8 +1,8 @@
 //! A PipelineGraph has a "virtual root stream", who has outgoing edges to all source foreign streams.
 //! It also has "virtual leaf streams", who has an incoming edge from each sink foreign stream.
 
-pub(in crate::stream_engine) mod edge;
-pub(in crate::stream_engine) mod stream_node;
+pub(crate) mod edge;
+pub(crate) mod stream_node;
 
 use std::{collections::HashMap, sync::Arc};
 
@@ -23,12 +23,12 @@ use super::{
 use crate::{
     error::{Result, SpringError},
     model::name::{PumpName, StreamName},
-    stream_engine::pipeline::server_model::server_type::ServerType,
+    pipeline::server_model::server_type::ServerType,
 };
 use anyhow::anyhow;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
-pub(in crate::stream_engine) struct PipelineGraph {
+pub(crate) struct PipelineGraph {
     graph: DiGraph<StreamNode, Edge>,
     stream_nodes: HashMap<StreamName, NodeIndex>,
 }
@@ -143,10 +143,7 @@ impl PipelineGraph {
         Ok(())
     }
 
-    pub(in crate::stream_engine) fn source_server_state(
-        &self,
-        serving_foreign_stream: &StreamName,
-    ) -> ServerState {
+    pub(crate) fn source_server_state(&self, serving_foreign_stream: &StreamName) -> ServerState {
         let fst_node = self
             .graph
             .node_indices()
@@ -160,7 +157,7 @@ impl PipelineGraph {
         }
     }
 
-    pub(in crate::stream_engine) fn as_petgraph(&self) -> &DiGraph<StreamNode, Edge> {
+    pub(crate) fn as_petgraph(&self) -> &DiGraph<StreamNode, Edge> {
         &self.graph
     }
 

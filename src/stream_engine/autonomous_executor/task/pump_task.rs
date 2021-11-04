@@ -1,10 +1,9 @@
 use super::task_state::TaskState;
 use super::{task_context::TaskContext, task_id::TaskId};
 use crate::error::Result;
+use crate::pipeline::pump_model::PumpModel;
 use crate::stream_engine::autonomous_executor::RowRepository;
-use crate::stream_engine::{
-    dependency_injection::DependencyInjection, pipeline::pump_model::PumpModel,
-};
+use crate::stream_engine::dependency_injection::DependencyInjection;
 
 #[derive(Debug)]
 pub(crate) struct PumpTask {

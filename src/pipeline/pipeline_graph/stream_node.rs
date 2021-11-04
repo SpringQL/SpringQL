@@ -4,13 +4,11 @@ use serde::{Deserialize, Serialize};
 
 use crate::{
     model::name::StreamName,
-    stream_engine::pipeline::{
-        foreign_stream_model::ForeignStreamModel, stream_model::StreamModel,
-    },
+    pipeline::{foreign_stream_model::ForeignStreamModel, stream_model::StreamModel},
 };
 
 #[derive(Clone, Eq, PartialEq, Debug, Serialize, Deserialize)]
-pub(in crate::stream_engine) enum StreamNode {
+pub(crate) enum StreamNode {
     Native(Arc<StreamModel>),
     Foreign(Arc<ForeignStreamModel>),
     VirtualRoot,
@@ -18,7 +16,7 @@ pub(in crate::stream_engine) enum StreamNode {
 }
 
 impl StreamNode {
-    pub(in crate::stream_engine) fn name(&self) -> StreamName {
+    pub(crate) fn name(&self) -> StreamName {
         match self {
             StreamNode::Native(stream) => stream.name().clone(),
             StreamNode::Foreign(stream) => stream.name().clone(),

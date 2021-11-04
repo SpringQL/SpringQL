@@ -8,11 +8,11 @@ use std::sync::Arc;
 pub(crate) struct ForeignStreamModel(StreamModel);
 
 impl ForeignStreamModel {
-    pub(in crate::stream_engine) fn name(&self) -> &StreamName {
+    pub(crate) fn name(&self) -> &StreamName {
         self.0.name()
     }
 
-    pub(in crate::stream_engine) fn shape(&self) -> Arc<StreamShape> {
+    pub(crate) fn shape(&self) -> Arc<StreamShape> {
         self.0.shape()
     }
 }

@@ -3,11 +3,9 @@ use anyhow::{anyhow, Context};
 use crate::{
     error::{Result, SpringError},
     model::{column::column_definition::ColumnDefinition, name::ColumnName},
-    stream_engine::{
-        autonomous_executor::row::{
-            column_values::ColumnValues, timestamp::Timestamp, value::sql_value::SqlValue,
-        },
-        pipeline::stream_model::stream_shape::StreamShape,
+    pipeline::stream_model::stream_shape::StreamShape,
+    stream_engine::autonomous_executor::row::{
+        column_values::ColumnValues, timestamp::Timestamp, value::sql_value::SqlValue,
     },
 };
 use std::{sync::Arc, vec};

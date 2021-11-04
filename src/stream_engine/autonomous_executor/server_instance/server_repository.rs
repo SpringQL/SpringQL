@@ -12,7 +12,7 @@ use crate::{
 };
 use crate::{
     model::name::ServerName,
-    stream_engine::pipeline::server_model::{server_type::ServerType, ServerModel},
+    pipeline::server_model::{server_type::ServerType, ServerModel},
 };
 
 #[allow(clippy::type_complexity)]

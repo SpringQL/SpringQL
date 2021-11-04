@@ -6,6 +6,8 @@
 extern crate derive_new;
 
 pub(crate) mod model;
+
+pub(crate) mod pipeline;
 pub(crate) mod stream_engine;
 
 mod api;

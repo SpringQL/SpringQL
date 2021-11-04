@@ -1,12 +1,13 @@
-use super::{
-    command::alter_pipeline_command::AlterPipelineCommand,
+use super::command::alter_pipeline_command::AlterPipelineCommand;
+use crate::{
+    error::Result,
+    model::name::PumpName,
     pipeline::{
         pump_model::{pump_state::PumpState, PumpModel},
         server_model::ServerModel,
         Pipeline,
     },
 };
-use crate::{error::Result, model::name::PumpName};
 
 /// Executor of pipeline management.
 ///

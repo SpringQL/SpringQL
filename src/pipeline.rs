@@ -5,13 +5,16 @@
 //!   - Source/Sink Server
 //!   - Pump
 
-pub(in crate::stream_engine) mod foreign_stream_model;
-pub(in crate::stream_engine) mod pump_model;
-pub(in crate::stream_engine) mod server_model;
-pub(in crate::stream_engine) mod stream_model;
+pub(crate) mod foreign_stream_model;
+pub(crate) mod pump_model;
+pub(crate) mod server_model;
+pub(crate) mod stream_model;
 
-pub(in crate::stream_engine) mod pipeline_graph;
-pub(in crate::stream_engine) mod pipeline_version;
+pub(crate) mod pipeline_graph;
+pub(crate) mod pipeline_version;
+
+#[cfg(test)]
+pub(crate) mod test_support;
 
 use anyhow::anyhow;
 use std::{collections::HashSet, sync::Arc};
@@ -19,7 +22,7 @@ use std::{collections::HashSet, sync::Arc};
 use crate::{
     error::{Result, SpringError},
     model::name::PumpName,
-    stream_engine::pipeline::pipeline_graph::edge::Edge,
+    pipeline::pipeline_graph::edge::Edge,
 };
 use serde::{Deserialize, Serialize};
 
