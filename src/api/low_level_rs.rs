@@ -4,15 +4,19 @@
 //!
 //! C API and high-level Rust API are provided separately.
 
+mod engine_mutex;
+
 use std::sync::atomic::Ordering;
 
 use anyhow::anyhow;
 
 use crate::{
     error::{Result, SpringError},
-    stream_engine::StreamEngine,
+    stream_engine::command::Command,
     PIPELINE_CREATED,
 };
+
+use self::engine_mutex::EngineMutex;
 
 // TODO config
 const N_WORKER_THREADS: usize = 2;
@@ -23,12 +27,15 @@ const N_WORKER_THREADS: usize = 2;
 /// In other words, the lifecycle of SpringConnection and internal stream pipeline are the same.
 #[derive(Debug)]
 pub struct SpringPipeline {
-    engine: StreamEngine,
+    engine: EngineMutex,
 }
 
 /// Prepared statement.
 #[derive(Debug)]
-pub struct SpringStatement;
+pub struct SpringStatement {
+    engine: EngineMutex,
+    command: Command,
+}
 
 /// Successful response from `spring_step()`.
 #[derive(Eq, PartialEq, Debug)]
@@ -68,7 +75,7 @@ pub fn spring_open() -> Result<SpringPipeline> {
     }
     PIPELINE_CREATED.store(true, Ordering::SeqCst);
 
-    let engine = StreamEngine::new(N_WORKER_THREADS);
+    let engine = EngineMutex::new(N_WORKER_THREADS);
     Ok(SpringPipeline { engine })
 }
 
@@ -81,8 +88,12 @@ pub fn spring_open() -> Result<SpringPipeline> {
 ///   - Refers to undefined objects (streams, pumps, etc)
 /// - [SpringError::InvalidOption](crate::error::SpringError::Sql) when:
 ///   - `OPTIONS` in `CREATE` statement includes invalid key or value.
-pub fn spring_prepare(pipeline: &mut SpringPipeline, sql: &str) -> Result<SpringStatement> {
-    todo!()
+pub fn spring_prepare(pipeline: &SpringPipeline, sql: &str) -> Result<SpringStatement> {
+    let command = todo!();
+    Ok(SpringStatement {
+        engine: pipeline.engine.clone(),
+        command,
+    })
 }
 
 /// - DDL: Executes a prepared statement.
@@ -98,8 +109,14 @@ pub fn spring_prepare(pipeline: &mut SpringPipeline, sql: &str) -> Result<Spring
 /// - [SpringError::Unavailable](crate::error::SpringError::Unavailable) when:
 ///   - `stmt` is already `SpringStepSuccess::Done`.
 ///   - `stmt` is already `spring_finalize()`-ed.
-pub fn spring_step(stmt: &mut SpringStatement) -> Result<SpringStepSuccess> {
-    todo!()
+pub fn spring_step(stmt: &SpringStatement) -> Result<SpringStepSuccess> {
+    let mut engine = stmt.engine.get()?;
+
+    match &stmt.command {
+        Command::AlterPipeline(c) => engine
+            .alter_pipeline(c.clone())
+            .map(|_| SpringStepSuccess::Done),
+    }
 }
 
 /// Get an integer column.
@@ -110,7 +127,7 @@ pub fn spring_step(stmt: &mut SpringStatement) -> Result<SpringStepSuccess> {
 ///   - `i_col` already fetched.
 ///   - `i_col` out of range.
 ///   - `stmt` is not in `SpringStepSuccess::Row` state.
-pub fn spring_column_i32(stmt: &mut SpringStatement, i_col: usize) -> Result<i32> {
+pub fn spring_column_i32(stmt: &SpringStatement, i_col: usize) -> Result<i32> {
     todo!()
 }
 
@@ -119,7 +136,7 @@ pub fn spring_column_i32(stmt: &mut SpringStatement, i_col: usize) -> Result<i32
 /// # Failure
 ///
 /// Same as [spring_column_i32()](spring_column_i32)
-pub fn spring_column_text(stmt: &mut SpringStatement, i_col: usize) -> Result<String> {
+pub fn spring_column_text(stmt: &SpringStatement, i_col: usize) -> Result<String> {
     todo!()
 }
 

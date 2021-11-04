@@ -34,6 +34,9 @@ pub enum SpringError {
     #[error("I/O error inside SpringQL-core")]
     SpringQlCoreIo(anyhow::Error),
 
+    #[error("another thread sharing the same resource got panic")]
+    ThreadPoisoned(anyhow::Error),
+
     #[error("invalid option (key `{key:?}`, value `{value:?}`)")]
     InvalidOption {
         key: String,

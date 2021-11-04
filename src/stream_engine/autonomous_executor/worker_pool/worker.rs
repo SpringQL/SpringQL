@@ -95,7 +95,8 @@ impl Worker {
 
             SpringError::InvalidOption { .. }
             | SpringError::InvalidFormat { .. }
-            | SpringError::Sql(_) => log::error!("{:?}", e),
+            | SpringError::Sql(_)
+            | SpringError::ThreadPoisoned(_) => log::error!("{:?}", e),
         }
     }
 }
