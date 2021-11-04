@@ -1,5 +1,8 @@
 use super::generated_parser::Rule;
-use crate::error::{Result, SpringError};
+use crate::{
+    error::{Result, SpringError},
+    pipeline::name::{ColumnName, StreamName},
+};
 use anyhow::Context;
 use pest::iterators::{Pair, Pairs};
 use std::collections::VecDeque;
@@ -135,4 +138,10 @@ pub(super) enum ColumnConstraintSyntax {
 pub(super) struct OptionSyntax {
     pub(super) option_name: String,
     pub(super) option_value: String,
+}
+
+#[derive(Clone, Eq, PartialEq, Debug)]
+pub(super) struct SelectStreamSyntax {
+    pub(super) column_names: Vec<ColumnName>,
+    pub(super) from_stream: StreamName,
 }

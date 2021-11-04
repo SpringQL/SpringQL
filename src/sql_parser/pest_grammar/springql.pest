@@ -20,13 +20,19 @@
 //   NG) ^"A" | ^"ABSOLUTE"
 // In this case, only "A" matches with query `ABSOLUTE` (eager matching).
 keyword = { 
-    ^"BIGINT"
+    ^"AS"
+    | ^"BIGINT"
     | ^"CREATE"
+    | ^"FROM"
+    | ^"INSERT"
     | ^"INTEGER"
+    | ^"INTO"
     | ^"NOT"
     | ^"NULL"
     | ^"OPTIONS"
+    | ^"PUMP"
     | ^"ROWTIME"
+    | ^"SELECT"
     | ^"SERVER"
     | ^"SINK"
     | ^"SMALLINT"
@@ -279,6 +285,7 @@ command = {
     SOI ~ (
         create_source_stream_command
         | create_sink_stream_command
+        | create_pump_command
     )
     ~ ";"?
     ~ EOI
@@ -292,7 +299,7 @@ command = {
 
 create_source_stream_command = {
     ^"CREATE" ~ ^"SOURCE" ~ ^"STREAM"
-    ~ foreign_stream_name
+    ~ stream_name
     ~ "("
     ~ column_definition ~ ("," ~ column_definition)*
     ~ ")"
@@ -308,7 +315,7 @@ create_source_stream_command = {
 
 create_sink_stream_command = {
     ^"CREATE" ~ ^"SINK" ~ ^"STREAM"
-    ~ foreign_stream_name
+    ~ stream_name
     ~ "("
     ~ column_definition ~ ("," ~ column_definition)*
     ~ ")"
@@ -318,11 +325,45 @@ create_sink_stream_command = {
 
 /*
  * ----------------------------------------------------------------------------
+ * CREATE PUMP
+ * ----------------------------------------------------------------------------
+ */
+
+create_pump_command = {
+    ^"CREATE" ~ ^"PUMP"
+    ~ pump_name
+    ~ ^"AS"
+    ~ ^"INSERT" ~ ^"INTO"
+    ~ stream_name
+    ~ "("
+    ~ column_name ~ ("," ~ column_name)*
+    ~ ")"
+    ~ select_stream_command
+}
+
+/*
+ * ----------------------------------------------------------------------------
+ * SELECT
+ * ----------------------------------------------------------------------------
+ */
+
+select_stream_command = {
+    ^"SELECT" ~ "STREAM"
+    ~ column_name ~ ("," ~ column_name)*
+    ~ (^"FROM" ~ stream_name)
+}
+
+/*
+ * ----------------------------------------------------------------------------
  * Names
  * ----------------------------------------------------------------------------
  */
 
-foreign_stream_name = {
+stream_name = {
+    identifier
+}
+
+pump_name = {
     identifier
 }
 
@@ -339,6 +380,10 @@ option_name = {
 }
 
 correlation = {
+    identifier
+}
+
+alias = {
     identifier
 }
 
