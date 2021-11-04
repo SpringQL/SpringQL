@@ -8,10 +8,6 @@ use crate::{
         name::{PumpName, StreamName},
         pipeline_graph::PipelineGraph,
         pump_model::{pump_state::PumpState, PumpModel},
-        relation::{
-            column::{column_data_type::ColumnDataType, column_definition::ColumnDefinition},
-            sql_type::SqlType,
-        },
         server_model::ServerModel,
     },
     stream_engine::dependency_injection::test_di::TestDI,
@@ -27,13 +23,10 @@ use crate::{
                 Row,
             },
             task::task_graph::TaskGraph,
-            test_support::foreign::sink::TestSink,
         },
         command::alter_pipeline_command::AlterPipelineCommand,
     },
 };
-
-use super::foreign::source::TestSource;
 
 impl Timestamp {
     pub(in crate::stream_engine) fn fx_now() -> Self {

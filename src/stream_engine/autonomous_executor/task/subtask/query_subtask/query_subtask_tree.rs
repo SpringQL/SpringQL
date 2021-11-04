@@ -9,12 +9,11 @@ use self::query_subtask_node::QuerySubtaskNode;
 use super::final_row::FinalRow;
 use super::interm_row::NewRow;
 use crate::error::Result;
+use crate::stream_engine::autonomous_executor::row::Row;
+use crate::stream_engine::autonomous_executor::task::task_context::TaskContext;
 use crate::stream_engine::command::query_plan::query_plan_node::operation::LeafOperation;
 use crate::stream_engine::command::query_plan::query_plan_node::QueryPlanNode;
 use crate::stream_engine::command::query_plan::QueryPlan;
-use crate::stream_engine::autonomous_executor::row::Row;
-use crate::stream_engine::autonomous_executor::task::subtask::query_subtask::query_subtask_tree::query_subtask_node::collect_subtask;
-use crate::stream_engine::autonomous_executor::task::task_context::TaskContext;
 use crate::stream_engine::dependency_injection::DependencyInjection;
 
 #[derive(Debug)]

@@ -36,8 +36,6 @@ impl Row {
     where
         DI: DependencyInjection,
     {
-        use crate::stream_engine::autonomous_executor::row::timestamp::current_timestamp::CurrentTimestamp;
-
         let arrival_rowtime = if cols.promoted_rowtime().is_some() {
             None
         } else {
