@@ -2,9 +2,8 @@ use std::sync::Arc;
 
 use serde::{Deserialize, Serialize};
 
-use crate::{
-    model::name::StreamName,
-    pipeline::{foreign_stream_model::ForeignStreamModel, stream_model::StreamModel},
+use crate::pipeline::{
+    foreign_stream_model::ForeignStreamModel, name::StreamName, stream_model::StreamModel,
 };
 
 #[derive(Clone, Eq, PartialEq, Debug, Serialize, Deserialize)]

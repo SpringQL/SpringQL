@@ -4,9 +4,10 @@ use serde::{Deserialize, Serialize};
 use crate::{
     error::{Result, SpringError},
     model::sql_type::SqlType,
+    pipeline::name::ColumnName,
 };
 
-use crate::model::{column::column_definition::ColumnDefinition, name::ColumnName};
+use crate::model::column::column_definition::ColumnDefinition;
 
 #[derive(Eq, PartialEq, Debug, Serialize, Deserialize)]
 pub(crate) struct StreamShape {

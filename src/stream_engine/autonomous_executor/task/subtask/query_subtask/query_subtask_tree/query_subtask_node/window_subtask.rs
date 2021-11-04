@@ -68,7 +68,7 @@ mod tests {
     use std::str::FromStr;
 
     use crate::{
-        model::name::{ColumnName, PumpName},
+        pipeline::name::{ColumnName, PumpName},
         stream_engine::autonomous_executor::{
             row::{value::sql_value::SqlValue, Row},
             task::{task_context::TaskContext, task_id::TaskId},

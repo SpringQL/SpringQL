@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-use crate::model::name::ServerName;
+use crate::pipeline::name::ServerName;
 
 /// See: <https://docs.sqlstream.com/sql-reference-guide/create-statements/createserver/#prebuilt-server-objects-available-in-sserver>
 #[derive(Clone, Eq, PartialEq, Debug, Serialize, Deserialize)]

@@ -1,6 +1,7 @@
-use crate::model::name::StreamName;
-
-use super::stream_model::{stream_shape::StreamShape, StreamModel};
+use super::{
+    name::StreamName,
+    stream_model::{stream_shape::StreamShape, StreamModel},
+};
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;
 

@@ -12,7 +12,7 @@ use std::vec;
 
 use self::{column::stream_column::StreamColumns, value::sql_value::SqlValue};
 use crate::error::Result;
-use crate::model::name::ColumnName;
+use crate::pipeline::name::ColumnName;
 use crate::stream_engine::autonomous_executor::row::value::sql_value::nn_sql_value::NnSqlValue;
 use crate::stream_engine::dependency_injection::DependencyInjection;
 

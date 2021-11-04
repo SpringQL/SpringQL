@@ -6,6 +6,7 @@
 //!   - Pump
 
 pub(crate) mod foreign_stream_model;
+pub(crate) mod name;
 pub(crate) mod option;
 pub(crate) mod pipeline_graph;
 pub(crate) mod pipeline_version;
@@ -21,13 +22,12 @@ use std::{collections::HashSet, sync::Arc};
 
 use crate::{
     error::{Result, SpringError},
-    model::name::PumpName,
     pipeline::pipeline_graph::edge::Edge,
 };
 use serde::{Deserialize, Serialize};
 
 use self::{
-    foreign_stream_model::ForeignStreamModel, pipeline_graph::PipelineGraph,
+    foreign_stream_model::ForeignStreamModel, name::PumpName, pipeline_graph::PipelineGraph,
     pipeline_version::PipelineVersion, pump_model::PumpModel, server_model::ServerModel,
     stream_model::StreamModel,
 };

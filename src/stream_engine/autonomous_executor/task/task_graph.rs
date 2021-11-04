@@ -9,8 +9,10 @@ use std::sync::Arc;
 use petgraph::{graph::DiGraph, visit::EdgeRef};
 
 use crate::{
-    model::name::StreamName,
-    pipeline::pipeline_graph::{edge::Edge, PipelineGraph},
+    pipeline::{
+        name::StreamName,
+        pipeline_graph::{edge::Edge, PipelineGraph},
+    },
     stream_engine::autonomous_executor::task::pump_task::PumpTask,
 };
 

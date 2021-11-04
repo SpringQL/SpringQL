@@ -1,11 +1,12 @@
-use crate::error::{Result, SpringError};
+use crate::{
+    error::{Result, SpringError},
+    pipeline::name::ColumnName,
+};
 
 use std::collections::HashMap;
 
 use anyhow::{anyhow, Context};
 use serde::{Deserialize, Serialize};
-
-use crate::model::name::ColumnName;
 
 use super::value::sql_value::SqlValue;
 

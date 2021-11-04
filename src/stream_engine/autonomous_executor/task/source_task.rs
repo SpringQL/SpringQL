@@ -2,8 +2,8 @@ use std::fmt::Debug;
 use std::sync::Arc;
 
 use crate::error::Result;
-use crate::model::name::ServerName;
 use crate::pipeline::foreign_stream_model::ForeignStreamModel;
+use crate::pipeline::name::ServerName;
 use crate::pipeline::pipeline_graph::PipelineGraph;
 use crate::pipeline::server_model::ServerModel;
 use crate::stream_engine::autonomous_executor::row::Row;

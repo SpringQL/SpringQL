@@ -5,11 +5,11 @@ use serde_json::json;
 use crate::{
     model::{
         column::{column_data_type::ColumnDataType, column_definition::ColumnDefinition},
-        name::{ColumnName, PumpName, StreamName},
         sql_type::SqlType,
     },
     pipeline::{
         foreign_stream_model::ForeignStreamModel,
+        name::{PumpName, StreamName},
         pipeline_graph::PipelineGraph,
         pump_model::{pump_state::PumpState, PumpModel},
         server_model::ServerModel,

@@ -1,6 +1,6 @@
 use std::fmt::Display;
 
-use crate::model::name::{PumpName, StreamName};
+use crate::pipeline::name::{PumpName, StreamName};
 
 #[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, new)]
 pub(crate) struct TaskId(String);

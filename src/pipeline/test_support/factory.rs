@@ -1,4 +1,4 @@
-use crate::model::name::{PumpName, StreamName};
+use crate::pipeline::name::{PumpName, StreamName};
 
 impl StreamName {
     pub(crate) fn factory(name: &str) -> Self {

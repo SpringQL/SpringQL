@@ -2,7 +2,7 @@ use anyhow::Context;
 
 use crate::{
     error::{Result, SpringError},
-    model::name::ColumnName,
+    pipeline::name::ColumnName,
     stream_engine::autonomous_executor::row::{
         column_values::ColumnValues, value::sql_value::SqlValue,
     },

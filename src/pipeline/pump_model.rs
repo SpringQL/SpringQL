@@ -1,9 +1,10 @@
 pub(crate) mod pump_state;
 
-use crate::model::name::{PumpName, StreamName};
 use serde::{Deserialize, Serialize};
 
 use self::pump_state::PumpState;
+
+use super::name::{PumpName, StreamName};
 
 #[derive(Clone, Eq, PartialEq, Debug, Serialize, Deserialize, new)]
 pub(crate) struct PumpModel {

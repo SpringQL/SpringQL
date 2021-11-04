@@ -1,7 +1,7 @@
 use super::task_state::TaskState;
 use super::{task_context::TaskContext, task_id::TaskId};
 use crate::error::Result;
-use crate::model::name::ServerName;
+use crate::pipeline::name::ServerName;
 use crate::pipeline::server_model::ServerModel;
 use crate::stream_engine::autonomous_executor::row::Row;
 use crate::stream_engine::{

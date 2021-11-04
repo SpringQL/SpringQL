@@ -1,12 +1,10 @@
 pub(crate) mod alter_pump_command;
 
-use crate::{
-    model::name::PumpName,
-    pipeline::{
-        pump_model::{pump_state::PumpState, PumpModel},
-        server_model::ServerModel,
-        stream_model::StreamModel,
-    },
+use crate::pipeline::{
+    name::PumpName,
+    pump_model::{pump_state::PumpState, PumpModel},
+    server_model::ServerModel,
+    stream_model::StreamModel,
 };
 
 #[derive(Eq, PartialEq, Debug)]

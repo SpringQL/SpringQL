@@ -62,13 +62,11 @@ mod tests {
     use std::{rc::Rc, sync::Arc};
 
     use crate::{
-        model::{
-            name::{PumpName, StreamName},
-            query_plan::{
-                query_plan_node::{QueryPlanNode, QueryPlanNodeLeaf},
-                QueryPlan,
-            },
+        model::query_plan::{
+            query_plan_node::{QueryPlanNode, QueryPlanNodeLeaf},
+            QueryPlan,
         },
+        pipeline::name::{PumpName, StreamName},
         stream_engine::autonomous_executor::{row::Row, task::task_id::TaskId},
         stream_engine::dependency_injection::test_di::TestDI,
         test_support::setup::setup_test_logger,

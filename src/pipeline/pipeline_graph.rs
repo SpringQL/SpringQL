@@ -16,13 +16,13 @@ use self::{edge::Edge, stream_node::StreamNode};
 
 use super::{
     foreign_stream_model::ForeignStreamModel,
+    name::{PumpName, StreamName},
     pump_model::PumpModel,
     server_model::{server_state::ServerState, ServerModel},
     stream_model::StreamModel,
 };
 use crate::{
     error::{Result, SpringError},
-    model::name::{PumpName, StreamName},
     pipeline::server_model::server_type::ServerType,
 };
 use anyhow::anyhow;

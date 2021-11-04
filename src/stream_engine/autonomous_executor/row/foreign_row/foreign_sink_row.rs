@@ -34,7 +34,7 @@ mod tests {
     use serde_json::json;
 
     use crate::{
-        model::name::ColumnName,
+        pipeline::name::ColumnName,
         stream_engine::autonomous_executor::{row::value::sql_value::SqlValue, Timestamp},
     };
 

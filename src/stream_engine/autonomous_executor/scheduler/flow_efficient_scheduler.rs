@@ -97,18 +97,18 @@
 //!
 //! Selecting 1 from these schedule intelligently should lead to more memory reduction but current implementation always select first one (eagerly select leftmost outgoing edge).
 
-use crate::{error::Result, pipeline::pipeline_version::PipelineVersion};
+use crate::{
+    error::Result,
+    pipeline::{name::StreamName, pipeline_version::PipelineVersion},
+};
 use petgraph::{
     graph::{DiGraph, EdgeReference, NodeIndex},
     visit::EdgeRef,
 };
 use std::{collections::HashSet, sync::Arc};
 
-use crate::{
-    model::name::StreamName,
-    stream_engine::autonomous_executor::task::{
-        task_graph::TaskGraph, task_id::TaskId, task_state::TaskState, Task,
-    },
+use crate::stream_engine::autonomous_executor::task::{
+    task_graph::TaskGraph, task_id::TaskId, task_state::TaskState, Task,
 };
 
 use super::{Scheduler, WorkerState};
@@ -264,8 +264,7 @@ mod tests {
     use std::collections::VecDeque;
 
     use crate::{
-        model::name::{PumpName, StreamName},
-        pipeline::Pipeline,
+        pipeline::{name::PumpName, Pipeline},
         stream_engine::autonomous_executor::{
             task::task_id::TaskId,
             test_support::foreign::{sink::TestSink, source::TestSource},

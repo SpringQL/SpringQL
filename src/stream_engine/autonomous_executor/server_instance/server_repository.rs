@@ -4,15 +4,13 @@ use std::{
 };
 
 use super::{sink::SinkServerInstance, source::SourceServerInstance};
+use crate::pipeline::server_model::{server_type::ServerType, ServerModel};
 use crate::{
     error::Result,
+    pipeline::name::ServerName,
     stream_engine::autonomous_executor::server_instance::{
         sink::net::NetSinkServerInstance, source::net::NetSourceServerInstance,
     },
-};
-use crate::{
-    model::name::ServerName,
-    pipeline::server_model::{server_type::ServerType, ServerModel},
 };
 
 #[allow(clippy::type_complexity)]
