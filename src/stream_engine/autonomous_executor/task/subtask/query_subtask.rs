@@ -1,4 +1,4 @@
-use self::{final_row::FinalRow, node_executor_tree::NodeExecutorTree};
+use self::{final_row::FinalRow, query_subtask_tree::QuerySubtaskTree};
 use crate::{
     error::Result,
     model::query_plan::QueryPlan,
@@ -10,19 +10,19 @@ use crate::{
 
 mod final_row;
 mod interm_row;
-mod node_executor_tree;
+mod query_subtask_tree;
 mod row_window;
 
 /// Process input row 1-by-1.
 #[derive(Debug)]
 pub(super) struct QuerySubtask {
-    node_executor_tree: NodeExecutorTree,
+    query_subtask_tree: QuerySubtaskTree,
 }
 
 impl QuerySubtask {
     pub(super) fn register(query_plan: QueryPlan) -> Self {
         Self {
-            node_executor_tree: NodeExecutorTree::compile(query_plan),
+            query_subtask_tree: QuerySubtaskTree::compile(query_plan),
         }
     }
 
@@ -34,7 +34,7 @@ impl QuerySubtask {
         &mut self,
         context: &TaskContext<DI>,
     ) -> Result<FinalRow> {
-        self.node_executor_tree.run::<DI>(context)
+        self.query_subtask_tree.run::<DI>(context)
     }
 }
 

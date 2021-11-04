@@ -17,7 +17,7 @@ use crate::stream_engine::autonomous_executor::task::task_context::TaskContext;
 use crate::stream_engine::dependency_injection::DependencyInjection;
 
 #[derive(Debug)]
-pub(super) struct NodeExecutorTree {
+pub(super) struct QuerySubtaskTree {
     root: NodeExecutor,
 
     /// Some(_) means: Output of the query plan is this NewRow.
@@ -25,7 +25,7 @@ pub(super) struct NodeExecutorTree {
     latest_new_row: Option<NewRow>,
 }
 
-impl NodeExecutorTree {
+impl QuerySubtaskTree {
     pub(super) fn compile(query_plan: QueryPlan) -> Self {
         let plan_root = query_plan.root();
         let root = Self::compile_node(plan_root);
