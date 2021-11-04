@@ -7,6 +7,5 @@
 
 pub(crate) mod column;
 pub(crate) mod name;
-pub(crate) mod option;
 pub(crate) mod query_plan;
 pub(crate) mod sql_type;

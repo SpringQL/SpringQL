@@ -4,11 +4,11 @@ use crate::{
     model::{
         column::{column_data_type::ColumnDataType, column_definition::ColumnDefinition},
         name::{ColumnName, PumpName, StreamName},
-        option::{options_builder::OptionsBuilder, Options},
         sql_type::SqlType,
     },
     pipeline::{
         foreign_stream_model::ForeignStreamModel,
+        option::{options_builder::OptionsBuilder, Options},
         pump_model::pump_state::PumpState,
         pump_model::PumpModel,
         server_model::{server_type::ServerType, ServerModel},

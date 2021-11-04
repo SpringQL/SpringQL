@@ -1,5 +1,5 @@
 use crate::{
-    error::Result, model::option::Options,
+    error::Result, pipeline::option::Options,
     stream_engine::autonomous_executor::row::foreign_row::foreign_source_row::ForeignSourceRow,
 };
 use std::fmt::Debug;

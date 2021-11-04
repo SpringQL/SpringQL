@@ -9,7 +9,7 @@ use anyhow::Context;
 use super::SinkServerInstance;
 use crate::{
     error::{foreign_info::ForeignInfo, Result, SpringError},
-    model::option::{server_options::NetServerOptions, Options},
+    pipeline::option::{server_options::NetServerOptions, Options},
     stream_engine::autonomous_executor::row::foreign_row::{
         foreign_sink_row::ForeignSinkRow, format::json::JsonObject,
     },
@@ -89,7 +89,7 @@ impl SinkServerInstance for NetSinkServerInstance {
 mod tests {
     use super::*;
     use crate::{
-        model::option::options_builder::OptionsBuilder,
+        pipeline::option::options_builder::OptionsBuilder,
         stream_engine::autonomous_executor::{
             row::foreign_row::format::json::JsonObject, test_support::foreign::sink::TestSink,
         },

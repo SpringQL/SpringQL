@@ -1,5 +1,5 @@
 use crate::error::Result;
-use crate::model::option::Options;
+use crate::pipeline::option::Options;
 use crate::stream_engine::autonomous_executor::row::foreign_row::foreign_sink_row::ForeignSinkRow;
 use std::fmt::Debug;
 

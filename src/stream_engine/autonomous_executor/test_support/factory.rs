@@ -1,13 +1,9 @@
 use std::sync::Arc;
 
-use crate::{
-    model::{
+use crate::{model::{
         name::{ColumnName, PumpName, StreamName},
-        option::options_builder::OptionsBuilder,
         query_plan::query_plan_node::{operation::LeafOperation, QueryPlanNodeLeaf},
-    },
-    pipeline::stream_model::stream_shape::StreamShape,
-    stream_engine::{
+    }, pipeline::{option::options_builder::OptionsBuilder, stream_model::stream_shape::StreamShape}, stream_engine::{
         autonomous_executor::{
             row::{
                 column::stream_column::StreamColumns,
@@ -23,15 +19,13 @@ use crate::{
             test_support::foreign::source::TestSource,
         },
         RowRepository,
-    },
-    stream_engine::{
+    }, stream_engine::{
         autonomous_executor::{
             task::{task_context::TaskContext, task_id::TaskId},
             Timestamp,
         },
         dependency_injection::{test_di::TestDI, DependencyInjection},
-    },
-};
+    }};
 
 impl NetSourceServerInstance {
     pub(in crate::stream_engine) fn factory_with_test_source(inputs: Vec<JsonObject>) -> Self {

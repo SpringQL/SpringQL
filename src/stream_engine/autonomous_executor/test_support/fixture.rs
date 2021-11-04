@@ -6,7 +6,6 @@ use crate::{
     model::{
         column::{column_data_type::ColumnDataType, column_definition::ColumnDefinition},
         name::{ColumnName, PumpName, StreamName},
-        option::{options_builder::OptionsBuilder, Options},
         sql_type::SqlType,
     },
     pipeline::{

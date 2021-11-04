@@ -7,9 +7,11 @@ use serde::{Deserialize, Serialize};
 
 use self::{server_state::ServerState, server_type::ServerType};
 
-use crate::model::{name::ServerName, option::Options};
+use crate::model::name::ServerName;
 
-use super::{foreign_stream_model::ForeignStreamModel, pipeline_graph::PipelineGraph};
+use super::{
+    foreign_stream_model::ForeignStreamModel, option::Options, pipeline_graph::PipelineGraph,
+};
 
 /// See: <https://docs.sqlstream.com/sql-reference-guide/create-statements/createserver/#prebuilt-server-objects-available-in-sserver>
 #[derive(Clone, PartialEq, Eq, Debug, Serialize, Deserialize)]

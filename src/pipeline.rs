@@ -6,12 +6,12 @@
 //!   - Pump
 
 pub(crate) mod foreign_stream_model;
+pub(crate) mod option;
+pub(crate) mod pipeline_graph;
+pub(crate) mod pipeline_version;
 pub(crate) mod pump_model;
 pub(crate) mod server_model;
 pub(crate) mod stream_model;
-
-pub(crate) mod pipeline_graph;
-pub(crate) mod pipeline_version;
 
 #[cfg(test)]
 pub(crate) mod test_support;
