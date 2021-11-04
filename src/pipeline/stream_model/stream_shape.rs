@@ -84,7 +84,7 @@ mod tests {
     fn test_rowtime() {
         let _ = StreamShape::new(
             vec![ColumnDefinition::fx_timestamp()],
-            Some(ColumnName::new("timestamp".to_string())),
+            Some(ColumnName::fx_timestamp()),
         )
         .expect("should succeed");
     }
@@ -106,11 +106,11 @@ mod tests {
         assert!(matches!(
             StreamShape::new(
                 vec![ColumnDefinition::new(ColumnDataType::new(
-                    ColumnName::new("timestamp".to_string()),
+                    ColumnName::fx_timestamp(),
                     SqlType::integer(), // not a timestamp type
                     false
                 ))],
-                Some(ColumnName::new("timestamp".to_string())),
+                Some(ColumnName::fx_timestamp()),
             )
             .unwrap_err(),
             SpringError::Sql(_)
@@ -122,11 +122,11 @@ mod tests {
         assert!(matches!(
             StreamShape::new(
                 vec![ColumnDefinition::new(ColumnDataType::new(
-                    ColumnName::new("timestamp".to_string()),
+                    ColumnName::fx_timestamp(),
                     SqlType::timestamp(),
                     true // nullable
                 ))],
-                Some(ColumnName::new("timestamp".to_string())),
+                Some(ColumnName::fx_timestamp()),
             )
             .unwrap_err(),
             SpringError::Sql(_)

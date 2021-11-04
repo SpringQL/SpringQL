@@ -397,7 +397,7 @@ impl StreamShape {
                 ColumnDefinition::fx_city(),
                 ColumnDefinition::fx_temperature(),
             ],
-            Some(ColumnName::new("timestamp".to_string())),
+            Some(ColumnName::fx_timestamp()),
         )
         .unwrap()
     }
@@ -408,7 +408,7 @@ impl StreamShape {
                 ColumnDefinition::fx_ticker(),
                 ColumnDefinition::fx_amount(),
             ],
-            Some(ColumnName::new("timestamp".to_string())),
+            Some(ColumnName::fx_timestamp()),
         )
         .unwrap()
     }
@@ -528,11 +528,7 @@ impl ColumnDefinition {
 
 impl ColumnDataType {
     pub(crate) fn fx_timestamp() -> Self {
-        Self::new(
-            ColumnName::new("ts".to_string()),
-            SqlType::timestamp(),
-            false,
-        )
+        Self::new(ColumnName::fx_timestamp(), SqlType::timestamp(), false)
     }
 
     pub(crate) fn fx_city() -> Self {
@@ -561,6 +557,12 @@ impl ColumnDataType {
             SqlType::small_int(),
             false,
         )
+    }
+}
+
+impl ColumnName {
+    pub(crate) fn fx_timestamp() -> Self {
+        Self::new("ts".to_string())
     }
 }
 

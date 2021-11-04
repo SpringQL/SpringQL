@@ -151,7 +151,7 @@ mod tests {
         let mut column_values = ColumnValues::default();
         column_values
             .insert(
-                ColumnName::new("timestamp".to_string()),
+                ColumnName::fx_timestamp(),
                 SqlValue::NotNull(NnSqlValue::Timestamp(Timestamp::fx_ts1())),
             )
             .unwrap();

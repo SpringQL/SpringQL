@@ -84,12 +84,12 @@ mod tests {
         let context = TaskContext::factory_with_1_level_downstreams(task, downstream_tasks);
 
         // CREATE STREAM trade(
-        //   "timestamp" TIMESTAMP NOT NULL AS ROWTIME,
+        //   "ts" TIMESTAMP NOT NULL AS ROWTIME,
         //   "ticker" TEXT NOT NULL,
         //   "amount" INTEGER NOT NULL
         // );
 
-        // SELECT timestamp, ticker, amount FROM trade;
+        // SELECT ts, ticker, amount FROM trade;
         let query_plan_leaf = QueryPlanNodeLeaf::factory_with_task_in::<TestDI>(
             vec![
                 Row::fx_trade_oracle(),

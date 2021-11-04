@@ -45,7 +45,7 @@ mod tests {
         let row = Row::fx_city_temperature_tokyo();
 
         let f_row = ForeignSinkRow(JsonObject::new(json!({
-            "timestamp": Timestamp::fx_ts1().to_string(),
+            "ts": Timestamp::fx_ts1().to_string(),
             "city": "Tokyo",
             "temperature": 21
         })));
