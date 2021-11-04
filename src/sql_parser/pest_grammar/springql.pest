@@ -28,6 +28,7 @@ keyword = {
     | ^"OPTIONS"
     | ^"ROWTIME"
     | ^"SERVER"
+    | ^"SINK"
     | ^"SMALLINT"
     | ^"SOURCE"
     | ^"STREAM"
@@ -277,6 +278,7 @@ timestamp_type = {
 command = {
     SOI ~ (
         create_source_stream_command
+        | create_sink_stream_command
     )
     ~ ";"?
     ~ EOI
@@ -290,6 +292,22 @@ command = {
 
 create_source_stream_command = {
     ^"CREATE" ~ ^"SOURCE" ~ ^"STREAM"
+    ~ foreign_stream_name
+    ~ "("
+    ~ column_definition ~ ("," ~ column_definition)*
+    ~ ")"
+    ~ ^"SERVER" ~ server_name
+    ~ option_specifications?
+}
+
+/*
+ * ----------------------------------------------------------------------------
+ * CREATE SINK STREAM
+ * ----------------------------------------------------------------------------
+ */
+
+create_sink_stream_command = {
+    ^"CREATE" ~ ^"SINK" ~ ^"STREAM"
     ~ foreign_stream_name
     ~ "("
     ~ column_definition ~ ("," ~ column_definition)*

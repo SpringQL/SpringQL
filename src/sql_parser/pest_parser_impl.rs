@@ -83,6 +83,12 @@ impl PestParserImpl {
             Self::parse_create_source_stream_command,
             Command::AlterPipeline,
         )?
+        .or(try_parse_child(
+            &mut params,
+            Rule::create_sink_stream_command,
+            Self::parse_create_sink_stream_command,
+            Command::AlterPipeline,
+        )?)
         .ok_or_else(|| {
             SpringError::Sql(anyhow!(
                 "Does not match any child rule of command: {}",
@@ -139,6 +145,62 @@ impl PestParserImpl {
 
         let server_type = match server_name.as_ref() {
             "NET_SERVER" => Ok(ServerType::SourceNet),
+            _ => Err(SpringError::Sql(anyhow!(
+                "Invalid server name: {}",
+                server_name
+            ))),
+        }?;
+        let server = ServerModel::new(server_type, Arc::new(foreign_stream), options);
+
+        Ok(AlterPipelineCommand::CreateForeignStream(server))
+    }
+
+    /*
+     * ----------------------------------------------------------------------------
+     * CREATE SINK STREAM
+     * ----------------------------------------------------------------------------
+     */
+
+    fn parse_create_sink_stream_command(mut params: FnParseParams) -> Result<AlterPipelineCommand> {
+        let foreign_stream_name = parse_child(
+            &mut params,
+            Rule::foreign_stream_name,
+            Self::parse_stream_name,
+            identity,
+        )?;
+        let column_definitions = parse_child_seq(
+            &mut params,
+            Rule::column_definition,
+            &Self::parse_column_definition,
+            &identity,
+        )?;
+        let server_name = parse_child(
+            &mut params,
+            Rule::server_name,
+            Self::parse_server_name,
+            identity,
+        )?;
+        let option_syntaxes = parse_child(
+            &mut params,
+            Rule::option_specifications,
+            &Self::parse_option_specifications,
+            &identity,
+        )?;
+
+        let stream_shape = StreamShape::new(column_definitions)?;
+        let foreign_stream = ForeignStreamModel::new(StreamModel::new(
+            foreign_stream_name,
+            Arc::new(stream_shape),
+        ));
+
+        let mut options = OptionsBuilder::default();
+        for o in option_syntaxes {
+            options = options.add(o.option_name, o.option_value);
+        }
+        let options = options.build();
+
+        let server_type = match server_name.as_ref() {
+            "NET_SERVER" => Ok(ServerType::SinkNet),
             _ => Err(SpringError::Sql(anyhow!(
                 "Invalid server name: {}",
                 server_name
