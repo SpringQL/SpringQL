@@ -1,10 +1,12 @@
 use std::sync::Arc;
 
 use crate::{
-    model::query_plan::query_plan_node::{operation::LeafOperation, QueryPlanNodeLeaf},
     pipeline::{
         name::ColumnName, option::options_builder::OptionsBuilder,
         stream_model::stream_shape::StreamShape,
+    },
+    stream_engine::command::query_plan::query_plan_node::{
+        operation::LeafOperation, QueryPlanNodeLeaf,
     },
     stream_engine::{
         autonomous_executor::{

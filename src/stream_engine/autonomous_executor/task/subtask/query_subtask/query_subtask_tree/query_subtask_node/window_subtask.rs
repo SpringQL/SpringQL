@@ -1,6 +1,6 @@
 use crate::{
     error::Result,
-    model::query_plan::query_plan_node::operation::SlidingWindowOperation,
+    stream_engine::command::query_plan::query_plan_node::operation::SlidingWindowOperation,
     stream_engine::{
         autonomous_executor::{
             task::{

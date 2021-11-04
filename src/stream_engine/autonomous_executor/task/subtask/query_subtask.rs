@@ -1,7 +1,7 @@
 use self::{final_row::FinalRow, query_subtask_tree::QuerySubtaskTree};
 use crate::{
     error::Result,
-    model::query_plan::QueryPlan,
+    stream_engine::command::query_plan::QueryPlan,
     stream_engine::{
         autonomous_executor::task::task_context::TaskContext,
         dependency_injection::DependencyInjection,
@@ -62,12 +62,12 @@ mod tests {
     use std::{rc::Rc, sync::Arc};
 
     use crate::{
-        model::query_plan::{
+        pipeline::name::{PumpName, StreamName},
+        stream_engine::autonomous_executor::{row::Row, task::task_id::TaskId},
+        stream_engine::command::query_plan::{
             query_plan_node::{QueryPlanNode, QueryPlanNodeLeaf},
             QueryPlan,
         },
-        pipeline::name::{PumpName, StreamName},
-        stream_engine::autonomous_executor::{row::Row, task::task_id::TaskId},
         stream_engine::dependency_injection::test_di::TestDI,
         test_support::setup::setup_test_logger,
     };
