@@ -1,10 +1,10 @@
-mod node_executor;
+mod query_subtask_node;
 
 use std::rc::Rc;
 use std::sync::Arc;
 
-use self::node_executor::collect_executor::CollectExecutor;
-use self::node_executor::{CollectNodeExecutor, NodeExecutor};
+use self::query_subtask_node::collect_subtask::CollectSubtask;
+use self::query_subtask_node::QuerySubtaskNode;
 
 use super::final_row::FinalRow;
 use super::interm_row::NewRow;
@@ -13,12 +13,13 @@ use crate::model::query_plan::query_plan_node::operation::LeafOperation;
 use crate::model::query_plan::query_plan_node::QueryPlanNode;
 use crate::model::query_plan::QueryPlan;
 use crate::stream_engine::autonomous_executor::row::Row;
+use crate::stream_engine::autonomous_executor::task::subtask::query_subtask::query_subtask_tree::query_subtask_node::collect_subtask;
 use crate::stream_engine::autonomous_executor::task::task_context::TaskContext;
 use crate::stream_engine::dependency_injection::DependencyInjection;
 
 #[derive(Debug)]
 pub(super) struct QuerySubtaskTree {
-    root: NodeExecutor,
+    root: QuerySubtaskNode,
 
     /// Some(_) means: Output of the query plan is this NewRow.
     /// None means: Output of the query plan is the input of it.
@@ -36,12 +37,10 @@ impl QuerySubtaskTree {
         }
     }
 
-    fn compile_node(plan_node: Rc<QueryPlanNode>) -> NodeExecutor {
+    fn compile_node(plan_node: Rc<QueryPlanNode>) -> QuerySubtaskNode {
         match plan_node.as_ref() {
             QueryPlanNode::Leaf(leaf_node) => match &leaf_node.op {
-                LeafOperation::Collect => {
-                    NodeExecutor::Collect(CollectNodeExecutor::Collect(CollectExecutor::new()))
-                }
+                LeafOperation::Collect => QuerySubtaskNode::Collect(CollectSubtask::new()),
             },
         }
     }
@@ -64,16 +63,14 @@ impl QuerySubtaskTree {
     }
 
     fn run_dfs_post_order<DI: DependencyInjection>(
-        executor: &NodeExecutor,
+        executor: &QuerySubtaskNode,
         latest_new_row: &mut Option<NewRow>,
         context: &TaskContext<DI>,
     ) -> Result<Arc<Row>> {
         match executor {
-            NodeExecutor::Collect(e) => match e {
-                CollectNodeExecutor::Collect(executor) => executor.run::<DI>(context),
-            },
-            NodeExecutor::Stream(_) => todo!(),
-            NodeExecutor::Window(_) => todo!(),
+            QuerySubtaskNode::Collect(collect_subtask) => collect_subtask.run::<DI>(context),
+            QuerySubtaskNode::Stream(_) => todo!(),
+            QuerySubtaskNode::Window(_) => todo!(),
         }
     }
 }

@@ -16,12 +16,12 @@ use chrono::Duration;
 use std::collections::VecDeque;
 
 #[derive(Debug)]
-pub(in crate::stream_engine::autonomous_executor) struct SlidingWindowExecutor {
+pub(in crate::stream_engine::autonomous_executor) struct SlidingWindowSubtask {
     window: RowWindow,
     window_width: Duration, // TODO row-based sliding window
 }
 
-impl SlidingWindowExecutor {
+impl SlidingWindowSubtask {
     pub(in crate::stream_engine::autonomous_executor) fn register(
         op: &SlidingWindowOperation,
     ) -> Self {
@@ -93,7 +93,7 @@ mod tests {
         let op = SlidingWindowOperation::TimeBased {
             lower_bound: Duration::minutes(5),
         };
-        let mut executor = SlidingWindowExecutor::register(&op);
+        let mut executor = SlidingWindowSubtask::register(&op);
 
         let t_03_02_00 = Timestamp::from_str("2019-03-30 03:02:00.000000000").unwrap();
         let t_03_02_10 = Timestamp::from_str("2019-03-30 03:02:10.000000000").unwrap();

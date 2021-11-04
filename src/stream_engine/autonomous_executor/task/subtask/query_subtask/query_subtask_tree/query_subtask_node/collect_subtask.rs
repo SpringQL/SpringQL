@@ -7,9 +7,9 @@ use crate::stream_engine::autonomous_executor::RowRepository;
 use crate::stream_engine::dependency_injection::DependencyInjection;
 
 #[derive(Debug, new)]
-pub(in crate::stream_engine::autonomous_executor) struct CollectExecutor;
+pub(in crate::stream_engine::autonomous_executor) struct CollectSubtask;
 
-impl CollectExecutor {
+impl CollectSubtask {
     pub(in crate::stream_engine::autonomous_executor) fn run<DI: DependencyInjection>(
         &self,
         context: &TaskContext<DI>,
