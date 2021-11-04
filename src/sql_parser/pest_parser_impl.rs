@@ -3,8 +3,10 @@ mod helper;
 
 use crate::error::{Result, SpringError};
 use crate::pipeline::foreign_stream_model::ForeignStreamModel;
-use crate::pipeline::name::{ColumnName, ServerName, StreamName};
+use crate::pipeline::name::{ColumnName, PumpName, ServerName, StreamName};
 use crate::pipeline::option::options_builder::OptionsBuilder;
+use crate::pipeline::pump_model::pump_state::PumpState;
+use crate::pipeline::pump_model::PumpModel;
 use crate::pipeline::relation::column::column_constraint::ColumnConstraint;
 use crate::pipeline::relation::column::column_data_type::ColumnDataType;
 use crate::pipeline::relation::column::column_definition::ColumnDefinition;
@@ -22,7 +24,7 @@ use pest::{iterators::Pairs, Parser};
 use std::convert::identity;
 use std::sync::Arc;
 
-use self::helper::{ColumnConstraintSyntax, OptionSyntax};
+use self::helper::{ColumnConstraintSyntax, OptionSyntax, SelectStreamSyntax};
 
 #[derive(Debug, Default)]
 pub(in crate::sql_parser) struct PestParserImpl;
@@ -87,6 +89,12 @@ impl PestParserImpl {
             &mut params,
             Rule::create_sink_stream_command,
             Self::parse_create_sink_stream_command,
+            Command::AlterPipeline,
+        )?)
+        .or(try_parse_child(
+            &mut params,
+            Rule::create_pump_command,
+            Self::parse_create_pump_command,
             Command::AlterPipeline,
         )?)
         .ok_or_else(|| {
@@ -212,6 +220,73 @@ impl PestParserImpl {
     }
 
     /*
+     * ----------------------------------------------------------------------------
+     * CREATE PUMP
+     * ----------------------------------------------------------------------------
+     */
+
+    fn parse_create_pump_command(mut params: FnParseParams) -> Result<AlterPipelineCommand> {
+        let pump_name = parse_child(
+            &mut params,
+            Rule::pump_name,
+            Self::parse_pump_name,
+            identity,
+        )?;
+        let downstream_stream = parse_child(
+            &mut params,
+            Rule::stream_name,
+            &Self::parse_stream_name,
+            &identity,
+        )?;
+        let insert_column_names = parse_child_seq(
+            &mut params,
+            Rule::column_name,
+            &Self::parse_column_name,
+            &identity,
+        )?;
+        let select_stream_syntax = parse_child(
+            &mut params,
+            Rule::select_stream_command,
+            Self::parse_select_stream,
+            identity,
+        )?;
+
+        let pump = PumpModel::new(
+            pump_name,
+            PumpState::Stopped,
+            select_stream_syntax.from_stream,
+            downstream_stream,
+        );
+
+        Ok(AlterPipelineCommand::CreatePump(pump))
+    }
+
+    /*
+     * ----------------------------------------------------------------------------
+     * SELECT
+     * ----------------------------------------------------------------------------
+     */
+
+    fn parse_select_stream(mut params: FnParseParams) -> Result<SelectStreamSyntax> {
+        let column_names = parse_child_seq(
+            &mut params,
+            Rule::column_name,
+            &Self::parse_column_name,
+            &identity,
+        )?;
+        let stream_name = parse_child(
+            &mut params,
+            Rule::stream_name,
+            Self::parse_stream_name,
+            identity,
+        )?;
+        Ok(SelectStreamSyntax {
+            column_names,
+            from_stream: stream_name,
+        })
+    }
+
+    /*
      * ================================================================================================
      * Identifier:
      * ================================================================================================
@@ -312,6 +387,15 @@ impl PestParserImpl {
             Rule::identifier,
             Self::parse_identifier,
             StreamName::new,
+        )
+    }
+
+    fn parse_pump_name(mut params: FnParseParams) -> Result<PumpName> {
+        parse_child(
+            &mut params,
+            Rule::identifier,
+            Self::parse_identifier,
+            PumpName::new,
         )
     }
 

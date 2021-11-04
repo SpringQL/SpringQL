@@ -349,42 +349,9 @@ create_pump_command = {
 
 select_stream_command = {
     ^"SELECT" ~ "STREAM"
-    ~ select_field ~ ("," ~ select_field)*
-    ~ (^"FROM" ~ from_item)?
-    ~ (^"WHERE" ~ condition)?
-    ~ (^"GROUP" ~ "BY" ~ grouping_element ~ ("," ~ grouping_element)*)?
-    ~ (^"HAVING" ~ condition ~ ("," ~ condition)*)?
-    ~ (^"ORDER" ~ "BY" ~ order_by ~ ("," ~ order_by)*)?
+    ~ column_name ~ ("," ~ column_name)*
+    ~ (^"FROM" ~ stream_name)
 }
-
-select_field = {
-    expression ~ (^"AS"? ~ alias)?
-}
-
-from_item = {
-    sub_from_item ~ (join_type ~ from_item ~ ^"ON" ~ condition)?
-}
-// To avoid left-recursion
-sub_from_item = {
-    stream_name ~ (^"AS"? ~ alias)?
-}
-
-join_type = {
-    ^"INNER" ~ ^"JOIN"
-}
-
-grouping_element = {
-    expression
-}
-
-order_by = {
-    expression ~ ordering?
-}
-
-ordering = {
-    ^"ASC" | ^"DESC"
-}
-
 
 /*
  * ----------------------------------------------------------------------------
