@@ -423,20 +423,15 @@ impl StreamModel {
         Self::new(
             StreamName::fx_city_temperature(),
             Arc::new(StreamShape::fx_city_temperature()),
-            Options::fx_empty(),
         )
     }
 
     pub(crate) fn fx_trade() -> Self {
-        Self::new(
-            StreamName::fx_trade(),
-            Arc::new(StreamShape::fx_trade()),
-            Options::fx_empty(),
-        )
+        Self::new(StreamName::fx_trade(), Arc::new(StreamShape::fx_trade()))
     }
 
     pub(crate) fn fx_trade_with_name(name: StreamName) -> Self {
-        Self::new(name, Arc::new(StreamShape::fx_trade()), Options::fx_empty())
+        Self::new(name, Arc::new(StreamShape::fx_trade()))
     }
 }
 
@@ -445,7 +440,6 @@ impl ForeignStreamModel {
         Self::new(StreamModel::new(
             StreamName::fx_city_temperature_source(),
             Arc::new(StreamShape::fx_city_temperature()),
-            Options::fx_empty(),
         ))
     }
 
@@ -453,7 +447,6 @@ impl ForeignStreamModel {
         Self::new(StreamModel::new(
             StreamName::fx_trade_source(),
             Arc::new(StreamShape::fx_trade()),
-            Options::fx_empty(),
         ))
     }
 
@@ -461,16 +454,11 @@ impl ForeignStreamModel {
         Self::new(StreamModel::new(
             StreamName::fx_trade_sink(),
             Arc::new(StreamShape::fx_trade()),
-            Options::fx_empty(),
         ))
     }
 
     pub(crate) fn fx_trade_with_name(name: StreamName) -> Self {
-        Self::new(StreamModel::new(
-            name,
-            Arc::new(StreamShape::fx_trade()),
-            Options::fx_empty(),
-        ))
+        Self::new(StreamModel::new(name, Arc::new(StreamShape::fx_trade())))
     }
 }
 

@@ -11,7 +11,6 @@ use super::{name::StreamName, option::Options};
 pub(crate) struct StreamModel {
     name: StreamName,
     shape: Arc<StreamShape>,
-    options: Options,
 }
 
 impl StreamModel {
