@@ -23,7 +23,6 @@ keyword = {
     ^"BIGINT"
     | ^"CREATE"
     | ^"INTEGER"
-    | ^"NET_SERVER"
     | ^"NOT"
     | ^"NULL"
     | ^"OPTIONS"
@@ -104,7 +103,7 @@ rich_utf8_letter = _{
 }
 
 string_character = _{
-    !"\""
+    !"'"
     ~ ANY
 }
 
@@ -133,7 +132,7 @@ integer_constant = @{
 }
 
 string_constant = {
-    "\"" ~ string_content ~ "\""
+    "'" ~ string_content ~ "'"
 }
 
 string_content = @{
@@ -228,6 +227,7 @@ column_reference = {
 data_type = {
     integer_type
     | character_type
+    | timestamp_type
 }
 
 /*
@@ -255,6 +255,16 @@ character_type = {
 }
 
 /*
+ * ----------------------------------------------------------------------------
+ * Timestamp Types
+ * ----------------------------------------------------------------------------
+ */
+
+timestamp_type = {
+    ^"TIMESTAMP"
+}
+
+/*
  * ================================================================================================
  * Commands:
  *
@@ -263,7 +273,7 @@ character_type = {
  * ================================================================================================
  */
 
-// The entry point of apllodb-SQL.
+// The entry point of SpringQL.
 command = {
     SOI ~ (
         create_source_stream_command
@@ -355,5 +365,5 @@ option_specification = {
 }
 
 option_value = {
-    "'" ~ string_content ~ "'"
+    string_constant
 }

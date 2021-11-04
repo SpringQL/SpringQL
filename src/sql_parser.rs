@@ -1,4 +1,3 @@
-mod generated_parser;
 mod pest_parser_impl;
 
 use crate::error::Result;
@@ -17,8 +16,7 @@ impl SqlParser {
 
 #[cfg(test)]
 mod tests {
-    use std::sync::Arc;
-
+    use super::*;
     use crate::{
         pipeline::{
             foreign_stream_model::ForeignStreamModel,
@@ -29,8 +27,8 @@ mod tests {
         },
         stream_engine::command::alter_pipeline_command::AlterPipelineCommand,
     };
-
-    use super::*;
+    use pretty_assertions::assert_eq;
+    use std::sync::Arc;
 
     #[test]
     fn test_create_source_stream() {

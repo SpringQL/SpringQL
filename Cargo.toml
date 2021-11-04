@@ -30,4 +30,6 @@ pest = "2.1"
 pest_derive = "2.1"
 
 [dev-dependencies]
+pretty_assertions = "1.0"
+
 regex = "1.5"

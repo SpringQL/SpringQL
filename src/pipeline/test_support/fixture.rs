@@ -554,7 +554,7 @@ impl ColumnDataType {
     pub(crate) fn fx_amount() -> Self {
         Self::new(
             ColumnName::new("amount".to_string()),
-            SqlType::small_int(),
+            SqlType::integer(),
             false,
         )
     }
