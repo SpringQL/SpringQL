@@ -69,7 +69,6 @@ mod tests {
 
     use super::*;
     use crate::{
-        error::SpringError,
         pipeline::name::{PumpName, StreamName},
         stream_engine::autonomous_executor::row::foreign_row::format::json::JsonObject,
         test_support::setup::setup_test_logger,

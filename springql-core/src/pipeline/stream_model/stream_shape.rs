@@ -55,7 +55,7 @@ impl StreamShape {
             })
             .collect::<Vec<_>>();
 
-        if rowtime_cdts.len() == 0 {
+        if rowtime_cdts.is_empty() {
             Ok(None)
         } else if rowtime_cdts.len() == 1 {
             Ok(Some(rowtime_cdts[0].column_name().clone()))
