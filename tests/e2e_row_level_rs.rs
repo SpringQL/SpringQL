@@ -5,7 +5,7 @@ use springql_core::low_level_rs::*;
 #[ignore]
 #[test]
 fn test_e2e_source_sink() -> Result<()> {
-    let mut pipeline = spring_open()?;
+    let pipeline = spring_open()?;
 
     let ddls = vec![
         "
@@ -31,12 +31,12 @@ fn test_e2e_source_sink() -> Result<()> {
         ",
     ];
     for ddl in ddls {
-        let mut stmt = spring_prepare(&mut pipeline, ddl)?;
-        assert_eq!(spring_step(&mut stmt)?, SpringStepSuccess::Done);
+        let stmt = spring_prepare(&pipeline, ddl)?;
+        assert_eq!(spring_step(&stmt)?, SpringStepSuccess::Done);
     }
 
-    let mut stmt = spring_prepare(
-        &mut pipeline,
+    let stmt = spring_prepare(
+        &pipeline,
         "SELECT timestamp, ticker, amount FROM fst_trade_output;",
     )?;
 
@@ -44,15 +44,15 @@ fn test_e2e_source_sink() -> Result<()> {
     let re_ticker = Regex::new(r"^[A-Z0-9]{2,5}").unwrap();
 
     for _ in 0..1000 {
-        assert_eq!(spring_step(&mut stmt)?, SpringStepSuccess::Row);
+        assert_eq!(spring_step(&stmt)?, SpringStepSuccess::Row);
 
-        let timestamp = spring_column_text(&mut stmt, 0)?;
+        let timestamp = spring_column_text(&stmt, 0)?;
         assert!(re_timestamp.is_match(&timestamp));
 
-        let ticker = spring_column_text(&mut stmt, 1)?;
+        let ticker = spring_column_text(&stmt, 1)?;
         assert!(re_ticker.is_match(&ticker));
 
-        let amount = spring_column_i32(&mut stmt, 2)?;
+        let amount = spring_column_i32(&stmt, 2)?;
         assert!(amount > 1);
     }
 

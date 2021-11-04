@@ -147,13 +147,13 @@ pub fn spring_column_text(stmt: &SpringStatement, i_col: usize) -> Result<String
 /// Destroys the prepared statement.
 ///
 /// You don't have to call this function but just dropping (moving out) the prepared statement object is enough.
-pub fn spring_finalize(stmt: SpringStatement) {
+pub fn spring_finalize(_stmt: SpringStatement) {
     // just drop stmt
 }
 
 /// Destroys the in-process stream pipeline.
 ///
 /// You don't have to call this function but just dropping (moving out) the connection object is enough.
-pub fn spring_close(pipeline: SpringPipeline) {
+pub fn spring_close(_pipeline: SpringPipeline) {
     // just drop pipeline
 }

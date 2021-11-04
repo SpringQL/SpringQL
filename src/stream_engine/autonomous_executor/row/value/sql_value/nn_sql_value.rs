@@ -200,21 +200,6 @@ impl NnSqlValue {
             ))),
         }
     }
-
-    /// # Failures
-    ///
-    /// - [SpringError::Sql](crate::error::SpringError::Sql) when:
-    ///   - inner value cannot negate
-    pub(crate) fn negate(self) -> Result<Self> {
-        match self {
-            NnSqlValue::SmallInt(v) => Ok(Self::SmallInt(-v)),
-            NnSqlValue::Integer(v) => Ok(Self::Integer(-v)),
-            NnSqlValue::BigInt(v) => Ok(Self::BigInt(-v)),
-            NnSqlValue::Text(_) | NnSqlValue::Boolean(_) | NnSqlValue::Timestamp(_) => {
-                Err(SpringError::Sql(anyhow!("{} cannot negate", self)))
-            }
-        }
-    }
 }
 
 impl From<NnSqlValue> for serde_json::Value {
