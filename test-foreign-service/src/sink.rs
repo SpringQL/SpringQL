@@ -2,12 +2,11 @@ use anyhow::{Context, Result};
 use std::io::{BufRead, BufReader};
 use std::net::{IpAddr, Shutdown, SocketAddr, TcpListener, TcpStream};
 use std::sync::mpsc;
-use std::thread::{self, JoinHandle};
+use std::thread;
 use std::time::Duration;
 
 pub struct TestForeignSink {
     my_addr: SocketAddr,
-    conn_thread: JoinHandle<()>,
 
     rx: mpsc::Receiver<serde_json::Value>,
 }
@@ -19,7 +18,7 @@ impl TestForeignSink {
 
         let (tx, rx) = mpsc::channel();
 
-        let conn_thread = thread::spawn(move || {
+        let _ = thread::spawn(move || {
             for stream in listener.incoming() {
                 let stream = stream.unwrap();
                 stream.shutdown(Shutdown::Write).unwrap();
@@ -29,7 +28,6 @@ impl TestForeignSink {
 
         Ok(Self {
             my_addr,
-            conn_thread,
             rx,
         })
     }
