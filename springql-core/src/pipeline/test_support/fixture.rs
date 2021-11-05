@@ -470,7 +470,7 @@ impl PumpModel {
         Self::new(
             name,
             PumpState::Started,
-            upstream,
+            vec![upstream],
             downstream,
             QueryPlan::fx_collect(),
             InsertAsPlan::fx_trade(),
@@ -484,7 +484,7 @@ impl PumpModel {
         Self::new(
             name,
             PumpState::Stopped,
-            upstream,
+            vec![upstream],
             downstream,
             QueryPlan::fx_collect(),
             InsertAsPlan::fx_trade(),
