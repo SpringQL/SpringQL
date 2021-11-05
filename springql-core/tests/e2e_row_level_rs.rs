@@ -8,7 +8,7 @@ use test_logger::setup_test_logger;
 fn apply_ddls(ddls: &[String]) -> SpringPipeline {
     let pipeline = spring_open().unwrap();
     for ddl in ddls {
-        let stmt = spring_prepare(&pipeline, &ddl).unwrap();
+        let stmt = spring_prepare(&pipeline, ddl).unwrap();
         assert_eq!(spring_step(&stmt).unwrap(), SpringStepSuccess::Done);
     }
     pipeline
@@ -110,7 +110,7 @@ fn test_e2e_projection() -> Result<()> {
         "amount": 20,
     });
 
-    let test_source = TestForeignSource::start(vec![json_oracle.clone()]).unwrap();
+    let test_source = TestForeignSource::start(vec![json_oracle]).unwrap();
     let test_sink = TestForeignSink::start().unwrap();
 
     let ddls = vec![

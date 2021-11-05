@@ -6,7 +6,7 @@ use std::sync::Arc;
 use self::query_subtask_node::collect_subtask::CollectSubtask;
 use self::query_subtask_node::QuerySubtaskNode;
 
-use super::final_row::FinalRow;
+use super::final_row::SubtaskRow;
 use super::interm_row::NewRow;
 use crate::error::Result;
 use crate::stream_engine::autonomous_executor::row::Row;
@@ -51,13 +51,13 @@ impl QuerySubtaskTree {
     pub(super) fn run<DI: DependencyInjection>(
         &mut self,
         context: &TaskContext<DI>,
-    ) -> Result<FinalRow> {
+    ) -> Result<SubtaskRow> {
         let row = Self::run_dfs_post_order::<DI>(&self.root, &mut self.latest_new_row, context)?;
 
         if let Some(new_row) = self.latest_new_row.take() {
-            Ok(FinalRow::NewlyCreated(new_row.into()))
+            Ok(SubtaskRow::NewlyCreated(new_row.into()))
         } else {
-            Ok(FinalRow::Preserved(row))
+            Ok(SubtaskRow::Preserved(row))
         }
     }
 

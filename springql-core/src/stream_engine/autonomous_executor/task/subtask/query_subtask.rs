@@ -1,4 +1,4 @@
-use self::{final_row::FinalRow, query_subtask_tree::QuerySubtaskTree};
+use self::{final_row::SubtaskRow, query_subtask_tree::QuerySubtaskTree};
 use crate::{
     error::Result,
     stream_engine::command::query_plan::QueryPlan,
@@ -33,7 +33,7 @@ impl QuerySubtask {
     pub(super) fn run<DI: DependencyInjection>(
         &mut self,
         context: &TaskContext<DI>,
-    ) -> Result<FinalRow> {
+    ) -> Result<SubtaskRow> {
         self.query_subtask_tree.run::<DI>(context)
     }
 }
@@ -42,7 +42,7 @@ impl QuerySubtask {
 impl QuerySubtask {
     fn run_expect<DI: DependencyInjection>(
         &mut self,
-        expected: Vec<FinalRow>,
+        expected: Vec<SubtaskRow>,
         context: &TaskContext<DI>,
     ) {
         use crate::error::SpringError;
@@ -105,9 +105,9 @@ mod tests {
 
         executor.run_expect::<TestDI>(
             vec![
-                FinalRow::Preserved(Arc::new(Row::fx_trade_oracle())),
-                FinalRow::Preserved(Arc::new(Row::fx_trade_ibm())),
-                FinalRow::Preserved(Arc::new(Row::fx_trade_google())),
+                SubtaskRow::Preserved(Arc::new(Row::fx_trade_oracle())),
+                SubtaskRow::Preserved(Arc::new(Row::fx_trade_ibm())),
+                SubtaskRow::Preserved(Arc::new(Row::fx_trade_google())),
             ],
             &context,
         );

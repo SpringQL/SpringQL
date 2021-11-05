@@ -13,6 +13,7 @@ pub(crate) struct PumpModel {
 
     upstream: StreamName,
     downstream: StreamName,
+    
 }
 
 impl PumpModel {
