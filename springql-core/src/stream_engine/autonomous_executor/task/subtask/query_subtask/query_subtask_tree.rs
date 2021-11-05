@@ -2,7 +2,6 @@ mod query_subtask_node;
 
 use std::sync::Arc;
 
-use self::query_subtask_node::collect_subtask::CollectSubtask;
 use self::query_subtask_node::QuerySubtaskNode;
 
 use super::final_row::SubtaskRow;
@@ -10,8 +9,6 @@ use super::interm_row::NewRow;
 use crate::error::Result;
 use crate::stream_engine::autonomous_executor::row::Row;
 use crate::stream_engine::autonomous_executor::task::task_context::TaskContext;
-use crate::stream_engine::command::query_plan::query_plan_node::operation::LeafOperation;
-use crate::stream_engine::command::query_plan::query_plan_node::QueryPlanNode;
 use crate::stream_engine::command::query_plan::QueryPlan;
 use crate::stream_engine::dependency_injection::DependencyInjection;
 
@@ -24,25 +21,19 @@ pub(super) struct QuerySubtaskTree {
     latest_new_row: Option<NewRow>,
 }
 
-impl QuerySubtaskTree {
-    pub(super) fn compile(query_plan: QueryPlan) -> Self {
+impl From<&QueryPlan> for QuerySubtaskTree {
+    fn from(query_plan: &QueryPlan) -> Self {
         let plan_root = query_plan.root();
-        let root = Self::compile_node(plan_root);
+        let root = QuerySubtaskNode::from(plan_root.as_ref());
 
         Self {
             root,
             latest_new_row: None,
         }
     }
+}
 
-    fn compile_node(plan_node: Arc<QueryPlanNode>) -> QuerySubtaskNode {
-        match plan_node.as_ref() {
-            QueryPlanNode::Leaf(leaf_node) => match &leaf_node.op {
-                LeafOperation::Collect => QuerySubtaskNode::Collect(CollectSubtask::new()),
-            },
-        }
-    }
-
+impl QuerySubtaskTree {
     /// # Failure
     ///
     /// - [SpringError::InputTimeout](crate::error::SpringError::InputTimeout) when:
@@ -61,11 +52,11 @@ impl QuerySubtaskTree {
     }
 
     fn run_dfs_post_order<DI: DependencyInjection>(
-        executor: &QuerySubtaskNode,
+        subtask: &QuerySubtaskNode,
         latest_new_row: &mut Option<NewRow>,
         context: &TaskContext<DI>,
     ) -> Result<Arc<Row>> {
-        match executor {
+        match subtask {
             QuerySubtaskNode::Collect(collect_subtask) => collect_subtask.run::<DI>(context),
             QuerySubtaskNode::Stream(_) => todo!(),
             QuerySubtaskNode::Window(_) => todo!(),

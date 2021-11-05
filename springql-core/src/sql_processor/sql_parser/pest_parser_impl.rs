@@ -272,11 +272,7 @@ impl PestParserImpl {
             QueryPlan::new(Arc::new(QueryPlanNode::Leaf(QueryPlanNodeLeaf {
                 op: LeafOperation::Collect,
             }))),
-            InsertAsPlan::new(vec![
-                ColumnName::new("ts".to_string()),
-                ColumnName::new("ticker".to_string()),
-                ColumnName::new("amount".to_string()),
-            ]),
+            InsertAsPlan::new(insert_column_names),
         );
 
         Ok(AlterPipelineCommand::CreatePump(pump))

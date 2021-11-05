@@ -20,9 +20,9 @@ pub(super) struct QuerySubtask {
 }
 
 impl QuerySubtask {
-    pub(super) fn register(query_plan: QueryPlan) -> Self {
+    pub(super) fn register(query_plan: &QueryPlan) -> Self {
         Self {
-            query_subtask_tree: QuerySubtaskTree::compile(query_plan),
+            query_subtask_tree: QuerySubtaskTree::from(query_plan),
         }
     }
 
@@ -102,7 +102,7 @@ mod tests {
         // SELECT ts, ticker, amount FROM trade;
 
         let query_plan = QueryPlan::fx_collect();
-        let mut executor = QuerySubtask::register(query_plan);
+        let mut executor = QuerySubtask::register(&query_plan);
 
         executor.run_expect::<TestDI>(
             vec![
