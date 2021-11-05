@@ -49,7 +49,7 @@
 //!
 //!   Example: A worker request only 1 row from `a`.
 //!
-//! - **Rule2 :complete sequence**
+//! - **Rule2: complete sequence**
 //!
 //!   A worker completes sequential task group (edges between a multi-out stream and multi-in stream) without jumping to another sequential task group.
 //!

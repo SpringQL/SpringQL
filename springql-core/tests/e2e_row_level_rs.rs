@@ -99,3 +99,72 @@ fn test_e2e_source_sink() -> Result<()> {
 
     Ok(())
 }
+
+#[test]
+fn test_e2e_projection() -> Result<()> {
+    setup_test_logger();
+
+    let json_oracle = json!({
+        "ts": "2021-11-04 23:02:52.123456789",
+        "ticker": "ORCL",
+        "amount": 20,
+    });
+
+    let test_source = TestForeignSource::start(vec![json_oracle.clone()]).unwrap();
+    let test_sink = TestForeignSink::start().unwrap();
+
+    let ddls = vec![
+        format!(
+            "
+        CREATE SOURCE STREAM source_trade (
+          ts TIMESTAMP NOT NULL ROWTIME,    
+          ticker TEXT NOT NULL,
+          amount INTEGER NOT NULL
+        ) SERVER NET_SERVER OPTIONS (
+          PROTOCOL 'TCP',
+          REMOTE_HOST '{remote_host}',
+          REMOTE_PORT '{remote_port}'
+        );
+        ",
+            remote_host = test_source.host_ip(),
+            remote_port = test_source.port()
+        ),
+        format!(
+            "
+        CREATE SINK STREAM sink_trade (
+          ts TIMESTAMP NOT NULL,    
+          ticker TEXT NOT NULL
+        ) SERVER NET_SERVER OPTIONS (
+          PROTOCOL 'TCP',
+          REMOTE_HOST '{remote_host}',
+          REMOTE_PORT '{remote_port}'
+        );
+        ",
+            remote_host = test_sink.host_ip(),
+            remote_port = test_sink.port()
+        ),
+        "
+        CREATE PUMP pu_projection AS
+          INSERT INTO sink_trade (ts, ticker)
+          SELECT STREAM ts, ticker FROM source_trade;
+        "
+        .to_string(),
+        "
+        ALTER PUMP pu_projection START;
+        "
+        .to_string(),
+    ];
+
+    let _pipeline = apply_ddls(&ddls);
+    let sink_received = drain_from_sink(&test_sink);
+
+    assert_eq!(
+        sink_received.get(0).unwrap(),
+        &json!({
+            "ts": "2021-11-04 23:02:52.123456789",
+            "ticker": "ORCL"
+        })
+    );
+
+    Ok(())
+}
