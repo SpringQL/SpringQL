@@ -1,14 +1,37 @@
 mod sql_parser;
 
-use self::sql_parser::SqlParser;
-use crate::{error::Result, stream_engine::command::Command};
+use self::sql_parser::{syntax::SelectStreamSyntax, SqlParser};
+use crate::{
+    error::Result,
+    pipeline::pump_model::{pump_state::PumpState, PumpModel},
+    sql_processor::sql_parser::parse_success::ParseSuccess,
+    stream_engine::command::{
+        alter_pipeline_command::AlterPipelineCommand, query_plan::QueryPlan, Command,
+    },
+};
 
 #[derive(Debug, Default)]
 pub(crate) struct SqlProcessor(SqlParser);
 
 impl SqlProcessor {
     pub(crate) fn compile<S: Into<String>>(&self, sql: S) -> Result<Command> {
-        self.0.parse(sql)
+        let command = match self.0.parse(sql)? {
+            ParseSuccess::CreatePump {
+                pump_name,
+                select_stream_syntax,
+                insert_plan,
+            } => {
+                let query_plan = self.compile_select_stream(select_stream_syntax);
+                let pump = PumpModel::new(pump_name, PumpState::Stopped, query_plan, insert_plan);
+                Command::AlterPipeline(AlterPipelineCommand::CreatePump(pump))
+            }
+            ParseSuccess::CommandWithoutQuery(command) => command,
+        };
+        Ok(command)
+    }
+
+    fn compile_select_stream(&self, select_stream_syntax: SelectStreamSyntax) -> QueryPlan {
+        todo!()
     }
 }
 

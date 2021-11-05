@@ -3,7 +3,7 @@ use crate::{
     stream_engine::command::{insert_plan::InsertPlan, Command},
 };
 
-use super::pest_parser_impl::syntax::SelectStreamSyntax;
+use super::syntax::SelectStreamSyntax;
 
 #[derive(Clone, Eq, PartialEq, Debug)]
 pub(in crate::sql_processor) enum ParseSuccess {

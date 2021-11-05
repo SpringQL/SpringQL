@@ -1,5 +1,3 @@
-pub(in crate::sql_processor) mod syntax;
-
 mod generated_parser;
 mod helper;
 
@@ -8,7 +6,6 @@ use crate::pipeline::foreign_stream_model::ForeignStreamModel;
 use crate::pipeline::name::{ColumnName, PumpName, ServerName, StreamName};
 use crate::pipeline::option::options_builder::OptionsBuilder;
 use crate::pipeline::pump_model::pump_state::PumpState;
-use crate::pipeline::pump_model::PumpModel;
 use crate::pipeline::relation::column::column_constraint::ColumnConstraint;
 use crate::pipeline::relation::column::column_data_type::ColumnDataType;
 use crate::pipeline::relation::column::column_definition::ColumnDefinition;
@@ -17,13 +14,11 @@ use crate::pipeline::server_model::server_type::ServerType;
 use crate::pipeline::server_model::ServerModel;
 use crate::pipeline::stream_model::stream_shape::StreamShape;
 use crate::pipeline::stream_model::StreamModel;
+use crate::sql_processor::sql_parser::syntax::{
+    ColumnConstraintSyntax, OptionSyntax, SelectStreamSyntax,
+};
 use crate::stream_engine::command::alter_pipeline_command::AlterPipelineCommand;
 use crate::stream_engine::command::insert_plan::InsertPlan;
-use crate::stream_engine::command::query_plan::query_plan_node::operation::LeafOperation;
-use crate::stream_engine::command::query_plan::query_plan_node::{
-    QueryPlanNode, QueryPlanNodeLeaf,
-};
-use crate::stream_engine::command::query_plan::QueryPlan;
 use crate::stream_engine::command::Command;
 use anyhow::{anyhow, Context};
 use generated_parser::{GeneratedParser, Rule};
@@ -32,13 +27,13 @@ use pest::{iterators::Pairs, Parser};
 use std::convert::identity;
 use std::sync::Arc;
 
-use self::syntax::{ColumnConstraintSyntax, OptionSyntax, SelectStreamSyntax};
+use super::parse_success::ParseSuccess;
 
 #[derive(Debug, Default)]
 pub(super) struct PestParserImpl;
 
 impl PestParserImpl {
-    pub(super) fn parse<S: Into<String>>(&self, sql: S) -> Result<Command> {
+    pub(super) fn parse<S: Into<String>>(&self, sql: S) -> Result<ParseSuccess> {
         let sql = sql.into();
 
         let pairs: Pairs<Rule> = GeneratedParser::parse(Rule::command, &sql)
@@ -86,30 +81,30 @@ impl PestParserImpl {
      * ================================================================================================
      */
 
-    fn parse_command(mut params: FnParseParams) -> Result<Command> {
+    fn parse_command(mut params: FnParseParams) -> Result<ParseSuccess> {
         try_parse_child(
             &mut params,
             Rule::create_source_stream_command,
             Self::parse_create_source_stream_command,
-            Command::AlterPipeline,
+            identity,
         )?
         .or(try_parse_child(
             &mut params,
             Rule::create_sink_stream_command,
             Self::parse_create_sink_stream_command,
-            Command::AlterPipeline,
+            identity,
         )?)
         .or(try_parse_child(
             &mut params,
             Rule::create_pump_command,
             Self::parse_create_pump_command,
-            Command::AlterPipeline,
+            identity,
         )?)
         .or(try_parse_child(
             &mut params,
             Rule::alter_pump_command,
             Self::parse_alter_pump_command,
-            Command::AlterPipeline,
+            identity,
         )?)
         .ok_or_else(|| {
             SpringError::Sql(anyhow!(
@@ -125,9 +120,7 @@ impl PestParserImpl {
      * ----------------------------------------------------------------------------
      */
 
-    fn parse_create_source_stream_command(
-        mut params: FnParseParams,
-    ) -> Result<AlterPipelineCommand> {
+    fn parse_create_source_stream_command(mut params: FnParseParams) -> Result<ParseSuccess> {
         let foreign_stream_name = parse_child(
             &mut params,
             Rule::stream_name,
@@ -174,7 +167,9 @@ impl PestParserImpl {
         }?;
         let server = ServerModel::new(server_type, Arc::new(foreign_stream), options);
 
-        Ok(AlterPipelineCommand::CreateForeignStream(server))
+        Ok(ParseSuccess::CommandWithoutQuery(Command::AlterPipeline(
+            AlterPipelineCommand::CreateForeignStream(server),
+        )))
     }
 
     /*
@@ -183,7 +178,7 @@ impl PestParserImpl {
      * ----------------------------------------------------------------------------
      */
 
-    fn parse_create_sink_stream_command(mut params: FnParseParams) -> Result<AlterPipelineCommand> {
+    fn parse_create_sink_stream_command(mut params: FnParseParams) -> Result<ParseSuccess> {
         let foreign_stream_name = parse_child(
             &mut params,
             Rule::stream_name,
@@ -230,7 +225,9 @@ impl PestParserImpl {
         }?;
         let server = ServerModel::new(server_type, Arc::new(foreign_stream), options);
 
-        Ok(AlterPipelineCommand::CreateForeignStream(server))
+        Ok(ParseSuccess::CommandWithoutQuery(Command::AlterPipeline(
+            AlterPipelineCommand::CreateForeignStream(server),
+        )))
     }
 
     /*
@@ -239,7 +236,7 @@ impl PestParserImpl {
      * ----------------------------------------------------------------------------
      */
 
-    fn parse_create_pump_command(mut params: FnParseParams) -> Result<AlterPipelineCommand> {
+    fn parse_create_pump_command(mut params: FnParseParams) -> Result<ParseSuccess> {
         let pump_name = parse_child(
             &mut params,
             Rule::pump_name,
@@ -265,18 +262,11 @@ impl PestParserImpl {
             identity,
         )?;
 
-        let pump = PumpModel::new(
+        Ok(ParseSuccess::CreatePump {
             pump_name,
-            PumpState::Stopped,
-            // TODO analyze INSERT ... AS SELECT
-            QueryPlan::new(Arc::new(QueryPlanNode::Leaf(QueryPlanNodeLeaf {
-                op: LeafOperation::Collect,
-                upstream: select_stream_syntax.from_stream,
-            }))),
-            InsertPlan::new(into_stream, insert_column_names),
-        );
-
-        Ok(AlterPipelineCommand::CreatePump(pump))
+            select_stream_syntax,
+            insert_plan: InsertPlan::new(into_stream, insert_column_names),
+        })
     }
 
     /*
@@ -285,18 +275,19 @@ impl PestParserImpl {
      * ----------------------------------------------------------------------------
      */
 
-    fn parse_alter_pump_command(mut params: FnParseParams) -> Result<AlterPipelineCommand> {
+    fn parse_alter_pump_command(mut params: FnParseParams) -> Result<ParseSuccess> {
         let pump_name = parse_child(
             &mut params,
             Rule::pump_name,
             &Self::parse_pump_name,
             &identity,
         )?;
-
-        Ok(AlterPipelineCommand::AlterPump {
-            name: pump_name,
-            state: PumpState::Started,
-        })
+        Ok(ParseSuccess::CommandWithoutQuery(Command::AlterPipeline(
+            AlterPipelineCommand::AlterPump {
+                name: pump_name,
+                state: PumpState::Started,
+            },
+        )))
     }
 
     /*
