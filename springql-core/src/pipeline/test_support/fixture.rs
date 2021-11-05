@@ -458,14 +458,14 @@ impl PumpModel {
         upstream: StreamName,
         downstream: StreamName,
     ) -> Self {
-        Self::new(name, PumpState::Started, upstream, downstream)
+        Self::new(name, PumpState::Started, vec![upstream], downstream)
     }
     pub(crate) fn fx_passthrough_trade_stopped(
         name: PumpName,
         upstream: StreamName,
         downstream: StreamName,
     ) -> Self {
-        Self::new(name, PumpState::Stopped, upstream, downstream)
+        Self::new(name, PumpState::Stopped, vec![upstream], downstream)
     }
 }
 

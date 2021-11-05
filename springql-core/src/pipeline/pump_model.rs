@@ -11,7 +11,7 @@ pub(crate) struct PumpModel {
     name: PumpName,
     state: PumpState,
 
-    upstream: StreamName,
+    upstreams: Vec<StreamName>,
     downstream: StreamName,
 }
 
@@ -24,8 +24,9 @@ impl PumpModel {
         &self.state
     }
 
-    pub(crate) fn upstream(&self) -> &StreamName {
-        &self.upstream
+    /// A pump can have 2 or more upstreams (on JOIN, for example).
+    pub(crate) fn upstreams(&self) -> &[StreamName] {
+        &self.upstreams
     }
 
     pub(crate) fn downstream(&self) -> &StreamName {
