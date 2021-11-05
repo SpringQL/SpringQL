@@ -2,6 +2,8 @@ pub(crate) mod pump_state;
 
 use serde::{Deserialize, Serialize};
 
+use crate::stream_engine::command::{insert_as_plan::InsertAsPlan, query_plan::QueryPlan};
+
 use self::pump_state::PumpState;
 
 use super::name::{PumpName, StreamName};
@@ -13,7 +15,9 @@ pub(crate) struct PumpModel {
 
     upstream: StreamName,
     downstream: StreamName,
-    
+
+    query_plan: QueryPlan,
+    insert_as_plan: InsertAsPlan,
 }
 
 impl PumpModel {

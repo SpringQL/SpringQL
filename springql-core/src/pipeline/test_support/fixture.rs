@@ -1,21 +1,30 @@
 use std::{net::IpAddr, sync::Arc};
 
-use crate::pipeline::{
-    foreign_stream_model::ForeignStreamModel,
-    name::{ColumnName, PumpName, StreamName},
-    option::{options_builder::OptionsBuilder, Options},
-    pump_model::pump_state::PumpState,
-    pump_model::PumpModel,
-    relation::{
-        column::{
-            column_constraint::ColumnConstraint, column_data_type::ColumnDataType,
-            column_definition::ColumnDefinition,
+use crate::{
+    pipeline::{
+        foreign_stream_model::ForeignStreamModel,
+        name::{ColumnName, PumpName, StreamName},
+        option::{options_builder::OptionsBuilder, Options},
+        pump_model::pump_state::PumpState,
+        pump_model::PumpModel,
+        relation::{
+            column::{
+                column_constraint::ColumnConstraint, column_data_type::ColumnDataType,
+                column_definition::ColumnDefinition,
+            },
+            sql_type::SqlType,
         },
-        sql_type::SqlType,
+        server_model::{server_type::ServerType, ServerModel},
+        stream_model::{stream_shape::StreamShape, StreamModel},
+        Pipeline,
     },
-    server_model::{server_type::ServerType, ServerModel},
-    stream_model::{stream_shape::StreamShape, StreamModel},
-    Pipeline,
+    stream_engine::command::{
+        insert_as_plan::InsertAsPlan,
+        query_plan::{
+            query_plan_node::{operation::LeafOperation, QueryPlanNode, QueryPlanNodeLeaf},
+            QueryPlan,
+        },
+    },
 };
 
 impl Pipeline {
@@ -458,14 +467,58 @@ impl PumpModel {
         upstream: StreamName,
         downstream: StreamName,
     ) -> Self {
-        Self::new(name, PumpState::Started, upstream, downstream)
+        Self::new(
+            name,
+            PumpState::Started,
+            upstream,
+            downstream,
+            QueryPlan::fx_collect(),
+            InsertAsPlan::fx_trade(),
+        )
     }
     pub(crate) fn fx_passthrough_trade_stopped(
         name: PumpName,
         upstream: StreamName,
         downstream: StreamName,
     ) -> Self {
-        Self::new(name, PumpState::Stopped, upstream, downstream)
+        Self::new(
+            name,
+            PumpState::Stopped,
+            upstream,
+            downstream,
+            QueryPlan::fx_collect(),
+            InsertAsPlan::fx_trade(),
+        )
+    }
+}
+
+impl QueryPlan {
+    pub(crate) fn fx_collect() -> Self {
+        Self::new(Arc::new(QueryPlanNode::fx_collect()))
+    }
+}
+
+impl QueryPlanNode {
+    pub(crate) fn fx_collect() -> Self {
+        Self::Leaf(QueryPlanNodeLeaf::fx_collect())
+    }
+}
+
+impl QueryPlanNodeLeaf {
+    pub(crate) fn fx_collect() -> Self {
+        Self {
+            op: LeafOperation::Collect,
+        }
+    }
+}
+
+impl InsertAsPlan {
+    pub(crate) fn fx_trade() -> Self {
+        Self::new(vec![
+            ColumnName::fx_timestamp(),
+            ColumnName::fx_ticker(),
+            ColumnName::fx_amount(),
+        ])
     }
 }
 
@@ -512,25 +565,23 @@ impl ColumnDataType {
     }
 
     pub(crate) fn fx_ticker() -> Self {
-        Self::new(
-            ColumnName::new("ticker".to_string()),
-            SqlType::text(),
-            false,
-        )
+        Self::new(ColumnName::fx_ticker(), SqlType::text(), false)
     }
 
     pub(crate) fn fx_amount() -> Self {
-        Self::new(
-            ColumnName::new("amount".to_string()),
-            SqlType::integer(),
-            false,
-        )
+        Self::new(ColumnName::fx_amount(), SqlType::integer(), false)
     }
 }
 
 impl ColumnName {
     pub(crate) fn fx_timestamp() -> Self {
         Self::new("ts".to_string())
+    }
+    pub(crate) fn fx_ticker() -> Self {
+        Self::new("ticker".to_string())
+    }
+    pub(crate) fn fx_amount() -> Self {
+        Self::new("amount".to_string())
     }
 }
 

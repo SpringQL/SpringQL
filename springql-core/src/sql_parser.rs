@@ -26,7 +26,10 @@ mod tests {
             server_model::{server_type::ServerType, ServerModel},
             stream_model::{stream_shape::StreamShape, StreamModel},
         },
-        stream_engine::command::alter_pipeline_command::AlterPipelineCommand,
+        stream_engine::command::{
+            alter_pipeline_command::AlterPipelineCommand, insert_as_plan::InsertAsPlan,
+            query_plan::QueryPlan,
+        },
     };
     use pretty_assertions::assert_eq;
     use std::sync::Arc;
@@ -117,6 +120,8 @@ mod tests {
             PumpState::Stopped,
             StreamName::new("source_trade".to_string()),
             StreamName::new("sink_trade".to_string()),
+            QueryPlan::fx_collect(),
+            InsertAsPlan::fx_trade(),
         );
 
         assert_eq!(

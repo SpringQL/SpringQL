@@ -1,6 +1,5 @@
 mod query_subtask_node;
 
-use std::rc::Rc;
 use std::sync::Arc;
 
 use self::query_subtask_node::collect_subtask::CollectSubtask;
@@ -36,7 +35,7 @@ impl QuerySubtaskTree {
         }
     }
 
-    fn compile_node(plan_node: Rc<QueryPlanNode>) -> QuerySubtaskNode {
+    fn compile_node(plan_node: Arc<QueryPlanNode>) -> QuerySubtaskNode {
         match plan_node.as_ref() {
             QueryPlanNode::Leaf(leaf_node) => match &leaf_node.op {
                 LeafOperation::Collect => QuerySubtaskNode::Collect(CollectSubtask::new()),

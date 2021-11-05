@@ -1,9 +1,10 @@
 use chrono::Duration;
+use serde::{Deserialize, Serialize};
 
 pub(crate) trait Operation {}
 
 /// Leaf operations, which generates rows from a stream
-#[derive(Clone, Eq, PartialEq, Debug)]
+#[derive(Clone, Eq, PartialEq, Debug, Serialize, Deserialize)]
 pub(crate) enum LeafOperation {
     Collect,
 }

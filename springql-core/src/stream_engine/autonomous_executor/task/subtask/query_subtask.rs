@@ -59,18 +59,17 @@ impl QuerySubtask {
 
 #[cfg(test)]
 mod tests {
-    use std::{rc::Rc, sync::Arc};
+    use std::sync::Arc;
 
     use test_logger::setup_test_logger;
 
     use crate::{
         pipeline::name::{PumpName, StreamName},
         stream_engine::autonomous_executor::{row::Row, task::task_id::TaskId},
-        stream_engine::command::query_plan::{
-            query_plan_node::{QueryPlanNode, QueryPlanNodeLeaf},
-            QueryPlan,
+        stream_engine::{
+            autonomous_executor::NaiveRowRepository, dependency_injection::test_di::TestDI,
         },
-        stream_engine::dependency_injection::test_di::TestDI,
+        stream_engine::{autonomous_executor::RowRepository, command::query_plan::QueryPlan},
     };
 
     use super::*;
@@ -84,6 +83,16 @@ mod tests {
         let downstream_tasks = vec![TaskId::from_pump(pump_trade_p1)];
         let context = TaskContext::factory_with_1_level_downstreams(task, downstream_tasks);
 
+        let input = vec![
+            Row::fx_trade_oracle(),
+            Row::fx_trade_ibm(),
+            Row::fx_trade_google(),
+        ];
+        for row in input {
+            let row_repo: Arc<NaiveRowRepository> = context.row_repository();
+            row_repo.emit_owned(row, &[context.task()]).unwrap();
+        }
+
         // CREATE STREAM trade(
         //   "ts" TIMESTAMP NOT NULL AS ROWTIME,
         //   "ticker" TEXT NOT NULL,
@@ -91,16 +100,8 @@ mod tests {
         // );
 
         // SELECT ts, ticker, amount FROM trade;
-        let query_plan_leaf = QueryPlanNodeLeaf::factory_with_task_in::<TestDI>(
-            vec![
-                Row::fx_trade_oracle(),
-                Row::fx_trade_ibm(),
-                Row::fx_trade_google(),
-            ],
-            &context,
-        );
 
-        let query_plan = QueryPlan::new(Rc::new(QueryPlanNode::Leaf(query_plan_leaf)));
+        let query_plan = QueryPlan::fx_collect();
         let mut executor = QuerySubtask::register(query_plan);
 
         executor.run_expect::<TestDI>(

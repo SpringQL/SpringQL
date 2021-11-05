@@ -145,27 +145,6 @@ impl Row {
     }
 }
 
-impl QueryPlanNodeLeaf {
-    pub(in crate::stream_engine) fn factory_with_task_in<DI>(
-        input: Vec<Row>,
-        context: &TaskContext<DI>,
-    ) -> Self
-    where
-        DI: DependencyInjection,
-    {
-        for row in input {
-            context
-                .row_repository()
-                .emit_owned(row, &[context.task()])
-                .unwrap();
-        }
-
-        Self {
-            op: LeafOperation::Collect,
-        }
-    }
-}
-
 impl<DI: DependencyInjection> TaskContext<DI> {
     pub(in crate::stream_engine) fn factory_with_1_level_downstreams(
         task: TaskId,
