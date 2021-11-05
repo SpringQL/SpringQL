@@ -1,8 +1,9 @@
 use serde::{Deserialize, Serialize};
 
-use crate::pipeline::name::ColumnName;
+use crate::pipeline::name::{ColumnName, StreamName};
 
 #[derive(Clone, Eq, PartialEq, Debug, Serialize, Deserialize, new)]
-pub(crate) struct InsertAsPlan {
+pub(crate) struct InsertPlan {
+    stream: StreamName,
     insert_columns: Vec<ColumnName>,
 }

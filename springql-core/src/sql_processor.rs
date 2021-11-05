@@ -25,7 +25,7 @@ mod tests {
             stream_model::{stream_shape::StreamShape, StreamModel},
         },
         stream_engine::command::{
-            alter_pipeline_command::AlterPipelineCommand, insert_as_plan::InsertAsPlan,
+            alter_pipeline_command::AlterPipelineCommand, insert_plan::InsertPlan,
             query_plan::QueryPlan,
         },
     };
@@ -116,10 +116,8 @@ mod tests {
         let expected_pump = PumpModel::new(
             PumpName::new("pu_passthrough".to_string()),
             PumpState::Stopped,
-            vec![StreamName::new("source_trade".to_string())],
-            StreamName::new("sink_trade".to_string()),
-            QueryPlan::fx_collect(),
-            InsertAsPlan::fx_trade(),
+            QueryPlan::fx_collect(StreamName::new("source_trade".to_string())),
+            InsertPlan::fx_trade(StreamName::new("sink_trade".to_string())),
         );
 
         assert_eq!(

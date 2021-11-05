@@ -101,7 +101,7 @@ mod tests {
 
         // SELECT ts, ticker, amount FROM trade;
 
-        let query_plan = QueryPlan::fx_collect();
+        let query_plan = QueryPlan::fx_collect(StreamName::fx_trade_source());
         let mut executor = QuerySubtask::register(&query_plan);
 
         executor.run_expect::<TestDI>(

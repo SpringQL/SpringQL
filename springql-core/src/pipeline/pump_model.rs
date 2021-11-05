@@ -2,7 +2,7 @@ pub(crate) mod pump_state;
 
 use serde::{Deserialize, Serialize};
 
-use crate::stream_engine::command::{insert_as_plan::InsertAsPlan, query_plan::QueryPlan};
+use crate::stream_engine::command::{insert_plan::InsertPlan, query_plan::QueryPlan};
 
 use self::pump_state::PumpState;
 
@@ -12,12 +12,8 @@ use super::name::{PumpName, StreamName};
 pub(crate) struct PumpModel {
     name: PumpName,
     state: PumpState,
-
-    upstreams: Vec<StreamName>,
-    downstream: StreamName,
-
     query_plan: QueryPlan,
-    insert_as_plan: InsertAsPlan,
+    insert_plan: InsertPlan,
 }
 
 impl PumpModel {
@@ -29,13 +25,13 @@ impl PumpModel {
         &self.state
     }
 
-    /// A pump can have 2 or more upstreams (on JOIN, for example).
+    /// Has more than 1 upstreams on JOIN, for example.
     pub(crate) fn upstreams(&self) -> &[StreamName] {
-        &self.upstreams
+        todo!()
     }
 
     pub(crate) fn downstream(&self) -> &StreamName {
-        &self.downstream
+        todo!()
     }
 
     pub(crate) fn started(&self) -> Self {

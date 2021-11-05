@@ -19,7 +19,7 @@ use crate::{
         Pipeline,
     },
     stream_engine::command::{
-        insert_as_plan::InsertAsPlan,
+        insert_plan::InsertPlan,
         query_plan::{
             query_plan_node::{operation::LeafOperation, QueryPlanNode, QueryPlanNodeLeaf},
             QueryPlan,
@@ -470,10 +470,8 @@ impl PumpModel {
         Self::new(
             name,
             PumpState::Started,
-            vec![upstream],
-            downstream,
-            QueryPlan::fx_collect(),
-            InsertAsPlan::fx_trade(),
+            QueryPlan::fx_collect(upstream),
+            InsertPlan::fx_trade(downstream),
         )
     }
     pub(crate) fn fx_passthrough_trade_stopped(
@@ -484,41 +482,43 @@ impl PumpModel {
         Self::new(
             name,
             PumpState::Stopped,
-            vec![upstream],
-            downstream,
-            QueryPlan::fx_collect(),
-            InsertAsPlan::fx_trade(),
+            QueryPlan::fx_collect(upstream),
+            InsertPlan::fx_trade(downstream),
         )
     }
 }
 
 impl QueryPlan {
-    pub(crate) fn fx_collect() -> Self {
-        Self::new(Arc::new(QueryPlanNode::fx_collect()))
+    pub(crate) fn fx_collect(upstream: StreamName) -> Self {
+        Self::new(Arc::new(QueryPlanNode::fx_collect(upstream)))
     }
 }
 
 impl QueryPlanNode {
-    pub(crate) fn fx_collect() -> Self {
-        Self::Leaf(QueryPlanNodeLeaf::fx_collect())
+    pub(crate) fn fx_collect(upstream: StreamName) -> Self {
+        Self::Leaf(QueryPlanNodeLeaf::fx_collect(upstream))
     }
 }
 
 impl QueryPlanNodeLeaf {
-    pub(crate) fn fx_collect() -> Self {
+    pub(crate) fn fx_collect(upstream: StreamName) -> Self {
         Self {
             op: LeafOperation::Collect,
+            upstream,
         }
     }
 }
 
-impl InsertAsPlan {
-    pub(crate) fn fx_trade() -> Self {
-        Self::new(vec![
-            ColumnName::fx_timestamp(),
-            ColumnName::fx_ticker(),
-            ColumnName::fx_amount(),
-        ])
+impl InsertPlan {
+    pub(crate) fn fx_trade(downstream: StreamName) -> Self {
+        Self::new(
+            downstream,
+            vec![
+                ColumnName::fx_timestamp(),
+                ColumnName::fx_ticker(),
+                ColumnName::fx_amount(),
+            ],
+        )
     }
 }
 

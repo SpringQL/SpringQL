@@ -1,3 +1,5 @@
+pub(in crate::sql_processor) mod syntax;
+
 mod generated_parser;
 mod helper;
 
@@ -16,7 +18,7 @@ use crate::pipeline::server_model::ServerModel;
 use crate::pipeline::stream_model::stream_shape::StreamShape;
 use crate::pipeline::stream_model::StreamModel;
 use crate::stream_engine::command::alter_pipeline_command::AlterPipelineCommand;
-use crate::stream_engine::command::insert_as_plan::InsertAsPlan;
+use crate::stream_engine::command::insert_plan::InsertPlan;
 use crate::stream_engine::command::query_plan::query_plan_node::operation::LeafOperation;
 use crate::stream_engine::command::query_plan::query_plan_node::{
     QueryPlanNode, QueryPlanNodeLeaf,
@@ -30,7 +32,7 @@ use pest::{iterators::Pairs, Parser};
 use std::convert::identity;
 use std::sync::Arc;
 
-use self::helper::{ColumnConstraintSyntax, OptionSyntax, SelectStreamSyntax};
+use self::syntax::{ColumnConstraintSyntax, OptionSyntax, SelectStreamSyntax};
 
 #[derive(Debug, Default)]
 pub(super) struct PestParserImpl;
@@ -244,7 +246,7 @@ impl PestParserImpl {
             Self::parse_pump_name,
             identity,
         )?;
-        let downstream_stream = parse_child(
+        let into_stream = parse_child(
             &mut params,
             Rule::stream_name,
             &Self::parse_stream_name,
@@ -266,13 +268,12 @@ impl PestParserImpl {
         let pump = PumpModel::new(
             pump_name,
             PumpState::Stopped,
-            vec![select_stream_syntax.from_stream],
-            downstream_stream,
             // TODO analyze INSERT ... AS SELECT
             QueryPlan::new(Arc::new(QueryPlanNode::Leaf(QueryPlanNodeLeaf {
                 op: LeafOperation::Collect,
+                upstream: select_stream_syntax.from_stream,
             }))),
-            InsertAsPlan::new(insert_column_names),
+            InsertPlan::new(into_stream, insert_column_names),
         );
 
         Ok(AlterPipelineCommand::CreatePump(pump))
