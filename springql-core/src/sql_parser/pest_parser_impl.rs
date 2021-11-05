@@ -16,6 +16,12 @@ use crate::pipeline::server_model::ServerModel;
 use crate::pipeline::stream_model::stream_shape::StreamShape;
 use crate::pipeline::stream_model::StreamModel;
 use crate::stream_engine::command::alter_pipeline_command::AlterPipelineCommand;
+use crate::stream_engine::command::insert_as_plan::InsertAsPlan;
+use crate::stream_engine::command::query_plan::query_plan_node::operation::LeafOperation;
+use crate::stream_engine::command::query_plan::query_plan_node::{
+    QueryPlanNode, QueryPlanNodeLeaf,
+};
+use crate::stream_engine::command::query_plan::QueryPlan;
 use crate::stream_engine::command::Command;
 use anyhow::{anyhow, Context};
 use generated_parser::{GeneratedParser, Rule};
@@ -262,6 +268,15 @@ impl PestParserImpl {
             PumpState::Stopped,
             select_stream_syntax.from_stream,
             downstream_stream,
+            // TODO analyze INSERT ... AS SELECT
+            QueryPlan::new(Arc::new(QueryPlanNode::Leaf(QueryPlanNodeLeaf {
+                op: LeafOperation::Collect,
+            }))),
+            InsertAsPlan::new(vec![
+                ColumnName::new("ts".to_string()),
+                ColumnName::new("ticker".to_string()),
+                ColumnName::new("amount".to_string()),
+            ]),
         );
 
         Ok(AlterPipelineCommand::CreatePump(pump))
