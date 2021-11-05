@@ -7,3 +7,9 @@ pub(crate) struct InsertPlan {
     stream: StreamName,
     insert_columns: Vec<ColumnName>,
 }
+
+impl InsertPlan {
+    pub(crate) fn stream(&self) -> &StreamName {
+        &self.stream
+    }
+}

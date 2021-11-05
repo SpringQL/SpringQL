@@ -27,11 +27,11 @@ impl PumpModel {
 
     /// Has more than 1 upstreams on JOIN, for example.
     pub(crate) fn upstreams(&self) -> &[StreamName] {
-        todo!()
+        self.query_plan.upstreams()
     }
 
     pub(crate) fn downstream(&self) -> &StreamName {
-        todo!()
+        self.insert_plan.stream()
     }
 
     pub(crate) fn started(&self) -> Self {

@@ -2,6 +2,8 @@ use std::sync::Arc;
 
 use serde::{Deserialize, Serialize};
 
+use crate::pipeline::name::StreamName;
+
 use self::query_plan_node::QueryPlanNode;
 
 pub(crate) mod query_plan_node;
@@ -17,5 +19,9 @@ pub(crate) struct QueryPlan {
 impl QueryPlan {
     pub(crate) fn root(&self) -> Arc<QueryPlanNode> {
         self.root.clone()
+    }
+
+    pub(crate) fn upstreams(&self) -> &[StreamName] {
+        todo!()
     }
 }
