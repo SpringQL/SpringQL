@@ -6,10 +6,10 @@ use crate::stream_engine::command::Command;
 use self::pest_parser_impl::PestParserImpl;
 
 #[derive(Debug, Default)]
-pub(crate) struct SqlParser(PestParserImpl);
+pub(in crate::sql_processor) struct SqlParser(PestParserImpl);
 
 impl SqlParser {
-    pub(crate) fn parse<S: Into<String>>(&self, sql: S) -> Result<Command> {
+    pub(in crate::sql_processor) fn parse<S: Into<String>>(&self, sql: S) -> Result<Command> {
         self.0.parse(sql)
     }
 }

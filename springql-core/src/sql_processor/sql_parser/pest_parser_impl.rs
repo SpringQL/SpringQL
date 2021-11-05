@@ -33,10 +33,10 @@ use std::sync::Arc;
 use self::helper::{ColumnConstraintSyntax, OptionSyntax, SelectStreamSyntax};
 
 #[derive(Debug, Default)]
-pub(in crate::sql_parser) struct PestParserImpl;
+pub(super) struct PestParserImpl;
 
 impl PestParserImpl {
-    pub(crate) fn parse<S: Into<String>>(&self, sql: S) -> Result<Command> {
+    pub(super) fn parse<S: Into<String>>(&self, sql: S) -> Result<Command> {
         let sql = sql.into();
 
         let pairs: Pairs<Rule> = GeneratedParser::parse(Rule::command, &sql)
