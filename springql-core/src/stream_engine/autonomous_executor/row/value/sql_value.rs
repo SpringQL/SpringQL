@@ -102,25 +102,6 @@ impl SqlValue {
             }
         }
     }
-
-    /// Eval as bool if possible.
-    ///
-    /// # Failures
-    ///
-    /// - [SpringError::Sql](crate::error::SpringError::Sql) when:
-    ///   - inner value cannot negate
-    pub fn to_bool(&self) -> Result<bool> {
-        match self {
-            SqlValue::Null => Ok(false), // NULL is always evaluated as FALSE
-            SqlValue::NotNull(nn_sql_value) => match nn_sql_value {
-                NnSqlValue::Boolean(b) => Ok(*b),
-                _ => Err(SpringError::Sql(anyhow!(
-                    "{:?} cannot be evaluated as BOOLEAN",
-                    nn_sql_value.sql_type()
-                ))),
-            },
-        }
-    }
 }
 
 impl TryFrom<&serde_json::Value> for SqlValue {
