@@ -260,7 +260,7 @@ impl PestParserImpl {
         let pump = PumpModel::new(
             pump_name,
             PumpState::Stopped,
-            select_stream_syntax.from_stream,
+            vec![select_stream_syntax.from_stream],
             downstream_stream,
         );
 

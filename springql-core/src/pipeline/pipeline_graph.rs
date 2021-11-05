@@ -76,12 +76,8 @@ impl PipelineGraph {
     }
 
     pub(super) fn add_pump(&mut self, pump: PumpModel) -> Result<()> {
-        let upstream_node = self.stream_nodes.get(pump.upstream()).ok_or_else(|| {
-            SpringError::Sql(anyhow!(
-                r#"upstream "{}" does not exist in pipeline"#,
-                pump.upstream()
-            ))
-        })?;
+        let pump = Arc::new(pump);
+
         let downstream_node = self.stream_nodes.get(pump.downstream()).ok_or_else(|| {
             SpringError::Sql(anyhow!(
                 r#"downstream "{}" does not exist in pipeline"#,
@@ -89,9 +85,18 @@ impl PipelineGraph {
             ))
         })?;
 
-        let _ = self
-            .graph
-            .add_edge(*upstream_node, *downstream_node, Edge::Pump(pump));
+        for upstream_name in pump.upstreams() {
+            let upstream_node = self.stream_nodes.get(upstream_name).ok_or_else(|| {
+                SpringError::Sql(anyhow!(
+                    r#"upstream "{}" does not exist in pipeline"#,
+                    upstream_name
+                ))
+            })?;
+
+            let _ = self
+                .graph
+                .add_edge(*upstream_node, *downstream_node, Edge::Pump(pump.clone()));
+        }
 
         Ok(())
     }

@@ -28,7 +28,7 @@ impl From<&PipelineGraph> for TaskGraph {
             |_, stream_node| stream_node.name(),
             |_, edge| {
                 let task = match edge {
-                    Edge::Pump(pump) => Task::Pump(PumpTask::from(pump)),
+                    Edge::Pump(pump) => Task::Pump(PumpTask::from(pump.as_ref())),
                     Edge::Source(server) => Task::Source(SourceTask::new(server, pipeline_graph)),
                     Edge::Sink(server) => Task::Sink(SinkTask::new(server)),
                 };
