@@ -1,7 +1,9 @@
-use self::{final_row::SubtaskRow, query_subtask_tree::QuerySubtaskTree};
+use petgraph::graph::DiGraph;
+
+use self::{final_row::SubtaskRow, query_subtask_node::QuerySubtaskNode};
 use crate::{
     error::Result,
-    stream_engine::command::query_plan::QueryPlan,
+    stream_engine::command::query_plan::{child_direction::ChildDirection, QueryPlan},
     stream_engine::{
         autonomous_executor::task::task_context::TaskContext,
         dependency_injection::DependencyInjection,
@@ -10,22 +12,22 @@ use crate::{
 
 mod final_row;
 mod interm_row;
-mod query_subtask_tree;
+mod query_subtask_node;
 mod row_window;
 
 /// Process input row 1-by-1.
 #[derive(Debug)]
 pub(super) struct QuerySubtask {
-    query_subtask_tree: QuerySubtaskTree,
+    tree: DiGraph<QuerySubtaskNode, ChildDirection>,
+}
+
+impl From<&QueryPlan> for QuerySubtask {
+    fn from(query_plan: &QueryPlan) -> Self {
+        todo!()
+    }
 }
 
 impl QuerySubtask {
-    pub(super) fn register(query_plan: &QueryPlan) -> Self {
-        Self {
-            query_subtask_tree: QuerySubtaskTree::from(query_plan),
-        }
-    }
-
     /// # Failure
     ///
     /// - [SpringError::InputTimeout](crate::error::SpringError::InputTimeout) when:
@@ -34,7 +36,35 @@ impl QuerySubtask {
         &mut self,
         context: &TaskContext<DI>,
     ) -> Result<SubtaskRow> {
-        self.query_subtask_tree.run::<DI>(context)
+        Self::run_dfs_post_order::<DI>(self.root(), context)
+    }
+
+    fn run_dfs_post_order<DI: DependencyInjection>(
+        subtask: &QuerySubtaskNode,
+        context: &TaskContext<DI>,
+    ) -> Result<SubtaskRow> {
+        match subtask {
+            QuerySubtaskNode::Collect(collect_subtask) => {
+                let row = collect_subtask.run::<DI>(context)?;
+                Ok(SubtaskRow::Preserved(row))
+            }
+            QuerySubtaskNode::Stream(_) => todo!(),
+            QuerySubtaskNode::Window(_) => todo!(),
+        }
+    }
+
+    fn root(&self) -> &QuerySubtaskNode {
+        self.tree
+            .node_indices()
+            .find_map(|i| {
+                (self
+                    .tree
+                    .edges_directed(i, petgraph::Direction::Incoming)
+                    .count()
+                    == 0)
+                    .then(|| self.tree.node_weight(i).unwrap())
+            })
+            .unwrap()
     }
 }
 
@@ -102,9 +132,9 @@ mod tests {
         // SELECT ts, ticker, amount FROM trade;
 
         let query_plan = QueryPlan::fx_collect(StreamName::fx_trade_source());
-        let mut executor = QuerySubtask::register(&query_plan);
+        let mut subtask = QuerySubtask::from(&query_plan);
 
-        executor.run_expect::<TestDI>(
+        subtask.run_expect::<TestDI>(
             vec![
                 SubtaskRow::Preserved(Arc::new(Row::fx_trade_oracle())),
                 SubtaskRow::Preserved(Arc::new(Row::fx_trade_ibm())),

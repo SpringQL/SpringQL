@@ -1,9 +1,7 @@
+pub(in crate::stream_engine) mod child_direction;
 pub(crate) mod query_plan_operation;
 
-mod child_direction;
 mod graph_eq;
-
-use std::slice;
 
 use petgraph::graph::DiGraph;
 use serde::{Deserialize, Serialize};
