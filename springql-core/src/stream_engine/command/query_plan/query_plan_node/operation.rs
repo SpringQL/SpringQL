@@ -1,17 +1,16 @@
-use chrono::Duration;
+use std::time::Duration;
+
 use serde::{Deserialize, Serialize};
 
-pub(crate) trait Operation {}
+use crate::pipeline::name::StreamName;
 
-/// Leaf operations, which generates rows from a stream
 #[derive(Clone, Eq, PartialEq, Debug, Serialize, Deserialize)]
-pub(crate) enum LeafOperation {
-    Collect,
+pub(crate) enum QueryPlanOperation {
+    Collect {
+        stream: StreamName,
+    },
+    TimeBasedSlidingWindow {
+        /// cannot use chrono::Duration here: <https://github.com/chronotope/chrono/issues/117>
+        lower_bound: Duration,
+    },
 }
-impl Operation for LeafOperation {}
-
-#[derive(Clone, Eq, PartialEq, Debug)]
-pub(crate) enum SlidingWindowOperation {
-    TimeBased { lower_bound: Duration },
-}
-impl Operation for SlidingWindowOperation {}

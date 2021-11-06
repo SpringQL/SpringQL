@@ -2,6 +2,8 @@ mod query_subtask_node;
 
 use std::sync::Arc;
 
+use binary_tree::BinaryTree;
+
 use self::query_subtask_node::QuerySubtaskNode;
 
 use super::final_row::SubtaskRow;
@@ -23,8 +25,10 @@ pub(super) struct QuerySubtaskTree {
 
 impl From<&QueryPlan> for QuerySubtaskTree {
     fn from(query_plan: &QueryPlan) -> Self {
-        let plan_root = query_plan.root();
-        let root = QuerySubtaskNode::from(plan_root.as_ref());
+        let plan_root = query_plan
+            .root()
+            .expect("QueryPlan must have at least 1 node");
+        let root = QuerySubtaskNode::from(plan_root);
 
         Self {
             root,

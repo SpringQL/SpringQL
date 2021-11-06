@@ -3,8 +3,10 @@ pub(super) mod window_subtask;
 
 use std::fmt::Debug;
 
+use binary_tree::Node;
+
 use crate::stream_engine::command::query_plan::query_plan_node::{
-    operation::LeafOperation, QueryPlanNode,
+    operation::QueryPlanOperation, QueryPlanNode,
 };
 
 use self::{collect_subtask::CollectSubtask, window_subtask::SlidingWindowSubtask};
@@ -18,10 +20,17 @@ pub(super) enum QuerySubtaskNode {
 
 impl From<&QueryPlanNode> for QuerySubtaskNode {
     fn from(node: &QueryPlanNode) -> Self {
-        match node {
-            QueryPlanNode::Leaf(leaf_node) => match &leaf_node.op {
-                LeafOperation::Collect => QuerySubtaskNode::Collect(CollectSubtask::new()),
-            },
+        let op = node.value();
+        match op {
+            QueryPlanOperation::Collect { stream } => {
+                QuerySubtaskNode::Collect(CollectSubtask::new())
+            }
+            QueryPlanOperation::TimeBasedSlidingWindow { lower_bound } => {
+                QuerySubtaskNode::Window(WindowSubtask::Sliding(SlidingWindowSubtask::register(
+                    chrono::Duration::from_std(*lower_bound)
+                        .expect("std::Duration -> chrono::Duration"),
+                )))
+            }
         }
     }
 }

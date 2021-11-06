@@ -1,5 +1,4 @@
-use std::sync::Arc;
-
+use binary_tree::BinaryTree;
 use serde::{Deserialize, Serialize};
 
 use crate::pipeline::name::StreamName;
@@ -13,14 +12,18 @@ pub(crate) mod query_plan_node;
 /// This is a binary tree because every SELECT operation can break down into unary or binary operations.
 #[derive(Clone, Eq, PartialEq, Debug, Serialize, Deserialize, new)]
 pub(crate) struct QueryPlan {
-    root: Arc<QueryPlanNode>,
+    root: QueryPlanNode,
+}
+
+impl BinaryTree for QueryPlan {
+    type Node = QueryPlanNode;
+
+    fn root(&self) -> Option<&Self::Node> {
+        Some(&self.root)
+    }
 }
 
 impl QueryPlan {
-    pub(crate) fn root(&self) -> Arc<QueryPlanNode> {
-        self.root.clone()
-    }
-
     pub(crate) fn upstreams(&self) -> &[StreamName] {
         todo!()
     }

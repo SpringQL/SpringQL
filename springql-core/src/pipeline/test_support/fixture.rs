@@ -21,7 +21,7 @@ use crate::{
     stream_engine::command::{
         insert_plan::InsertPlan,
         query_plan::{
-            query_plan_node::{operation::LeafOperation, QueryPlanNode, QueryPlanNodeLeaf},
+            query_plan_node::{operation::QueryPlanOperation, QueryPlanNode},
             QueryPlan,
         },
     },
@@ -490,22 +490,19 @@ impl PumpModel {
 
 impl QueryPlan {
     pub(crate) fn fx_collect(upstream: StreamName) -> Self {
-        Self::new(Arc::new(QueryPlanNode::fx_collect(upstream)))
+        Self::new(QueryPlanNode::fx_collect(upstream))
     }
 }
 
 impl QueryPlanNode {
     pub(crate) fn fx_collect(upstream: StreamName) -> Self {
-        Self::Leaf(QueryPlanNodeLeaf::fx_collect(upstream))
+        Self::new(QueryPlanOperation::fx_collect(upstream), None, None)
     }
 }
 
-impl QueryPlanNodeLeaf {
+impl QueryPlanOperation {
     pub(crate) fn fx_collect(upstream: StreamName) -> Self {
-        Self {
-            op: LeafOperation::Collect,
-            upstream,
-        }
+        Self::Collect { stream: upstream }
     }
 }
 
