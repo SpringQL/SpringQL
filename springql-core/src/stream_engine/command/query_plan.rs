@@ -1,4 +1,4 @@
-use std::rc::Rc;
+use binary_tree::BinaryTree;
 
 use self::query_plan_node::QueryPlanNode;
 
@@ -9,11 +9,13 @@ pub(crate) mod query_plan_node;
 /// This is a binary tree because every SELECT operation can break down into unary or binary operations.
 #[derive(Clone, Eq, PartialEq, Debug, new)]
 pub(crate) struct QueryPlan {
-    root: Rc<QueryPlanNode>,
+    root: QueryPlanNode,
 }
 
-impl QueryPlan {
-    pub(crate) fn root(&self) -> Rc<QueryPlanNode> {
-        self.root.clone()
+impl BinaryTree for QueryPlan {
+    type Node = QueryPlanNode;
+
+    fn root(&self) -> &Self::Node {
+        &self.root
     }
 }
