@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::pipeline::name::StreamName;
 
-use self::query_plan_node::QueryPlanNode;
+use self::query_plan_node::{operation::QueryPlanOperation, QueryPlanNode};
 
 pub(crate) mod query_plan_node;
 
@@ -25,6 +25,9 @@ impl BinaryTree for QueryPlan {
 
 impl QueryPlan {
     pub(crate) fn upstreams(&self) -> &[StreamName] {
-        todo!()
+        self.dfs_iter().filter_map(|node| match node.value() {
+            QueryPlanOperation::Collect { stream } => Some(stream),
+            _ => None,
+        })
     }
 }

@@ -36,4 +36,5 @@ impl QueryPlanNode {
             right: right.map(Box::new),
         }
     }
+
 }
