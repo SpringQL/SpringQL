@@ -3,11 +3,7 @@ pub(super) mod window_subtask;
 
 use std::fmt::Debug;
 
-use binary_tree::Node;
-
-use crate::stream_engine::command::query_plan::query_plan_node::{
-    operation::QueryPlanOperation, QueryPlanNode,
-};
+use crate::stream_engine::command::query_plan::query_plan_operation::QueryPlanOperation;
 
 use self::{collect_subtask::CollectSubtask, window_subtask::SlidingWindowSubtask};
 
@@ -18,9 +14,8 @@ pub(super) enum QuerySubtaskNode {
     Window(WindowSubtask),
 }
 
-impl From<&QueryPlanNode> for QuerySubtaskNode {
-    fn from(node: &QueryPlanNode) -> Self {
-        let op = node.value();
+impl From<&QueryPlanOperation> for QuerySubtaskNode {
+    fn from(op: &QueryPlanOperation) -> Self {
         match op {
             QueryPlanOperation::Collect { stream } => {
                 QuerySubtaskNode::Collect(CollectSubtask::new())
