@@ -1,11 +1,15 @@
 pub(super) mod collect_subtask;
+pub(super) mod projection_subtask;
 pub(super) mod window_subtask;
 
 use std::fmt::Debug;
 
 use crate::stream_engine::command::query_plan::query_plan_operation::QueryPlanOperation;
 
-use self::{collect_subtask::CollectSubtask, window_subtask::SlidingWindowSubtask};
+use self::{
+    collect_subtask::CollectSubtask, projection_subtask::ProjectionSubtask,
+    window_subtask::SlidingWindowSubtask,
+};
 
 #[derive(Debug)]
 pub(super) enum QuerySubtaskNode {
@@ -20,6 +24,9 @@ impl From<&QueryPlanOperation> for QuerySubtaskNode {
             QueryPlanOperation::Collect { stream } => {
                 QuerySubtaskNode::Collect(CollectSubtask::new())
             }
+            QueryPlanOperation::Projection { column_names } => QuerySubtaskNode::Stream(
+                StreamSubtask::Projection(ProjectionSubtask::new(column_names.to_vec())),
+            ),
             QueryPlanOperation::TimeBasedSlidingWindow { lower_bound } => {
                 QuerySubtaskNode::Window(WindowSubtask::Sliding(SlidingWindowSubtask::register(
                     chrono::Duration::from_std(*lower_bound)
@@ -31,7 +38,9 @@ impl From<&QueryPlanOperation> for QuerySubtaskNode {
 }
 
 #[derive(Debug)]
-pub(super) enum StreamSubtask {}
+pub(super) enum StreamSubtask {
+    Projection(ProjectionSubtask),
+}
 
 #[derive(Debug)]
 pub(super) enum WindowSubtask {

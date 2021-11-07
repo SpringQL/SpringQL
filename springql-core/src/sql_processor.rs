@@ -3,10 +3,15 @@ mod sql_parser;
 use self::sql_parser::{syntax::SelectStreamSyntax, SqlParser};
 use crate::{
     error::Result,
-    pipeline::pump_model::{pump_state::PumpState, PumpModel},
+    pipeline::{
+        name::{ColumnName, StreamName},
+        pump_model::{pump_state::PumpState, PumpModel},
+    },
     sql_processor::sql_parser::parse_success::ParseSuccess,
     stream_engine::command::{
-        alter_pipeline_command::AlterPipelineCommand, query_plan::QueryPlan, Command,
+        alter_pipeline_command::AlterPipelineCommand,
+        query_plan::{query_plan_operation::QueryPlanOperation, QueryPlan},
+        Command,
     },
 };
 
@@ -31,7 +36,24 @@ impl SqlProcessor {
     }
 
     fn compile_select_stream(&self, select_stream_syntax: SelectStreamSyntax) -> QueryPlan {
-        todo!()
+        let mut plan = QueryPlan::default();
+
+        let from_op = self.compile_from(select_stream_syntax.from_stream);
+        let projection_op = self.compile_projection(select_stream_syntax.column_names);
+
+        plan.add_root(projection_op.clone());
+        plan.add_left(&projection_op, from_op);
+        plan
+    }
+
+    fn compile_from(&self, from_stream: StreamName) -> QueryPlanOperation {
+        QueryPlanOperation::Collect {
+            stream: from_stream,
+        }
+    }
+
+    fn compile_projection(&self, column_names: Vec<ColumnName>) -> QueryPlanOperation {
+        QueryPlanOperation::Projection { column_names }
     }
 }
 

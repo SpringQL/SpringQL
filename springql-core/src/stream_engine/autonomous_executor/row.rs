@@ -66,6 +66,17 @@ impl Row {
     ///
     /// - [SpringError::Sql](crate::error::SpringError::Sql) when:
     ///   - No column named `column_name` is found from this stream.
+    pub(in crate::stream_engine::autonomous_executor) fn projection(
+        &self,
+        column_names: &[ColumnName],
+    ) -> Result<Self> {
+        todo!()
+    }
+
+    /// # Failure
+    ///
+    /// - [SpringError::Sql](crate::error::SpringError::Sql) when:
+    ///   - No column named `column_name` is found from this stream.
     pub(in crate::stream_engine::autonomous_executor) fn get(
         &self,
         column_name: &ColumnName,

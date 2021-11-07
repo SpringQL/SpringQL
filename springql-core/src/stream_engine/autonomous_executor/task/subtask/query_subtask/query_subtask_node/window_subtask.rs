@@ -31,7 +31,7 @@ impl SlidingWindowSubtask {
     /// Mutates internal window state.
     pub(in crate::stream_engine::autonomous_executor) fn run<DI: DependencyInjection>(
         &mut self,
-        context: &TaskContext<DI>,
+        context: &TaskContext<DI>,  // TODO get row from plan tree's downstream. not from context
     ) -> Result<&RowWindow> {
         let input = context.row_repository().collect_next(&context.task())?;
         let input_ts = input.rowtime();

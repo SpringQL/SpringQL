@@ -14,6 +14,6 @@ pub(super) struct OptionSyntax {
 
 #[derive(Clone, Eq, PartialEq, Debug)]
 pub(in crate::sql_processor) struct SelectStreamSyntax {
-    pub(super) column_names: Vec<ColumnName>,
-    pub(super) from_stream: StreamName,
+    pub(in crate::sql_processor) column_names: Vec<ColumnName>,
+    pub(in crate::sql_processor) from_stream: StreamName,
 }
