@@ -23,7 +23,12 @@ pub(super) struct QuerySubtask {
 
 impl From<&QueryPlan> for QuerySubtask {
     fn from(query_plan: &QueryPlan) -> Self {
-        todo!()
+        let plan_tree = query_plan.as_petgraph();
+        let subtask_tree = plan_tree.map(
+            |_, op| QuerySubtaskNode::from(op),
+            |_, child_direction| child_direction.clone(),
+        );
+        Self { tree: subtask_tree }
     }
 }
 
