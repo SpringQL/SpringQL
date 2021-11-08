@@ -50,21 +50,21 @@ impl QuerySubtask {
         let mut next_row = self.run_leaf::<DI>(next_idx, context)?;
 
         while let Some(next_idx) = self.parent_node_idx(next_idx) {
-            next_row = self.run_non_leaf(next_idx, next_row)?;
+            next_row = self.run_non_leaf::<DI>(next_idx, next_row)?;
         }
 
         Ok(next_row)
     }
 
-    fn run_non_leaf(
+    fn run_non_leaf<DI>(
         &self,
         subtask_idx: NodeIndex,
         downstream_row: SubtaskRow,
-    ) -> Result<SubtaskRow> {
+    ) -> Result<SubtaskRow> where DI: DependencyInjection {
         let subtask = self.tree.node_weight(subtask_idx).expect("must be found");
         match subtask {
             QuerySubtaskNode::Projection(projection_subtask) => {
-                projection_subtask.run(downstream_row.as_ref())
+                projection_subtask.run::<DI>(downstream_row.as_ref())
             }
             QuerySubtaskNode::SlidingWindow(_) => todo!(),
             QuerySubtaskNode::Collect(_) => unreachable!(),

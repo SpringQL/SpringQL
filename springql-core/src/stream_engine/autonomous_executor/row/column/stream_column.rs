@@ -88,6 +88,28 @@ impl StreamColumns {
             .expect("self.values must be sorted to the same as self.stream.columns()"))
     }
 
+    /// # Failure
+    ///
+    /// - [SpringError::Sql](crate::error::SpringError::Sql) when:
+    ///   - No column named `column_name` is found from this stream.
+    pub(in crate::stream_engine::autonomous_executor) fn projection(
+        &self,
+        column_names: &[ColumnName],
+    ) -> Result<Self> {
+        let new_stream_shape = self.stream_shape.projection(column_names)?;
+        let new_colvals =
+            column_names
+                .iter()
+                .fold(Ok(ColumnValues::default()), |res_colvals, column_name| {
+                    let mut colvals = res_colvals?;
+                    self.get(column_name).and_then(|v| {
+                        colvals.insert(column_name.clone(), v.clone())?;
+                        Ok(colvals)
+                    })
+                })?;
+        Self::new(Arc::new(new_stream_shape), new_colvals)
+    }
+
     fn validate_or_try_convert_value_type(
         value: SqlValue,
         coldef: &ColumnDefinition,

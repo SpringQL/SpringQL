@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 use super::{column_constraint::ColumnConstraint, column_data_type::ColumnDataType};
 
 /// Column definition used in DDL.
-#[derive(Eq, PartialEq, Debug, Serialize, Deserialize, new)]
+#[derive(Clone, Eq, PartialEq, Debug, Serialize, Deserialize, new)]
 pub(crate) struct ColumnDefinition {
     column_data_type: ColumnDataType,
     column_constraints: Vec<ColumnConstraint>,

@@ -66,11 +66,15 @@ impl Row {
     ///
     /// - [SpringError::Sql](crate::error::SpringError::Sql) when:
     ///   - No column named `column_name` is found from this stream.
-    pub(in crate::stream_engine::autonomous_executor) fn projection(
+    pub(in crate::stream_engine::autonomous_executor) fn projection<DI>(
         &self,
         column_names: &[ColumnName],
-    ) -> Result<Self> {
-        todo!()
+    ) -> Result<Self>
+    where
+        DI: DependencyInjection,
+    {
+        let new_cols = self.cols.projection(column_names)?;
+        Ok(Self::new::<DI>(new_cols))
     }
 
     /// # Failure
