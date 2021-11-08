@@ -46,10 +46,11 @@ impl QuerySubtask {
         &mut self,
         context: &TaskContext<DI>,
     ) -> Result<SubtaskRow> {
-        let next_idx = self.leaf_node_idx();
+        let mut next_idx = self.leaf_node_idx();
         let mut next_row = self.run_leaf::<DI>(next_idx, context)?;
 
-        while let Some(next_idx) = self.parent_node_idx(next_idx) {
+        while let Some(parent_idx) = self.parent_node_idx(next_idx) {
+            next_idx = parent_idx;
             next_row = self.run_non_leaf::<DI>(next_idx, next_row)?;
         }
 
@@ -150,10 +151,10 @@ mod tests {
     fn test_query_subtask_collect() {
         setup_test_logger();
 
-        let task = TaskId::from_source_server(StreamName::fx_trade_source());
+        let source_task = TaskId::from_source_server(StreamName::fx_trade_source());
         let pump_trade_p1 = PumpName::fx_trade_p1();
         let downstream_tasks = vec![TaskId::from_pump(pump_trade_p1)];
-        let context = TaskContext::factory_with_1_level_downstreams(task, downstream_tasks);
+        let context = TaskContext::factory_with_1_level_downstreams(source_task, downstream_tasks);
 
         let input = vec![
             Row::fx_trade_oracle(),
