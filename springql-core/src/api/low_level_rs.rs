@@ -6,16 +6,7 @@
 
 mod engine_mutex;
 
-use std::sync::atomic::Ordering;
-
-use anyhow::anyhow;
-
-use crate::{
-    error::{Result, SpringError},
-    sql_processor::SqlProcessor,
-    stream_engine::command::Command,
-    PIPELINE_CREATED,
-};
+use crate::{error::Result, sql_processor::SqlProcessor, stream_engine::command::Command};
 
 use self::engine_mutex::EngineMutex;
 
@@ -61,22 +52,7 @@ pub enum SpringStepSuccess {
 }
 
 /// Creates and open an in-process stream pipeline.
-///
-/// # Failure
-///
-/// - [SpringError::Unavailable](crate::error::SpringError::Unavailable) when:
-///   - Pipeline is already open.
 pub fn spring_open() -> Result<SpringPipeline> {
-    let created = PIPELINE_CREATED.load(Ordering::SeqCst);
-
-    if created {
-        return Err(SpringError::Unavailable {
-            source: anyhow!("pipeline already open"),
-            resource: "pipeline".to_string(),
-        });
-    }
-    PIPELINE_CREATED.store(true, Ordering::SeqCst);
-
     let engine = EngineMutex::new(N_WORKER_THREADS);
     let sql_processor = SqlProcessor::default();
 
