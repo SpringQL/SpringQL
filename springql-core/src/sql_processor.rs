@@ -161,7 +161,14 @@ mod tests {
         let expected_pump = PumpModel::new(
             PumpName::new("pu_passthrough".to_string()),
             PumpState::Stopped,
-            QueryPlan::fx_collect(StreamName::new("source_trade".to_string())),
+            QueryPlan::fx_collect_projection(
+                StreamName::new("source_trade".to_string()),
+                vec![
+                    ColumnName::fx_timestamp(),
+                    ColumnName::fx_ticker(),
+                    ColumnName::fx_amount(),
+                ],
+            ),
             InsertPlan::fx_trade(StreamName::new("sink_trade".to_string())),
         );
 

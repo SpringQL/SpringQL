@@ -14,8 +14,8 @@ use self::{
 #[derive(Debug)]
 pub(super) enum QuerySubtaskNode {
     Collect(CollectSubtask),
-    Stream(StreamSubtask),
-    Window(WindowSubtask),
+    Projection(ProjectionSubtask),
+    SlidingWindow(SlidingWindowSubtask),
 }
 
 impl From<&QueryPlanOperation> for QuerySubtaskNode {
@@ -24,25 +24,15 @@ impl From<&QueryPlanOperation> for QuerySubtaskNode {
             QueryPlanOperation::Collect { stream } => {
                 QuerySubtaskNode::Collect(CollectSubtask::new())
             }
-            QueryPlanOperation::Projection { column_names } => QuerySubtaskNode::Stream(
-                StreamSubtask::Projection(ProjectionSubtask::new(column_names.to_vec())),
-            ),
+            QueryPlanOperation::Projection { column_names } => {
+                QuerySubtaskNode::Projection(ProjectionSubtask::new(column_names.to_vec()))
+            }
             QueryPlanOperation::TimeBasedSlidingWindow { lower_bound } => {
-                QuerySubtaskNode::Window(WindowSubtask::Sliding(SlidingWindowSubtask::register(
+                QuerySubtaskNode::SlidingWindow(SlidingWindowSubtask::register(
                     chrono::Duration::from_std(*lower_bound)
                         .expect("std::Duration -> chrono::Duration"),
-                )))
+                ))
             }
         }
     }
-}
-
-#[derive(Debug)]
-pub(super) enum StreamSubtask {
-    Projection(ProjectionSubtask),
-}
-
-#[derive(Debug)]
-pub(super) enum WindowSubtask {
-    Sliding(SlidingWindowSubtask),
 }

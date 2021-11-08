@@ -1,4 +1,7 @@
-use petgraph::graph::DiGraph;
+use petgraph::{
+    graph::{DiGraph, NodeIndex},
+    visit::{EdgeRef, IntoNodeReferences},
+};
 
 use self::{final_row::SubtaskRow, query_subtask_node::QuerySubtaskNode};
 use crate::{
@@ -23,6 +26,8 @@ pub(super) struct QuerySubtask {
 
 impl From<&QueryPlan> for QuerySubtask {
     fn from(query_plan: &QueryPlan) -> Self {
+        // TODO drop projection operation if possible for zero-copy stream
+
         let plan_tree = query_plan.as_petgraph();
         let subtask_tree = plan_tree.map(
             |_, op| QuerySubtaskNode::from(op),
@@ -41,35 +46,64 @@ impl QuerySubtask {
         &mut self,
         context: &TaskContext<DI>,
     ) -> Result<SubtaskRow> {
-        Self::run_dfs_post_order::<DI>(self.root(), context)
+        let mut next_idx = self.leaf_node_idx();
+        let mut next_row = self.run_leaf::<DI>(next_idx, context)?;
+
+        while let Some(next_idx) = self.parent_node_idx(next_idx) {
+            next_row = self.run_non_leaf(next_idx, next_row)?;
+        }
+
+        Ok(next_row)
     }
 
-    fn run_dfs_post_order<DI: DependencyInjection>(
-        subtask: &QuerySubtaskNode,
+    fn run_non_leaf(
+        &self,
+        subtask_idx: NodeIndex,
+        downstream_row: SubtaskRow,
+    ) -> Result<SubtaskRow> {
+        let subtask = self.tree.node_weight(subtask_idx).expect("must be found");
+        match subtask {
+            QuerySubtaskNode::Projection(projection_subtask) => {
+                projection_subtask.run(downstream_row.as_ref())
+            }
+            QuerySubtaskNode::SlidingWindow(_) => todo!(),
+            QuerySubtaskNode::Collect(_) => unreachable!(),
+        }
+    }
+
+    fn run_leaf<DI: DependencyInjection>(
+        &self,
+        subtask_idx: NodeIndex,
         context: &TaskContext<DI>,
     ) -> Result<SubtaskRow> {
+        let subtask = self.tree.node_weight(subtask_idx).expect("must be found");
         match subtask {
             QuerySubtaskNode::Collect(collect_subtask) => {
                 let row = collect_subtask.run::<DI>(context)?;
                 Ok(SubtaskRow::Preserved(row))
             }
-            QuerySubtaskNode::Stream(_) => todo!(),
-            QuerySubtaskNode::Window(_) => todo!(),
+            _ => unreachable!(),
         }
     }
 
-    fn root(&self) -> &QuerySubtaskNode {
+    fn leaf_node_idx(&self) -> NodeIndex {
         self.tree
-            .node_indices()
-            .find_map(|i| {
-                (self
-                    .tree
-                    .edges_directed(i, petgraph::Direction::Incoming)
-                    .count()
-                    == 0)
-                    .then(|| self.tree.node_weight(i).unwrap())
+            .node_references()
+            .find_map(|(idx, _)| {
+                self.tree
+                    .edges_directed(idx, petgraph::Direction::Outgoing)
+                    .next()
+                    .is_none()
+                    .then(|| idx)
             })
-            .unwrap()
+            .expect("asserting only 1 leaf currently. TODO multiple leaves")
+    }
+
+    fn parent_node_idx(&self, node_idx: NodeIndex) -> Option<NodeIndex> {
+        self.tree
+            .edges_directed(node_idx, petgraph::Direction::Incoming)
+            .next()
+            .map(|parent_edge| parent_edge.source())
     }
 }
 
@@ -99,7 +133,7 @@ mod tests {
     use test_logger::setup_test_logger;
 
     use crate::{
-        pipeline::name::{PumpName, StreamName},
+        pipeline::name::{ColumnName, PumpName, StreamName},
         stream_engine::autonomous_executor::{row::Row, task::task_id::TaskId},
         stream_engine::{
             autonomous_executor::NaiveRowRepository, dependency_injection::test_di::TestDI,
@@ -136,7 +170,14 @@ mod tests {
 
         // SELECT ts, ticker, amount FROM trade;
 
-        let query_plan = QueryPlan::fx_collect(StreamName::fx_trade_source());
+        let query_plan = QueryPlan::fx_collect_projection(
+            StreamName::fx_trade_source(),
+            vec![
+                ColumnName::fx_timestamp(),
+                ColumnName::fx_ticker(),
+                ColumnName::fx_amount(),
+            ],
+        );
         let mut subtask = QuerySubtask::from(&query_plan);
 
         subtask.run_expect::<TestDI>(
