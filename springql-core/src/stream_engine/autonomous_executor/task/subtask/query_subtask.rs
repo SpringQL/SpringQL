@@ -119,6 +119,7 @@ impl QuerySubtask {
         context: &TaskContext<DI>,
     ) {
         use crate::error::SpringError;
+        use pretty_assertions::assert_eq;
 
         for expected_row in expected {
             assert_eq!(self.run::<DI>(context).unwrap(), expected_row);
@@ -133,7 +134,6 @@ impl QuerySubtask {
 #[cfg(test)]
 mod tests {
     use std::sync::Arc;
-
     use test_logger::setup_test_logger;
 
     use crate::{
@@ -186,9 +186,9 @@ mod tests {
 
         subtask.run_expect::<TestDI>(
             vec![
-                SubtaskRow::Preserved(Arc::new(Row::fx_trade_oracle())),
-                SubtaskRow::Preserved(Arc::new(Row::fx_trade_ibm())),
-                SubtaskRow::Preserved(Arc::new(Row::fx_trade_google())),
+                SubtaskRow::NewlyCreated(Row::fx_trade_oracle()),
+                SubtaskRow::NewlyCreated(Row::fx_trade_ibm()),
+                SubtaskRow::NewlyCreated(Row::fx_trade_google()),
             ],
             &context,
         );
