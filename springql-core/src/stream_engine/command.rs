@@ -1,6 +1,7 @@
 use self::alter_pipeline_command::AlterPipelineCommand;
 
 pub(crate) mod alter_pipeline_command;
+pub(crate) mod insert_plan;
 pub(crate) mod query_plan;
 
 #[derive(Clone, Eq, PartialEq, Debug)]

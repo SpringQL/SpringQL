@@ -1,8 +1,5 @@
 use super::generated_parser::Rule;
-use crate::{
-    error::{Result, SpringError},
-    pipeline::name::{ColumnName, StreamName},
-};
+use crate::error::{Result, SpringError};
 use anyhow::Context;
 use pest::iterators::{Pair, Pairs};
 use std::collections::VecDeque;
@@ -126,22 +123,4 @@ pub(super) fn parse_child_seq<T, ChildRet>(
 
 pub(super) fn self_as_str<'a>(params: &'a mut FnParseParams) -> &'a str {
     params.self_string.as_str()
-}
-
-#[derive(Clone, Eq, PartialEq, Debug)]
-pub(super) enum ColumnConstraintSyntax {
-    NotNull, // this is treated as data type in pipeline
-    Rowtime,
-}
-
-#[derive(Clone, Eq, PartialEq, Debug)]
-pub(super) struct OptionSyntax {
-    pub(super) option_name: String,
-    pub(super) option_value: String,
-}
-
-#[derive(Clone, Eq, PartialEq, Debug)]
-pub(super) struct SelectStreamSyntax {
-    pub(super) column_names: Vec<ColumnName>,
-    pub(super) from_stream: StreamName,
 }

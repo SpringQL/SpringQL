@@ -1,21 +1,27 @@
 use std::{net::IpAddr, sync::Arc};
 
-use crate::pipeline::{
-    foreign_stream_model::ForeignStreamModel,
-    name::{ColumnName, PumpName, StreamName},
-    option::{options_builder::OptionsBuilder, Options},
-    pump_model::pump_state::PumpState,
-    pump_model::PumpModel,
-    relation::{
-        column::{
-            column_constraint::ColumnConstraint, column_data_type::ColumnDataType,
-            column_definition::ColumnDefinition,
+use crate::{
+    pipeline::{
+        foreign_stream_model::ForeignStreamModel,
+        name::{ColumnName, PumpName, StreamName},
+        option::{options_builder::OptionsBuilder, Options},
+        pump_model::pump_state::PumpState,
+        pump_model::PumpModel,
+        relation::{
+            column::{
+                column_constraint::ColumnConstraint, column_data_type::ColumnDataType,
+                column_definition::ColumnDefinition,
+            },
+            sql_type::SqlType,
         },
-        sql_type::SqlType,
+        server_model::{server_type::ServerType, ServerModel},
+        stream_model::{stream_shape::StreamShape, StreamModel},
+        Pipeline,
     },
-    server_model::{server_type::ServerType, ServerModel},
-    stream_model::{stream_shape::StreamShape, StreamModel},
-    Pipeline,
+    stream_engine::command::{
+        insert_plan::InsertPlan,
+        query_plan::{query_plan_operation::QueryPlanOperation, QueryPlan},
+    },
 };
 
 impl Pipeline {
@@ -62,7 +68,7 @@ impl Pipeline {
         );
         let server_c = ServerModel::fx_net_sink(fst_2.clone(), sink_remote_host, sink_remote_port);
 
-        let pu_b = PumpModel::fx_passthrough_trade_stopped(
+        let pu_b = PumpModel::fx_trade_stopped(
             PumpName::factory("pu_b"),
             fst_1.name().clone(),
             fst_2.name().clone(),
@@ -104,7 +110,7 @@ impl Pipeline {
         );
         let server_c = ServerModel::fx_net_sink(fst_2.clone(), sink_remote_host, sink_remote_port);
 
-        let pu_b = PumpModel::fx_passthrough_trade(
+        let pu_b = PumpModel::fx_trade(
             PumpName::factory("pu_b"),
             fst_1.name().clone(),
             fst_2.name().clone(),
@@ -166,12 +172,12 @@ impl Pipeline {
         let server_f =
             ServerModel::fx_net_sink(fst_4.clone(), sink2_remote_host, sink2_remote_port);
 
-        let pu_c = PumpModel::fx_passthrough_trade(
+        let pu_c = PumpModel::fx_trade(
             PumpName::factory("pu_c"),
             fst_1.name().clone(),
             fst_3.name().clone(),
         );
-        let pu_d = PumpModel::fx_passthrough_trade(
+        let pu_d = PumpModel::fx_trade(
             PumpName::factory("pu_d"),
             fst_2.name().clone(),
             fst_4.name().clone(),
@@ -233,12 +239,12 @@ impl Pipeline {
 
         let server_e = ServerModel::fx_net_sink(fst_3.clone(), sink_remote_host, sink_remote_port);
 
-        let pu_c = PumpModel::fx_passthrough_trade(
+        let pu_c = PumpModel::fx_trade(
             PumpName::factory("pu_c"),
             fst_1.name().clone(),
             fst_3.name().clone(),
         );
-        let pu_d = PumpModel::fx_passthrough_trade(
+        let pu_d = PumpModel::fx_trade(
             PumpName::factory("pu_d"),
             fst_2.name().clone(),
             fst_3.name().clone(),
@@ -312,47 +318,47 @@ impl Pipeline {
         let server_m =
             ServerModel::fx_net_sink(fst_9.clone(), sink2_remote_host, sink2_remote_port);
 
-        let pu_c = PumpModel::fx_passthrough_trade(
+        let pu_c = PumpModel::fx_trade(
             PumpName::factory("pu_c"),
             fst_1.name().clone(),
             st_3.name().clone(),
         );
-        let pu_d = PumpModel::fx_passthrough_trade(
+        let pu_d = PumpModel::fx_trade(
             PumpName::factory("pu_d"),
             fst_2.name().clone(),
             st_4.name().clone(),
         );
-        let pu_e = PumpModel::fx_passthrough_trade(
+        let pu_e = PumpModel::fx_trade(
             PumpName::factory("pu_e"),
             fst_2.name().clone(),
             st_5.name().clone(),
         );
-        let pu_f = PumpModel::fx_passthrough_trade(
+        let pu_f = PumpModel::fx_trade(
             PumpName::factory("pu_f"),
             st_3.name().clone(),
             st_4.name().clone(),
         );
-        let pu_g = PumpModel::fx_passthrough_trade(
+        let pu_g = PumpModel::fx_trade(
             PumpName::factory("pu_g"),
             st_4.name().clone(),
             st_5.name().clone(),
         );
-        let pu_h = PumpModel::fx_passthrough_trade(
+        let pu_h = PumpModel::fx_trade(
             PumpName::factory("pu_h"),
             st_5.name().clone(),
             st_6.name().clone(),
         );
-        let pu_i = PumpModel::fx_passthrough_trade(
+        let pu_i = PumpModel::fx_trade(
             PumpName::factory("pu_i"),
             st_5.name().clone(),
             st_7.name().clone(),
         );
-        let pu_j = PumpModel::fx_passthrough_trade(
+        let pu_j = PumpModel::fx_trade(
             PumpName::factory("pu_j"),
             st_6.name().clone(),
             fst_8.name().clone(),
         );
-        let pu_k = PumpModel::fx_passthrough_trade(
+        let pu_k = PumpModel::fx_trade(
             PumpName::factory("pu_k"),
             st_7.name().clone(),
             fst_9.name().clone(),
@@ -453,19 +459,74 @@ impl ServerModel {
 }
 
 impl PumpModel {
-    pub(crate) fn fx_passthrough_trade(
-        name: PumpName,
-        upstream: StreamName,
-        downstream: StreamName,
-    ) -> Self {
-        Self::new(name, PumpState::Started, vec![upstream], downstream)
+    pub(crate) fn fx_trade(name: PumpName, upstream: StreamName, downstream: StreamName) -> Self {
+        let select_columns = vec![
+            ColumnName::fx_timestamp(),
+            ColumnName::fx_ticker(),
+            ColumnName::fx_amount(),
+        ];
+        Self::new(
+            name,
+            PumpState::Started,
+            QueryPlan::fx_collect_projection(upstream, select_columns),
+            InsertPlan::fx_trade(downstream),
+        )
     }
-    pub(crate) fn fx_passthrough_trade_stopped(
+    pub(crate) fn fx_trade_stopped(
         name: PumpName,
         upstream: StreamName,
         downstream: StreamName,
     ) -> Self {
-        Self::new(name, PumpState::Stopped, vec![upstream], downstream)
+        let select_columns = vec![
+            ColumnName::fx_timestamp(),
+            ColumnName::fx_ticker(),
+            ColumnName::fx_amount(),
+        ];
+        Self::new(
+            name,
+            PumpState::Stopped,
+            QueryPlan::fx_collect_projection(upstream, select_columns),
+            InsertPlan::fx_trade(downstream),
+        )
+    }
+}
+
+impl QueryPlan {
+    pub(crate) fn fx_collect_projection(
+        upstream: StreamName,
+        column_names: Vec<ColumnName>,
+    ) -> Self {
+        let mut query_plan = QueryPlan::default();
+
+        let collection_op = QueryPlanOperation::fx_collect(upstream);
+        let projection_op = QueryPlanOperation::fx_projection(column_names);
+
+        query_plan.add_root(projection_op.clone());
+        query_plan.add_left(&projection_op, collection_op);
+        query_plan
+    }
+}
+
+impl QueryPlanOperation {
+    pub(crate) fn fx_collect(upstream: StreamName) -> Self {
+        Self::Collect { stream: upstream }
+    }
+
+    pub(crate) fn fx_projection(column_names: Vec<ColumnName>) -> Self {
+        Self::Projection { column_names }
+    }
+}
+
+impl InsertPlan {
+    pub(crate) fn fx_trade(downstream: StreamName) -> Self {
+        Self::new(
+            downstream,
+            vec![
+                ColumnName::fx_timestamp(),
+                ColumnName::fx_ticker(),
+                ColumnName::fx_amount(),
+            ],
+        )
     }
 }
 
@@ -512,25 +573,23 @@ impl ColumnDataType {
     }
 
     pub(crate) fn fx_ticker() -> Self {
-        Self::new(
-            ColumnName::new("ticker".to_string()),
-            SqlType::text(),
-            false,
-        )
+        Self::new(ColumnName::fx_ticker(), SqlType::text(), false)
     }
 
     pub(crate) fn fx_amount() -> Self {
-        Self::new(
-            ColumnName::new("amount".to_string()),
-            SqlType::integer(),
-            false,
-        )
+        Self::new(ColumnName::fx_amount(), SqlType::integer(), false)
     }
 }
 
 impl ColumnName {
     pub(crate) fn fx_timestamp() -> Self {
         Self::new("ts".to_string())
+    }
+    pub(crate) fn fx_ticker() -> Self {
+        Self::new("ticker".to_string())
+    }
+    pub(crate) fn fx_amount() -> Self {
+        Self::new("amount".to_string())
     }
 }
 

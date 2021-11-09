@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 
 /// Column with data type.
-#[derive(Eq, PartialEq, Hash, Debug, Serialize, Deserialize, new)]
+#[derive(Clone, Eq, PartialEq, Hash, Debug, Serialize, Deserialize, new)]
 pub(crate) enum ColumnConstraint {
     Rowtime,
 }

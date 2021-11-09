@@ -7,9 +7,6 @@ use crate::{
         name::ColumnName, option::options_builder::OptionsBuilder,
         stream_model::stream_shape::StreamShape,
     },
-    stream_engine::command::query_plan::query_plan_node::{
-        operation::LeafOperation, QueryPlanNodeLeaf,
-    },
     stream_engine::{
         autonomous_executor::{
             row::{
@@ -142,27 +139,6 @@ impl Row {
         amount: i16,
     ) -> Self {
         Self::new::<TestDI>(StreamColumns::factory_trade(timestamp, ticker, amount))
-    }
-}
-
-impl QueryPlanNodeLeaf {
-    pub(in crate::stream_engine) fn factory_with_task_in<DI>(
-        input: Vec<Row>,
-        context: &TaskContext<DI>,
-    ) -> Self
-    where
-        DI: DependencyInjection,
-    {
-        for row in input {
-            context
-                .row_repository()
-                .emit_owned(row, &[context.task()])
-                .unwrap();
-        }
-
-        Self {
-            op: LeafOperation::Collect,
-        }
     }
 }
 

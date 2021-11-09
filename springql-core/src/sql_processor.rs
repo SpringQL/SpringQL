@@ -1,16 +1,59 @@
-mod pest_parser_impl;
+mod sql_parser;
 
-use crate::error::Result;
-use crate::stream_engine::command::Command;
-
-use self::pest_parser_impl::PestParserImpl;
+use self::sql_parser::{syntax::SelectStreamSyntax, SqlParser};
+use crate::{
+    error::Result,
+    pipeline::{
+        name::{ColumnName, StreamName},
+        pump_model::{pump_state::PumpState, PumpModel},
+    },
+    sql_processor::sql_parser::parse_success::ParseSuccess,
+    stream_engine::command::{
+        alter_pipeline_command::AlterPipelineCommand,
+        query_plan::{query_plan_operation::QueryPlanOperation, QueryPlan},
+        Command,
+    },
+};
 
 #[derive(Debug, Default)]
-pub(crate) struct SqlParser(PestParserImpl);
+pub(crate) struct SqlProcessor(SqlParser);
 
-impl SqlParser {
-    pub(crate) fn parse<S: Into<String>>(&self, sql: S) -> Result<Command> {
-        self.0.parse(sql)
+impl SqlProcessor {
+    pub(crate) fn compile<S: Into<String>>(&self, sql: S) -> Result<Command> {
+        let command = match self.0.parse(sql)? {
+            ParseSuccess::CreatePump {
+                pump_name,
+                select_stream_syntax,
+                insert_plan,
+            } => {
+                let query_plan = self.compile_select_stream(select_stream_syntax);
+                let pump = PumpModel::new(pump_name, PumpState::Stopped, query_plan, insert_plan);
+                Command::AlterPipeline(AlterPipelineCommand::CreatePump(pump))
+            }
+            ParseSuccess::CommandWithoutQuery(command) => command,
+        };
+        Ok(command)
+    }
+
+    fn compile_select_stream(&self, select_stream_syntax: SelectStreamSyntax) -> QueryPlan {
+        let mut plan = QueryPlan::default();
+
+        let from_op = self.compile_from(select_stream_syntax.from_stream);
+        let projection_op = self.compile_projection(select_stream_syntax.column_names);
+
+        plan.add_root(projection_op.clone());
+        plan.add_left(&projection_op, from_op);
+        plan
+    }
+
+    fn compile_from(&self, from_stream: StreamName) -> QueryPlanOperation {
+        QueryPlanOperation::Collect {
+            stream: from_stream,
+        }
+    }
+
+    fn compile_projection(&self, column_names: Vec<ColumnName>) -> QueryPlanOperation {
+        QueryPlanOperation::Projection { column_names }
     }
 }
 
@@ -26,14 +69,17 @@ mod tests {
             server_model::{server_type::ServerType, ServerModel},
             stream_model::{stream_shape::StreamShape, StreamModel},
         },
-        stream_engine::command::alter_pipeline_command::AlterPipelineCommand,
+        stream_engine::command::{
+            alter_pipeline_command::AlterPipelineCommand, insert_plan::InsertPlan,
+            query_plan::QueryPlan,
+        },
     };
     use pretty_assertions::assert_eq;
     use std::sync::Arc;
 
     #[test]
     fn test_create_source_stream() {
-        let parser = SqlParser::default();
+        let processor = SqlProcessor::default();
 
         let sql = "
             CREATE SOURCE STREAM source_trade (
@@ -44,7 +90,7 @@ mod tests {
               REMOTE_PORT '17890'
             );
             ";
-        let command = parser.parse(sql).unwrap();
+        let command = processor.compile(sql).unwrap();
 
         let expected_shape = StreamShape::fx_trade();
         let expected_options = OptionsBuilder::default()
@@ -68,7 +114,7 @@ mod tests {
 
     #[test]
     fn test_create_sink_stream() {
-        let parser = SqlParser::default();
+        let processor = SqlProcessor::default();
 
         let sql = "
             CREATE SINK STREAM sink_trade (
@@ -79,7 +125,7 @@ mod tests {
               REMOTE_PORT '17890'
             );
             ";
-        let command = parser.parse(sql).unwrap();
+        let command = processor.compile(sql).unwrap();
 
         let expected_shape = StreamShape::fx_trade();
         let expected_options = OptionsBuilder::default()
@@ -103,20 +149,27 @@ mod tests {
 
     #[test]
     fn test_create_pump() {
-        let parser = SqlParser::default();
+        let processor = SqlProcessor::default();
 
         let sql = "
             CREATE PUMP pu_passthrough AS
               INSERT INTO sink_trade (ts, ticker, amount)
               SELECT STREAM ts, ticker, amount FROM source_trade;
             ";
-        let command = parser.parse(sql).unwrap();
+        let command = processor.compile(sql).unwrap();
 
         let expected_pump = PumpModel::new(
             PumpName::new("pu_passthrough".to_string()),
             PumpState::Stopped,
-            vec![StreamName::new("source_trade".to_string())],
-            StreamName::new("sink_trade".to_string()),
+            QueryPlan::fx_collect_projection(
+                StreamName::new("source_trade".to_string()),
+                vec![
+                    ColumnName::fx_timestamp(),
+                    ColumnName::fx_ticker(),
+                    ColumnName::fx_amount(),
+                ],
+            ),
+            InsertPlan::fx_trade(StreamName::new("sink_trade".to_string())),
         );
 
         assert_eq!(
@@ -127,12 +180,12 @@ mod tests {
 
     #[test]
     fn test_alter_pump_start() {
-        let parser = SqlParser::default();
+        let processor = SqlProcessor::default();
 
         let sql = "
             ALTER PUMP pu_passthrough START;
             ";
-        let command = parser.parse(sql).unwrap();
+        let command = processor.compile(sql).unwrap();
 
         let expected_pump = PumpName::new("pu_passthrough".to_string());
 

@@ -1,5 +1,3 @@
-pub(crate) mod alter_pump_command;
-
 use crate::pipeline::{
     name::PumpName,
     pump_model::{pump_state::PumpState, PumpModel},

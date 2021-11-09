@@ -1,6 +1,5 @@
 use crate::{
     error::Result,
-    stream_engine::command::query_plan::query_plan_node::operation::SlidingWindowOperation,
     stream_engine::{
         autonomous_executor::{
             task::{
@@ -22,23 +21,17 @@ pub(in crate::stream_engine::autonomous_executor) struct SlidingWindowSubtask {
 }
 
 impl SlidingWindowSubtask {
-    pub(in crate::stream_engine::autonomous_executor) fn register(
-        op: &SlidingWindowOperation,
-    ) -> Self {
-        let window_width = match op {
-            SlidingWindowOperation::TimeBased { lower_bound } => *lower_bound,
-        };
-
+    pub(in crate::stream_engine::autonomous_executor) fn register(lower_bound: Duration) -> Self {
         Self {
             window: RowWindow::default(),
-            window_width,
+            window_width: lower_bound,
         }
     }
 
     /// Mutates internal window state.
     pub(in crate::stream_engine::autonomous_executor) fn run<DI: DependencyInjection>(
         &mut self,
-        context: &TaskContext<DI>,
+        context: &TaskContext<DI>,  // TODO get row from plan tree's downstream. not from context
     ) -> Result<&RowWindow> {
         let input = context.row_repository().collect_next(&context.task())?;
         let input_ts = input.rowtime();
@@ -90,10 +83,7 @@ mod tests {
         let pump = PumpName::fx_trade_window();
         let task = TaskId::from_pump(pump);
 
-        let op = SlidingWindowOperation::TimeBased {
-            lower_bound: Duration::minutes(5),
-        };
-        let mut executor = SlidingWindowSubtask::register(&op);
+        let mut subtask = SlidingWindowSubtask::register(Duration::minutes(5));
 
         let t_03_02_00 = Timestamp::from_str("2019-03-30 03:02:00.000000000").unwrap();
         let t_03_02_10 = Timestamp::from_str("2019-03-30 03:02:10.000000000").unwrap();
@@ -222,16 +212,13 @@ mod tests {
                 .emit_owned(row, &[task.clone()])
                 .unwrap();
 
-            let window = executor.run(&context).unwrap();
+            let window = subtask.run(&context).unwrap();
 
             let got_pks = window
                 .inner()
                 .iter()
                 .map(|got_row| {
-                    let got_sql_value = got_row
-                        .as_ref()
-                        .get(&ColumnName::fx_timestamp())
-                        .unwrap();
+                    let got_sql_value = got_row.as_ref().get(&ColumnName::fx_timestamp()).unwrap();
                     if let SqlValue::NotNull(got_nn_sql_value) = got_sql_value {
                         got_nn_sql_value.unpack()
                     } else {

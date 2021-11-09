@@ -6,16 +6,7 @@
 
 mod engine_mutex;
 
-use std::sync::atomic::Ordering;
-
-use anyhow::anyhow;
-
-use crate::{
-    error::{Result, SpringError},
-    sql_parser::SqlParser,
-    stream_engine::command::Command,
-    PIPELINE_CREATED,
-};
+use crate::{error::Result, sql_processor::SqlProcessor, stream_engine::command::Command};
 
 use self::engine_mutex::EngineMutex;
 
@@ -29,7 +20,7 @@ const N_WORKER_THREADS: usize = 2;
 #[derive(Debug)]
 pub struct SpringPipeline {
     engine: EngineMutex,
-    parser: SqlParser,
+    sql_processor: SqlProcessor,
 }
 
 /// Prepared statement.
@@ -61,26 +52,14 @@ pub enum SpringStepSuccess {
 }
 
 /// Creates and open an in-process stream pipeline.
-///
-/// # Failure
-///
-/// - [SpringError::Unavailable](crate::error::SpringError::Unavailable) when:
-///   - Pipeline is already open.
 pub fn spring_open() -> Result<SpringPipeline> {
-    let created = PIPELINE_CREATED.load(Ordering::SeqCst);
-
-    if created {
-        return Err(SpringError::Unavailable {
-            source: anyhow!("pipeline already open"),
-            resource: "pipeline".to_string(),
-        });
-    }
-    PIPELINE_CREATED.store(true, Ordering::SeqCst);
-
     let engine = EngineMutex::new(N_WORKER_THREADS);
-    let parser = SqlParser::default();
+    let sql_processor = SqlProcessor::default();
 
-    Ok(SpringPipeline { engine, parser })
+    Ok(SpringPipeline {
+        engine,
+        sql_processor,
+    })
 }
 
 /// Creates a prepared statement.
@@ -93,7 +72,7 @@ pub fn spring_open() -> Result<SpringPipeline> {
 /// - [SpringError::InvalidOption](crate::error::SpringError::Sql) when:
 ///   - `OPTIONS` in `CREATE` statement includes invalid key or value.
 pub fn spring_prepare(pipeline: &SpringPipeline, sql: &str) -> Result<SpringStatement> {
-    let command = pipeline.parser.parse(sql)?;
+    let command = pipeline.sql_processor.compile(sql)?;
     Ok(SpringStatement {
         engine: pipeline.engine.clone(),
         command,
