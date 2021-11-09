@@ -25,6 +25,14 @@ impl PumpModel {
         &self.state
     }
 
+    pub(crate) fn query_plan(&self) -> &QueryPlan {
+        &self.query_plan
+    }
+
+    pub(crate) fn insert_plan(&self) -> &InsertPlan {
+        &self.insert_plan
+    }
+
     /// Has more than 1 upstreams on JOIN, for example.
     pub(crate) fn upstreams(&self) -> Vec<&StreamName> {
         self.query_plan.upstreams()

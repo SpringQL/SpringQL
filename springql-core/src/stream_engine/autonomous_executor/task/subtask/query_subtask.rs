@@ -3,7 +3,7 @@ use petgraph::{
     visit::{EdgeRef, IntoNodeReferences},
 };
 
-use self::{final_row::SubtaskRow, query_subtask_node::QuerySubtaskNode};
+use self::query_subtask_node::QuerySubtaskNode;
 use crate::{
     error::Result,
     stream_engine::command::query_plan::{child_direction::ChildDirection, QueryPlan},
@@ -13,14 +13,15 @@ use crate::{
     },
 };
 
-mod final_row;
+use super::subtask_row::SubtaskRow;
+
 mod interm_row;
 mod query_subtask_node;
 mod row_window;
 
 /// Process input row 1-by-1.
 #[derive(Debug)]
-pub(super) struct QuerySubtask {
+pub(in crate::stream_engine::autonomous_executor) struct QuerySubtask {
     tree: DiGraph<QuerySubtaskNode, ChildDirection>,
 }
 
@@ -42,8 +43,8 @@ impl QuerySubtask {
     ///
     /// - [SpringError::InputTimeout](crate::error::SpringError::InputTimeout) when:
     ///   - Input from a source stream is not available within timeout period.
-    pub(super) fn run<DI: DependencyInjection>(
-        &mut self,
+    pub(in crate::stream_engine::autonomous_executor) fn run<DI: DependencyInjection>(
+        &self,
         context: &TaskContext<DI>,
     ) -> Result<SubtaskRow> {
         let mut next_idx = self.leaf_node_idx();

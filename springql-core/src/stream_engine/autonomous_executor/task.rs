@@ -1,9 +1,9 @@
+pub(super) mod pump_task;
 pub(super) mod task_context;
 pub(super) mod task_graph;
 pub(super) mod task_id;
 pub(super) mod task_state;
 
-mod pump_task;
 mod sink_task;
 mod source_task;
 mod subtask;

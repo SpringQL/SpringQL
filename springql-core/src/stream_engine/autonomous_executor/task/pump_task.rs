@@ -1,3 +1,5 @@
+use super::subtask::insert_subtask::{self, InsertSubtask};
+use super::subtask::query_subtask::QuerySubtask;
 use super::task_state::TaskState;
 use super::{task_context::TaskContext, task_id::TaskId};
 use crate::error::Result;
@@ -9,14 +11,20 @@ use crate::stream_engine::dependency_injection::DependencyInjection;
 pub(crate) struct PumpTask {
     id: TaskId,
     state: TaskState,
+    query_subtask: QuerySubtask,
+    insert_subtask: InsertSubtask,
 }
 
 impl From<&PumpModel> for PumpTask {
     fn from(pump: &PumpModel) -> Self {
         let id = TaskId::from_pump(pump.name().clone());
+        let query_subtask = QuerySubtask::from(pump.query_plan());
+        let insert_subtask = InsertSubtask::from(pump.insert_plan());
         Self {
             id,
             state: TaskState::from(pump.state()),
+            query_subtask,
+            insert_subtask,
         }
     }
 }
@@ -34,12 +42,7 @@ impl PumpTask {
         &self,
         context: &TaskContext<DI>,
     ) -> Result<()> {
-        let row_repo = context.row_repository();
-
-        let row = row_repo.collect_next(&context.task())?;
-
-        // TODO modify row if necessary (run query subtask)
-
-        row_repo.emit(row, &context.downstream_tasks())
+        let row = self.query_subtask.run(context)?;
+        self.insert_subtask.run(row, context)
     }
 }
