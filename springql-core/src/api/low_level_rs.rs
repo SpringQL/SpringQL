@@ -6,7 +6,10 @@
 
 mod engine_mutex;
 
-use crate::{error::Result, sql_processor::SqlProcessor, stream_engine::command::Command};
+use crate::{
+    error::Result, pipeline::name::QueueName, sql_processor::SqlProcessor,
+    stream_engine::command::Command,
+};
 
 use self::engine_mutex::EngineMutex;
 
@@ -84,7 +87,9 @@ pub fn spring_command(pipeline: &SpringPipeline, sql: &str) -> Result<()> {
 /// - [SpringError::Unavailable](crate::error::SpringError::Unavailable) when:
 ///   - queue named `queue` does not exist.
 pub fn spring_pop(pipeline: &SpringPipeline, queue: &str) -> Result<SpringRow> {
-    todo!()
+    let mut engine = pipeline.engine.get()?;
+    let foreign_row = engine.pop_in_memory_queue(QueueName::new(queue.to_string()))?;
+    Ok(SpringRow::from(foreign_row))
 }
 
 /// Get an integer column.

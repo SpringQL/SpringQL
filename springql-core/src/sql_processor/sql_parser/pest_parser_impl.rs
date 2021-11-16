@@ -4,7 +4,6 @@ mod helper;
 use crate::error::{Result, SpringError};
 use crate::pipeline::foreign_stream_model::ForeignStreamModel;
 use crate::pipeline::name::{ColumnName, PumpName, ServerName, StreamName};
-use crate::pipeline::option;
 use crate::pipeline::option::options_builder::OptionsBuilder;
 use crate::pipeline::pump_model::pump_state::PumpState;
 use crate::pipeline::relation::column::column_constraint::ColumnConstraint;

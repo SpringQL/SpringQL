@@ -17,14 +17,21 @@ pub(crate) mod command;
 
 mod autonomous_executor;
 mod dependency_injection;
+mod in_memory_queue_repository;
 mod reactive_executor;
 
-use crate::{error::Result, pipeline::Pipeline};
+use crate::{
+    error::Result,
+    pipeline::{name::QueueName, Pipeline},
+};
 use autonomous_executor::{CurrentTimestamp, RowRepository, Scheduler};
 
 use self::{
-    autonomous_executor::AutonomousExecutor, command::alter_pipeline_command::AlterPipelineCommand,
-    dependency_injection::DependencyInjection, reactive_executor::ReactiveExecutor,
+    autonomous_executor::{row::foreign_row::foreign_sink_row::ForeignSinkRow, AutonomousExecutor},
+    command::alter_pipeline_command::AlterPipelineCommand,
+    dependency_injection::DependencyInjection,
+    in_memory_queue_repository::InMemoryQueueRepository,
+    reactive_executor::ReactiveExecutor,
 };
 
 #[cfg(not(test))]
@@ -42,6 +49,8 @@ pub(crate) struct StreamEngineDI<DI: DependencyInjection> {
 
     reactive_executor: ReactiveExecutor,
     autonomous_executor: AutonomousExecutor<DI>,
+
+    in_memory_queue_repo: InMemoryQueueRepository,
 }
 
 impl<DI> StreamEngineDI<DI>
@@ -53,6 +62,7 @@ where
             pipeline: Pipeline::default(),
             reactive_executor: ReactiveExecutor::default(),
             autonomous_executor: AutonomousExecutor::new(n_worker_threads),
+            in_memory_queue_repo: InMemoryQueueRepository::default(),
         }
     }
 
@@ -60,6 +70,16 @@ where
         log::debug!("[StreamEngine] alter_pipeline({:?})", command);
         let pipeline = self.reactive_executor.alter_pipeline(command)?;
         self.autonomous_executor.notify_pipeline_update(pipeline)
+    }
+
+    /// # Failure
+    ///
+    /// - [SpringError::Unavailable](crate::error::SpringError::Unavailable) when:
+    ///   - queue named `queue_name` does not exist.
+    pub(crate) fn pop_in_memory_queue(&mut self, queue_name: QueueName) -> Result<ForeignSinkRow> {
+        let q = self.in_memory_queue_repo.get(&queue_name)?;
+        let row = q.pop();
+        Ok(row)
     }
 }
 

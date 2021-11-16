@@ -1,4 +1,4 @@
-use crate::stream_engine::autonomous_executor::row::Row;
+use crate::{low_level_rs::SpringRow, stream_engine::autonomous_executor::row::Row};
 
 use super::format::json::JsonObject;
 
@@ -6,11 +6,17 @@ use super::format::json::JsonObject;
 ///
 /// Immediately converted from Row on stream-engine boundary.
 #[derive(Eq, PartialEq, Debug)]
-pub(in crate::stream_engine) struct ForeignSinkRow(JsonObject);
+pub(crate) struct ForeignSinkRow(JsonObject);
 
 impl From<ForeignSinkRow> for JsonObject {
     fn from(foreign_output_row: ForeignSinkRow) -> Self {
         foreign_output_row.0
+    }
+}
+
+impl From<ForeignSinkRow> for SpringRow {
+    fn from(_: ForeignSinkRow) -> Self {
+        todo!()
     }
 }
 
