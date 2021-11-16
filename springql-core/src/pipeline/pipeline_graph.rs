@@ -21,10 +21,7 @@ use super::{
     server_model::{server_state::ServerState, ServerModel},
     stream_model::StreamModel,
 };
-use crate::{
-    error::{Result, SpringError},
-    pipeline::server_model::server_type::ServerType,
-};
+use crate::error::{Result, SpringError};
 use anyhow::anyhow;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -111,41 +108,13 @@ impl PipelineGraph {
     }
 
     pub(super) fn add_server(&mut self, server: ServerModel) -> Result<()> {
-        let serving_to = server.serving_foreign_stream();
-
-        match server.server_type() {
-            ServerType::SourceNet => {
-                let upstream_node = self
-                    .stream_nodes
-                    .get(&StreamName::virtual_root())
-                    .expect("virtual root always available");
-                let downstream_node =
-                    self.stream_nodes.get(serving_to.name()).ok_or_else(|| {
-                        SpringError::Sql(anyhow!(
-                            r#"downstream "{}" does not exist in pipeline"#,
-                            serving_to.name()
-                        ))
-                    })?;
-                let _ = self
-                    .graph
-                    .add_edge(*upstream_node, *downstream_node, Edge::Source(server));
-            }
-            ServerType::SinkNet => {
-                let upstream_node = self.stream_nodes.get(serving_to.name()).ok_or_else(|| {
-                    SpringError::Sql(anyhow!(
-                        r#"upstream "{}" does not exist in pipeline"#,
-                        serving_to.name()
-                    ))
-                })?;
-                let downstream_node = self.graph.add_node(StreamNode::VirtualLeaf {
-                    parent_foreign_stream: serving_to.name().clone(),
-                });
-                let _ = self
-                    .graph
-                    .add_edge(*upstream_node, downstream_node, Edge::Sink(server));
-            }
+        if server.server_type().is_source() {
+            self._add_source_server(server)
+        } else if server.server_type().is_sink() {
+            self._add_sink_server(server)
+        } else {
+            unreachable!()
         }
-        Ok(())
     }
 
     pub(crate) fn source_server_state(&self, serving_foreign_stream: &StreamName) -> ServerState {
@@ -197,5 +166,42 @@ impl PipelineGraph {
                 self._at_least_one_started_path_to_sink(next_node)
             })
         }
+    }
+
+    fn _add_source_server(&mut self, server: ServerModel) -> Result<()> {
+        let serving_to = server.serving_foreign_stream();
+
+        let upstream_node = self
+            .stream_nodes
+            .get(&StreamName::virtual_root())
+            .expect("virtual root always available");
+        let downstream_node = self.stream_nodes.get(serving_to.name()).ok_or_else(|| {
+            SpringError::Sql(anyhow!(
+                r#"downstream "{}" does not exist in pipeline"#,
+                serving_to.name()
+            ))
+        })?;
+        let _ = self
+            .graph
+            .add_edge(*upstream_node, *downstream_node, Edge::Source(server));
+        Ok(())
+    }
+
+    fn _add_sink_server(&mut self, server: ServerModel) -> Result<()> {
+        let serving_to = server.serving_foreign_stream();
+
+        let upstream_node = self.stream_nodes.get(serving_to.name()).ok_or_else(|| {
+            SpringError::Sql(anyhow!(
+                r#"upstream "{}" does not exist in pipeline"#,
+                serving_to.name()
+            ))
+        })?;
+        let downstream_node = self.graph.add_node(StreamNode::VirtualLeaf {
+            parent_foreign_stream: serving_to.name().clone(),
+        });
+        let _ = self
+            .graph
+            .add_edge(*upstream_node, downstream_node, Edge::Sink(server));
+        Ok(())
     }
 }

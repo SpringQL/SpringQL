@@ -4,13 +4,10 @@ use std::{
 };
 
 use super::{sink::SinkServerInstance, source::SourceServerInstance};
-use crate::pipeline::server_model::{server_type::ServerType, ServerModel};
+use crate::{error::Result, pipeline::name::ServerName};
 use crate::{
-    error::Result,
-    pipeline::name::ServerName,
-    stream_engine::autonomous_executor::server_instance::{
-        sink::net::NetSinkServerInstance, source::net::NetSourceServerInstance,
-    },
+    pipeline::server_model::ServerModel,
+    stream_engine::autonomous_executor::server_instance::server_instance_factory::ServerInstanceFactory,
 };
 
 #[allow(clippy::type_complexity)]
@@ -40,37 +37,40 @@ impl ServerRepository {
             .write()
             .expect("another thread sharing the same internal got panic");
 
-        match server_model.server_type() {
-            ServerType::SourceNet => {
-                if sources.get(server_model.name()).is_some() {
-                    Ok(())
-                } else {
-                    let server = NetSourceServerInstance::start(server_model.options())?;
-                    let server = Box::new(server);
-                    let server = Arc::new(Mutex::new(server as Box<dyn SourceServerInstance>));
-                    let _ = sources.insert(server_model.name().clone(), server);
-                    log::debug!(
-                        "[ServerRepository] registered source server: {}",
-                        server_model.name()
-                    );
-                    Ok(())
-                }
+        if server_model.server_type().is_source() {
+            if sources.get(server_model.name()).is_some() {
+                Ok(())
+            } else {
+                let server = ServerInstanceFactory::source(
+                    server_model.server_type(),
+                    server_model.options(),
+                )?;
+                let server = Arc::new(Mutex::new(server as Box<dyn SourceServerInstance>));
+                let _ = sources.insert(server_model.name().clone(), server);
+                log::debug!(
+                    "[ServerRepository] registered source server: {}",
+                    server_model.name()
+                );
+                Ok(())
             }
-            ServerType::SinkNet => {
-                if sinks.get(server_model.name()).is_some() {
-                    Ok(())
-                } else {
-                    let server = NetSinkServerInstance::start(server_model.options())?;
-                    let server = Box::new(server);
-                    let server = Arc::new(Mutex::new(server as Box<dyn SinkServerInstance>));
-                    let _ = sinks.insert(server_model.name().clone(), server);
-                    log::debug!(
-                        "[ServerRepository] registered sink server: {}",
-                        server_model.name()
-                    );
-                    Ok(())
-                }
+        } else if server_model.server_type().is_sink() {
+            if sinks.get(server_model.name()).is_some() {
+                Ok(())
+            } else {
+                let server = ServerInstanceFactory::sink(
+                    server_model.server_type(),
+                    server_model.options(),
+                )?;
+                let server = Arc::new(Mutex::new(server as Box<dyn SinkServerInstance>));
+                let _ = sinks.insert(server_model.name().clone(), server);
+                log::debug!(
+                    "[ServerRepository] registered sink server: {}",
+                    server_model.name()
+                );
+                Ok(())
             }
+        } else {
+            unreachable!()
         }
     }
 

@@ -7,6 +7,8 @@ use crate::pipeline::name::ServerName;
 pub(crate) enum ServerType {
     SourceNet,
     SinkNet,
+
+    SinkInMemoryQueue,
 }
 
 impl From<&ServerType> for ServerName {
@@ -14,6 +16,20 @@ impl From<&ServerType> for ServerName {
         match server_type {
             ServerType::SourceNet => ServerName::net_source(),
             ServerType::SinkNet => ServerName::net_sink(),
+            ServerType::SinkInMemoryQueue => ServerName::in_memory_queue_sink(),
         }
+    }
+}
+
+impl ServerType {
+    pub(crate) fn is_source(&self) -> bool {
+        match self {
+            ServerType::SourceNet => true,
+            ServerType::SinkNet | ServerType::SinkInMemoryQueue => false,
+        }
+    }
+
+    pub(crate) fn is_sink(&self) -> bool {
+        !self.is_source()
     }
 }
