@@ -16,10 +16,6 @@ use crate::pipeline::name::ColumnName;
 use crate::stream_engine::autonomous_executor::row::value::sql_value::nn_sql_value::NnSqlValue;
 use crate::stream_engine::dependency_injection::DependencyInjection;
 
-/// Row that enables "zero-copy stream".
-///
-/// - Clone/Copy is disabled.
-/// - Immutable. Modification (adding / removing any column or updating column value) leads to new Row.
 /// - Mandatory `rowtime()`, either from `cols` or `arrival_rowtime`.
 /// - PartialEq by all columns (NULL prevents Eq).
 /// - PartialOrd by timestamp.

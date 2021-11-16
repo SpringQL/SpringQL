@@ -27,8 +27,6 @@ pub(in crate::stream_engine::autonomous_executor) struct QuerySubtask {
 
 impl From<&QueryPlan> for QuerySubtask {
     fn from(query_plan: &QueryPlan) -> Self {
-        // TODO drop projection operation if possible for zero-copy stream
-
         let plan_tree = query_plan.as_petgraph();
         let subtask_tree = plan_tree.map(
             |_, op| QuerySubtaskNode::from(op),
