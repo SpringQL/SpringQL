@@ -6,14 +6,15 @@ use petgraph::{
 use self::query_subtask_node::QuerySubtaskNode;
 use crate::{
     error::Result,
-    stream_engine::command::query_plan::{child_direction::ChildDirection, QueryPlan},
+    stream_engine::{
+        autonomous_executor::row::Row,
+        command::query_plan::{child_direction::ChildDirection, QueryPlan},
+    },
     stream_engine::{
         autonomous_executor::task::task_context::TaskContext,
         dependency_injection::DependencyInjection,
     },
 };
-
-use super::subtask_row::SubtaskRow;
 
 mod interm_row;
 mod query_subtask_node;
@@ -44,7 +45,7 @@ impl QuerySubtask {
     pub(in crate::stream_engine::autonomous_executor) fn run<DI: DependencyInjection>(
         &self,
         context: &TaskContext<DI>,
-    ) -> Result<SubtaskRow> {
+    ) -> Result<Row> {
         let mut next_idx = self.leaf_node_idx();
         let mut next_row = self.run_leaf::<DI>(next_idx, context)?;
 
@@ -56,18 +57,14 @@ impl QuerySubtask {
         Ok(next_row)
     }
 
-    fn run_non_leaf<DI>(
-        &self,
-        subtask_idx: NodeIndex,
-        downstream_row: SubtaskRow,
-    ) -> Result<SubtaskRow>
+    fn run_non_leaf<DI>(&self, subtask_idx: NodeIndex, downstream_row: Row) -> Result<Row>
     where
         DI: DependencyInjection,
     {
         let subtask = self.tree.node_weight(subtask_idx).expect("must be found");
         match subtask {
             QuerySubtaskNode::Projection(projection_subtask) => {
-                projection_subtask.run::<DI>(downstream_row.as_ref())
+                projection_subtask.run::<DI>(downstream_row)
             }
             QuerySubtaskNode::SlidingWindow(_) => todo!(),
             QuerySubtaskNode::Collect(_) => unreachable!(),
@@ -78,13 +75,10 @@ impl QuerySubtask {
         &self,
         subtask_idx: NodeIndex,
         context: &TaskContext<DI>,
-    ) -> Result<SubtaskRow> {
+    ) -> Result<Row> {
         let subtask = self.tree.node_weight(subtask_idx).expect("must be found");
         match subtask {
-            QuerySubtaskNode::Collect(collect_subtask) => {
-                let row = collect_subtask.run::<DI>(context)?;
-                Ok(SubtaskRow::Preserved(row))
-            }
+            QuerySubtaskNode::Collect(collect_subtask) => collect_subtask.run::<DI>(context),
             _ => unreachable!(),
         }
     }
@@ -114,7 +108,7 @@ impl QuerySubtask {
 impl QuerySubtask {
     fn run_expect<DI: DependencyInjection>(
         &mut self,
-        expected: Vec<SubtaskRow>,
+        expected: Vec<Row>,
         context: &TaskContext<DI>,
     ) {
         use crate::error::SpringError;
@@ -162,7 +156,7 @@ mod tests {
         ];
         for row in input {
             let row_repo: Arc<NaiveRowRepository> = context.row_repository();
-            row_repo.emit_owned(row, &[context.task()]).unwrap();
+            row_repo.emit(row, &[context.task()]).unwrap();
         }
 
         // CREATE STREAM trade(
@@ -185,9 +179,9 @@ mod tests {
 
         subtask.run_expect::<TestDI>(
             vec![
-                SubtaskRow::NewlyCreated(Row::fx_trade_oracle()),
-                SubtaskRow::NewlyCreated(Row::fx_trade_ibm()),
-                SubtaskRow::NewlyCreated(Row::fx_trade_google()),
+                Row::fx_trade_oracle(),
+                Row::fx_trade_ibm(),
+                Row::fx_trade_google(),
             ],
             &context,
         );

@@ -12,7 +12,7 @@ use crate::{
     },
 };
 use chrono::Duration;
-use std::collections::VecDeque;
+use std::{collections::VecDeque, sync::Arc};
 
 #[derive(Debug)]
 pub(in crate::stream_engine::autonomous_executor) struct SlidingWindowSubtask {
@@ -31,7 +31,7 @@ impl SlidingWindowSubtask {
     /// Mutates internal window state.
     pub(in crate::stream_engine::autonomous_executor) fn run<DI: DependencyInjection>(
         &mut self,
-        context: &TaskContext<DI>,  // TODO get row from plan tree's downstream. not from context
+        context: &TaskContext<DI>, // TODO get row from plan tree's downstream. not from context
     ) -> Result<&RowWindow> {
         let input = context.row_repository().collect_next(&context.task())?;
         let input_ts = input.rowtime();
@@ -48,7 +48,7 @@ impl SlidingWindowSubtask {
             .cloned()
             .collect::<VecDeque<PreservedRow>>();
 
-        new_window_fifo.push_front(PreservedRow::new(input));
+        new_window_fifo.push_front(PreservedRow::new(Arc::new(input)));
 
         self.window = RowWindow::new(new_window_fifo);
         Ok(&self.window)
@@ -207,10 +207,7 @@ mod tests {
                     "pu_dummy_window_output".to_string(),
                 ))],
             );
-            context
-                .row_repository()
-                .emit_owned(row, &[task.clone()])
-                .unwrap();
+            context.row_repository().emit(row, &[task.clone()]).unwrap();
 
             let window = subtask.run(&context).unwrap();
 

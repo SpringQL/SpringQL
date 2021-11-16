@@ -19,7 +19,7 @@ use crate::stream_engine::dependency_injection::DependencyInjection;
 /// - Mandatory `rowtime()`, either from `cols` or `arrival_rowtime`.
 /// - PartialEq by all columns (NULL prevents Eq).
 /// - PartialOrd by timestamp.
-#[derive(PartialEq, Debug)]
+#[derive(Clone, PartialEq, Debug)]
 pub(crate) struct Row {
     arrival_rowtime: Option<Timestamp>,
 
