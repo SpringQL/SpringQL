@@ -1,5 +1,5 @@
 use std::collections::{HashMap, VecDeque};
-use std::sync::{Arc, Mutex};
+use std::sync::Mutex;
 
 use anyhow::Context;
 
@@ -12,11 +12,11 @@ use super::RowRepository;
 /// Has similar structure as RowRepository's concept diagram.
 #[derive(Debug, Default)]
 pub(crate) struct NaiveRowRepository {
-    tasks_buf: Mutex<HashMap<TaskId, VecDeque<Arc<Row>>>>,
+    tasks_buf: Mutex<HashMap<TaskId, VecDeque<Row>>>,
 }
 
 impl RowRepository for NaiveRowRepository {
-    fn _collect_next(&self, task: &TaskId) -> Result<Arc<Row>> {
+    fn _collect_next(&self, task: &TaskId) -> Result<Row> {
         let row_ref = self
             .tasks_buf
             .lock()
@@ -37,30 +37,31 @@ impl RowRepository for NaiveRowRepository {
         Ok(row_ref)
     }
 
-    fn _emit(&self, row_ref: Arc<Row>, downstream_tasks: &[TaskId]) -> Result<()> {
+    fn _emit(&self, row: Row, downstream_tasks: &[TaskId]) -> Result<()> {
         let mut pumps_buf = self
             .tasks_buf
             .lock()
             .expect("another thread sharing the same RowRepository internal got panic");
-        for task in downstream_tasks {
-            pumps_buf
-                .entry(task.clone())
-                .and_modify(|v| v.push_front(row_ref.clone()));
+
+        if downstream_tasks.len() == 1 {
+            // no row clone
+            let task = downstream_tasks.first().expect("1 len").clone();
+            pumps_buf.entry(task).and_modify(|v| v.push_front(row));
+        } else {
+            for task in downstream_tasks {
+                pumps_buf
+                    .entry(task.clone())
+                    .and_modify(|v| v.push_front(row.clone()));
+            }
         }
-
         Ok(())
-    }
-
-    fn _emit_owned(&self, row: Row, downstream_tasks: &[TaskId]) -> Result<()> {
-        let row_ref = Arc::new(row);
-        self.emit(row_ref, downstream_tasks)
     }
 
     fn _reset(&self, tasks: Vec<TaskId>) {
         let new_tasks_buf = tasks
             .into_iter()
             .map(|t| (t, VecDeque::new()))
-            .collect::<HashMap<TaskId, VecDeque<Arc<Row>>>>();
+            .collect::<HashMap<TaskId, VecDeque<Row>>>();
 
         *self
             .tasks_buf

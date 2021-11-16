@@ -54,7 +54,7 @@ impl SourceTask {
         let row = self.collect_next::<DI>(context)?;
         context
             .row_repository()
-            .emit_owned(row, &context.downstream_tasks())
+            .emit(row, &context.downstream_tasks())
     }
 
     fn collect_next<DI: DependencyInjection>(&self, context: &TaskContext<DI>) -> Result<Row> {
