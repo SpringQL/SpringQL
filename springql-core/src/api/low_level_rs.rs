@@ -77,13 +77,13 @@ pub fn spring_command(pipeline: &SpringPipeline, sql: &str) -> Result<()> {
     }
 }
 
-/// Pop a row from an in memory queue.
+/// Pop a row from an in memory queue. This is a blocking function.
 ///
 /// # Failure
 ///
 /// - [SpringError::Unavailable](crate::error::SpringError::Unavailable) when:
 ///   - queue named `queue` does not exist.
-pub fn spring_pop(queue: &str) -> Result<SpringRow> {
+pub fn spring_pop(pipeline: &SpringPipeline, queue: &str) -> Result<SpringRow> {
     todo!()
 }
 
