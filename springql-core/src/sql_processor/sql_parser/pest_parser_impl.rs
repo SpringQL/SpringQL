@@ -223,6 +223,7 @@ impl PestParserImpl {
 
         let server_type = match server_name.as_ref() {
             "NET_SERVER" => Ok(ServerType::SinkNet),
+            "IN_MEMORY_QUEUE" => Ok(ServerType::SinkInMemoryQueue),
             _ => Err(SpringError::Sql(anyhow!(
                 "Invalid server name: {}",
                 server_name
