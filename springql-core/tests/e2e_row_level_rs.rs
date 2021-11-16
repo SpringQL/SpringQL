@@ -8,8 +8,7 @@ use test_logger::setup_test_logger;
 fn apply_ddls(ddls: &[String]) -> SpringPipeline {
     let pipeline = spring_open().unwrap();
     for ddl in ddls {
-        let stmt = spring_prepare(&pipeline, ddl).unwrap();
-        assert_eq!(spring_step(&stmt).unwrap(), SpringStepSuccess::Done);
+        spring_command(&pipeline, ddl).unwrap();
     }
     pipeline
 }
