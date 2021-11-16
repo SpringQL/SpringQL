@@ -4,6 +4,7 @@ mod helper;
 use crate::error::{Result, SpringError};
 use crate::pipeline::foreign_stream_model::ForeignStreamModel;
 use crate::pipeline::name::{ColumnName, PumpName, ServerName, StreamName};
+use crate::pipeline::option;
 use crate::pipeline::option::options_builder::OptionsBuilder;
 use crate::pipeline::pump_model::pump_state::PumpState;
 use crate::pipeline::relation::column::column_constraint::ColumnConstraint;
@@ -139,7 +140,7 @@ impl PestParserImpl {
             Self::parse_server_name,
             identity,
         )?;
-        let option_syntaxes = parse_child(
+        let option_syntaxes = try_parse_child(
             &mut params,
             Rule::option_specifications,
             &Self::parse_option_specifications,
@@ -153,8 +154,10 @@ impl PestParserImpl {
         ));
 
         let mut options = OptionsBuilder::default();
-        for o in option_syntaxes {
-            options = options.add(o.option_name, o.option_value);
+        if let Some(option_syntaxes) = option_syntaxes {
+            for o in option_syntaxes {
+                options = options.add(o.option_name, o.option_value);
+            }
         }
         let options = options.build();
 
@@ -197,7 +200,7 @@ impl PestParserImpl {
             Self::parse_server_name,
             identity,
         )?;
-        let option_syntaxes = parse_child(
+        let option_syntaxes = try_parse_child(
             &mut params,
             Rule::option_specifications,
             &Self::parse_option_specifications,
@@ -211,8 +214,10 @@ impl PestParserImpl {
         ));
 
         let mut options = OptionsBuilder::default();
-        for o in option_syntaxes {
-            options = options.add(o.option_name, o.option_value);
+        if let Some(option_syntaxes) = option_syntaxes {
+            for o in option_syntaxes {
+                options = options.add(o.option_name, o.option_value);
+            }
         }
         let options = options.build();
 

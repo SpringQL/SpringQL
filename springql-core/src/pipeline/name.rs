@@ -74,4 +74,8 @@ impl ServerName {
     pub(crate) fn net_sink() -> Self {
         Self::new("NET_SERVER_SINK".to_string())
     }
+
+    pub(crate) fn in_memory_queue_sink() -> Self {
+        Self::new("IN_MEMORY_QUEUE_SERVER_SINK".to_string())
+    }
 }

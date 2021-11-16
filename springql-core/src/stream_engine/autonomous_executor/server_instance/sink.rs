@@ -3,6 +3,7 @@ use crate::pipeline::option::Options;
 use crate::stream_engine::autonomous_executor::row::foreign_row::foreign_sink_row::ForeignSinkRow;
 use std::fmt::Debug;
 
+pub(in crate::stream_engine) mod in_memory_queue;
 pub(in crate::stream_engine) mod net;
 
 pub(in crate::stream_engine) trait SinkServerInstance:

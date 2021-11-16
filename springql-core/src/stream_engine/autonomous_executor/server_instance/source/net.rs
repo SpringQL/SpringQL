@@ -21,11 +21,6 @@ const CONNECT_TIMEOUT_SECS: u64 = 1;
 const READ_TIMEOUT_MSECS: u64 = 100;
 
 #[derive(Debug)]
-enum Protocol {
-    Tcp,
-}
-
-#[derive(Debug)]
 pub(in crate::stream_engine) struct NetSourceServerInstance {
     foreign_addr: SocketAddr,
     tcp_stream_reader: BufReader<TcpStream>, // TODO UDP
