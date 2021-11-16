@@ -23,12 +23,9 @@ pub struct SpringPipeline {
     sql_processor: SqlProcessor,
 }
 
-/// Prepared statement.
+/// Row object from an in memory queue.
 #[derive(Debug)]
-pub struct SpringStatement {
-    engine: EngineMutex,
-    command: Command,
-}
+pub struct SpringRow;
 
 /// Successful response from `spring_step()`.
 #[derive(Eq, PartialEq, Debug)]
@@ -62,7 +59,7 @@ pub fn spring_open() -> Result<SpringPipeline> {
     })
 }
 
-/// Creates a prepared statement.
+/// Execute commands (DDL).
 ///
 /// # Failure
 ///
@@ -71,35 +68,23 @@ pub fn spring_open() -> Result<SpringPipeline> {
 ///   - Refers to undefined objects (streams, pumps, etc)
 /// - [SpringError::InvalidOption](crate::error::SpringError::Sql) when:
 ///   - `OPTIONS` in `CREATE` statement includes invalid key or value.
-pub fn spring_prepare(pipeline: &SpringPipeline, sql: &str) -> Result<SpringStatement> {
+pub fn spring_command(pipeline: &SpringPipeline, sql: &str) -> Result<()> {
     let command = pipeline.sql_processor.compile(sql)?;
-    Ok(SpringStatement {
-        engine: pipeline.engine.clone(),
-        command,
-    })
+    let mut engine = pipeline.engine.get()?;
+
+    match command {
+        Command::AlterPipeline(c) => engine.alter_pipeline(c),
+    }
 }
 
-/// - DDL: Executes a prepared statement.
-///   - [SpringStepSuccess::Done](crate::api::low_level_rs::SpringStepSuccess::Done) is returned on success;
-/// - SELECT: Get a next row from sink.
-///   - [SpringStepSuccess::Row](crate::api::low_level_rs::SpringStepSuccess::Row) is returned when next row is available. Call `spring_step()` again after `spring_column_*()` if you need more rows.
-///   - [SpringStepSuccess::Done](crate::api::low_level_rs::SpringStepSuccess::Done) is returned when no more row is available.
-///
-/// This function is non-blocking.
+/// Pop a row from an in memory queue.
 ///
 /// # Failure
 ///
 /// - [SpringError::Unavailable](crate::error::SpringError::Unavailable) when:
-///   - `stmt` is already `SpringStepSuccess::Done`.
-///   - `stmt` is already `spring_finalize()`-ed.
-pub fn spring_step(stmt: &SpringStatement) -> Result<SpringStepSuccess> {
-    let mut engine = stmt.engine.get()?;
-
-    match &stmt.command {
-        Command::AlterPipeline(c) => engine
-            .alter_pipeline(c.clone())
-            .map(|_| SpringStepSuccess::Done),
-    }
+///   - queue named `queue` does not exist.
+pub fn spring_pop(queue: &str) -> Result<SpringRow> {
+    todo!()
 }
 
 /// Get an integer column.
@@ -109,8 +94,7 @@ pub fn spring_step(stmt: &SpringStatement) -> Result<SpringStepSuccess> {
 /// - [SpringError::Unavailable](crate::error::SpringError::Unavailable) when:
 ///   - `i_col` already fetched.
 ///   - `i_col` out of range.
-///   - `stmt` is not in `SpringStepSuccess::Row` state.
-pub fn spring_column_i32(stmt: &SpringStatement, i_col: usize) -> Result<i32> {
+pub fn spring_column_i32(row: &SpringRow, i_col: usize) -> Result<i32> {
     todo!()
 }
 
@@ -119,20 +103,6 @@ pub fn spring_column_i32(stmt: &SpringStatement, i_col: usize) -> Result<i32> {
 /// # Failure
 ///
 /// Same as [spring_column_i32()](spring_column_i32)
-pub fn spring_column_text(stmt: &SpringStatement, i_col: usize) -> Result<String> {
+pub fn spring_column_text(row: &SpringRow, i_col: usize) -> Result<String> {
     todo!()
-}
-
-/// Destroys the prepared statement.
-///
-/// You don't have to call this function but just dropping (moving out) the prepared statement object is enough.
-pub fn spring_finalize(_stmt: SpringStatement) {
-    // just drop stmt
-}
-
-/// Destroys the in-process stream pipeline.
-///
-/// You don't have to call this function but just dropping (moving out) the connection object is enough.
-pub fn spring_close(_pipeline: SpringPipeline) {
-    // just drop pipeline
 }
