@@ -69,6 +69,8 @@ where
         self.autonomous_executor.notify_pipeline_update(pipeline)
     }
 
+    /// Blocking call
+    /// 
     /// # Failure
     ///
     /// - [SpringError::Unavailable](crate::error::SpringError::Unavailable) when:
