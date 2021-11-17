@@ -18,7 +18,9 @@ impl SinkServerInstance for InMemoryQueueSinkServerInstance {
         Self: Sized,
     {
         let options = InMemoryQueueServerOptions::try_from(options)?;
-        Ok(Self(options.queue_name))
+        let queue_name = options.queue_name;
+        InMemoryQueueRepository::instance().create(queue_name.clone())?;
+        Ok(Self(queue_name))
     }
 
     fn send_row(&mut self, row: ForeignSinkRow) -> Result<()> {
