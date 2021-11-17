@@ -1,14 +1,14 @@
 //! Low-level API functions to execute / register SpringQL from Rust.
 //!
-//! Has the similar interface like [SQLite](https://www.sqlite.org/c3ref/intro.html).
-//!
 //! C API and high-level Rust API are provided separately.
 
 mod engine_mutex;
 
 use crate::{
-    error::Result, pipeline::name::QueueName, sql_processor::SqlProcessor,
-    stream_engine::command::Command,
+    error::Result,
+    pipeline::name::QueueName,
+    sql_processor::SqlProcessor,
+    stream_engine::{command::Command, ForeignSinkRow},
 };
 
 use self::engine_mutex::EngineMutex;
@@ -28,7 +28,13 @@ pub struct SpringPipeline {
 
 /// Row object from an in memory queue.
 #[derive(Debug)]
-pub struct SpringRow;
+pub struct SpringRow(ForeignSinkRow);
+
+impl From<ForeignSinkRow> for SpringRow {
+    fn from(foreign_sink_row: ForeignSinkRow) -> Self {
+        Self(foreign_sink_row)
+    }
+}
 
 /// Successful response from `spring_step()`.
 #[derive(Eq, PartialEq, Debug)]

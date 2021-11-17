@@ -20,6 +20,8 @@ mod dependency_injection;
 mod in_memory_queue_repository;
 mod reactive_executor;
 
+pub(crate) use autonomous_executor::ForeignSinkRow;
+
 use crate::{
     error::Result,
     pipeline::{name::QueueName, Pipeline},
@@ -27,10 +29,8 @@ use crate::{
 use autonomous_executor::{CurrentTimestamp, RowRepository, Scheduler};
 
 use self::{
-    autonomous_executor::{row::foreign_row::foreign_sink_row::ForeignSinkRow, AutonomousExecutor},
-    command::alter_pipeline_command::AlterPipelineCommand,
-    dependency_injection::DependencyInjection,
-    in_memory_queue_repository::InMemoryQueueRepository,
+    autonomous_executor::AutonomousExecutor, command::alter_pipeline_command::AlterPipelineCommand,
+    dependency_injection::DependencyInjection, in_memory_queue_repository::InMemoryQueueRepository,
     reactive_executor::ReactiveExecutor,
 };
 
@@ -70,7 +70,7 @@ where
     }
 
     /// Blocking call
-    /// 
+    ///
     /// # Failure
     ///
     /// - [SpringError::Unavailable](crate::error::SpringError::Unavailable) when:

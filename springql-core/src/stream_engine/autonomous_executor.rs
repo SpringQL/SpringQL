@@ -9,6 +9,7 @@ mod worker_pool;
 use crate::{error::Result, pipeline::Pipeline};
 use std::sync::{Arc, RwLock};
 
+pub(crate) use row::ForeignSinkRow;
 pub(in crate::stream_engine) use row::{
     CurrentTimestamp, NaiveRowRepository, RowRepository, Timestamp,
 };

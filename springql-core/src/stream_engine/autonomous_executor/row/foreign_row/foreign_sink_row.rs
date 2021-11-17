@@ -20,12 +20,6 @@ impl From<ForeignSinkRow> for JsonObject {
     }
 }
 
-impl From<ForeignSinkRow> for SpringRow {
-    fn from(foreign_sink_row: ForeignSinkRow) -> Self {
-        todo!()
-    }
-}
-
 impl From<Row> for ForeignSinkRow {
     fn from(row: Row) -> Self {
         Self(row)
