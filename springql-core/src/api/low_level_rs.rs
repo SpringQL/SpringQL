@@ -1,12 +1,15 @@
 //! Low-level API functions to execute / register SpringQL from Rust.
 //!
-//! Has the similar interface like [SQLite](https://www.sqlite.org/c3ref/intro.html).
-//!
 //! C API and high-level Rust API are provided separately.
 
 mod engine_mutex;
 
-use crate::{error::Result, sql_processor::SqlProcessor, stream_engine::command::Command};
+use crate::{
+    error::Result,
+    pipeline::name::QueueName,
+    sql_processor::SqlProcessor,
+    stream_engine::{command::Command, ForeignSinkRow, SqlConvertible, SqlValue},
+};
 
 use self::engine_mutex::EngineMutex;
 
@@ -25,7 +28,13 @@ pub struct SpringPipeline {
 
 /// Row object from an in memory queue.
 #[derive(Debug)]
-pub struct SpringRow;
+pub struct SpringRow(ForeignSinkRow);
+
+impl From<ForeignSinkRow> for SpringRow {
+    fn from(foreign_sink_row: ForeignSinkRow) -> Self {
+        Self(foreign_sink_row)
+    }
+}
 
 /// Successful response from `spring_step()`.
 #[derive(Eq, PartialEq, Debug)]
@@ -77,14 +86,16 @@ pub fn spring_command(pipeline: &SpringPipeline, sql: &str) -> Result<()> {
     }
 }
 
-/// Pop a row from an in memory queue.
+/// Pop a row from an in memory queue. This is a blocking function.
 ///
 /// # Failure
 ///
 /// - [SpringError::Unavailable](crate::error::SpringError::Unavailable) when:
 ///   - queue named `queue` does not exist.
-pub fn spring_pop(queue: &str) -> Result<SpringRow> {
-    todo!()
+pub fn spring_pop(pipeline: &SpringPipeline, queue: &str) -> Result<SpringRow> {
+    let mut engine = pipeline.engine.get()?;
+    let foreign_row = engine.pop_in_memory_queue(QueueName::new(queue.to_string()))?;
+    Ok(SpringRow::from(foreign_row))
 }
 
 /// Get an integer column.
@@ -95,7 +106,7 @@ pub fn spring_pop(queue: &str) -> Result<SpringRow> {
 ///   - `i_col` already fetched.
 ///   - `i_col` out of range.
 pub fn spring_column_i32(row: &SpringRow, i_col: usize) -> Result<i32> {
-    todo!()
+    spring_column(row, i_col)
 }
 
 /// Get an text column.
@@ -104,5 +115,14 @@ pub fn spring_column_i32(row: &SpringRow, i_col: usize) -> Result<i32> {
 ///
 /// Same as [spring_column_i32()](spring_column_i32)
 pub fn spring_column_text(row: &SpringRow, i_col: usize) -> Result<String> {
-    todo!()
+    spring_column(row, i_col)
+}
+
+fn spring_column<T: SqlConvertible>(row: &SpringRow, i_col: usize) -> Result<T> {
+    let v = row.0.get_by_index(i_col)?;
+    if let SqlValue::NotNull(v) = v {
+        v.unpack()
+    } else {
+        todo!("support nullable value")
+    }
 }

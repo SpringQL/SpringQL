@@ -167,3 +167,66 @@ fn test_e2e_projection() -> Result<()> {
 
     Ok(())
 }
+
+#[test]
+fn test_e2e_pop_from_in_memory_queue() {
+    setup_test_logger();
+
+    let queue_name = "queue_trade";
+    let ts = "2021-11-04 23:02:52.123456789";
+    let ticker = "ORCL";
+    let amount = 20;
+
+    let json_oracle = json!({
+        "ts": ts,
+        "ticker": ticker,
+        "amount": amount,
+    });
+
+    let test_source = TestForeignSource::start(vec![json_oracle]).unwrap();
+
+    let ddls = vec![
+        format!(
+            "
+        CREATE SOURCE STREAM source_trade (
+          ts TIMESTAMP NOT NULL ROWTIME,    
+          ticker TEXT NOT NULL,
+          amount INTEGER NOT NULL
+        ) SERVER NET_SERVER OPTIONS (
+          PROTOCOL 'TCP',
+          REMOTE_HOST '{remote_host}',
+          REMOTE_PORT '{remote_port}'
+        );
+        ",
+            remote_host = test_source.host_ip(),
+            remote_port = test_source.port()
+        ),
+        format!(
+            "
+        CREATE SINK STREAM sink_trade (
+          ts TIMESTAMP NOT NULL,    
+          amount INTEGER NOT NULL
+        ) SERVER IN_MEMORY_QUEUE OPTIONS (
+          NAME '{queue_name}'
+        );
+        ",
+            queue_name = queue_name,
+        ),
+        "
+        CREATE PUMP pu_projection AS
+          INSERT INTO sink_trade (ts, amount)
+          SELECT STREAM ts, amount FROM source_trade;
+        "
+        .to_string(),
+        "
+        ALTER PUMP pu_projection START;
+        "
+        .to_string(),
+    ];
+
+    let pipeline = apply_ddls(&ddls);
+
+    let row = spring_pop(&pipeline, queue_name).unwrap();
+    assert_eq!(spring_column_text(&row, 0).unwrap(), ts);
+    assert_eq!(spring_column_i32(&row, 1).unwrap(), amount);
+}

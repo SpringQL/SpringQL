@@ -4,7 +4,6 @@ mod helper;
 use crate::error::{Result, SpringError};
 use crate::pipeline::foreign_stream_model::ForeignStreamModel;
 use crate::pipeline::name::{ColumnName, PumpName, ServerName, StreamName};
-use crate::pipeline::option;
 use crate::pipeline::option::options_builder::OptionsBuilder;
 use crate::pipeline::pump_model::pump_state::PumpState;
 use crate::pipeline::relation::column::column_constraint::ColumnConstraint;
@@ -223,6 +222,7 @@ impl PestParserImpl {
 
         let server_type = match server_name.as_ref() {
             "NET_SERVER" => Ok(ServerType::SinkNet),
+            "IN_MEMORY_QUEUE" => Ok(ServerType::SinkInMemoryQueue),
             _ => Err(SpringError::Sql(anyhow!(
                 "Invalid server name: {}",
                 server_name

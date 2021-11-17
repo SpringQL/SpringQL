@@ -9,7 +9,7 @@ use anyhow::Context;
 use super::SinkServerInstance;
 use crate::{
     error::{foreign_info::ForeignInfo, Result, SpringError},
-    pipeline::option::{server_options::NetServerOptions, Options},
+    pipeline::option::{net_server_options::NetServerOptions, Options},
     stream_engine::autonomous_executor::row::foreign_row::{
         foreign_sink_row::ForeignSinkRow, format::json::JsonObject,
     },

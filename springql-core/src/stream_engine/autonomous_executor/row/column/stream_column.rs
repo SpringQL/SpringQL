@@ -57,7 +57,7 @@ impl StreamColumns {
     ) -> Option<Timestamp> {
         let rowtime_col = self.stream_shape.promoted_rowtime()?;
         let rowtime_sql_value = self
-            .get(rowtime_col)
+            .get_by_column_name(rowtime_col)
             .expect("rowtime_col is set in stream definition, which must be validated");
         if let SqlValue::NotNull(v) = rowtime_sql_value {
             Some(v.unpack().expect("rowtime col must be TIMESTAMP type"))
@@ -69,8 +69,22 @@ impl StreamColumns {
     /// # Failure
     ///
     /// - [SpringError::Sql](crate::error::SpringError::Sql) when:
+    ///   - Column index out of range
+    pub(in crate::stream_engine::autonomous_executor) fn get_by_index(
+        &self,
+        i_col: usize,
+    ) -> Result<&SqlValue> {
+        self.values
+            .get(i_col)
+            .context("column index out of range")
+            .map_err(SpringError::Sql)
+    }
+
+    /// # Failure
+    ///
+    /// - [SpringError::Sql](crate::error::SpringError::Sql) when:
     ///   - No column named `column_name` is found from this stream.
-    pub(in crate::stream_engine::autonomous_executor) fn get(
+    pub(in crate::stream_engine::autonomous_executor) fn get_by_column_name(
         &self,
         column_name: &ColumnName,
     ) -> Result<&SqlValue> {
@@ -102,7 +116,7 @@ impl StreamColumns {
                 .iter()
                 .fold(Ok(ColumnValues::default()), |res_colvals, column_name| {
                     let mut colvals = res_colvals?;
-                    self.get(column_name).and_then(|v| {
+                    self.get_by_column_name(column_name).and_then(|v| {
                         colvals.insert(column_name.clone(), v.clone())?;
                         Ok(colvals)
                     })

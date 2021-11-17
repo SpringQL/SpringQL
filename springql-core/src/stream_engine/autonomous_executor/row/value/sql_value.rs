@@ -1,4 +1,4 @@
-pub(in crate::stream_engine::autonomous_executor) mod nn_sql_value;
+pub(crate) mod nn_sql_value;
 pub(in crate::stream_engine::autonomous_executor) mod sql_compare_result;
 pub(in crate::stream_engine::autonomous_executor) mod sql_value_hash_key;
 

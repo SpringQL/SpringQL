@@ -1,7 +1,7 @@
 pub(in crate::stream_engine) mod server_instance;
 pub(in crate::stream_engine) mod task;
 
-pub(super) mod row;
+pub(crate) mod row;
 
 mod scheduler;
 mod worker_pool;
@@ -9,6 +9,7 @@ mod worker_pool;
 use crate::{error::Result, pipeline::Pipeline};
 use std::sync::{Arc, RwLock};
 
+pub(crate) use row::ForeignSinkRow;
 pub(in crate::stream_engine) use row::{
     CurrentTimestamp, NaiveRowRepository, RowRepository, Timestamp,
 };

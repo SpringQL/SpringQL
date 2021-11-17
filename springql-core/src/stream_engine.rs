@@ -17,14 +17,24 @@ pub(crate) mod command;
 
 mod autonomous_executor;
 mod dependency_injection;
+mod in_memory_queue_repository;
 mod reactive_executor;
 
-use crate::{error::Result, pipeline::Pipeline};
+pub(crate) use autonomous_executor::{
+    row::value::{sql_convertible::SqlConvertible, sql_value::SqlValue},
+    ForeignSinkRow,
+};
+
+use crate::{
+    error::Result,
+    pipeline::{name::QueueName, Pipeline},
+};
 use autonomous_executor::{CurrentTimestamp, RowRepository, Scheduler};
 
 use self::{
     autonomous_executor::AutonomousExecutor, command::alter_pipeline_command::AlterPipelineCommand,
-    dependency_injection::DependencyInjection, reactive_executor::ReactiveExecutor,
+    dependency_injection::DependencyInjection, in_memory_queue_repository::InMemoryQueueRepository,
+    reactive_executor::ReactiveExecutor,
 };
 
 #[cfg(not(test))]
@@ -60,6 +70,18 @@ where
         log::debug!("[StreamEngine] alter_pipeline({:?})", command);
         let pipeline = self.reactive_executor.alter_pipeline(command)?;
         self.autonomous_executor.notify_pipeline_update(pipeline)
+    }
+
+    /// Blocking call
+    ///
+    /// # Failure
+    ///
+    /// - [SpringError::Unavailable](crate::error::SpringError::Unavailable) when:
+    ///   - queue named `queue_name` does not exist.
+    pub(crate) fn pop_in_memory_queue(&mut self, queue_name: QueueName) -> Result<ForeignSinkRow> {
+        let q = InMemoryQueueRepository::instance().get(&queue_name)?;
+        let row = q.pop();
+        Ok(row)
     }
 }
 
