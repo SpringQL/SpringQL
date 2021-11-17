@@ -49,8 +49,6 @@ pub(crate) struct StreamEngineDI<DI: DependencyInjection> {
 
     reactive_executor: ReactiveExecutor,
     autonomous_executor: AutonomousExecutor<DI>,
-
-    in_memory_queue_repo: InMemoryQueueRepository,
 }
 
 impl<DI> StreamEngineDI<DI>
@@ -62,7 +60,6 @@ where
             pipeline: Pipeline::default(),
             reactive_executor: ReactiveExecutor::default(),
             autonomous_executor: AutonomousExecutor::new(n_worker_threads),
-            in_memory_queue_repo: InMemoryQueueRepository::default(),
         }
     }
 
@@ -77,7 +74,7 @@ where
     /// - [SpringError::Unavailable](crate::error::SpringError::Unavailable) when:
     ///   - queue named `queue_name` does not exist.
     pub(crate) fn pop_in_memory_queue(&mut self, queue_name: QueueName) -> Result<ForeignSinkRow> {
-        let q = self.in_memory_queue_repo.get(&queue_name)?;
+        let q = InMemoryQueueRepository::instance().get(&queue_name)?;
         let row = q.pop();
         Ok(row)
     }

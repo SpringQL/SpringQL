@@ -1,6 +1,7 @@
 mod in_memory_queue;
 
 use anyhow::anyhow;
+use once_cell::sync::Lazy;
 
 use crate::error::{Result, SpringError};
 use crate::pipeline::name::QueueName;
@@ -9,10 +10,22 @@ use std::sync::Arc;
 
 use self::in_memory_queue::InMemoryQueue;
 
-#[derive(Debug, Default)]
+static INSTANCE: Lazy<Arc<InMemoryQueueRepository>> =
+    Lazy::new(|| Arc::new(InMemoryQueueRepository::empty()));
+
+/// Singleton
+#[derive(Debug)]
 pub(in crate::stream_engine) struct InMemoryQueueRepository(HashMap<QueueName, Arc<InMemoryQueue>>);
 
 impl InMemoryQueueRepository {
+    fn empty() -> Self {
+        Self(HashMap::new())
+    }
+
+    pub(in crate::stream_engine) fn instance() -> Arc<Self> {
+        INSTANCE.clone()
+    }
+
     /// # Failure
     ///
     /// - [SpringError::Unavailable](crate::error::SpringError::Unavailable) when:
