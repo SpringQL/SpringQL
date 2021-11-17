@@ -1,6 +1,8 @@
 use crate::{
     error::Result,
-    stream_engine::autonomous_executor::row::value::sql_value::nn_sql_value::NnSqlValue,
+    stream_engine::autonomous_executor::{
+        row::value::sql_value::nn_sql_value::NnSqlValue, Timestamp,
+    },
 };
 
 use super::SqlConvertible;
@@ -11,6 +13,10 @@ impl SqlConvertible for String {
     }
 
     fn try_from_string(v: &str) -> Result<Self> {
+        Ok(v.to_string())
+    }
+
+    fn try_from_timestamp(v: &Timestamp) -> Result<Self> {
         Ok(v.to_string())
     }
 }

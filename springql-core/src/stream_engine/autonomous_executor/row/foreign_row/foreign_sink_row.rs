@@ -1,6 +1,6 @@
-use crate::{low_level_rs::SpringRow, stream_engine::autonomous_executor::row::Row};
-
 use super::format::json::JsonObject;
+use crate::error::Result;
+use crate::stream_engine::autonomous_executor::row::{value::sql_value::SqlValue, Row};
 
 /// Output row into foreign systems (retrieved by SinkServer).
 ///
@@ -23,6 +23,16 @@ impl From<ForeignSinkRow> for JsonObject {
 impl From<Row> for ForeignSinkRow {
     fn from(row: Row) -> Self {
         Self(row)
+    }
+}
+
+impl ForeignSinkRow {
+    /// # Failure
+    ///
+    /// - [SpringError::Sql](crate::error::SpringError::Sql) when:
+    ///   - Column index out of range
+    pub(crate) fn get_by_index(&self, i_col: usize) -> Result<&SqlValue> {
+        self.0.get_by_index(i_col)
     }
 }
 

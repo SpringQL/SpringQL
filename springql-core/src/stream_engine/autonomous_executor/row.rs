@@ -1,9 +1,10 @@
+pub(crate) mod value;
+
 pub(in crate::stream_engine::autonomous_executor) mod column;
 pub(in crate::stream_engine::autonomous_executor) mod column_values;
 pub(in crate::stream_engine) mod foreign_row;
 pub(in crate::stream_engine::autonomous_executor) mod row_repository;
 pub(in crate::stream_engine::autonomous_executor) mod timestamp;
-pub(in crate::stream_engine::autonomous_executor) mod value;
 
 pub(crate) use foreign_row::ForeignSinkRow;
 pub(in crate::stream_engine) use row_repository::{NaiveRowRepository, RowRepository};
@@ -77,12 +78,23 @@ impl Row {
     /// # Failure
     ///
     /// - [SpringError::Sql](crate::error::SpringError::Sql) when:
+    ///   - Column index out of range
+    pub(in crate::stream_engine::autonomous_executor) fn get_by_index(
+        &self,
+        i_col: usize,
+    ) -> Result<&SqlValue> {
+        self.cols.get_by_index(i_col)
+    }
+
+    /// # Failure
+    ///
+    /// - [SpringError::Sql](crate::error::SpringError::Sql) when:
     ///   - No column named `column_name` is found from this stream.
-    pub(in crate::stream_engine::autonomous_executor) fn get(
+    pub(in crate::stream_engine::autonomous_executor) fn get_by_column_name(
         &self,
         column_name: &ColumnName,
     ) -> Result<&SqlValue> {
-        self.cols.get(column_name)
+        self.cols.get_by_column_name(column_name)
     }
 
     /// # TODO

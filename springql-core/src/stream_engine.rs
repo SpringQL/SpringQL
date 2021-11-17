@@ -20,7 +20,10 @@ mod dependency_injection;
 mod in_memory_queue_repository;
 mod reactive_executor;
 
-pub(crate) use autonomous_executor::ForeignSinkRow;
+pub(crate) use autonomous_executor::{
+    row::value::{sql_convertible::SqlConvertible, sql_value::SqlValue},
+    ForeignSinkRow,
+};
 
 use crate::{
     error::Result,
