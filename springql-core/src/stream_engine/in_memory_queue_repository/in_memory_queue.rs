@@ -11,4 +11,8 @@ impl InMemoryQueue {
     pub(in crate::stream_engine) fn pop(&self) -> ForeignSinkRow {
         todo!()
     }
+
+    pub(in crate::stream_engine) fn push(&self, row: ForeignSinkRow) {
+        todo!()
+    }
 }

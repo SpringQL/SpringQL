@@ -15,7 +15,9 @@ static INSTANCE: Lazy<Arc<InMemoryQueueRepository>> =
 
 /// Singleton
 #[derive(Debug)]
-pub(in crate::stream_engine) struct InMemoryQueueRepository(HashMap<QueueName, Arc<InMemoryQueue>>);
+pub(in crate::stream_engine) struct InMemoryQueueRepository(HashMap<QueueName, Arc<InMemoryQueue>> 
+
+);
 
 impl InMemoryQueueRepository {
     fn empty() -> Self {

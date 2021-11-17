@@ -8,7 +8,7 @@ use anyhow::Context;
 
 use crate::{
     error::{foreign_info::ForeignInfo, Result, SpringError},
-    pipeline::option::{server_options::NetServerOptions, Options},
+    pipeline::option::{net_server_options::NetServerOptions, Options},
     stream_engine::autonomous_executor::row::foreign_row::{
         foreign_source_row::ForeignSourceRow, format::json::JsonObject,
     },
