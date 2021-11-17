@@ -5,33 +5,30 @@ use super::format::json::JsonObject;
 /// Output row into foreign systems (retrieved by SinkServer).
 ///
 /// Immediately converted from Row on stream-engine boundary.
-#[derive(Eq, PartialEq, Debug)]
-pub(crate) struct ForeignSinkRow(JsonObject);
+#[derive(PartialEq, Debug)]
+pub(crate) struct ForeignSinkRow(Row);
 
 impl From<ForeignSinkRow> for JsonObject {
-    fn from(foreign_output_row: ForeignSinkRow) -> Self {
-        foreign_output_row.0
-    }
-}
-
-impl From<ForeignSinkRow> for SpringRow {
-    fn from(_: ForeignSinkRow) -> Self {
-        todo!()
-    }
-}
-
-/// # Failure
-///
-/// - [SpringError::InvalidFormat](crate::error::SpringError::InvalidFormat) when:
-///   - This row cannot be converted into foreign output row.
-impl From<Row> for ForeignSinkRow {
-    fn from(row: Row) -> Self {
-        let map = row
+    fn from(foreign_sink_row: ForeignSinkRow) -> Self {
+        let map = foreign_sink_row
+            .0
             .into_iter()
             .map(|(col, val)| (col.to_string(), serde_json::Value::from(val)))
             .collect::<serde_json::Map<String, serde_json::Value>>();
         let v = serde_json::Value::from(map);
-        Self(JsonObject::new(v))
+        JsonObject::new(v)
+    }
+}
+
+impl From<ForeignSinkRow> for SpringRow {
+    fn from(foreign_sink_row: ForeignSinkRow) -> Self {
+        todo!()
+    }
+}
+
+impl From<Row> for ForeignSinkRow {
+    fn from(row: Row) -> Self {
+        Self(row)
     }
 }
 
@@ -47,16 +44,17 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_from_row() {
+    fn test_into_json() {
         let row = Row::fx_city_temperature_tokyo();
+        let f_row = ForeignSinkRow(row);
 
-        let f_row = ForeignSinkRow(JsonObject::new(json!({
+        let json = JsonObject::new(json!({
             "ts": Timestamp::fx_ts1().to_string(),
             "city": "Tokyo",
             "temperature": 21
-        })));
+        }));
 
-        assert_eq!(ForeignSinkRow::from(row), f_row);
+        assert_eq!(JsonObject::from(f_row), json);
     }
 
     #[test]
