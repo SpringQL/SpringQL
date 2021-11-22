@@ -4,6 +4,8 @@
 
 mod engine_mutex;
 
+use std::sync::Once;
+
 use crate::{
     error::Result,
     pipeline::name::QueueName,
@@ -16,6 +18,17 @@ use self::engine_mutex::EngineMutex;
 // TODO config
 const N_WORKER_THREADS: usize = 2;
 
+fn setup_logger() {
+    static INIT: Once = Once::new();
+
+    INIT.call_once(|| {
+        let _ = env_logger::builder()
+            .is_test(false) // To enable color. Logs are not captured by test framework.
+            .try_init();
+    });
+
+    log::info!("setup_logger(): done");
+}
 /// Connection object.
 ///
 /// 1 stream pipeline has only 1 connection.
@@ -38,6 +51,8 @@ impl From<ForeignSinkRow> for SpringRow {
 
 /// Creates and open an in-process stream pipeline.
 pub fn spring_open() -> Result<SpringPipeline> {
+    setup_logger();
+
     let engine = EngineMutex::new(N_WORKER_THREADS);
     let sql_processor = SqlProcessor::default();
 
