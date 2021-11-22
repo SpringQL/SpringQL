@@ -29,7 +29,7 @@ impl Options {
             .and_then(value_parser)
             .map_err(|e| SpringError::InvalidOption {
                 key: key.to_string(),
-                value: "".to_string(),
+                value: "(not found)".to_string(),
                 source: e,
             })
     }
