@@ -182,8 +182,15 @@ fn test_e2e_pop_from_in_memory_queue() {
         "ticker": ticker,
         "amount": amount,
     });
+    let trade_times = 5;
 
-    let test_source = TestForeignSource::start(vec![json_oracle]).unwrap();
+    let test_source = TestForeignSource::start(
+        (0..trade_times)
+            .into_iter()
+            .map(|_| json_oracle.clone())
+            .collect(),
+    )
+    .unwrap();
 
     let ddls = vec![
         format!(
@@ -226,7 +233,9 @@ fn test_e2e_pop_from_in_memory_queue() {
 
     let pipeline = apply_ddls(&ddls);
 
-    let row = spring_pop(&pipeline, queue_name).unwrap();
-    assert_eq!(spring_column_text(&row, 0).unwrap(), ts);
-    assert_eq!(spring_column_i32(&row, 1).unwrap(), amount);
+    for _ in 0..trade_times {
+        let row = spring_pop(&pipeline, queue_name).unwrap();
+        assert_eq!(spring_column_text(&row, 0).unwrap(), ts);
+        assert_eq!(spring_column_i32(&row, 1).unwrap(), amount);
+    }
 }
