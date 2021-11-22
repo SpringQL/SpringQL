@@ -13,6 +13,8 @@ pub(in crate::sql_processor) struct SqlParser(PestParserImpl);
 
 impl SqlParser {
     pub(in crate::sql_processor) fn parse<S: Into<String>>(&self, sql: S) -> Result<ParseSuccess> {
+        let sql = sql.into();
+        log::debug!("start parsing SQL: {}", &sql);
         self.0.parse(sql)
     }
 }

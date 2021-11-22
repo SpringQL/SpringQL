@@ -4,6 +4,8 @@
 
 mod engine_mutex;
 
+use std::sync::Once;
+
 use crate::{
     error::Result,
     pipeline::name::QueueName,
@@ -16,6 +18,17 @@ use self::engine_mutex::EngineMutex;
 // TODO config
 const N_WORKER_THREADS: usize = 2;
 
+fn setup_logger() {
+    static INIT: Once = Once::new();
+
+    INIT.call_once(|| {
+        let _ = env_logger::builder()
+            .is_test(false) // To enable color. Logs are not captured by test framework.
+            .try_init();
+    });
+
+    log::info!("setup_logger(): done");
+}
 /// Connection object.
 ///
 /// 1 stream pipeline has only 1 connection.
@@ -36,29 +49,10 @@ impl From<ForeignSinkRow> for SpringRow {
     }
 }
 
-/// Successful response from `spring_step()`.
-#[derive(Eq, PartialEq, Debug)]
-pub enum SpringStepSuccess {
-    /// No more rows available.
-    ///
-    /// You must not call `spring_step()` again with the same prepared statement object
-    /// after you get this response.
-    ///
-    /// Returned on:
-    /// - DDL statements
-    /// - SELECT statements to table after reading final row.
-    Done,
-
-    /// Your prepared statement has gotten a new row.
-    /// You can call `spring_column_*()` to get column values.
-    ///
-    /// Returned on:
-    /// - SELECT statements to stream or table.
-    Row,
-}
-
 /// Creates and open an in-process stream pipeline.
 pub fn spring_open() -> Result<SpringPipeline> {
+    setup_logger();
+
     let engine = EngineMutex::new(N_WORKER_THREADS);
     let sql_processor = SqlProcessor::default();
 
