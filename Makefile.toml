@@ -25,7 +25,7 @@ RUSTFLAGS='-D warnings' cargo build --workspace --all-targets --all-features
 [tasks.test]
 script = ['''
 #!/usr/bin/env bash -eux
-cargo test --workspace --all-targets --all-features
+RUSTFLAGS='-D warnings' cargo test --workspace --all-targets --all-features
 ''']
 
 [tasks.doc]
