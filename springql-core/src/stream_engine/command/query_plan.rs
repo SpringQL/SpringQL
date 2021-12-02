@@ -1,3 +1,5 @@
+// Copyright (c) 2021 TOYOTA MOTOR CORPORATION. Licensed under MIT OR Apache-2.0.
+
 pub(in crate::stream_engine) mod child_direction;
 pub(crate) mod query_plan_operation;
 

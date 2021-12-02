@@ -1,3 +1,5 @@
+// Copyright (c) 2021 TOYOTA MOTOR CORPORATION. Licensed under MIT OR Apache-2.0.
+
 pub(super) mod collect_subtask;
 pub(super) mod projection_subtask;
 pub(super) mod window_subtask;

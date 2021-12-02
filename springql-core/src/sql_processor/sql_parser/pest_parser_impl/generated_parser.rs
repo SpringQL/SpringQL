@@ -1,3 +1,5 @@
+// Copyright (c) 2021 TOYOTA MOTOR CORPORATION. Licensed under MIT OR Apache-2.0.
+
 use pest_derive::Parser;
 
 /// The parser generated from `springql.pest`.

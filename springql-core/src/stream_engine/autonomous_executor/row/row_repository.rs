@@ -1,3 +1,5 @@
+// Copyright (c) 2021 TOYOTA MOTOR CORPORATION. Licensed under MIT OR Apache-2.0.
+
 pub(crate) mod naive_row_repository;
 
 pub(crate) use naive_row_repository::NaiveRowRepository;

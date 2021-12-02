@@ -1,3 +1,5 @@
+// Copyright (c) 2021 TOYOTA MOTOR CORPORATION. Licensed under MIT OR Apache-2.0.
+
 use super::format::json::JsonObject;
 use crate::error::Result;
 use crate::stream_engine::autonomous_executor::row::{value::sql_value::SqlValue, Row};

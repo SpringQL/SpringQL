@@ -1,3 +1,5 @@
+// Copyright (c) 2021 TOYOTA MOTOR CORPORATION. Licensed under MIT OR Apache-2.0.
+
 use crate::pipeline::{pump_model::pump_state::PumpState, server_model::server_state::ServerState};
 
 #[derive(Clone, Eq, PartialEq, Debug)]
