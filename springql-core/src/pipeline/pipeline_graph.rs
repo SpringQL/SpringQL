@@ -19,10 +19,12 @@ use super::{
     name::{PumpName, StreamName},
     pump_model::PumpModel,
     server_model::{server_state::ServerState, ServerModel},
-    stream_model::StreamModel,
 };
 use crate::error::{Result, SpringError};
 use anyhow::anyhow;
+
+#[cfg(test)] // TODO remove
+use super::stream_model::StreamModel;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub(crate) struct PipelineGraph {
@@ -46,6 +48,7 @@ impl Default for PipelineGraph {
 }
 
 impl PipelineGraph {
+    #[cfg(test)] // TODO remove
     pub(super) fn add_stream(&mut self, stream: Arc<StreamModel>) -> Result<()> {
         let st_name = stream.name().clone();
         let st_node = self.graph.add_node(StreamNode::Native(stream));

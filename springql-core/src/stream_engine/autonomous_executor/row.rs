@@ -90,6 +90,7 @@ impl Row {
     ///
     /// - [SpringError::Sql](crate::error::SpringError::Sql) when:
     ///   - No column named `column_name` is found from this stream.
+    #[cfg(test)] // TODO remove
     pub(in crate::stream_engine::autonomous_executor) fn get_by_column_name(
         &self,
         column_name: &ColumnName,

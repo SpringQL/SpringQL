@@ -1,17 +1,18 @@
+use crate::stream_engine::autonomous_executor::task::subtask::query_subtask::row_window::RowWindow;
+use chrono::Duration;
+
+#[cfg(test)] // TODO remove
 use crate::{
     error::Result,
     stream_engine::{
         autonomous_executor::{
-            task::{
-                subtask::query_subtask::{interm_row::PreservedRow, row_window::RowWindow},
-                task_context::TaskContext,
-            },
+            task::{subtask::query_subtask::interm_row::PreservedRow, task_context::TaskContext},
             RowRepository,
         },
         dependency_injection::DependencyInjection,
     },
 };
-use chrono::Duration;
+#[cfg(test)] // TODO remove
 use std::{collections::VecDeque, sync::Arc};
 
 #[derive(Debug)]
@@ -29,6 +30,7 @@ impl SlidingWindowSubtask {
     }
 
     /// Mutates internal window state.
+    #[cfg(test)] // TODO remove
     pub(in crate::stream_engine::autonomous_executor) fn run<DI: DependencyInjection>(
         &mut self,
         context: &TaskContext<DI>, // TODO get row from plan tree's downstream. not from context
@@ -215,7 +217,10 @@ mod tests {
                 .inner()
                 .iter()
                 .map(|got_row| {
-                    let got_sql_value = got_row.as_ref().get_by_column_name(&ColumnName::fx_timestamp()).unwrap();
+                    let got_sql_value = got_row
+                        .as_ref()
+                        .get_by_column_name(&ColumnName::fx_timestamp())
+                        .unwrap();
                     if let SqlValue::NotNull(got_nn_sql_value) = got_sql_value {
                         got_nn_sql_value.unpack()
                     } else {
