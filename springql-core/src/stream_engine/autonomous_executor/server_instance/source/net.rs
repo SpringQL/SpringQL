@@ -24,7 +24,6 @@ const READ_TIMEOUT_MSECS: u64 = 100;
 pub(in crate::stream_engine) struct NetSourceServerInstance {
     foreign_addr: SocketAddr,
     tcp_stream_reader: BufReader<TcpStream>, // TODO UDP
-    options: NetServerOptions,
 }
 
 impl SourceServerInstance for NetSourceServerInstance {
@@ -58,7 +57,6 @@ impl SourceServerInstance for NetSourceServerInstance {
         Ok(Self {
             tcp_stream_reader,
             foreign_addr: sock_addr,
-            options,
         })
     }
 

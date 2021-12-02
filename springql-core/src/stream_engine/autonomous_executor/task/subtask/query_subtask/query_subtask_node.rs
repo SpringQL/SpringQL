@@ -15,6 +15,7 @@ use self::{
 pub(super) enum QuerySubtaskNode {
     Collect(CollectSubtask),
     Projection(ProjectionSubtask),
+    #[allow(dead_code)]
     SlidingWindow(SlidingWindowSubtask),
 }
 
@@ -25,11 +26,12 @@ impl From<&QueryPlanOperation> for QuerySubtaskNode {
             QueryPlanOperation::Projection { column_names } => {
                 QuerySubtaskNode::Projection(ProjectionSubtask::new(column_names.to_vec()))
             }
-            QueryPlanOperation::TimeBasedSlidingWindow { lower_bound } => {
-                QuerySubtaskNode::SlidingWindow(SlidingWindowSubtask::register(
-                    chrono::Duration::from_std(*lower_bound)
-                        .expect("std::Duration -> chrono::Duration"),
-                ))
+            QueryPlanOperation::TimeBasedSlidingWindow { .. } => {
+                todo!()
+                // QuerySubtaskNode::SlidingWindow(SlidingWindowSubtask::register(
+                //     chrono::Duration::from_std(*lower_bound)
+                //         .expect("std::Duration -> chrono::Duration"),
+                // ))
             }
         }
     }

@@ -6,9 +6,7 @@ use crate::stream_engine::{
 use super::DependencyInjection;
 
 #[derive(Debug)]
-pub(crate) struct TestDI {
-    row_repo: NaiveRowRepository,
-}
+pub(crate) struct TestDI;
 
 impl DependencyInjection for TestDI {
     type CurrentTimestampType = TestCurrentTimestamp;

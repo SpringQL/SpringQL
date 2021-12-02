@@ -33,7 +33,7 @@ Here introduces "Command line mode" first to quickly grasp SpringQL usage.
 
 ### Command line mode demo
 
-`springql` command is available from [`springql-cmd` crate](/SpringQL/springql-cmd).
+`springql` command is available from [`springql-cmd` crate](https://github.com/SpringQL/springql-cmd).
 
 #### Requirements
 
@@ -138,10 +138,10 @@ $ tail -f fst_trade_oracle.log
 
 Client libraries for the following languages are currently available:
 
-- [C](/SpringQL/SpringQL-client-c)
+- [C](https://github.com/SpringQL/SpringQL-client-c)
 
 C client, for example, is composed of a header file and a dynamic library.
-See [C client repository](/SpringQL/SpringQL-client-c) for more details on how to use SpringQL in embedded mode.
+See [C client repository](https://github.com/SpringQL/SpringQL-client-c) for more details on how to use SpringQL in embedded mode.
 
 ### IPC mode
 

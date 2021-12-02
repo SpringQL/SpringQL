@@ -6,9 +6,7 @@ use crate::stream_engine::{
 use super::DependencyInjection;
 
 #[derive(Debug)]
-pub(crate) struct ProdDI {
-    row_repo: NaiveRowRepository,
-}
+pub(crate) struct ProdDI;
 
 impl DependencyInjection for ProdDI {
     type CurrentTimestampType = SystemTimestamp;
