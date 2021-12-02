@@ -215,7 +215,10 @@ mod tests {
                 .inner()
                 .iter()
                 .map(|got_row| {
-                    let got_sql_value = got_row.as_ref().get_by_column_name(&ColumnName::fx_timestamp()).unwrap();
+                    let got_sql_value = got_row
+                        .as_ref()
+                        .get_by_column_name(&ColumnName::fx_timestamp())
+                        .unwrap();
                     if let SqlValue::NotNull(got_nn_sql_value) = got_sql_value {
                         got_nn_sql_value.unpack()
                     } else {

@@ -56,7 +56,9 @@ impl QueryPlan {
             .collect()
     }
 
-    pub(in crate::stream_engine) fn as_petgraph(&self) -> &DiGraph<QueryPlanOperation, ChildDirection> {
+    pub(in crate::stream_engine) fn as_petgraph(
+        &self,
+    ) -> &DiGraph<QueryPlanOperation, ChildDirection> {
         &self.0
     }
 

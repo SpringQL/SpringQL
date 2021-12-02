@@ -26,10 +26,7 @@ impl TestForeignSink {
             }
         });
 
-        Ok(Self {
-            my_addr,
-            rx,
-        })
+        Ok(Self { my_addr, rx })
     }
 
     pub fn host_ip(&self) -> IpAddr {
