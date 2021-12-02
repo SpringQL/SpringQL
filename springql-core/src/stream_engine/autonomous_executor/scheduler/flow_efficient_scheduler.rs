@@ -1,3 +1,5 @@
+// Copyright (c) 2021 TOYOTA MOTOR CORPORATION. Licensed under MIT OR Apache-2.0.
+
 //! Flow-Efficient Scheduler, intended to minimize the size of working memory.
 //!
 //! # Basic idea

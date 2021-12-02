@@ -1,3 +1,5 @@
+// Copyright (c) 2021 TOYOTA MOTOR CORPORATION. Licensed under MIT OR Apache-2.0.
+
 //! A PipelineGraph has a "virtual root stream", who has outgoing edges to all source foreign streams.
 //! It also has "virtual leaf streams", who has an incoming edge from each sink foreign stream.
 

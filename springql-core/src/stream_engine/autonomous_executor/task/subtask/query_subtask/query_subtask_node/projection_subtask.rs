@@ -1,3 +1,5 @@
+// Copyright (c) 2021 TOYOTA MOTOR CORPORATION. Licensed under MIT OR Apache-2.0.
+
 use crate::error::Result;
 use crate::pipeline::name::ColumnName;
 use crate::stream_engine::autonomous_executor::row::Row;

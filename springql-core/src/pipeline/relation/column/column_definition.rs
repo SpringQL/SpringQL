@@ -1,3 +1,5 @@
+// Copyright (c) 2021 TOYOTA MOTOR CORPORATION. Licensed under MIT OR Apache-2.0.
+
 use serde::{Deserialize, Serialize};
 
 use super::{column_constraint::ColumnConstraint, column_data_type::ColumnDataType};

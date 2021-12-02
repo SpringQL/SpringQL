@@ -1,3 +1,5 @@
+// Copyright (c) 2021 TOYOTA MOTOR CORPORATION. Licensed under MIT OR Apache-2.0.
+
 use crate::error::Result;
 use crate::pipeline::name::QueueName;
 use crate::pipeline::option::in_memory_queue_server_options::InMemoryQueueServerOptions;

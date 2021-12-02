@@ -39,6 +39,9 @@ jobs:
           - name: codecov
             task: lcov
             install-grcov: true
+          - name: copyright
+            task: copyright
+            rust-free: true
         exclude:
           - rust: nightly
             make:
@@ -70,6 +73,12 @@ jobs:
           - rust: 1.56.0
             make:
               name: codecov
+          - rust: nightly
+            make:
+              name: copyright
+          - rust: 1.56.0
+            make:
+              name: copyright
     env:
       RUST_BACKTRACE: full
       CACHE_RESET_KEY: 20211022-01

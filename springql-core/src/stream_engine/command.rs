@@ -1,3 +1,5 @@
+// Copyright (c) 2021 TOYOTA MOTOR CORPORATION. Licensed under MIT OR Apache-2.0.
+
 use self::alter_pipeline_command::AlterPipelineCommand;
 
 pub(crate) mod alter_pipeline_command;

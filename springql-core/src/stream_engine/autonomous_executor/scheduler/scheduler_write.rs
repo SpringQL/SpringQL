@@ -1,3 +1,5 @@
+// Copyright (c) 2021 TOYOTA MOTOR CORPORATION. Licensed under MIT OR Apache-2.0.
+
 use std::sync::{Arc, RwLock, RwLockWriteGuard};
 
 use crate::stream_engine::dependency_injection::DependencyInjection;

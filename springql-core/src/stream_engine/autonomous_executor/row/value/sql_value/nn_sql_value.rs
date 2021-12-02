@@ -1,3 +1,5 @@
+// Copyright (c) 2021 TOYOTA MOTOR CORPORATION. Licensed under MIT OR Apache-2.0.
+
 use std::{fmt::Display, hash::Hash};
 
 use super::sql_compare_result::SqlCompareResult;
