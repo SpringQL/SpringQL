@@ -34,7 +34,6 @@ jobs:
             task: doc
           - name: deadlink
             task: deadlink
-            rust-free: true
             install-cargo-deadlinks: true
             install-mlc: true
           - name: codecov
