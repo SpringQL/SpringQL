@@ -23,7 +23,6 @@ const WRITE_TIMEOUT_MSECS: u64 = 100;
 pub(in crate::stream_engine) struct NetSinkServerInstance {
     foreign_addr: SocketAddr,
     tcp_stream_writer: BufWriter<TcpStream>, // TODO UDP
-    options: NetServerOptions,
 }
 
 impl SinkServerInstance for NetSinkServerInstance {
@@ -53,7 +52,6 @@ impl SinkServerInstance for NetSinkServerInstance {
         Ok(Self {
             tcp_stream_writer,
             foreign_addr: sock_addr,
-            options,
         })
     }
 

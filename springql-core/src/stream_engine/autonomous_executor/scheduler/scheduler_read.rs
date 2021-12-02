@@ -2,7 +2,9 @@ use std::sync::{Arc, RwLock, RwLockReadGuard};
 
 use crate::stream_engine::dependency_injection::DependencyInjection;
 
-/// Reader of scheduler
+/// Reader of scheduler.
+///
+/// Reader: Worker threads. Read on task request.
 #[derive(Debug, new)]
 pub(in crate::stream_engine::autonomous_executor) struct SchedulerRead<DI>(
     Arc<RwLock<DI::SchedulerType>>,

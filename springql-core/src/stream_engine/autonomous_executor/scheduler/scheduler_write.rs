@@ -2,7 +2,9 @@ use std::sync::{Arc, RwLock, RwLockWriteGuard};
 
 use crate::stream_engine::dependency_injection::DependencyInjection;
 
-/// Writer of scheduler
+/// Writer of scheduler.
+///
+/// Writer: Main thread. Write on pipeline update.
 #[derive(Clone, Debug, new)]
 pub(in crate::stream_engine::autonomous_executor) struct SchedulerWrite<DI>(
     Arc<RwLock<DI::SchedulerType>>,

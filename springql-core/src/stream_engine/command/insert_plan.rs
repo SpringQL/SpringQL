@@ -12,8 +12,4 @@ impl InsertPlan {
     pub(crate) fn stream(&self) -> &StreamName {
         &self.stream
     }
-
-    pub(crate) fn insert_columns(&self) -> &Vec<ColumnName> {
-        &self.insert_columns
-    }
 }

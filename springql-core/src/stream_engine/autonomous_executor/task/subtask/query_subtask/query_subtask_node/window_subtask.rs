@@ -1,4 +1,4 @@
-use crate::stream_engine::autonomous_executor::task::subtask::query_subtask::row_window::RowWindow;
+#[cfg(test)] // TODO remove
 use chrono::Duration;
 
 #[cfg(test)] // TODO remove
@@ -6,7 +6,10 @@ use crate::{
     error::Result,
     stream_engine::{
         autonomous_executor::{
-            task::{subtask::query_subtask::interm_row::PreservedRow, task_context::TaskContext},
+            task::{
+                subtask::query_subtask::{interm_row::PreservedRow, row_window::RowWindow},
+                task_context::TaskContext,
+            },
             RowRepository,
         },
         dependency_injection::DependencyInjection,
@@ -17,11 +20,15 @@ use std::{collections::VecDeque, sync::Arc};
 
 #[derive(Debug)]
 pub(in crate::stream_engine::autonomous_executor) struct SlidingWindowSubtask {
+    #[cfg(test)] // TODO remove
     window: RowWindow,
+
+    #[cfg(test)] // TODO remove
     window_width: Duration, // TODO row-based sliding window
 }
 
 impl SlidingWindowSubtask {
+    #[cfg(test)] // TODO remove
     pub(in crate::stream_engine::autonomous_executor) fn register(lower_bound: Duration) -> Self {
         Self {
             window: RowWindow::default(),

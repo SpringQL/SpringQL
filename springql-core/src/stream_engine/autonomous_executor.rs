@@ -34,10 +34,7 @@ pub(in crate::stream_engine) struct AutonomousExecutor<DI>
 where
     DI: DependencyInjection,
 {
-    /// Writer: Main thread. Write on pipeline update.
     scheduler_write: SchedulerWrite<DI>,
-    /// Reader: Worker threads. Read on task request.
-    scheduler_read: SchedulerRead<DI>,
 
     worker_pool: WorkerPool,
 
@@ -59,7 +56,7 @@ where
 
         Self {
             scheduler_write,
-            scheduler_read: scheduler_read.clone(),
+
             worker_pool: WorkerPool::new::<DI>(
                 n_worker_threads,
                 scheduler_read,
