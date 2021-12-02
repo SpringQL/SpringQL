@@ -36,10 +36,11 @@ where
 {
     scheduler_write: SchedulerWrite<DI>,
 
-    worker_pool: WorkerPool,
-
     row_repo: Arc<DI::RowRepositoryType>,
     server_repo: Arc<ServerRepository>,
+
+    #[allow(unused)]  // not referenced but just holding ownership to make workers continuously run
+    worker_pool: WorkerPool,
 }
 
 impl<DI> AutonomousExecutor<DI>
