@@ -35,17 +35,6 @@ impl QueryPlan {
         self.add_child(parent_op, left_op, ChildDirection::Left);
     }
 
-    /// # Panics
-    ///
-    /// `parent_op` does not exist in tree
-    pub(crate) fn add_right(
-        &mut self,
-        parent_op: &QueryPlanOperation,
-        right_op: QueryPlanOperation,
-    ) {
-        self.add_child(parent_op, right_op, ChildDirection::Right);
-    }
-
     pub(crate) fn upstreams(&self) -> Vec<&StreamName> {
         self.0
             .node_weights()

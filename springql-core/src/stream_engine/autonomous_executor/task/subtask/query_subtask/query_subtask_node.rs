@@ -21,9 +21,7 @@ pub(super) enum QuerySubtaskNode {
 impl From<&QueryPlanOperation> for QuerySubtaskNode {
     fn from(op: &QueryPlanOperation) -> Self {
         match op {
-            QueryPlanOperation::Collect { stream } => {
-                QuerySubtaskNode::Collect(CollectSubtask::new())
-            }
+            QueryPlanOperation::Collect { .. } => QuerySubtaskNode::Collect(CollectSubtask::new()),
             QueryPlanOperation::Projection { column_names } => {
                 QuerySubtaskNode::Projection(ProjectionSubtask::new(column_names.to_vec()))
             }

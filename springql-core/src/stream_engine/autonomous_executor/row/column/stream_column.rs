@@ -48,10 +48,6 @@ impl StreamColumns {
         })
     }
 
-    pub(in crate::stream_engine::autonomous_executor) fn stream(&self) -> &StreamShape {
-        self.stream_shape.as_ref()
-    }
-
     pub(in crate::stream_engine::autonomous_executor) fn promoted_rowtime(
         &self,
     ) -> Option<Timestamp> {
