@@ -29,7 +29,6 @@ impl ReactiveExecutor {
 
     fn new_pipeline(mut pipeline: Pipeline, command: AlterPipelineCommand) -> Result<Pipeline> {
         match command {
-            AlterPipelineCommand::CreateStream(_) => todo!(),
             AlterPipelineCommand::CreateForeignStream(server) => {
                 Self::create_foreign_stream(pipeline, server)
             }

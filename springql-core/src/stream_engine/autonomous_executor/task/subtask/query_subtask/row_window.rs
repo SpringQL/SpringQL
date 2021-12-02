@@ -7,6 +7,7 @@ use super::interm_row::PreservedRow;
 pub(in crate::stream_engine::autonomous_executor) struct RowWindow(VecDeque<PreservedRow>);
 
 impl RowWindow {
+    #[cfg(test)] // TODO remove
     pub(in crate::stream_engine::autonomous_executor) fn inner(&self) -> &VecDeque<PreservedRow> {
         &self.0
     }
