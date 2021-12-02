@@ -165,4 +165,10 @@ TODO read from redis sink
 
 ## License
 
-TBD
+Licensed under either of [Apache License, Version 2.0](LICENSE-APACHE) or [MIT license](LICENSE-MIT) at your option.
+
+Unless you explicitly state otherwise, any contribution intentionally submitted
+for inclusion in SpringQL by you, as defined in the Apache-2.0 license, shall be
+dual licensed as above, without any additional terms or conditions.
+
+Copyright (c) 2021 TOYOTA MOTOR CORPORATION.
