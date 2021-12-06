@@ -4,6 +4,7 @@ use serde_json::json;
 use springql_core::error::Result;
 use springql_core::low_level_rs::*;
 use test_foreign_service::sink::TestForeignSink;
+use test_foreign_service::source::source_input::TestForeignSourceInput;
 use test_foreign_service::source::TestForeignSource;
 use test_logger::setup_test_logger;
 
@@ -42,7 +43,8 @@ fn test_e2e_source_sink() -> Result<()> {
         "ticker": "GOOGL",
         "amount": 100,
     });
-    let source_input = vec![json_oracle, json_ibm, json_google];
+    let mut source_input =
+        TestForeignSourceInput::new_fifo_batch(vec![json_oracle, json_ibm, json_google]);
 
     let test_source = TestForeignSource::start(source_input.clone()).unwrap();
     let test_sink = TestForeignSink::start().unwrap();
@@ -94,9 +96,9 @@ fn test_e2e_source_sink() -> Result<()> {
     let sink_received = drain_from_sink(&test_sink);
 
     // because worker takes source input in multi-thread, order may be changed
-    assert!(sink_received.contains(source_input.get(0).unwrap()));
-    assert!(sink_received.contains(source_input.get(1).unwrap()));
-    assert!(sink_received.contains(source_input.get(2).unwrap()));
+    assert!(sink_received.contains(&source_input.next().unwrap()));
+    assert!(sink_received.contains(&source_input.next().unwrap()));
+    assert!(sink_received.contains(&source_input.next().unwrap()));
 
     Ok(())
 }
@@ -111,7 +113,9 @@ fn test_e2e_projection() -> Result<()> {
         "amount": 20,
     });
 
-    let test_source = TestForeignSource::start(vec![json_oracle]).unwrap();
+    let test_source =
+        TestForeignSource::start(TestForeignSourceInput::new_fifo_batch(vec![json_oracle]))
+            .unwrap();
     let test_sink = TestForeignSink::start().unwrap();
 
     let ddls = vec![
@@ -186,12 +190,12 @@ fn test_e2e_pop_from_in_memory_queue() {
     });
     let trade_times = 5;
 
-    let test_source = TestForeignSource::start(
+    let test_source = TestForeignSource::start(TestForeignSourceInput::new_fifo_batch(
         (0..trade_times)
             .into_iter()
             .map(|_| json_oracle.clone())
             .collect(),
-    )
+    ))
     .unwrap();
 
     let ddls = vec![
