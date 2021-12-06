@@ -83,7 +83,10 @@ where
 
 #[cfg(test)]
 mod tests {
-    use test_foreign_service::{sink::TestForeignSink, source::TestForeignSource};
+    use test_foreign_service::{
+        sink::TestForeignSink,
+        source::{source_input::TestForeignSourceInput, TestForeignSource},
+    };
     use test_logger::setup_test_logger;
 
     use super::*;
@@ -94,14 +97,14 @@ mod tests {
 
     /// Returns sink output in reached order
     fn t_stream_engine_source_sink(
-        source_inputs: Vec<serde_json::Value>,
+        source_input: TestForeignSourceInput,
         n_worker_threads: usize,
     ) -> Vec<serde_json::Value> {
         setup_test_logger();
 
-        let source_inputs_len = source_inputs.len();
+        let source_inputs_len = source_input.len();
 
-        let source = TestForeignSource::start(source_inputs).unwrap();
+        let source = TestForeignSource::start(source_input).unwrap();
         let sink = TestForeignSink::start().unwrap();
 
         let fst_trade_source = StreamName::factory("fst_trade_source");
@@ -160,10 +163,12 @@ mod tests {
         let json_ibm: serde_json::Value = JsonObject::fx_trade_ibm().into();
         let json_google: serde_json::Value = JsonObject::fx_trade_google().into();
 
-        let received = t_stream_engine_source_sink(
-            vec![json_oracle.clone(), json_ibm.clone(), json_google.clone()],
-            1,
-        );
+        let input = TestForeignSourceInput::new_fifo_batch(vec![
+            json_oracle.clone(),
+            json_ibm.clone(),
+            json_google.clone(),
+        ]);
+        let received = t_stream_engine_source_sink(input, 1);
 
         assert_eq!(received.get(0).unwrap(), &json_oracle);
         assert_eq!(received.get(1).unwrap(), &json_ibm);
@@ -178,10 +183,12 @@ mod tests {
         let json_ibm: serde_json::Value = JsonObject::fx_trade_ibm().into();
         let json_google: serde_json::Value = JsonObject::fx_trade_google().into();
 
-        let received = t_stream_engine_source_sink(
-            vec![json_oracle.clone(), json_ibm.clone(), json_google.clone()],
-            2,
-        );
+        let input = TestForeignSourceInput::new_fifo_batch(vec![
+            json_oracle.clone(),
+            json_ibm.clone(),
+            json_google.clone(),
+        ]);
+        let received = t_stream_engine_source_sink(input, 1);
 
         // a worker might be faster than the other.
         assert!([json_oracle.clone(), json_ibm.clone(), json_google.clone()]
