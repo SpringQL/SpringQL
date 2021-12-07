@@ -10,7 +10,7 @@ use anyhow::{Context, Result};
 use chrono::{DateTime, FixedOffset};
 use std::{path::Path, thread, time::Duration};
 
-const SLEEP_DURATION: Duration = Duration::from_millis(1);
+const SLEEP_DURATION: Duration = Duration::from_micros(10);
 
 /// Generates lines with older timestamp from "now".
 ///
