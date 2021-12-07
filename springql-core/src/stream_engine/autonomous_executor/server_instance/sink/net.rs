@@ -87,7 +87,7 @@ impl SinkServerInstance for NetSinkServerInstance {
 
 #[cfg(test)]
 mod tests {
-    use test_foreign_service::sink::TestForeignSink;
+    use springql_foreign_service::sink::TestForeignSink;
 
     use super::*;
     use crate::{

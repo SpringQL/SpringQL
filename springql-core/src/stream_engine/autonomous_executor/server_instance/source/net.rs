@@ -109,8 +109,8 @@ impl NetSourceServerInstance {}
 
 #[cfg(test)]
 mod tests {
-    use test_foreign_service::source::source_input::TestForeignSourceInput;
-    use test_foreign_service::source::TestForeignSource;
+    use springql_foreign_service::source::source_input::TestForeignSourceInput;
+    use springql_foreign_service::source::TestForeignSource;
 
     use super::*;
     use crate::pipeline::option::options_builder::OptionsBuilder;

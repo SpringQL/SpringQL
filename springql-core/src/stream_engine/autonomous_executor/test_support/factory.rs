@@ -2,7 +2,7 @@
 
 use std::sync::Arc;
 
-use test_foreign_service::source::{source_input::TestForeignSourceInput, TestForeignSource};
+use springql_foreign_service::source::{source_input::TestForeignSourceInput, TestForeignSource};
 
 use crate::{
     pipeline::{

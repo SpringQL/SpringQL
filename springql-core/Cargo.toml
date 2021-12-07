@@ -31,7 +31,7 @@ pest_derive = "2.1"
 once_cell = "1.8"
 
 [dev-dependencies]
-test-foreign-service = {path = "../test-foreign-service"}
+springql-foreign-service = {path = "../foreign-service"}
 springql-test-logger = {path = "../test-logger"}
 
 pretty_assertions = "1.0"

@@ -265,7 +265,7 @@ impl FlowEfficientScheduler {
 mod tests {
     use std::collections::VecDeque;
 
-    use test_foreign_service::{
+    use springql_foreign_service::{
         sink::TestForeignSink,
         source::{source_input::TestForeignSourceInput, TestForeignSource},
     };

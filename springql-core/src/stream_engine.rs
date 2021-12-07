@@ -83,11 +83,11 @@ where
 
 #[cfg(test)]
 mod tests {
-    use springql_test_logger::setup_test_logger;
-    use test_foreign_service::{
+    use springql_foreign_service::{
         sink::TestForeignSink,
         source::{source_input::TestForeignSourceInput, TestForeignSource},
     };
+    use springql_test_logger::setup_test_logger;
 
     use super::*;
     use crate::{
