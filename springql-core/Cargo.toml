@@ -32,7 +32,7 @@ once_cell = "1.8"
 
 [dev-dependencies]
 test-foreign-service = {path = "../test-foreign-service"}
-test-logger = {path = "../test-logger"}
+springql-test-logger = {path = "../test-logger"}
 
 pretty_assertions = "1.0"
 

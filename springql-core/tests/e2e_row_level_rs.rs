@@ -3,10 +3,10 @@
 use serde_json::json;
 use springql_core::error::Result;
 use springql_core::low_level_rs::*;
+use springql_test_logger::setup_test_logger;
 use test_foreign_service::sink::TestForeignSink;
 use test_foreign_service::source::source_input::TestForeignSourceInput;
 use test_foreign_service::source::TestForeignSource;
-use test_logger::setup_test_logger;
 
 fn apply_ddls(ddls: &[String]) -> SpringPipeline {
     let pipeline = spring_open().unwrap();
