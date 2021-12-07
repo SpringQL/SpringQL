@@ -1,6 +1,6 @@
 // Copyright (c) 2021 TOYOTA MOTOR CORPORATION. Licensed under MIT OR Apache-2.0.
 
-mod timed_stream;
+pub mod timed_stream;
 
 use self::timed_stream::TimedStream;
 use anyhow::Result;

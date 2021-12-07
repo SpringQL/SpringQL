@@ -1,9 +1,12 @@
 // Copyright (c) 2021 TOYOTA MOTOR CORPORATION. Licensed under MIT OR Apache-2.0.
 
+use chrono::DateTime;
 use serde_json::json;
 use springql_core::error::Result;
 use springql_core::low_level_rs::*;
 use test_foreign_service::sink::TestForeignSink;
+use test_foreign_service::source::source_input::timed_stream::file_type::FileType;
+use test_foreign_service::source::source_input::timed_stream::TimedStream;
 use test_foreign_service::source::source_input::TestForeignSourceInput;
 use test_foreign_service::source::TestForeignSource;
 use test_logger::setup_test_logger;
@@ -244,5 +247,22 @@ fn test_e2e_pop_from_in_memory_queue() {
         let row = spring_pop(&pipeline, queue_name).unwrap();
         assert_eq!(spring_column_text(&row, 0).unwrap(), ts);
         assert_eq!(spring_column_i32(&row, 1).unwrap(), amount);
+    }
+}
+
+#[test]
+fn test_timed_stream() {
+    let timed_stream = TimedStream::new(
+        FileType::Tsv,
+        "/Users/sho.nakatani/Downloads/VSC1S03.csv",
+        "Time".to_string(),
+        DateTime::parse_from_rfc3339("2020-10-21T10:37:56.000+09:00").unwrap(),
+    )
+    .unwrap();
+
+    let input = TestForeignSourceInput::new_timed_stream(timed_stream);
+
+    for j in input {
+        println!("{}", j.unwrap());
     }
 }
