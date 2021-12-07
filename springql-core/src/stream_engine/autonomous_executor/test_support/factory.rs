@@ -2,7 +2,7 @@
 
 use std::sync::Arc;
 
-use test_foreign_service::source::{source_input::TestForeignSourceInput, TestForeignSource};
+use springql_foreign_service::source::{source_input::ForeignSourceInput, ForeignSource};
 
 use crate::{
     pipeline::{
@@ -35,9 +35,9 @@ use crate::{
 
 impl NetSourceServerInstance {
     pub(in crate::stream_engine) fn factory_with_test_source(
-        input: TestForeignSourceInput,
+        input: ForeignSourceInput,
     ) -> Self {
-        let source = TestForeignSource::start(input).unwrap();
+        let source = ForeignSource::start(input).unwrap();
 
         let options = OptionsBuilder::default()
             .add("PROTOCOL", "TCP")

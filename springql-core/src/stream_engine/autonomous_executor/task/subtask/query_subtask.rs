@@ -128,8 +128,8 @@ impl QuerySubtask {
 
 #[cfg(test)]
 mod tests {
+    use springql_test_logger::setup_test_logger;
     use std::sync::Arc;
-    use test_logger::setup_test_logger;
 
     use crate::{
         pipeline::name::{ColumnName, PumpName, StreamName},

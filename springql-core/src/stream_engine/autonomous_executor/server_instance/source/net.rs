@@ -109,8 +109,8 @@ impl NetSourceServerInstance {}
 
 #[cfg(test)]
 mod tests {
-    use test_foreign_service::source::source_input::TestForeignSourceInput;
-    use test_foreign_service::source::TestForeignSource;
+    use springql_foreign_service::source::source_input::ForeignSourceInput;
+    use springql_foreign_service::source::ForeignSource;
 
     use super::*;
     use crate::pipeline::option::options_builder::OptionsBuilder;
@@ -122,7 +122,7 @@ mod tests {
         let j2 = JsonObject::fx_city_temperature_osaka();
         let j3 = JsonObject::fx_city_temperature_london();
 
-        let source = TestForeignSource::start(TestForeignSourceInput::new_fifo_batch(vec![
+        let source = ForeignSource::start(ForeignSourceInput::new_fifo_batch(vec![
             serde_json::Value::from(j2.clone()),
             serde_json::Value::from(j3.clone()),
             serde_json::Value::from(j1.clone()),
