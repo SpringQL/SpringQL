@@ -97,14 +97,15 @@ mod tests {
 
     /// Returns sink output in reached order
     fn t_stream_engine_source_sink(
-        source_input: TestForeignSourceInput,
+        source_input: Vec<serde_json::Value>,
         n_worker_threads: usize,
     ) -> Vec<serde_json::Value> {
         setup_test_logger();
 
         let source_inputs_len = source_input.len();
 
-        let source = TestForeignSource::start(source_input).unwrap();
+        let source =
+            TestForeignSource::start(TestForeignSourceInput::new_fifo_batch(source_input)).unwrap();
         let sink = TestForeignSink::start().unwrap();
 
         let fst_trade_source = StreamName::factory("fst_trade_source");
@@ -163,11 +164,7 @@ mod tests {
         let json_ibm: serde_json::Value = JsonObject::fx_trade_ibm().into();
         let json_google: serde_json::Value = JsonObject::fx_trade_google().into();
 
-        let input = TestForeignSourceInput::new_fifo_batch(vec![
-            json_oracle.clone(),
-            json_ibm.clone(),
-            json_google.clone(),
-        ]);
+        let input = vec![json_oracle.clone(), json_ibm.clone(), json_google.clone()];
         let received = t_stream_engine_source_sink(input, 1);
 
         assert_eq!(received.get(0).unwrap(), &json_oracle);
@@ -183,11 +180,7 @@ mod tests {
         let json_ibm: serde_json::Value = JsonObject::fx_trade_ibm().into();
         let json_google: serde_json::Value = JsonObject::fx_trade_google().into();
 
-        let input = TestForeignSourceInput::new_fifo_batch(vec![
-            json_oracle.clone(),
-            json_ibm.clone(),
-            json_google.clone(),
-        ]);
+        let input = vec![json_oracle.clone(), json_ibm.clone(), json_google.clone()];
         let received = t_stream_engine_source_sink(input, 1);
 
         // a worker might be faster than the other.

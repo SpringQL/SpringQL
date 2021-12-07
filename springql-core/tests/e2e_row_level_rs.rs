@@ -43,10 +43,11 @@ fn test_e2e_source_sink() -> Result<()> {
         "ticker": "GOOGL",
         "amount": 100,
     });
-    let mut source_input =
-        TestForeignSourceInput::new_fifo_batch(vec![json_oracle, json_ibm, json_google]);
+    let source_input = vec![json_oracle, json_ibm, json_google];
 
-    let test_source = TestForeignSource::start(source_input.clone()).unwrap();
+    let test_source =
+        TestForeignSource::start(TestForeignSourceInput::new_fifo_batch(source_input.clone()))
+            .unwrap();
     let test_sink = TestForeignSink::start().unwrap();
 
     let ddls = vec![
@@ -96,9 +97,9 @@ fn test_e2e_source_sink() -> Result<()> {
     let sink_received = drain_from_sink(&test_sink);
 
     // because worker takes source input in multi-thread, order may be changed
-    assert!(sink_received.contains(&source_input.next().unwrap()));
-    assert!(sink_received.contains(&source_input.next().unwrap()));
-    assert!(sink_received.contains(&source_input.next().unwrap()));
+    assert!(sink_received.contains(source_input.get(0).unwrap()));
+    assert!(sink_received.contains(source_input.get(1).unwrap()));
+    assert!(sink_received.contains(source_input.get(2).unwrap()));
 
     Ok(())
 }

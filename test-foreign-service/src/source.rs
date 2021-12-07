@@ -43,7 +43,8 @@ impl TestForeignSource {
             stream.peer_addr().unwrap()
         );
 
-        for v in input {
+        for res_v in input {
+            let v = res_v.unwrap();
             let mut json_s = v.to_string();
             json_s.push('\n');
             stream.write_all(json_s.as_bytes()).unwrap();
