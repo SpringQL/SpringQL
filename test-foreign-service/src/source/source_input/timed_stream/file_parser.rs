@@ -19,7 +19,8 @@ impl FileParser {
         match file_type {
             FileType::Tsv => {
                 let reader = csv::ReaderBuilder::new()
-                    .has_headers(true)
+                .delimiter(b'\t')
+                .has_headers(true)
                     .from_path(file_path)?;
                 Ok(FileParser::Tsv(reader))
             }
