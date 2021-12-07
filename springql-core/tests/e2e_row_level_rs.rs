@@ -1,12 +1,9 @@
 // Copyright (c) 2021 TOYOTA MOTOR CORPORATION. Licensed under MIT OR Apache-2.0.
 
-use chrono::DateTime;
 use serde_json::json;
 use springql_core::error::Result;
 use springql_core::low_level_rs::*;
 use test_foreign_service::sink::TestForeignSink;
-use test_foreign_service::source::source_input::timed_stream::file_type::FileType;
-use test_foreign_service::source::source_input::timed_stream::TimedStream;
 use test_foreign_service::source::source_input::TestForeignSourceInput;
 use test_foreign_service::source::TestForeignSource;
 use test_logger::setup_test_logger;
