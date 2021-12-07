@@ -16,3 +16,5 @@ env_logger = "0.9"
 log = "0.4"
 
 chrono = "0.4"
+
+csv = "1.1"
