@@ -12,6 +12,7 @@ description = "SpringQL: Open-source stream processor for IoT devices and in-veh
 documentation = "https://docs.rs/springql-core"
 keywords = ["springql", "stream-processing"] # up to 5 keywords, each keyword should have <= 20 chars
 repository = "https://github.com/SpringQL/SpringQL"
+readme = "../README.md"
 
 [dependencies]
 anyhow = "1.0"
