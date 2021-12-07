@@ -3,9 +3,9 @@
 use serde_json::json;
 use springql_core::error::Result;
 use springql_core::low_level_rs::*;
-use springql_foreign_service::sink::TestForeignSink;
-use springql_foreign_service::source::source_input::TestForeignSourceInput;
-use springql_foreign_service::source::TestForeignSource;
+use springql_foreign_service::sink::ForeignSink;
+use springql_foreign_service::source::source_input::ForeignSourceInput;
+use springql_foreign_service::source::ForeignSource;
 use springql_test_logger::setup_test_logger;
 
 fn apply_ddls(ddls: &[String]) -> SpringPipeline {
@@ -16,7 +16,7 @@ fn apply_ddls(ddls: &[String]) -> SpringPipeline {
     pipeline
 }
 
-fn drain_from_sink(sink: &TestForeignSink) -> Vec<serde_json::Value> {
+fn drain_from_sink(sink: &ForeignSink) -> Vec<serde_json::Value> {
     let mut received = Vec::new();
     while let Ok(v) = sink.receive() {
         received.push(v);
@@ -46,9 +46,9 @@ fn test_e2e_source_sink() -> Result<()> {
     let source_input = vec![json_oracle, json_ibm, json_google];
 
     let test_source =
-        TestForeignSource::start(TestForeignSourceInput::new_fifo_batch(source_input.clone()))
+        ForeignSource::start(ForeignSourceInput::new_fifo_batch(source_input.clone()))
             .unwrap();
-    let test_sink = TestForeignSink::start().unwrap();
+    let test_sink = ForeignSink::start().unwrap();
 
     let ddls = vec![
         format!(
@@ -115,9 +115,9 @@ fn test_e2e_projection() -> Result<()> {
     });
 
     let test_source =
-        TestForeignSource::start(TestForeignSourceInput::new_fifo_batch(vec![json_oracle]))
+        ForeignSource::start(ForeignSourceInput::new_fifo_batch(vec![json_oracle]))
             .unwrap();
-    let test_sink = TestForeignSink::start().unwrap();
+    let test_sink = ForeignSink::start().unwrap();
 
     let ddls = vec![
         format!(
@@ -191,7 +191,7 @@ fn test_e2e_pop_from_in_memory_queue() {
     });
     let trade_times = 5;
 
-    let test_source = TestForeignSource::start(TestForeignSourceInput::new_fifo_batch(
+    let test_source = ForeignSource::start(ForeignSourceInput::new_fifo_batch(
         (0..trade_times)
             .into_iter()
             .map(|_| json_oracle.clone())

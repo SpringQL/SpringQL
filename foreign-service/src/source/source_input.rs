@@ -7,12 +7,12 @@ use anyhow::Result;
 use std::collections::VecDeque;
 
 #[derive(Debug)]
-pub enum TestForeignSourceInput {
+pub enum ForeignSourceInput {
     FifoBatch(VecDeque<serde_json::Value>),
     TimedStream(TimedStream),
 }
 
-impl TestForeignSourceInput {
+impl ForeignSourceInput {
     pub fn new_fifo_batch(input: Vec<serde_json::Value>) -> Self {
         let v = input.into_iter().collect();
         Self::FifoBatch(v)
@@ -23,13 +23,13 @@ impl TestForeignSourceInput {
     }
 }
 
-impl Iterator for TestForeignSourceInput {
+impl Iterator for ForeignSourceInput {
     type Item = Result<serde_json::Value>;
 
     fn next(&mut self) -> Option<Self::Item> {
         match self {
-            TestForeignSourceInput::FifoBatch(batch) => batch.pop_front().map(Ok),
-            TestForeignSourceInput::TimedStream(timed_stream) => timed_stream.next(),
+            ForeignSourceInput::FifoBatch(batch) => batch.pop_front().map(Ok),
+            ForeignSourceInput::TimedStream(timed_stream) => timed_stream.next(),
         }
     }
 }

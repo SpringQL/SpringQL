@@ -266,8 +266,8 @@ mod tests {
     use std::collections::VecDeque;
 
     use springql_foreign_service::{
-        sink::TestForeignSink,
-        source::{source_input::TestForeignSourceInput, TestForeignSource},
+        sink::ForeignSink,
+        source::{source_input::ForeignSourceInput, ForeignSource},
     };
 
     use crate::{
@@ -310,7 +310,7 @@ mod tests {
     #[test]
     fn test_source_only_pipeline() {
         let test_source =
-            TestForeignSource::start(TestForeignSourceInput::new_fifo_batch(vec![])).unwrap();
+            ForeignSource::start(ForeignSourceInput::new_fifo_batch(vec![])).unwrap();
         t(
             Pipeline::fx_source_only(test_source.host_ip(), test_source.port()),
             vec![],
@@ -320,8 +320,8 @@ mod tests {
     #[test]
     fn test_linear_pipeline_stopped() {
         let test_source =
-            TestForeignSource::start(TestForeignSourceInput::new_fifo_batch(vec![])).unwrap();
-        let test_sink = TestForeignSink::start().unwrap();
+            ForeignSource::start(ForeignSourceInput::new_fifo_batch(vec![])).unwrap();
+        let test_sink = ForeignSink::start().unwrap();
         t(
             Pipeline::fx_linear_stopped(
                 test_source.host_ip(),
@@ -336,8 +336,8 @@ mod tests {
     #[test]
     fn test_linear_pipeline() {
         let test_source =
-            TestForeignSource::start(TestForeignSourceInput::new_fifo_batch(vec![])).unwrap();
-        let test_sink = TestForeignSink::start().unwrap();
+            ForeignSource::start(ForeignSourceInput::new_fifo_batch(vec![])).unwrap();
+        let test_sink = ForeignSink::start().unwrap();
         t(
             Pipeline::fx_linear(
                 test_source.host_ip(),
@@ -356,9 +356,9 @@ mod tests {
     #[test]
     fn test_pipeline_with_split() {
         let test_source =
-            TestForeignSource::start(TestForeignSourceInput::new_fifo_batch(vec![])).unwrap();
-        let test_sink1 = TestForeignSink::start().unwrap();
-        let test_sink2 = TestForeignSink::start().unwrap();
+            ForeignSource::start(ForeignSourceInput::new_fifo_batch(vec![])).unwrap();
+        let test_sink1 = ForeignSink::start().unwrap();
+        let test_sink2 = ForeignSink::start().unwrap();
 
         t(
             Pipeline::fx_split(
@@ -383,8 +383,8 @@ mod tests {
     #[test]
     fn test_pipeline_with_merge() {
         let test_source =
-            TestForeignSource::start(TestForeignSourceInput::new_fifo_batch(vec![])).unwrap();
-        let test_sink = TestForeignSink::start().unwrap();
+            ForeignSource::start(ForeignSourceInput::new_fifo_batch(vec![])).unwrap();
+        let test_sink = ForeignSink::start().unwrap();
         t(
             Pipeline::fx_split_merge(
                 test_source.host_ip(),
@@ -405,9 +405,9 @@ mod tests {
     #[test]
     fn test_complex_pipeline() {
         let test_source =
-            TestForeignSource::start(TestForeignSourceInput::new_fifo_batch(vec![])).unwrap();
-        let test_sink1 = TestForeignSink::start().unwrap();
-        let test_sink2 = TestForeignSink::start().unwrap();
+            ForeignSource::start(ForeignSourceInput::new_fifo_batch(vec![])).unwrap();
+        let test_sink1 = ForeignSink::start().unwrap();
+        let test_sink2 = ForeignSink::start().unwrap();
         t(
             Pipeline::fx_complex(
                 test_source.host_ip(),

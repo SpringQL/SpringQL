@@ -84,8 +84,8 @@ where
 #[cfg(test)]
 mod tests {
     use springql_foreign_service::{
-        sink::TestForeignSink,
-        source::{source_input::TestForeignSourceInput, TestForeignSource},
+        sink::ForeignSink,
+        source::{source_input::ForeignSourceInput, ForeignSource},
     };
     use springql_test_logger::setup_test_logger;
 
@@ -105,8 +105,8 @@ mod tests {
         let source_inputs_len = source_input.len();
 
         let source =
-            TestForeignSource::start(TestForeignSourceInput::new_fifo_batch(source_input)).unwrap();
-        let sink = TestForeignSink::start().unwrap();
+            ForeignSource::start(ForeignSourceInput::new_fifo_batch(source_input)).unwrap();
+        let sink = ForeignSink::start().unwrap();
 
         let fst_trade_source = StreamName::factory("fst_trade_source");
         let fst_trade_sink = StreamName::factory("fst_trade_sink");

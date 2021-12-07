@@ -87,7 +87,7 @@ impl SinkServerInstance for NetSinkServerInstance {
 
 #[cfg(test)]
 mod tests {
-    use springql_foreign_service::sink::TestForeignSink;
+    use springql_foreign_service::sink::ForeignSink;
 
     use super::*;
     use crate::{
@@ -97,7 +97,7 @@ mod tests {
 
     #[test]
     fn test_sink_server_tcp() {
-        let sink = TestForeignSink::start().unwrap();
+        let sink = ForeignSink::start().unwrap();
 
         let options = OptionsBuilder::default()
             .add("PROTOCOL", "TCP")
