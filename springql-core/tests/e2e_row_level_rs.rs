@@ -249,20 +249,3 @@ fn test_e2e_pop_from_in_memory_queue() {
         assert_eq!(spring_column_i32(&row, 1).unwrap(), amount);
     }
 }
-
-#[test]
-fn test_timed_stream() {
-    let timed_stream = TimedStream::new(
-        FileType::Tsv,
-        "/Users/sho.nakatani/Downloads/VSC1S03.csv",
-        "Time".to_string(),
-        DateTime::parse_from_rfc3339("2020-10-21T10:37:56.000+09:00").unwrap(),
-    )
-    .unwrap();
-
-    let input = TestForeignSourceInput::new_timed_stream(timed_stream);
-
-    for j in input {
-        println!("{}", j.unwrap());
-    }
-}
