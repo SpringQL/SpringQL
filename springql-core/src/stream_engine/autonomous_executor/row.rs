@@ -88,18 +88,6 @@ impl Row {
         self.cols.get_by_index(i_col)
     }
 
-    /// # Failure
-    ///
-    /// - [SpringError::Sql](crate::error::SpringError::Sql) when:
-    ///   - No column named `column_name` is found from this stream.
-    #[cfg(test)] // TODO remove
-    pub(in crate::stream_engine::autonomous_executor) fn get_by_column_name(
-        &self,
-        column_name: &ColumnName,
-    ) -> Result<&SqlValue> {
-        self.cols.get_by_column_name(column_name)
-    }
-
     pub(in crate::stream_engine::autonomous_executor) fn fixme_clone(&self) -> Self {
         Self {
             arrival_rowtime: self.arrival_rowtime,

@@ -623,7 +623,4 @@ impl PumpName {
     pub(crate) fn fx_trade_p1() -> Self {
         Self::new("pu_trade_p1".to_string())
     }
-    pub(crate) fn fx_trade_window() -> Self {
-        Self::new("pu_trade_window".to_string())
-    }
 }

@@ -20,7 +20,6 @@ use crate::{
 
 mod interm_row;
 mod query_subtask_node;
-mod row_window;
 
 /// Process input row 1-by-1.
 #[derive(Debug)]
@@ -68,7 +67,6 @@ impl QuerySubtask {
             QuerySubtaskNode::Projection(projection_subtask) => {
                 projection_subtask.run::<DI>(downstream_row)
             }
-            QuerySubtaskNode::SlidingWindow(_) => todo!(),
             QuerySubtaskNode::Collect(_) => unreachable!(),
         }
     }

@@ -2,23 +2,17 @@
 
 pub(super) mod collect_subtask;
 pub(super) mod projection_subtask;
-pub(super) mod window_subtask;
 
 use std::fmt::Debug;
 
 use crate::stream_engine::command::query_plan::query_plan_operation::QueryPlanOperation;
 
-use self::{
-    collect_subtask::CollectSubtask, projection_subtask::ProjectionSubtask,
-    window_subtask::SlidingWindowSubtask,
-};
+use self::{collect_subtask::CollectSubtask, projection_subtask::ProjectionSubtask};
 
 #[derive(Debug)]
 pub(super) enum QuerySubtaskNode {
     Collect(CollectSubtask),
     Projection(ProjectionSubtask),
-    #[allow(dead_code)]
-    SlidingWindow(SlidingWindowSubtask),
 }
 
 impl From<&QueryPlanOperation> for QuerySubtaskNode {
