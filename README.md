@@ -1,3 +1,5 @@
+**Status: Implementing important feature internally. We want to soon announce initial usable version.**
+
 ## What is SpringQL?
 
 SpringQL is an open-source stream processor specialized in memory efficiency. It is supposed to run on embedded systems like IoT devices and in-vehicle computers.
