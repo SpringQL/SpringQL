@@ -8,7 +8,7 @@ use std::fmt::Debug;
 pub(in crate::stream_engine) mod in_memory_queue;
 pub(in crate::stream_engine) mod net;
 
-pub(in crate::stream_engine) trait SinkServerInstance:
+pub(in crate::stream_engine) trait SinkWriterInstance:
     Debug + Sync + Send + 'static
 {
     /// Blocks until the server is ready to send ForeignSinkRow to foreign sink.

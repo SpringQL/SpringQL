@@ -8,7 +8,7 @@ use std::{
 
 use anyhow::Context;
 
-use super::SinkServerInstance;
+use super::SinkWriterInstance;
 use crate::{
     error::{foreign_info::ForeignInfo, Result, SpringError},
     pipeline::option::{net_server_options::NetServerOptions, Options},
@@ -27,7 +27,7 @@ pub(in crate::stream_engine) struct NetSinkServerInstance {
     tcp_stream_writer: BufWriter<TcpStream>, // TODO UDP
 }
 
-impl SinkServerInstance for NetSinkServerInstance {
+impl SinkWriterInstance for NetSinkServerInstance {
     fn start(options: &Options) -> Result<Self> {
         let options = NetServerOptions::try_from(options)?;
         let sock_addr = SocketAddr::new(options.remote_host, options.remote_port);

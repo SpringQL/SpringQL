@@ -5,7 +5,7 @@ use std::{
     sync::{Arc, Mutex, RwLock},
 };
 
-use super::{sink::SinkServerInstance, source::SourceServerInstance};
+use super::{sink::SinkWriterInstance, source::SourceServerInstance};
 use crate::{error::Result, pipeline::name::ServerName};
 use crate::{
     pipeline::server_model::ServerModel,
@@ -16,7 +16,7 @@ use crate::{
 #[derive(Debug, Default)]
 pub(in crate::stream_engine) struct ServerRepository {
     sources: RwLock<HashMap<ServerName, Arc<Mutex<Box<dyn SourceServerInstance>>>>>,
-    sinks: RwLock<HashMap<ServerName, Arc<Mutex<Box<dyn SinkServerInstance>>>>>,
+    sinks: RwLock<HashMap<ServerName, Arc<Mutex<Box<dyn SinkWriterInstance>>>>>,
 }
 
 impl ServerRepository {
@@ -63,7 +63,7 @@ impl ServerRepository {
                     server_model.server_type(),
                     server_model.options(),
                 )?;
-                let server = Arc::new(Mutex::new(server as Box<dyn SinkServerInstance>));
+                let server = Arc::new(Mutex::new(server as Box<dyn SinkWriterInstance>));
                 let _ = sinks.insert(server_model.name().clone(), server);
                 log::debug!(
                     "[ServerRepository] registered sink server: {}",
@@ -97,7 +97,7 @@ impl ServerRepository {
     pub(in crate::stream_engine::autonomous_executor) fn get_sink_server(
         &self,
         server_name: &ServerName,
-    ) -> Arc<Mutex<Box<dyn SinkServerInstance>>> {
+    ) -> Arc<Mutex<Box<dyn SinkWriterInstance>>> {
         self.sinks
             .read()
             .expect("another thread sharing the same internal got panic")

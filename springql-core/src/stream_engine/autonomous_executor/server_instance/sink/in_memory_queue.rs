@@ -9,12 +9,12 @@ use crate::{
     stream_engine::autonomous_executor::row::foreign_row::foreign_sink_row::ForeignSinkRow,
 };
 
-use super::SinkServerInstance;
+use super::SinkWriterInstance;
 
 #[derive(Debug)]
 pub(in crate::stream_engine) struct InMemoryQueueSinkServerInstance(QueueName);
 
-impl SinkServerInstance for InMemoryQueueSinkServerInstance {
+impl SinkWriterInstance for InMemoryQueueSinkServerInstance {
     fn start(options: &Options) -> Result<Self>
     where
         Self: Sized,
