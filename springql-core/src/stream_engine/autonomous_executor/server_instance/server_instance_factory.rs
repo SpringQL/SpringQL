@@ -1,7 +1,7 @@
 // Copyright (c) 2021 TOYOTA MOTOR CORPORATION. Licensed under MIT OR Apache-2.0.
 
 use super::sink::SinkWriterInstance;
-use super::source::SourceServerInstance;
+use super::source::SourceReaderInstance;
 use crate::error::Result;
 use crate::pipeline::{option::Options, server_model::server_type::ServerType};
 use crate::stream_engine::autonomous_executor::server_instance::sink::in_memory_queue::InMemoryQueueSinkServerInstance;
@@ -14,7 +14,7 @@ impl ServerInstanceFactory {
     pub(in crate::stream_engine) fn source(
         server_type: &ServerType,
         options: &Options,
-    ) -> Result<Box<dyn SourceServerInstance>> {
+    ) -> Result<Box<dyn SourceReaderInstance>> {
         let server = match server_type {
             ServerType::SourceNet => NetSourceServerInstance::start(options),
 

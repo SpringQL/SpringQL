@@ -8,8 +8,7 @@ use std::fmt::Debug;
 
 pub(in crate::stream_engine) mod net;
 
-/// Active: ready to provide ForeignSourceRow.
-pub(in crate::stream_engine) trait SourceServerInstance:
+pub(in crate::stream_engine) trait SourceReaderInstance:
     Debug + Sync + Send + 'static
 {
     /// Blocks until the server is ready to provide ForeignSourceRow.

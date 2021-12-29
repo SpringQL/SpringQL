@@ -16,7 +16,7 @@ use crate::{
     },
 };
 
-use super::SourceServerInstance;
+use super::SourceReaderInstance;
 
 // TODO config
 const CONNECT_TIMEOUT_SECS: u64 = 1;
@@ -28,7 +28,7 @@ pub(in crate::stream_engine) struct NetSourceServerInstance {
     tcp_stream_reader: BufReader<TcpStream>, // TODO UDP
 }
 
-impl SourceServerInstance for NetSourceServerInstance {
+impl SourceReaderInstance for NetSourceServerInstance {
     /// # Failure
     ///
     /// - [SpringError::ForeignIo](crate::error::SpringError::ForeignIo)

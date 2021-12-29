@@ -19,7 +19,7 @@ use crate::{
             },
             server_instance::{
                 server_repository::ServerRepository,
-                source::{net::NetSourceServerInstance, SourceServerInstance},
+                source::{net::NetSourceServerInstance, SourceReaderInstance},
             },
         },
         RowRepository,

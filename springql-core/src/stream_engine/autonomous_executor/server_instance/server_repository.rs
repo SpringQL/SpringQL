@@ -5,7 +5,7 @@ use std::{
     sync::{Arc, Mutex, RwLock},
 };
 
-use super::{sink::SinkWriterInstance, source::SourceServerInstance};
+use super::{sink::SinkWriterInstance, source::SourceReaderInstance};
 use crate::{error::Result, pipeline::name::ServerName};
 use crate::{
     pipeline::server_model::ServerModel,
@@ -15,7 +15,7 @@ use crate::{
 #[allow(clippy::type_complexity)]
 #[derive(Debug, Default)]
 pub(in crate::stream_engine) struct ServerRepository {
-    sources: RwLock<HashMap<ServerName, Arc<Mutex<Box<dyn SourceServerInstance>>>>>,
+    sources: RwLock<HashMap<ServerName, Arc<Mutex<Box<dyn SourceReaderInstance>>>>>,
     sinks: RwLock<HashMap<ServerName, Arc<Mutex<Box<dyn SinkWriterInstance>>>>>,
 }
 
@@ -47,7 +47,7 @@ impl ServerRepository {
                     server_model.server_type(),
                     server_model.options(),
                 )?;
-                let server = Arc::new(Mutex::new(server as Box<dyn SourceServerInstance>));
+                let server = Arc::new(Mutex::new(server as Box<dyn SourceReaderInstance>));
                 let _ = sources.insert(server_model.name().clone(), server);
                 log::debug!(
                     "[ServerRepository] registered source server: {}",
@@ -82,7 +82,7 @@ impl ServerRepository {
     pub(in crate::stream_engine::autonomous_executor) fn get_source_server(
         &self,
         server_name: &ServerName,
-    ) -> Arc<Mutex<Box<dyn SourceServerInstance>>> {
+    ) -> Arc<Mutex<Box<dyn SourceReaderInstance>>> {
         self.sources
             .read()
             .expect("another thread sharing the same internal got panic")
