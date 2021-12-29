@@ -10,7 +10,7 @@ pub(in crate::stream_engine::autonomous_executor) mod net;
 pub(in crate::stream_engine::autonomous_executor) mod source_subtask_factory;
 pub(in crate::stream_engine::autonomous_executor) mod source_subtask_repository;
 
-pub(in crate::stream_engine::autonomous_executor) trait SourceReaderInstance:
+pub(in crate::stream_engine::autonomous_executor) trait SourceSubtask:
     Debug + Sync + Send + 'static
 {
     /// Blocks until the server is ready to provide ForeignSourceRow.

@@ -5,8 +5,8 @@ use std::sync::Arc;
 use springql_foreign_service::source::{source_input::ForeignSourceInput, ForeignSource};
 
 use crate::stream_engine::autonomous_executor::task::source_task::sink_subtask::sink_subtask_repository::SinkSubtaskRepository;
-use crate::stream_engine::autonomous_executor::task::source_task::source_subtask::net::NetSourceServerInstance;
-use crate::stream_engine::autonomous_executor::task::source_task::source_subtask::SourceReaderInstance;
+use crate::stream_engine::autonomous_executor::task::source_task::source_subtask::net::NetSourceSubtask;
+use crate::stream_engine::autonomous_executor::task::source_task::source_subtask::SourceSubtask;
 use crate::stream_engine::autonomous_executor::task::source_task::source_subtask::source_subtask_repository::SourceSubtaskRepository;
 use crate::{
     pipeline::{
@@ -34,7 +34,7 @@ use crate::{
     },
 };
 
-impl NetSourceServerInstance {
+impl NetSourceSubtask {
     pub(in crate::stream_engine) fn factory_with_test_source(input: ForeignSourceInput) -> Self {
         let source = ForeignSource::start(input).unwrap();
 
@@ -44,7 +44,7 @@ impl NetSourceServerInstance {
             .add("REMOTE_PORT", source.port().to_string())
             .build();
 
-        NetSourceServerInstance::start(&options).unwrap()
+        NetSourceSubtask::start(&options).unwrap()
     }
 }
 

@@ -13,12 +13,12 @@ use crate::{
     stream_engine::autonomous_executor::task::source_task::source_subtask::source_subtask_factory::SourceSubtaskFactory,
 };
 
-use super::SourceReaderInstance;
+use super::SourceSubtask;
 
 #[allow(clippy::type_complexity)]
 #[derive(Debug, Default)]
 pub(in crate::stream_engine) struct SourceSubtaskRepository {
-    sources: RwLock<HashMap<ServerName, Arc<Mutex<Box<dyn SourceReaderInstance>>>>>,
+    sources: RwLock<HashMap<ServerName, Arc<Mutex<Box<dyn SourceSubtask>>>>>,
 }
 
 impl SourceSubtaskRepository {
@@ -45,7 +45,7 @@ impl SourceSubtaskRepository {
                     server_model.server_type(),
                     server_model.options(),
                 )?;
-                let server = Arc::new(Mutex::new(server as Box<dyn SourceReaderInstance>));
+                let server = Arc::new(Mutex::new(server as Box<dyn SourceSubtask>));
                 let _ = sources.insert(server_model.name().clone(), server);
                 log::debug!(
                     "[SourceSubtaskRepository] registered source server: {}",
@@ -64,7 +64,7 @@ impl SourceSubtaskRepository {
     pub(in crate::stream_engine::autonomous_executor) fn get_source_server(
         &self,
         server_name: &ServerName,
-    ) -> Arc<Mutex<Box<dyn SourceReaderInstance>>> {
+    ) -> Arc<Mutex<Box<dyn SourceSubtask>>> {
         self.sources
             .read()
             .expect("another thread sharing the same internal got panic")
