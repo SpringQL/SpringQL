@@ -11,14 +11,14 @@ use self::sink_writer_type::SinkWriterType;
 use super::{foreign_stream_model::ForeignStreamModel, name::SinkWriterName, option::Options};
 
 #[derive(Clone, PartialEq, Eq, Debug, Serialize, Deserialize)]
-pub(crate) struct SinkWriter {
+pub(crate) struct SinkWriterModel {
     name: SinkWriterName,
     sink_writer_type: SinkWriterType,
     from_foreign_stream: Arc<ForeignStreamModel>,
     options: Options,
 }
 
-impl SinkWriter {
+impl SinkWriterModel {
     pub(crate) fn new(
         sink_writer_type: SinkWriterType,
         from_foreign_stream: Arc<ForeignStreamModel>,

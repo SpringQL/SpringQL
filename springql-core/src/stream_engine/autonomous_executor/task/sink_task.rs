@@ -4,7 +4,7 @@ use super::task_state::TaskState;
 use super::{task_context::TaskContext, task_id::TaskId};
 use crate::error::Result;
 use crate::pipeline::name::SinkWriterName;
-use crate::pipeline::sink_writer::SinkWriter;
+use crate::pipeline::sink_writer_model::SinkWriterModel;
 use crate::stream_engine::autonomous_executor::row::Row;
 use crate::stream_engine::{
     autonomous_executor::{row::foreign_row::foreign_sink_row::ForeignSinkRow, RowRepository},
@@ -18,7 +18,7 @@ pub(crate) struct SinkTask {
 }
 
 impl SinkTask {
-    pub(in crate::stream_engine) fn new(sink_writer: &SinkWriter) -> Self {
+    pub(in crate::stream_engine) fn new(sink_writer: &SinkWriterModel) -> Self {
         let id = TaskId::from_sink_writer(sink_writer.from_foreign_stream().name().clone());
         Self {
             id,

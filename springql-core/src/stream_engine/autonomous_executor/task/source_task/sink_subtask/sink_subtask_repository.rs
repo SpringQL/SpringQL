@@ -7,7 +7,7 @@ use std::{
 
 use crate::{error::Result, pipeline::name::SinkWriterName};
 use crate::{
-    pipeline::sink_writer::SinkWriter,
+    pipeline::sink_writer_model::SinkWriterModel,
     stream_engine::autonomous_executor::task::source_task::sink_subtask::sink_subtask_factory::SinkSubtaskFactory,
 };
 
@@ -28,7 +28,7 @@ impl SinkSubtaskRepository {
     ///   - failed to start subtask.
     pub(in crate::stream_engine::autonomous_executor) fn register(
         &self,
-        sink_writer: &SinkWriter,
+        sink_writer: &SinkWriterModel,
     ) -> Result<()> {
         let mut sinks = self
             .sinks

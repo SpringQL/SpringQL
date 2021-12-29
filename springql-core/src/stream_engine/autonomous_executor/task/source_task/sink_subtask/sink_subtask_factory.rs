@@ -2,7 +2,7 @@
 
 use crate::error::Result;
 use crate::pipeline::option::Options;
-use crate::pipeline::sink_writer::sink_writer_type::SinkWriterType;
+use crate::pipeline::sink_writer_model::sink_writer_type::SinkWriterType;
 
 use super::in_memory_queue::InMemoryQueueSinkSubtask;
 use super::net::NetSinkSubtask;
