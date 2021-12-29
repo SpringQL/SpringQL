@@ -1,5 +1,7 @@
 // Copyright (c) 2021 TOYOTA MOTOR CORPORATION. Licensed under MIT OR Apache-2.0.
 
+pub(in crate::stream_engine::autonomous_executor) mod source_subtask;
+
 use std::fmt::Debug;
 use std::sync::Arc;
 
@@ -61,7 +63,7 @@ impl SourceTask {
 
     fn collect_next<DI: DependencyInjection>(&self, context: &TaskContext<DI>) -> Result<Row> {
         let source_server = context
-            .server_repository()
+            .source_subtask_repository()
             .get_source_server(&self.server_name);
 
         let foreign_row = source_server

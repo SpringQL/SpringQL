@@ -20,6 +20,7 @@ pub(in crate::stream_engine) use scheduler::{FlowEfficientScheduler, Scheduler};
 use self::{
     scheduler::{scheduler_read::SchedulerRead, scheduler_write::SchedulerWrite},
     server_instance::server_repository::ServerRepository,
+    task::source_task::source_subtask::source_subtask_repository::SourceSubtaskRepository,
     worker_pool::WorkerPool,
 };
 
@@ -39,6 +40,7 @@ where
     scheduler_write: SchedulerWrite<DI>,
 
     row_repo: Arc<DI::RowRepositoryType>,
+    source_subtask_repo: Arc<SourceSubtaskRepository>,
     server_repo: Arc<ServerRepository>,
 
     #[allow(unused)] // not referenced but just holding ownership to make workers continuously run
@@ -55,6 +57,7 @@ where
         let scheduler_read = SchedulerRead::new(scheduler);
 
         let row_repo = Arc::new(DI::RowRepositoryType::default());
+        let source_subtask_repo = Arc::new(SourceSubtaskRepository::default());
         let server_repo = Arc::new(ServerRepository::default());
 
         Self {
@@ -64,9 +67,11 @@ where
                 n_worker_threads,
                 scheduler_read,
                 row_repo.clone(),
+                source_subtask_repo.clone(),
                 server_repo.clone(),
             ),
             row_repo,
+            source_subtask_repo,
             server_repo,
         }
     }
@@ -83,7 +88,11 @@ where
         self.row_repo.reset(scheduler.task_graph().all_tasks());
 
         pipeline
-            .all_servers()
+            .all_sources()
+            .into_iter()
+            .try_for_each(|server_model| self.source_subtask_repo.register(server_model))?;
+        pipeline
+            .all_sinks()
             .into_iter()
             .try_for_each(|server_model| self.server_repo.register(server_model))?;
 

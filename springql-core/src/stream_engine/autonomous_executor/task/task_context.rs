@@ -7,7 +7,10 @@ use crate::stream_engine::{
     dependency_injection::DependencyInjection,
 };
 
-use super::{task_graph::TaskGraph, task_id::TaskId};
+use super::{
+    source_task::source_subtask::source_subtask_repository::SourceSubtaskRepository,
+    task_graph::TaskGraph, task_id::TaskId,
+};
 
 #[derive(Debug)]
 pub(in crate::stream_engine) struct TaskContext<DI: DependencyInjection> {
@@ -15,6 +18,8 @@ pub(in crate::stream_engine) struct TaskContext<DI: DependencyInjection> {
     downstream_tasks: Vec<TaskId>,
 
     row_repo: Arc<DI::RowRepositoryType>,
+
+    source_subtask_repo: Arc<SourceSubtaskRepository>,
     server_repo: Arc<ServerRepository>,
 }
 
@@ -23,6 +28,7 @@ impl<DI: DependencyInjection> TaskContext<DI> {
         task_graph: &TaskGraph,
         task: TaskId,
         row_repo: Arc<DI::RowRepositoryType>,
+        source_subtask_repo: Arc<SourceSubtaskRepository>,
         server_repo: Arc<ServerRepository>,
     ) -> Self {
         let downstream_tasks = task_graph.downstream_tasks(task.clone());
@@ -30,6 +36,7 @@ impl<DI: DependencyInjection> TaskContext<DI> {
             task,
             downstream_tasks,
             row_repo,
+            source_subtask_repo,
             server_repo,
         }
     }
@@ -46,6 +53,11 @@ impl<DI: DependencyInjection> TaskContext<DI> {
         self.row_repo.clone()
     }
 
+    pub(in crate::stream_engine) fn source_subtask_repository(
+        &self,
+    ) -> Arc<SourceSubtaskRepository> {
+        self.source_subtask_repo.clone()
+    }
     pub(in crate::stream_engine) fn server_repository(&self) -> Arc<ServerRepository> {
         self.server_repo.clone()
     }
@@ -57,12 +69,14 @@ impl<DI: DependencyInjection> TaskContext<DI> {
         task: TaskId,
         downstream_tasks: Vec<TaskId>,
         row_repo: Arc<DI::RowRepositoryType>,
+        source_subtask_repo: Arc<SourceSubtaskRepository>,
         server_repo: Arc<ServerRepository>,
     ) -> Self {
         Self {
             task,
             downstream_tasks,
             row_repo,
+            source_subtask_repo,
             server_repo,
         }
     }

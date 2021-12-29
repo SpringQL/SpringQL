@@ -115,13 +115,23 @@ impl Pipeline {
         self.graph.add_server(server)
     }
 
-    pub(super) fn all_servers(&self) -> Vec<&ServerModel> {
+    pub(super) fn all_sources(&self) -> Vec<&ServerModel> {
         self.graph
             .as_petgraph()
             .edge_references()
             .filter_map(|edge| match edge.weight() {
-                Edge::Pump(_) => None,
-                Edge::Source(s) | Edge::Sink(s) => Some(s),
+                Edge::Pump(_) | Edge::Sink(_) => None,
+                Edge::Source(s) => Some(s),
+            })
+            .collect()
+    }
+    pub(super) fn all_sinks(&self) -> Vec<&ServerModel> {
+        self.graph
+            .as_petgraph()
+            .edge_references()
+            .filter_map(|edge| match edge.weight() {
+                Edge::Pump(_) | Edge::Source(_) => None,
+                Edge::Sink(s) => Some(s),
             })
             .collect()
     }

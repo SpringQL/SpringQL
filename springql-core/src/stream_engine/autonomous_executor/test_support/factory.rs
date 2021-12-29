@@ -4,6 +4,9 @@ use std::sync::Arc;
 
 use springql_foreign_service::source::{source_input::ForeignSourceInput, ForeignSource};
 
+use crate::stream_engine::autonomous_executor::task::source_task::source_subtask::net::NetSourceServerInstance;
+use crate::stream_engine::autonomous_executor::task::source_task::source_subtask::SourceReaderInstance;
+use crate::stream_engine::autonomous_executor::task::source_task::source_subtask::source_subtask_repository::SourceSubtaskRepository;
 use crate::{
     pipeline::{
         name::ColumnName, option::options_builder::OptionsBuilder,
@@ -17,10 +20,7 @@ use crate::{
                 value::sql_value::{nn_sql_value::NnSqlValue, SqlValue},
                 Row,
             },
-            server_instance::{
-                server_repository::ServerRepository,
-                source::{net::NetSourceServerInstance, SourceReaderInstance},
-            },
+            server_instance::server_repository::ServerRepository,
         },
         RowRepository,
     },
@@ -34,9 +34,7 @@ use crate::{
 };
 
 impl NetSourceServerInstance {
-    pub(in crate::stream_engine) fn factory_with_test_source(
-        input: ForeignSourceInput,
-    ) -> Self {
+    pub(in crate::stream_engine) fn factory_with_test_source(input: ForeignSourceInput) -> Self {
         let source = ForeignSource::start(input).unwrap();
 
         let options = OptionsBuilder::default()
@@ -150,6 +148,7 @@ impl<DI: DependencyInjection> TaskContext<DI> {
         downstream_tasks: Vec<TaskId>,
     ) -> Self {
         let row_repo = DI::RowRepositoryType::default();
+        let source_subtask_repo = SourceSubtaskRepository::default();
         let server_repo = ServerRepository::default();
 
         let mut tasks = downstream_tasks.clone();
@@ -160,6 +159,7 @@ impl<DI: DependencyInjection> TaskContext<DI> {
             task,
             downstream_tasks,
             Arc::new(row_repo),
+            Arc::new(source_subtask_repo),
             Arc::new(server_repo),
         )
     }

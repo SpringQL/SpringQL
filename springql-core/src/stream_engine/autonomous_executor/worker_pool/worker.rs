@@ -16,7 +16,11 @@ use crate::{
     stream_engine::{
         autonomous_executor::{
             scheduler::scheduler_read::SchedulerRead,
-            server_instance::server_repository::ServerRepository, task::task_context::TaskContext,
+            server_instance::server_repository::ServerRepository,
+            task::{
+                source_task::source_subtask::source_subtask_repository::SourceSubtaskRepository,
+                task_context::TaskContext,
+            },
             Scheduler,
         },
         dependency_injection::DependencyInjection,
@@ -35,6 +39,7 @@ impl Worker {
         id: WorkerId,
         scheduler_read: SchedulerRead<DI>,
         row_repo: Arc<DI::RowRepositoryType>,
+        source_subtask_repo: Arc<SourceSubtaskRepository>,
         server_repo: Arc<ServerRepository>,
     ) -> Self {
         let (stop_button, stop_receiver) = mpsc::sync_channel(0);
@@ -44,6 +49,7 @@ impl Worker {
                 id,
                 scheduler_read.clone(),
                 row_repo,
+                source_subtask_repo,
                 server_repo,
                 stop_receiver,
             )
@@ -55,6 +61,7 @@ impl Worker {
         id: WorkerId,
         scheduler: SchedulerRead<DI>,
         row_repo: Arc<DI::RowRepositoryType>,
+        source_subtask_repo: Arc<SourceSubtaskRepository>,
         server_repo: Arc<ServerRepository>,
         stop_receiver: mpsc::Receiver<()>,
     ) {
@@ -75,6 +82,7 @@ impl Worker {
                     scheduler.task_graph().as_ref(),
                     task.id().clone(),
                     row_repo.clone(),
+                    source_subtask_repo.clone(),
                     server_repo.clone(),
                 );
 

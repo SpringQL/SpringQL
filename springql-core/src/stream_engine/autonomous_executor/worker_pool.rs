@@ -10,6 +10,7 @@ use self::worker::{worker_id::WorkerId, Worker};
 
 use super::{
     scheduler::scheduler_read::SchedulerRead, server_instance::server_repository::ServerRepository,
+    task::source_task::source_subtask::source_subtask_repository::SourceSubtaskRepository,
 };
 
 #[derive(Debug)]
@@ -20,6 +21,7 @@ impl WorkerPool {
         n_worker_threads: usize,
         scheduler_read: SchedulerRead<DI>,
         row_repo: Arc<DI::RowRepositoryType>,
+        source_subtask_repo: Arc<SourceSubtaskRepository>,
         server_repo: Arc<ServerRepository>,
     ) -> Self {
         let workers = (0..n_worker_threads)
@@ -28,6 +30,7 @@ impl WorkerPool {
                     WorkerId::new(id as u16),
                     scheduler_read.clone(),
                     row_repo.clone(),
+                    source_subtask_repo.clone(),
                     server_repo.clone(),
                 )
             })
