@@ -10,31 +10,31 @@ use anyhow::Context;
 
 use crate::{
     error::{foreign_info::ForeignInfo, Result, SpringError},
-    pipeline::option::{net_server_options::NetServerOptions, Options},
+    pipeline::option::{net_options::NetOptions, Options},
     stream_engine::autonomous_executor::row::foreign_row::{
         foreign_source_row::ForeignSourceRow, format::json::JsonObject,
     },
 };
 
-use super::SourceServerInstance;
+use super::SourceSubtask;
 
 // TODO config
 const CONNECT_TIMEOUT_SECS: u64 = 1;
 const READ_TIMEOUT_MSECS: u64 = 100;
 
 #[derive(Debug)]
-pub(in crate::stream_engine) struct NetSourceServerInstance {
+pub(in crate::stream_engine) struct NetSourceSubtask {
     foreign_addr: SocketAddr,
     tcp_stream_reader: BufReader<TcpStream>, // TODO UDP
 }
 
-impl SourceServerInstance for NetSourceServerInstance {
+impl SourceSubtask for NetSourceSubtask {
     /// # Failure
     ///
     /// - [SpringError::ForeignIo](crate::error::SpringError::ForeignIo)
     /// - [SpringError::InvalidOption](crate::error::SpringError::InvalidOption)
     fn start(options: &Options) -> Result<Self> {
-        let options = NetServerOptions::try_from(options)?;
+        let options = NetOptions::try_from(options)?;
         let sock_addr = SocketAddr::new(options.remote_host, options.remote_port);
 
         let tcp_stream =
@@ -54,7 +54,7 @@ impl SourceServerInstance for NetSourceServerInstance {
 
         let tcp_stream_reader = BufReader::new(tcp_stream);
 
-        log::info!("[NetSourceServerInstance] Ready to read from {}", sock_addr);
+        log::info!("[NetSourceSubtask] Ready to read from {}", sock_addr);
 
         Ok(Self {
             tcp_stream_reader,
@@ -85,7 +85,7 @@ impl SourceServerInstance for NetSourceServerInstance {
     }
 }
 
-impl NetSourceServerInstance {
+impl NetSourceSubtask {
     fn parse_resp(&self, json_s: &str) -> Result<ForeignSourceRow> {
         let json_v = serde_json::from_str(json_s)
             .with_context(|| {
@@ -105,7 +105,7 @@ impl NetSourceServerInstance {
     }
 }
 
-impl NetSourceServerInstance {}
+impl NetSourceSubtask {}
 
 #[cfg(test)]
 mod tests {
@@ -117,7 +117,7 @@ mod tests {
     use crate::stream_engine::autonomous_executor::row::foreign_row::format::json::JsonObject;
 
     #[test]
-    fn test_source_server_tcp() -> crate::error::Result<()> {
+    fn test_source_tcp() -> crate::error::Result<()> {
         let j1 = JsonObject::fx_city_temperature_tokyo();
         let j2 = JsonObject::fx_city_temperature_osaka();
         let j3 = JsonObject::fx_city_temperature_london();
@@ -135,13 +135,13 @@ mod tests {
             .add("REMOTE_PORT", source.port().to_string())
             .build();
 
-        let mut server = NetSourceServerInstance::start(&options)?;
+        let mut subtask = NetSourceSubtask::start(&options)?;
 
-        assert_eq!(server.next_row()?, ForeignSourceRow::from_json(j2));
-        assert_eq!(server.next_row()?, ForeignSourceRow::from_json(j3));
-        assert_eq!(server.next_row()?, ForeignSourceRow::from_json(j1));
+        assert_eq!(subtask.next_row()?, ForeignSourceRow::from_json(j2));
+        assert_eq!(subtask.next_row()?, ForeignSourceRow::from_json(j3));
+        assert_eq!(subtask.next_row()?, ForeignSourceRow::from_json(j1));
         assert!(matches!(
-            server.next_row().unwrap_err(),
+            subtask.next_row().unwrap_err(),
             SpringError::ForeignSourceTimeout { .. }
         ));
 

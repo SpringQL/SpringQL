@@ -1,14 +1,12 @@
 // Copyright (c) 2021 TOYOTA MOTOR CORPORATION. Licensed under MIT OR Apache-2.0.
 
 pub(super) mod pump_task;
+pub(super) mod sink_task;
+pub(super) mod source_task;
 pub(super) mod task_context;
 pub(super) mod task_graph;
 pub(super) mod task_id;
 pub(super) mod task_state;
-
-mod sink_task;
-mod source_task;
-mod subtask;
 
 use crate::{error::Result, stream_engine::dependency_injection::DependencyInjection};
 

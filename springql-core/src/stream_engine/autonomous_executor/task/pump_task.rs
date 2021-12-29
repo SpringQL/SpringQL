@@ -1,12 +1,14 @@
 // Copyright (c) 2021 TOYOTA MOTOR CORPORATION. Licensed under MIT OR Apache-2.0.
 
-use super::subtask::insert_subtask::InsertSubtask;
-use super::subtask::query_subtask::QuerySubtask;
+mod pump_subtask;
+
 use super::task_state::TaskState;
 use super::{task_context::TaskContext, task_id::TaskId};
 use crate::error::Result;
 use crate::pipeline::pump_model::PumpModel;
 use crate::stream_engine::dependency_injection::DependencyInjection;
+use pump_subtask::insert_subtask::InsertSubtask;
+use pump_subtask::query_subtask::QuerySubtask;
 
 #[derive(Debug)]
 pub(crate) struct PumpTask {

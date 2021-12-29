@@ -1,6 +1,5 @@
 // Copyright (c) 2021 TOYOTA MOTOR CORPORATION. Licensed under MIT OR Apache-2.0.
 
-pub(in crate::stream_engine) mod server_instance;
 pub(in crate::stream_engine) mod task;
 
 pub(crate) mod row;
@@ -19,7 +18,10 @@ pub(in crate::stream_engine) use scheduler::{FlowEfficientScheduler, Scheduler};
 
 use self::{
     scheduler::{scheduler_read::SchedulerRead, scheduler_write::SchedulerWrite},
-    server_instance::server_repository::ServerRepository,
+    task::source_task::{
+        sink_subtask::sink_subtask_repository::SinkSubtaskRepository,
+        source_subtask::source_subtask_repository::SourceSubtaskRepository,
+    },
     worker_pool::WorkerPool,
 };
 
@@ -39,7 +41,8 @@ where
     scheduler_write: SchedulerWrite<DI>,
 
     row_repo: Arc<DI::RowRepositoryType>,
-    server_repo: Arc<ServerRepository>,
+    source_subtask_repo: Arc<SourceSubtaskRepository>,
+    sink_subtask_repo: Arc<SinkSubtaskRepository>,
 
     #[allow(unused)] // not referenced but just holding ownership to make workers continuously run
     worker_pool: WorkerPool,
@@ -55,7 +58,8 @@ where
         let scheduler_read = SchedulerRead::new(scheduler);
 
         let row_repo = Arc::new(DI::RowRepositoryType::default());
-        let server_repo = Arc::new(ServerRepository::default());
+        let source_subtask_repo = Arc::new(SourceSubtaskRepository::default());
+        let sink_subtask_repo = Arc::new(SinkSubtaskRepository::default());
 
         Self {
             scheduler_write,
@@ -64,10 +68,12 @@ where
                 n_worker_threads,
                 scheduler_read,
                 row_repo.clone(),
-                server_repo.clone(),
+                source_subtask_repo.clone(),
+                sink_subtask_repo.clone(),
             ),
             row_repo,
-            server_repo,
+            source_subtask_repo,
+            sink_subtask_repo,
         }
     }
 
@@ -83,9 +89,13 @@ where
         self.row_repo.reset(scheduler.task_graph().all_tasks());
 
         pipeline
-            .all_servers()
+            .all_sources()
             .into_iter()
-            .try_for_each(|server_model| self.server_repo.register(server_model))?;
+            .try_for_each(|source_reader| self.source_subtask_repo.register(source_reader))?;
+        pipeline
+            .all_sinks()
+            .into_iter()
+            .try_for_each(|sink_writer| self.sink_subtask_repo.register(sink_writer))?;
 
         scheduler.notify_pipeline_update(pipeline)
     }

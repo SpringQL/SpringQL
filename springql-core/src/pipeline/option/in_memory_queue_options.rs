@@ -8,11 +8,11 @@ use crate::{
 use super::Options;
 
 #[derive(Clone, Eq, PartialEq, Debug)]
-pub(crate) struct InMemoryQueueServerOptions {
+pub(crate) struct InMemoryQueueOptions {
     pub(crate) queue_name: QueueName,
 }
 
-impl TryFrom<&Options> for InMemoryQueueServerOptions {
+impl TryFrom<&Options> for InMemoryQueueOptions {
     type Error = SpringError;
 
     fn try_from(options: &Options) -> Result<Self> {

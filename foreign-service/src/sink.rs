@@ -43,7 +43,7 @@ impl ForeignSink {
     ///
     /// # Failures
     ///
-    /// when sink server has not sent new row yet.
+    /// when sink subtask has not sent new row yet.
     pub fn receive(&self) -> Result<serde_json::Value> {
         let timeout = Duration::from_millis(500);
 
@@ -54,7 +54,7 @@ impl ForeignSink {
                 thread::sleep(timeout);
                 self.rx.try_recv()
             })
-            .context("sink server has not sent new row yet")?;
+            .context("sink subtask has not sent new row yet")?;
         Ok(received)
     }
 

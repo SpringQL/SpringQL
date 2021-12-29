@@ -1,13 +1,16 @@
 // Copyright (c) 2021 TOYOTA MOTOR CORPORATION. Licensed under MIT OR Apache-2.0.
 
+pub(in crate::stream_engine::autonomous_executor) mod sink_subtask;
+pub(in crate::stream_engine::autonomous_executor) mod source_subtask;
+
 use std::fmt::Debug;
 use std::sync::Arc;
 
 use crate::error::Result;
 use crate::pipeline::foreign_stream_model::ForeignStreamModel;
-use crate::pipeline::name::ServerName;
+use crate::pipeline::name::SourceReaderName;
 use crate::pipeline::pipeline_graph::PipelineGraph;
-use crate::pipeline::server_model::ServerModel;
+use crate::pipeline::source_reader::SourceReader;
 use crate::stream_engine::autonomous_executor::row::Row;
 use crate::stream_engine::autonomous_executor::RowRepository;
 use crate::stream_engine::dependency_injection::DependencyInjection;
@@ -20,21 +23,21 @@ use super::task_state::TaskState;
 pub(crate) struct SourceTask {
     id: TaskId,
     state: TaskState,
-    server_name: ServerName,
+    source_reader_name: SourceReaderName,
     downstream: Arc<ForeignStreamModel>,
 }
 
 impl SourceTask {
     pub(in crate::stream_engine) fn new(
-        server_model: &ServerModel,
+        source_reader: &SourceReader,
         pipeline_graph: &PipelineGraph,
     ) -> Self {
-        let id = TaskId::from_source_server(server_model.serving_foreign_stream().name().clone());
-        let downstream = server_model.serving_foreign_stream();
+        let id = TaskId::from_source_reader(source_reader.dest_foreign_stream().name().clone());
+        let downstream = source_reader.dest_foreign_stream();
         Self {
             id,
-            state: TaskState::from(&server_model.state(pipeline_graph)),
-            server_name: server_model.name().clone(),
+            state: TaskState::from(&source_reader.state(pipeline_graph)),
+            source_reader_name: source_reader.name().clone(),
             downstream,
         }
     }
@@ -60,13 +63,13 @@ impl SourceTask {
     }
 
     fn collect_next<DI: DependencyInjection>(&self, context: &TaskContext<DI>) -> Result<Row> {
-        let source_server = context
-            .server_repository()
-            .get_source_server(&self.server_name);
+        let source_reader = context
+            .source_subtask_repository()
+            .get_source_subtask(&self.source_reader_name);
 
-        let foreign_row = source_server
+        let foreign_row = source_reader
             .lock()
-            .expect("other worker threads sharing the same server must not get panic")
+            .expect("other worker threads sharing the same subtask must not get panic")
             .next_row()?;
         foreign_row.into_row::<DI>(self.downstream.shape())
     }

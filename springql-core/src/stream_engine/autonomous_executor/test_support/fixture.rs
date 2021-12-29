@@ -10,7 +10,8 @@ use crate::{
         name::{PumpName, StreamName},
         pipeline_graph::PipelineGraph,
         pump_model::{pump_state::PumpState, PumpModel},
-        server_model::ServerModel,
+        sink_writer::SinkWriter,
+        source_reader::SourceReader,
     },
     stream_engine::dependency_injection::test_di::TestDI,
     stream_engine::{
@@ -193,25 +194,24 @@ impl StreamColumns {
 }
 
 impl AlterPipelineCommand {
-    pub(in crate::stream_engine) fn fx_create_foreign_stream_trade_with_source_server(
+    pub(in crate::stream_engine) fn fx_create_foreign_stream_trade_with_source(
         stream_name: StreamName,
         source_server_host: IpAddr,
         source_server_port: u16,
     ) -> Self {
         let stream = Arc::new(ForeignStreamModel::fx_trade_with_name(stream_name));
-        let server =
-            ServerModel::fx_net_source_started(stream, source_server_host, source_server_port);
-        Self::CreateForeignStream(server)
+        let source = SourceReader::fx_net_started(stream, source_server_host, source_server_port);
+        Self::CreateForeignSourceStream(source)
     }
 
-    pub(in crate::stream_engine) fn fx_create_foreign_stream_trade_with_sink_server(
+    pub(in crate::stream_engine) fn fx_create_foreign_stream_trade_with_sink(
         stream_name: StreamName,
         sink_server_host: IpAddr,
         sink_server_port: u16,
     ) -> Self {
         let stream = Arc::new(ForeignStreamModel::fx_trade_with_name(stream_name));
-        let server = ServerModel::fx_net_sink(stream, sink_server_host, sink_server_port);
-        Self::CreateForeignStream(server)
+        let sink = SinkWriter::fx_net(stream, sink_server_host, sink_server_port);
+        Self::CreateForeignSinkStream(sink)
     }
 
     pub(in crate::stream_engine) fn fx_create_pump(

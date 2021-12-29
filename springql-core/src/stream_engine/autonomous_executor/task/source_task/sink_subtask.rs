@@ -5,13 +5,15 @@ use crate::pipeline::option::Options;
 use crate::stream_engine::autonomous_executor::row::foreign_row::foreign_sink_row::ForeignSinkRow;
 use std::fmt::Debug;
 
-pub(in crate::stream_engine) mod in_memory_queue;
-pub(in crate::stream_engine) mod net;
+pub(in crate::stream_engine::autonomous_executor) mod in_memory_queue;
+pub(in crate::stream_engine::autonomous_executor) mod net;
+pub(in crate::stream_engine::autonomous_executor) mod sink_subtask_factory;
+pub(in crate::stream_engine::autonomous_executor) mod sink_subtask_repository;
 
-pub(in crate::stream_engine) trait SinkServerInstance:
+pub(in crate::stream_engine) trait SinkSubtask:
     Debug + Sync + Send + 'static
 {
-    /// Blocks until the server is ready to send ForeignSinkRow to foreign sink.
+    /// Blocks until the sink subtask is ready to send ForeignSinkRow to foreign sink.
     fn start(options: &Options) -> Result<Self>
     where
         Self: Sized;

@@ -16,7 +16,13 @@ use crate::{
     stream_engine::{
         autonomous_executor::{
             scheduler::scheduler_read::SchedulerRead,
-            server_instance::server_repository::ServerRepository, task::task_context::TaskContext,
+            task::{
+                source_task::{
+                    sink_subtask::sink_subtask_repository::SinkSubtaskRepository,
+                    source_subtask::source_subtask_repository::SourceSubtaskRepository,
+                },
+                task_context::TaskContext,
+            },
             Scheduler,
         },
         dependency_injection::DependencyInjection,
@@ -35,7 +41,8 @@ impl Worker {
         id: WorkerId,
         scheduler_read: SchedulerRead<DI>,
         row_repo: Arc<DI::RowRepositoryType>,
-        server_repo: Arc<ServerRepository>,
+        source_subtask_repo: Arc<SourceSubtaskRepository>,
+        sink_subtask_repo: Arc<SinkSubtaskRepository>,
     ) -> Self {
         let (stop_button, stop_receiver) = mpsc::sync_channel(0);
 
@@ -44,7 +51,8 @@ impl Worker {
                 id,
                 scheduler_read.clone(),
                 row_repo,
-                server_repo,
+                source_subtask_repo,
+                sink_subtask_repo,
                 stop_receiver,
             )
         });
@@ -55,7 +63,8 @@ impl Worker {
         id: WorkerId,
         scheduler: SchedulerRead<DI>,
         row_repo: Arc<DI::RowRepositoryType>,
-        server_repo: Arc<ServerRepository>,
+        source_subtask_repo: Arc<SourceSubtaskRepository>,
+        sink_subtask_repo: Arc<SinkSubtaskRepository>,
         stop_receiver: mpsc::Receiver<()>,
     ) {
         let mut cur_worker_state =
@@ -75,7 +84,8 @@ impl Worker {
                     scheduler.task_graph().as_ref(),
                     task.id().clone(),
                     row_repo.clone(),
-                    server_repo.clone(),
+                    source_subtask_repo.clone(),
+                    sink_subtask_repo.clone(),
                 );
 
                 task.run(&context).unwrap_or_else(Self::handle_error)

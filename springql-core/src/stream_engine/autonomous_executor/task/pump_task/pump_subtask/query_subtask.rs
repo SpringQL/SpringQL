@@ -144,7 +144,7 @@ mod tests {
     fn test_query_subtask_collect() {
         setup_test_logger();
 
-        let source_task = TaskId::from_source_server(StreamName::fx_trade_source());
+        let source_task = TaskId::from_source_reader(StreamName::fx_trade_source());
         let pump_trade_p1 = PumpName::fx_trade_p1();
         let downstream_tasks = vec![TaskId::from_pump(pump_trade_p1)];
         let context = TaskContext::factory_with_1_level_downstreams(source_task, downstream_tasks);

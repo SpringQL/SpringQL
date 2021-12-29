@@ -6,7 +6,8 @@ use crate::{
     pipeline::{
         name::PumpName,
         pump_model::{pump_state::PumpState, PumpModel},
-        server_model::ServerModel,
+        sink_writer::SinkWriter,
+        source_reader::SourceReader,
         Pipeline,
     },
 };
@@ -31,8 +32,11 @@ impl ReactiveExecutor {
 
     fn new_pipeline(mut pipeline: Pipeline, command: AlterPipelineCommand) -> Result<Pipeline> {
         match command {
-            AlterPipelineCommand::CreateForeignStream(server) => {
-                Self::create_foreign_stream(pipeline, server)
+            AlterPipelineCommand::CreateForeignSourceStream(source) => {
+                Self::create_foreign_source_stream(pipeline, source)
+            }
+            AlterPipelineCommand::CreateForeignSinkStream(sink) => {
+                Self::create_foreign_sink_stream(pipeline, sink)
             }
             AlterPipelineCommand::CreatePump(pump) => Self::create_pump(pipeline, pump),
             AlterPipelineCommand::AlterPump { name, state } => {
@@ -42,10 +46,19 @@ impl ReactiveExecutor {
         }
     }
 
-    fn create_foreign_stream(mut pipeline: Pipeline, server: ServerModel) -> Result<Pipeline> {
-        let fst = server.serving_foreign_stream();
+    fn create_foreign_source_stream(
+        mut pipeline: Pipeline,
+        source: SourceReader,
+    ) -> Result<Pipeline> {
+        let fst = source.dest_foreign_stream();
         pipeline.add_foreign_stream(fst)?;
-        pipeline.add_server(server)?;
+        pipeline.add_source_reader(source)?;
+        Ok(pipeline)
+    }
+    fn create_foreign_sink_stream(mut pipeline: Pipeline, sink: SinkWriter) -> Result<Pipeline> {
+        let fst = sink.from_foreign_stream();
+        pipeline.add_foreign_stream(fst)?;
+        pipeline.add_sink_writer(sink)?;
         Ok(pipeline)
     }
 

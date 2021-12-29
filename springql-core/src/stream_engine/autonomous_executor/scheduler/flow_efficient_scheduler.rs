@@ -12,7 +12,7 @@
 //!
 //! ## Scheduling model
 //!
-//! A pipeline is a DAG where nodes are (foreign or native) streams and edges are pumps or (source | sink) servers.
+//! A pipeline is a DAG where nodes are (foreign or native) streams and edges are pumps, source readers, or sink writers.
 //!
 //! A node has 1 or more incoming edges and 1 or more outgoing edges.
 //!
@@ -32,12 +32,12 @@
 //!   - `[8]` and `[9]` are sink foreign stream.
 //!   - `[3]` - `[7]` are native stream.
 //! - `(0)`: A virtual root stream, which is introduced to make nodes traversal algorithm simpler.
-//! - `a` and `b`: Source servers.
-//! - `l` and `m`: Sink servers.
+//! - `a` and `b`: Source readers.
+//! - `l` and `m`: Sink writers.
 //! - `c` - `k`: Pumps.
 //!
 //! A scheduler regards edges (`a` - `m`) as tasks and executes them in some order.
-//! Each task may have dependent tasks because a task need input row given from upstream. Single exception is source server, which can generate row.
+//! Each task may have dependent tasks because a task need input row given from upstream. Single exception is source reader, which can generate row.
 //! The core concept of scheduling is to order all the tasks in a pipeline so that dependency is resolved.
 //! Since task dependency is mapped to node dependency in pipeline DAG, topological sort to pipeline produces a valid task schedule.
 //!
@@ -47,7 +47,7 @@
 //!
 //! - **Rule1: one-by-one**
 //!
-//!   A worker does not make buffering. In other words, a worker hols 0 or 1 input row for a task (pump, source server, or sink server) at a time.
+//!   A worker does not make buffering. In other words, a worker hols 0 or 1 input row for a task (pump, source reader, or sink writer) at a time.
 //!
 //!   Example: A worker request only 1 row from `a`.
 //!
@@ -168,7 +168,7 @@ impl Scheduler for FlowEfficientScheduler {
     /// # Failure
     ///
     /// - [SpringError::ForeignIo](crate::error::SpringError::ForeignIo) when:
-    ///   - failed to start a source server.
+    ///   - failed to start a source reader.
     fn _notify_task_graph_update(&mut self, task_graph: TaskGraph) -> Result<()> {
         self.task_graph = Arc::new(task_graph);
 
@@ -309,8 +309,7 @@ mod tests {
 
     #[test]
     fn test_source_only_pipeline() {
-        let test_source =
-            ForeignSource::start(ForeignSourceInput::new_fifo_batch(vec![])).unwrap();
+        let test_source = ForeignSource::start(ForeignSourceInput::new_fifo_batch(vec![])).unwrap();
         t(
             Pipeline::fx_source_only(test_source.host_ip(), test_source.port()),
             vec![],
@@ -319,8 +318,7 @@ mod tests {
 
     #[test]
     fn test_linear_pipeline_stopped() {
-        let test_source =
-            ForeignSource::start(ForeignSourceInput::new_fifo_batch(vec![])).unwrap();
+        let test_source = ForeignSource::start(ForeignSourceInput::new_fifo_batch(vec![])).unwrap();
         let test_sink = ForeignSink::start().unwrap();
         t(
             Pipeline::fx_linear_stopped(
@@ -335,8 +333,7 @@ mod tests {
 
     #[test]
     fn test_linear_pipeline() {
-        let test_source =
-            ForeignSource::start(ForeignSourceInput::new_fifo_batch(vec![])).unwrap();
+        let test_source = ForeignSource::start(ForeignSourceInput::new_fifo_batch(vec![])).unwrap();
         let test_sink = ForeignSink::start().unwrap();
         t(
             Pipeline::fx_linear(
@@ -346,17 +343,16 @@ mod tests {
                 test_sink.port(),
             ),
             vec![
-                TaskId::from_source_server(StreamName::factory("fst_1")),
+                TaskId::from_source_reader(StreamName::factory("fst_1")),
                 TaskId::from_pump(PumpName::factory("pu_b")),
-                TaskId::from_sink_server(StreamName::factory("fst_2")),
+                TaskId::from_sink_writer(StreamName::factory("fst_2")),
             ],
         )
     }
 
     #[test]
     fn test_pipeline_with_split() {
-        let test_source =
-            ForeignSource::start(ForeignSourceInput::new_fifo_batch(vec![])).unwrap();
+        let test_source = ForeignSource::start(ForeignSourceInput::new_fifo_batch(vec![])).unwrap();
         let test_sink1 = ForeignSink::start().unwrap();
         let test_sink2 = ForeignSink::start().unwrap();
 
@@ -370,20 +366,19 @@ mod tests {
                 test_sink2.port(),
             ),
             vec![
-                TaskId::from_source_server(StreamName::factory("fst_1")),
+                TaskId::from_source_reader(StreamName::factory("fst_1")),
                 TaskId::from_pump(PumpName::factory("pu_c")),
-                TaskId::from_sink_server(StreamName::factory("fst_3")),
-                TaskId::from_source_server(StreamName::factory("fst_2")),
+                TaskId::from_sink_writer(StreamName::factory("fst_3")),
+                TaskId::from_source_reader(StreamName::factory("fst_2")),
                 TaskId::from_pump(PumpName::factory("pu_d")),
-                TaskId::from_sink_server(StreamName::factory("fst_4")),
+                TaskId::from_sink_writer(StreamName::factory("fst_4")),
             ],
         )
     }
 
     #[test]
     fn test_pipeline_with_merge() {
-        let test_source =
-            ForeignSource::start(ForeignSourceInput::new_fifo_batch(vec![])).unwrap();
+        let test_source = ForeignSource::start(ForeignSourceInput::new_fifo_batch(vec![])).unwrap();
         let test_sink = ForeignSink::start().unwrap();
         t(
             Pipeline::fx_split_merge(
@@ -393,19 +388,18 @@ mod tests {
                 test_sink.port(),
             ),
             vec![
-                TaskId::from_source_server(StreamName::factory("fst_2")),
+                TaskId::from_source_reader(StreamName::factory("fst_2")),
                 TaskId::from_pump(PumpName::factory("pu_d")),
-                TaskId::from_source_server(StreamName::factory("fst_1")),
+                TaskId::from_source_reader(StreamName::factory("fst_1")),
                 TaskId::from_pump(PumpName::factory("pu_c")),
-                TaskId::from_sink_server(StreamName::factory("fst_3")),
+                TaskId::from_sink_writer(StreamName::factory("fst_3")),
             ],
         )
     }
 
     #[test]
     fn test_complex_pipeline() {
-        let test_source =
-            ForeignSource::start(ForeignSourceInput::new_fifo_batch(vec![])).unwrap();
+        let test_source = ForeignSource::start(ForeignSourceInput::new_fifo_batch(vec![])).unwrap();
         let test_sink1 = ForeignSink::start().unwrap();
         let test_sink2 = ForeignSink::start().unwrap();
         t(
@@ -418,19 +412,19 @@ mod tests {
                 test_sink2.port(),
             ),
             vec![
-                TaskId::from_source_server(StreamName::factory("fst_1")),
+                TaskId::from_source_reader(StreamName::factory("fst_1")),
                 TaskId::from_pump(PumpName::factory("pu_c")),
                 TaskId::from_pump(PumpName::factory("pu_f")),
-                TaskId::from_source_server(StreamName::factory("fst_2")),
+                TaskId::from_source_reader(StreamName::factory("fst_2")),
                 TaskId::from_pump(PumpName::factory("pu_d")),
                 TaskId::from_pump(PumpName::factory("pu_g")),
                 TaskId::from_pump(PumpName::factory("pu_e")),
                 TaskId::from_pump(PumpName::factory("pu_h")),
                 TaskId::from_pump(PumpName::factory("pu_j")),
-                TaskId::from_sink_server(StreamName::factory("fst_8")),
+                TaskId::from_sink_writer(StreamName::factory("fst_8")),
                 TaskId::from_pump(PumpName::factory("pu_i")),
                 TaskId::from_pump(PumpName::factory("pu_k")),
-                TaskId::from_sink_server(StreamName::factory("fst_9")),
+                TaskId::from_sink_writer(StreamName::factory("fst_9")),
             ],
         )
     }

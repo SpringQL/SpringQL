@@ -11,7 +11,10 @@ pub struct StreamName(String);
 pub struct PumpName(String);
 
 #[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Serialize, Deserialize, new)]
-pub struct ServerName(String);
+pub struct SourceReaderName(String);
+
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Serialize, Deserialize, new)]
+pub struct SinkWriterName(String);
 
 #[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Serialize, Deserialize, new)]
 pub(crate) struct ColumnName(String);
@@ -29,7 +32,12 @@ impl Display for PumpName {
         write!(f, "{}", self.0)
     }
 }
-impl Display for ServerName {
+impl Display for SourceReaderName {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.0)
+    }
+}
+impl Display for SinkWriterName {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", self.0)
     }
@@ -55,7 +63,12 @@ impl AsRef<str> for PumpName {
         &self.0
     }
 }
-impl AsRef<str> for ServerName {
+impl AsRef<str> for SourceReaderName {
+    fn as_ref(&self) -> &str {
+        &self.0
+    }
+}
+impl AsRef<str> for SinkWriterName {
     fn as_ref(&self) -> &str {
         &self.0
     }
@@ -77,10 +90,12 @@ impl StreamName {
     }
 }
 
-impl ServerName {
+impl SourceReaderName {
     pub(crate) fn net_source() -> Self {
         Self::new("NET_SERVER_SOURCE".to_string())
     }
+}
+impl SinkWriterName {
     pub(crate) fn net_sink() -> Self {
         Self::new("NET_SERVER_SINK".to_string())
     }

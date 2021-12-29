@@ -8,10 +8,10 @@ use std::{
 
 use anyhow::Context;
 
-use super::SinkServerInstance;
+use super::SinkSubtask;
 use crate::{
     error::{foreign_info::ForeignInfo, Result, SpringError},
-    pipeline::option::{net_server_options::NetServerOptions, Options},
+    pipeline::option::{net_options::NetOptions, Options},
     stream_engine::autonomous_executor::row::foreign_row::{
         foreign_sink_row::ForeignSinkRow, format::json::JsonObject,
     },
@@ -22,14 +22,14 @@ const CONNECT_TIMEOUT_SECS: u64 = 1;
 const WRITE_TIMEOUT_MSECS: u64 = 100;
 
 #[derive(Debug)]
-pub(in crate::stream_engine) struct NetSinkServerInstance {
+pub(in crate::stream_engine) struct NetSinkSubtask {
     foreign_addr: SocketAddr,
     tcp_stream_writer: BufWriter<TcpStream>, // TODO UDP
 }
 
-impl SinkServerInstance for NetSinkServerInstance {
+impl SinkSubtask for NetSinkSubtask {
     fn start(options: &Options) -> Result<Self> {
-        let options = NetServerOptions::try_from(options)?;
+        let options = NetOptions::try_from(options)?;
         let sock_addr = SocketAddr::new(options.remote_host, options.remote_port);
 
         let tcp_stream =
@@ -49,7 +49,7 @@ impl SinkServerInstance for NetSinkServerInstance {
 
         let tcp_stream_writer = BufWriter::new(tcp_stream);
 
-        log::info!("[NetSinkServerInstance] Ready to write into {}", sock_addr);
+        log::info!("[NetSinkSubtask] Ready to write into {}", sock_addr);
 
         Ok(Self {
             tcp_stream_writer,
@@ -61,10 +61,7 @@ impl SinkServerInstance for NetSinkServerInstance {
         let mut json_s = JsonObject::from(row).to_string();
         json_s.push('\n');
 
-        log::info!(
-            "[NetSinkServerInstance] Writing message to remote: {}",
-            json_s
-        );
+        log::info!("[NetSinkSubtask] Writing message to remote: {}", json_s);
 
         self.tcp_stream_writer
             .write_all(json_s.as_bytes())
@@ -96,7 +93,7 @@ mod tests {
     };
 
     #[test]
-    fn test_sink_server_tcp() {
+    fn test_sink_subtask_tcp() {
         let sink = ForeignSink::start().unwrap();
 
         let options = OptionsBuilder::default()
@@ -105,15 +102,15 @@ mod tests {
             .add("REMOTE_PORT", sink.port().to_string())
             .build();
 
-        let mut server = NetSinkServerInstance::start(&options).unwrap();
+        let mut sink_subtask = NetSinkSubtask::start(&options).unwrap();
 
-        server
+        sink_subtask
             .send_row(ForeignSinkRow::fx_city_temperature_tokyo())
             .unwrap();
-        server
+        sink_subtask
             .send_row(ForeignSinkRow::fx_city_temperature_osaka())
             .unwrap();
-        server
+        sink_subtask
             .send_row(ForeignSinkRow::fx_city_temperature_london())
             .unwrap();
 
