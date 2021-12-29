@@ -2,7 +2,7 @@
 
 pub(crate) mod options_builder;
 
-pub(crate) mod in_memory_queue_server_options;
+pub(crate) mod in_memory_queue_options;
 pub(crate) mod net_options;
 
 use crate::error::{Result, SpringError};

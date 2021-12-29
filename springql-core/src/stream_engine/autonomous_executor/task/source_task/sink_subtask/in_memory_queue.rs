@@ -2,7 +2,7 @@
 
 use crate::error::Result;
 use crate::pipeline::name::QueueName;
-use crate::pipeline::option::in_memory_queue_server_options::InMemoryQueueServerOptions;
+use crate::pipeline::option::in_memory_queue_options::InMemoryQueueOptions;
 use crate::stream_engine::in_memory_queue_repository::InMemoryQueueRepository;
 use crate::{
     pipeline::option::Options,
@@ -19,7 +19,7 @@ impl SinkSubtask for InMemoryQueueSinkSubtask {
     where
         Self: Sized,
     {
-        let options = InMemoryQueueServerOptions::try_from(options)?;
+        let options = InMemoryQueueOptions::try_from(options)?;
         let queue_name = options.queue_name;
         InMemoryQueueRepository::instance().create(queue_name.clone())?;
         Ok(Self(queue_name))
