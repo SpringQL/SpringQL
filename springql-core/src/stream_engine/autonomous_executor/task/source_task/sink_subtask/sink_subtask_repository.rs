@@ -5,15 +5,18 @@ use std::{
     sync::{Arc, Mutex, RwLock},
 };
 
-use crate::{pipeline::server_model::ServerModel, stream_engine::autonomous_executor::task::source_task::sink_subtask::sink_subtask_factory::SinkSubtaskFactory};
-use crate::{error::Result, pipeline::name::ServerName};
+use crate::{error::Result, pipeline::name::SinkWriterName};
+use crate::{
+    pipeline::sink_writer::SinkWriter,
+    stream_engine::autonomous_executor::task::source_task::sink_subtask::sink_subtask_factory::SinkSubtaskFactory,
+};
 
 use super::SinkSubtask;
 
 #[allow(clippy::type_complexity)]
 #[derive(Debug, Default)]
 pub(in crate::stream_engine) struct SinkSubtaskRepository {
-    sinks: RwLock<HashMap<ServerName, Arc<Mutex<Box<dyn SinkSubtask>>>>>,
+    sinks: RwLock<HashMap<SinkWriterName, Arc<Mutex<Box<dyn SinkSubtask>>>>>,
 }
 
 impl SinkSubtaskRepository {
@@ -25,29 +28,25 @@ impl SinkSubtaskRepository {
     ///   - failed to start server.
     pub(in crate::stream_engine::autonomous_executor) fn register(
         &self,
-        server_model: &ServerModel,
+        sink_writer: &SinkWriter,
     ) -> Result<()> {
         let mut sinks = self
             .sinks
             .write()
             .expect("another thread sharing the same internal got panic");
 
-        if server_model.server_type().is_sink() {
-            if sinks.get(server_model.name()).is_some() {
-                Ok(())
-            } else {
-                let server =
-                    SinkSubtaskFactory::sink(server_model.server_type(), server_model.options())?;
-                let server = Arc::new(Mutex::new(server as Box<dyn SinkSubtask>));
-                let _ = sinks.insert(server_model.name().clone(), server);
-                log::debug!(
-                    "[ServerRepository] registered sink server: {}",
-                    server_model.name()
-                );
-                Ok(())
-            }
+        if sinks.get(sink_writer.name()).is_some() {
+            Ok(())
         } else {
-            unreachable!()
+            let server =
+                SinkSubtaskFactory::sink(sink_writer.server_type(), sink_writer.options())?;
+            let server = Arc::new(Mutex::new(server as Box<dyn SinkSubtask>));
+            let _ = sinks.insert(sink_writer.name().clone(), server);
+            log::debug!(
+                "[ServerRepository] registered sink server: {}",
+                sink_writer.name()
+            );
+            Ok(())
         }
     }
 
@@ -56,13 +55,13 @@ impl SinkSubtaskRepository {
     /// `server_name` is not registered yet
     pub(in crate::stream_engine::autonomous_executor) fn get_sink_server(
         &self,
-        server_name: &ServerName,
+        name: &SinkWriterName,
     ) -> Arc<Mutex<Box<dyn SinkSubtask>>> {
         self.sinks
             .read()
             .expect("another thread sharing the same internal got panic")
-            .get(server_name)
-            .unwrap_or_else(|| panic!("server name ({}) not registered yet", server_name))
+            .get(name)
+            .unwrap_or_else(|| panic!("server name ({}) not registered yet", name))
             .clone()
     }
 }

@@ -3,8 +3,8 @@
 use super::task_state::TaskState;
 use super::{task_context::TaskContext, task_id::TaskId};
 use crate::error::Result;
-use crate::pipeline::name::ServerName;
-use crate::pipeline::server_model::ServerModel;
+use crate::pipeline::name::SinkWriterName;
+use crate::pipeline::sink_writer::SinkWriter;
 use crate::stream_engine::autonomous_executor::row::Row;
 use crate::stream_engine::{
     autonomous_executor::{row::foreign_row::foreign_sink_row::ForeignSinkRow, RowRepository},
@@ -14,15 +14,15 @@ use crate::stream_engine::{
 #[derive(Debug)]
 pub(crate) struct SinkTask {
     id: TaskId,
-    server_name: ServerName,
+    sink_writer_name: SinkWriterName,
 }
 
 impl SinkTask {
-    pub(in crate::stream_engine) fn new(server_model: &ServerModel) -> Self {
-        let id = TaskId::from_sink_server(server_model.serving_foreign_stream().name().clone());
+    pub(in crate::stream_engine) fn new(sink_writer: &SinkWriter) -> Self {
+        let id = TaskId::from_sink_server(sink_writer.from_foreign_stream().name().clone());
         Self {
             id,
-            server_name: server_model.name().clone(),
+            sink_writer_name: sink_writer.name().clone(),
         }
     }
 
@@ -52,7 +52,7 @@ impl SinkTask {
 
         let sink_server = context
             .sink_subtask_repository()
-            .get_sink_server(&self.server_name);
+            .get_sink_server(&self.sink_writer_name);
 
         sink_server
             .lock()

@@ -16,7 +16,8 @@ use crate::{
             },
             sql_type::SqlType,
         },
-        server_model::{server_type::ServerType, ServerModel},
+        sink_writer::{sink_writer_type::SinkWriterType, SinkWriter},
+        source_reader::{source_reader_type::SourceReaderType, SourceReader},
         stream_model::{stream_shape::StreamShape, StreamModel},
         Pipeline,
     },
@@ -35,15 +36,12 @@ impl Pipeline {
             "fst_1",
         )));
 
-        let server_a = ServerModel::fx_net_source_started(
-            fst_1.clone(),
-            source_remote_host,
-            source_remote_port,
-        );
+        let source_a =
+            SourceReader::fx_net_started(fst_1.clone(), source_remote_host, source_remote_port);
 
         let mut pipeline = Pipeline::default();
         pipeline.add_foreign_stream(fst_1).unwrap();
-        pipeline.add_server(server_a).unwrap();
+        pipeline.add_source_reader(source_a).unwrap();
         pipeline
     }
 
@@ -63,12 +61,9 @@ impl Pipeline {
             "fst_2",
         )));
 
-        let server_a = ServerModel::fx_net_source_started(
-            fst_1.clone(),
-            source_remote_host,
-            source_remote_port,
-        );
-        let server_c = ServerModel::fx_net_sink(fst_2.clone(), sink_remote_host, sink_remote_port);
+        let source_a =
+            SourceReader::fx_net_started(fst_1.clone(), source_remote_host, source_remote_port);
+        let sink_c = SinkWriter::fx_net(fst_2.clone(), sink_remote_host, sink_remote_port);
 
         let pu_b = PumpModel::fx_trade_stopped(
             PumpName::factory("pu_b"),
@@ -81,8 +76,8 @@ impl Pipeline {
         pipeline.add_foreign_stream(fst_1).unwrap();
         pipeline.add_foreign_stream(fst_2).unwrap();
 
-        pipeline.add_server(server_a).unwrap();
-        pipeline.add_server(server_c).unwrap();
+        pipeline.add_source_reader(source_a).unwrap();
+        pipeline.add_sink_writer(sink_c).unwrap();
 
         pipeline.add_pump(pu_b).unwrap();
 
@@ -105,12 +100,9 @@ impl Pipeline {
             "fst_2",
         )));
 
-        let server_a = ServerModel::fx_net_source_started(
-            fst_1.clone(),
-            source_remote_host,
-            source_remote_port,
-        );
-        let server_c = ServerModel::fx_net_sink(fst_2.clone(), sink_remote_host, sink_remote_port);
+        let source_a =
+            SourceReader::fx_net_started(fst_1.clone(), source_remote_host, source_remote_port);
+        let sink_c = SinkWriter::fx_net(fst_2.clone(), sink_remote_host, sink_remote_port);
 
         let pu_b = PumpModel::fx_trade(
             PumpName::factory("pu_b"),
@@ -123,8 +115,8 @@ impl Pipeline {
         pipeline.add_foreign_stream(fst_1).unwrap();
         pipeline.add_foreign_stream(fst_2).unwrap();
 
-        pipeline.add_server(server_a).unwrap();
-        pipeline.add_server(server_c).unwrap();
+        pipeline.add_source_reader(source_a).unwrap();
+        pipeline.add_sink_writer(sink_c).unwrap();
 
         pipeline.add_pump(pu_b).unwrap();
 
@@ -158,21 +150,13 @@ impl Pipeline {
             "fst_4",
         )));
 
-        let server_a = ServerModel::fx_net_source_started(
-            fst_1.clone(),
-            source_remote_host,
-            source_remote_port,
-        );
-        let server_b = ServerModel::fx_net_source_started(
-            fst_2.clone(),
-            source_remote_host,
-            source_remote_port,
-        );
+        let source_a =
+            SourceReader::fx_net_started(fst_1.clone(), source_remote_host, source_remote_port);
+        let source_b =
+            SourceReader::fx_net_started(fst_2.clone(), source_remote_host, source_remote_port);
 
-        let server_e =
-            ServerModel::fx_net_sink(fst_3.clone(), sink1_remote_host, sink1_remote_port);
-        let server_f =
-            ServerModel::fx_net_sink(fst_4.clone(), sink2_remote_host, sink2_remote_port);
+        let sink_e = SinkWriter::fx_net(fst_3.clone(), sink1_remote_host, sink1_remote_port);
+        let sink_f = SinkWriter::fx_net(fst_4.clone(), sink2_remote_host, sink2_remote_port);
 
         let pu_c = PumpModel::fx_trade(
             PumpName::factory("pu_c"),
@@ -193,11 +177,11 @@ impl Pipeline {
         pipeline.add_foreign_stream(fst_3).unwrap();
         pipeline.add_foreign_stream(fst_4).unwrap();
 
-        pipeline.add_server(server_a).unwrap();
-        pipeline.add_server(server_b).unwrap();
+        pipeline.add_source_reader(source_a).unwrap();
+        pipeline.add_source_reader(source_b).unwrap();
 
-        pipeline.add_server(server_e).unwrap();
-        pipeline.add_server(server_f).unwrap();
+        pipeline.add_sink_writer(sink_e).unwrap();
+        pipeline.add_sink_writer(sink_f).unwrap();
 
         pipeline.add_pump(pu_c).unwrap();
         pipeline.add_pump(pu_d).unwrap();
@@ -228,18 +212,12 @@ impl Pipeline {
             "fst_3",
         )));
 
-        let server_a = ServerModel::fx_net_source_started(
-            fst_1.clone(),
-            source_remote_host,
-            source_remote_port,
-        );
-        let server_b = ServerModel::fx_net_source_started(
-            fst_2.clone(),
-            source_remote_host,
-            source_remote_port,
-        );
+        let source_a =
+            SourceReader::fx_net_started(fst_1.clone(), source_remote_host, source_remote_port);
+        let source_b =
+            SourceReader::fx_net_started(fst_2.clone(), source_remote_host, source_remote_port);
 
-        let server_e = ServerModel::fx_net_sink(fst_3.clone(), sink_remote_host, sink_remote_port);
+        let sink_e = SinkWriter::fx_net(fst_3.clone(), sink_remote_host, sink_remote_port);
 
         let pu_c = PumpModel::fx_trade(
             PumpName::factory("pu_c"),
@@ -259,10 +237,10 @@ impl Pipeline {
 
         pipeline.add_foreign_stream(fst_3).unwrap();
 
-        pipeline.add_server(server_a).unwrap();
-        pipeline.add_server(server_b).unwrap();
+        pipeline.add_source_reader(source_a).unwrap();
+        pipeline.add_source_reader(source_b).unwrap();
 
-        pipeline.add_server(server_e).unwrap();
+        pipeline.add_sink_writer(sink_e).unwrap();
 
         pipeline.add_pump(pu_c).unwrap();
         pipeline.add_pump(pu_d).unwrap();
@@ -304,21 +282,13 @@ impl Pipeline {
             "fst_9",
         )));
 
-        let server_a = ServerModel::fx_net_source_started(
-            fst_1.clone(),
-            source_remote_host,
-            source_remote_port,
-        );
-        let server_b = ServerModel::fx_net_source_started(
-            fst_2.clone(),
-            source_remote_host,
-            source_remote_port,
-        );
+        let source_a =
+            SourceReader::fx_net_started(fst_1.clone(), source_remote_host, source_remote_port);
+        let source_b =
+            SourceReader::fx_net_started(fst_2.clone(), source_remote_host, source_remote_port);
 
-        let server_l =
-            ServerModel::fx_net_sink(fst_8.clone(), sink1_remote_host, sink1_remote_port);
-        let server_m =
-            ServerModel::fx_net_sink(fst_9.clone(), sink2_remote_host, sink2_remote_port);
+        let sink_l = SinkWriter::fx_net(fst_8.clone(), sink1_remote_host, sink1_remote_port);
+        let sink_m = SinkWriter::fx_net(fst_9.clone(), sink2_remote_host, sink2_remote_port);
 
         let pu_c = PumpModel::fx_trade(
             PumpName::factory("pu_c"),
@@ -374,11 +344,11 @@ impl Pipeline {
         pipeline.add_foreign_stream(fst_8).unwrap();
         pipeline.add_foreign_stream(fst_9).unwrap();
 
-        pipeline.add_server(server_a).unwrap();
-        pipeline.add_server(server_b).unwrap();
+        pipeline.add_source_reader(source_a).unwrap();
+        pipeline.add_source_reader(source_b).unwrap();
 
-        pipeline.add_server(server_l).unwrap();
-        pipeline.add_server(server_m).unwrap();
+        pipeline.add_sink_writer(sink_l).unwrap();
+        pipeline.add_sink_writer(sink_m).unwrap();
 
         pipeline.add_stream(st_3).unwrap();
         pipeline.add_stream(st_4).unwrap();
@@ -435,27 +405,29 @@ impl ForeignStreamModel {
     }
 }
 
-impl ServerModel {
-    pub(crate) fn fx_net_source_started(
-        serving_foreign_stream: Arc<ForeignStreamModel>,
+impl SourceReader {
+    pub(crate) fn fx_net_started(
+        dest_foreign_stream: Arc<ForeignStreamModel>,
         remote_host: IpAddr,
         remote_port: u16,
     ) -> Self {
         Self::new(
-            ServerType::SourceNet,
-            serving_foreign_stream,
+            SourceReaderType::Net,
+            dest_foreign_stream,
             Options::fx_net_source_server(remote_host, remote_port),
         )
     }
-    pub(crate) fn fx_net_sink(
-        serving_foreign_stream: Arc<ForeignStreamModel>,
+}
+impl SinkWriter {
+    pub(crate) fn fx_net(
+        from_foreign_stream: Arc<ForeignStreamModel>,
         remote_host: IpAddr,
         remote_port: u16,
     ) -> Self {
         Self::new(
-            ServerType::SinkNet,
-            serving_foreign_stream,
-            Options::fx_net_sink_server(remote_host, remote_port),
+            SinkWriterType::Net,
+            from_foreign_stream,
+            Options::fx_net_server(remote_host, remote_port),
         )
     }
 }
@@ -604,7 +576,7 @@ impl Options {
             .build()
     }
 
-    pub(crate) fn fx_net_sink_server(remote_host: IpAddr, remote_port: u16) -> Self {
+    pub(crate) fn fx_net_server(remote_host: IpAddr, remote_port: u16) -> Self {
         OptionsBuilder::default()
             .add("PROTOCOL", "TCP")
             .add("REMOTE_HOST", remote_host.to_string())

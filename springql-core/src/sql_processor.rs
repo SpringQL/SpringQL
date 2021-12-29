@@ -68,7 +68,8 @@ mod tests {
             name::{PumpName, StreamName},
             option::options_builder::OptionsBuilder,
             pump_model::{pump_state::PumpState, PumpModel},
-            server_model::{server_type::ServerType, ServerModel},
+            sink_writer::{sink_writer_type::SinkWriterType, SinkWriter},
+            source_reader::{source_reader_type::SourceReaderType, SourceReader},
             stream_model::{stream_shape::StreamShape, StreamModel},
         },
         stream_engine::command::{
@@ -102,15 +103,15 @@ mod tests {
             StreamName::new("source_trade".to_string()),
             Arc::new(expected_shape),
         ));
-        let expected_server = ServerModel::new(
-            ServerType::SourceNet,
+        let expected_source = SourceReader::new(
+            SourceReaderType::Net,
             Arc::new(expected_stream),
             expected_options,
         );
 
         assert_eq!(
             command,
-            Command::AlterPipeline(AlterPipelineCommand::CreateForeignStream(expected_server))
+            Command::AlterPipeline(AlterPipelineCommand::CreateForeignSourceStream(expected_source))
         );
     }
 
@@ -137,15 +138,15 @@ mod tests {
             StreamName::new("sink_trade".to_string()),
             Arc::new(expected_shape),
         ));
-        let expected_server = ServerModel::new(
-            ServerType::SinkNet,
+        let expected_sink = SinkWriter::new(
+            SinkWriterType::Net,
             Arc::new(expected_stream),
             expected_options,
         );
 
         assert_eq!(
             command,
-            Command::AlterPipeline(AlterPipelineCommand::CreateForeignStream(expected_server))
+            Command::AlterPipeline(AlterPipelineCommand::CreateForeignSinkStream(expected_sink))
         );
     }
 

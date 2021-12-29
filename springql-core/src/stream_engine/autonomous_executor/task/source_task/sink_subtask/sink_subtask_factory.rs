@@ -1,7 +1,8 @@
 // Copyright (c) 2021 TOYOTA MOTOR CORPORATION. Licensed under MIT OR Apache-2.0.
 
 use crate::error::Result;
-use crate::pipeline::{option::Options, server_model::server_type::ServerType};
+use crate::pipeline::option::Options;
+use crate::pipeline::sink_writer::sink_writer_type::SinkWriterType;
 
 use super::in_memory_queue::InMemoryQueueSinkSubtask;
 use super::net::NetSinkSubtask;
@@ -11,20 +12,18 @@ pub(in crate::stream_engine) struct SinkSubtaskFactory;
 
 impl SinkSubtaskFactory {
     pub(in crate::stream_engine) fn sink(
-        server_type: &ServerType,
+        sink_writer_type: &SinkWriterType,
         options: &Options,
     ) -> Result<Box<dyn SinkSubtask>> {
-        match server_type {
-            ServerType::SinkNet => {
+        match sink_writer_type {
+            SinkWriterType::Net => {
                 let server = NetSinkSubtask::start(options)?;
                 Ok(Box::new(server) as Box<dyn SinkSubtask>)
             }
-            ServerType::SinkInMemoryQueue => {
-                let server = InMemoryQueueSinkSubtask::start(options)?;
-                Ok(Box::new(server) as Box<dyn SinkSubtask>)
+            SinkWriterType::InMemoryQueue => {
+                let sink = InMemoryQueueSinkSubtask::start(options)?;
+                Ok(Box::new(sink) as Box<dyn SinkSubtask>)
             }
-
-            ServerType::SourceNet => unreachable!(),
         }
     }
 }

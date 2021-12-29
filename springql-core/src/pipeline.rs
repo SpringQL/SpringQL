@@ -4,7 +4,8 @@
 //!   - Stream
 //!     - (native) Stream
 //!     - Source/Sink Foreign Stream
-//!   - Source/Sink Server
+//!   - Source Reader
+//!   - Sink Writer
 //!   - Pump
 
 pub(crate) mod foreign_stream_model;
@@ -14,7 +15,8 @@ pub(crate) mod pipeline_graph;
 pub(crate) mod pipeline_version;
 pub(crate) mod pump_model;
 pub(crate) mod relation;
-pub(crate) mod server_model;
+pub(crate) mod sink_writer;
+pub(crate) mod source_reader;
 pub(crate) mod stream_model;
 
 #[cfg(test)]
@@ -31,7 +33,8 @@ use serde::{Deserialize, Serialize};
 
 use self::{
     foreign_stream_model::ForeignStreamModel, name::PumpName, pipeline_graph::PipelineGraph,
-    pipeline_version::PipelineVersion, pump_model::PumpModel, server_model::ServerModel,
+    pipeline_version::PipelineVersion, pump_model::PumpModel, sink_writer::SinkWriter,
+    source_reader::SourceReader,
 };
 
 #[cfg(test)] // TODO remove
@@ -110,12 +113,19 @@ impl Pipeline {
     /// # Failure
     ///
     /// TODO
-    pub(super) fn add_server(&mut self, server: ServerModel) -> Result<()> {
+    pub(super) fn add_source_reader(&mut self, source_reader: SourceReader) -> Result<()> {
         self.update_version();
-        self.graph.add_server(server)
+        self.graph.add_source_reader(source_reader)
+    }
+    /// # Failure
+    ///
+    /// TODO
+    pub(super) fn add_sink_writer(&mut self, sink_writer: SinkWriter) -> Result<()> {
+        self.update_version();
+        self.graph.add_sink_writer(sink_writer)
     }
 
-    pub(super) fn all_sources(&self) -> Vec<&ServerModel> {
+    pub(super) fn all_sources(&self) -> Vec<&SourceReader> {
         self.graph
             .as_petgraph()
             .edge_references()
@@ -125,7 +135,7 @@ impl Pipeline {
             })
             .collect()
     }
-    pub(super) fn all_sinks(&self) -> Vec<&ServerModel> {
+    pub(super) fn all_sinks(&self) -> Vec<&SinkWriter> {
         self.graph
             .as_petgraph()
             .edge_references()

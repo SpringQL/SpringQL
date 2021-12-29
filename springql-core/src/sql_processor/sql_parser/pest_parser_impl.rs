@@ -5,15 +5,17 @@ mod helper;
 
 use crate::error::{Result, SpringError};
 use crate::pipeline::foreign_stream_model::ForeignStreamModel;
-use crate::pipeline::name::{ColumnName, PumpName, ServerName, StreamName};
+use crate::pipeline::name::{ColumnName, PumpName, SourceReaderName, StreamName};
 use crate::pipeline::option::options_builder::OptionsBuilder;
 use crate::pipeline::pump_model::pump_state::PumpState;
 use crate::pipeline::relation::column::column_constraint::ColumnConstraint;
 use crate::pipeline::relation::column::column_data_type::ColumnDataType;
 use crate::pipeline::relation::column::column_definition::ColumnDefinition;
 use crate::pipeline::relation::sql_type::SqlType;
-use crate::pipeline::server_model::server_type::ServerType;
-use crate::pipeline::server_model::ServerModel;
+use crate::pipeline::sink_writer::sink_writer_type::SinkWriterType;
+use crate::pipeline::sink_writer::SinkWriter;
+use crate::pipeline::source_reader::source_reader_type::SourceReaderType;
+use crate::pipeline::source_reader::SourceReader;
 use crate::pipeline::stream_model::stream_shape::StreamShape;
 use crate::pipeline::stream_model::StreamModel;
 use crate::sql_processor::sql_parser::syntax::{
@@ -163,16 +165,16 @@ impl PestParserImpl {
         let options = options.build();
 
         let server_type = match server_name.as_ref() {
-            "NET_SERVER" => Ok(ServerType::SourceNet),
+            "NET_SERVER" => Ok(SourceReaderType::Net),
             _ => Err(SpringError::Sql(anyhow!(
                 "Invalid server name: {}",
                 server_name
             ))),
         }?;
-        let server = ServerModel::new(server_type, Arc::new(foreign_stream), options);
+        let source = SourceReader::new(server_type, Arc::new(foreign_stream), options);
 
         Ok(ParseSuccess::CommandWithoutQuery(Command::AlterPipeline(
-            AlterPipelineCommand::CreateForeignStream(server),
+            AlterPipelineCommand::CreateForeignSourceStream(source),
         )))
     }
 
@@ -223,17 +225,17 @@ impl PestParserImpl {
         let options = options.build();
 
         let server_type = match server_name.as_ref() {
-            "NET_SERVER" => Ok(ServerType::SinkNet),
-            "IN_MEMORY_QUEUE" => Ok(ServerType::SinkInMemoryQueue),
+            "NET_SERVER" => Ok(SinkWriterType::Net),
+            "IN_MEMORY_QUEUE" => Ok(SinkWriterType::InMemoryQueue),
             _ => Err(SpringError::Sql(anyhow!(
                 "Invalid server name: {}",
                 server_name
             ))),
         }?;
-        let server = ServerModel::new(server_type, Arc::new(foreign_stream), options);
+        let sink = SinkWriter::new(server_type, Arc::new(foreign_stream), options);
 
         Ok(ParseSuccess::CommandWithoutQuery(Command::AlterPipeline(
-            AlterPipelineCommand::CreateForeignStream(server),
+            AlterPipelineCommand::CreateForeignSinkStream(sink),
         )))
     }
 
@@ -435,12 +437,12 @@ impl PestParserImpl {
         )
     }
 
-    fn parse_server_name(mut params: FnParseParams) -> Result<ServerName> {
+    fn parse_server_name(mut params: FnParseParams) -> Result<SourceReaderName> {
         parse_child(
             &mut params,
             Rule::identifier,
             Self::parse_identifier,
-            ServerName::new,
+            SourceReaderName::new,
         )
     }
 

@@ -1,6 +1,8 @@
 // Copyright (c) 2021 TOYOTA MOTOR CORPORATION. Licensed under MIT OR Apache-2.0.
 
-use crate::pipeline::{pump_model::pump_state::PumpState, server_model::server_state::ServerState};
+use crate::pipeline::{
+    pump_model::pump_state::PumpState, source_reader::source_reader_state::SourceReaderState,
+};
 
 #[derive(Clone, Eq, PartialEq, Debug)]
 pub(crate) enum TaskState {
@@ -17,11 +19,11 @@ impl From<&PumpState> for TaskState {
     }
 }
 
-impl From<&ServerState> for TaskState {
-    fn from(ss: &ServerState) -> Self {
+impl From<&SourceReaderState> for TaskState {
+    fn from(ss: &SourceReaderState) -> Self {
         match ss {
-            ServerState::Stopped => Self::Stopped,
-            ServerState::Started => Self::Started,
+            SourceReaderState::Stopped => Self::Stopped,
+            SourceReaderState::Started => Self::Started,
         }
     }
 }

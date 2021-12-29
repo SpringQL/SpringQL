@@ -7,9 +7,9 @@ use std::{
     sync::{Arc, Mutex, RwLock},
 };
 
-use crate::pipeline::server_model::ServerModel;
 use crate::{
-    error::Result, pipeline::name::ServerName,
+    error::Result,
+    pipeline::{name::SourceReaderName, source_reader::SourceReader},
     stream_engine::autonomous_executor::task::source_task::source_subtask::source_subtask_factory::SourceSubtaskFactory,
 };
 
@@ -18,7 +18,7 @@ use super::SourceSubtask;
 #[allow(clippy::type_complexity)]
 #[derive(Debug, Default)]
 pub(in crate::stream_engine) struct SourceSubtaskRepository {
-    sources: RwLock<HashMap<ServerName, Arc<Mutex<Box<dyn SourceSubtask>>>>>,
+    sources: RwLock<HashMap<SourceReaderName, Arc<Mutex<Box<dyn SourceSubtask>>>>>,
 }
 
 impl SourceSubtaskRepository {
@@ -30,31 +30,25 @@ impl SourceSubtaskRepository {
     ///   - failed to start server.
     pub(in crate::stream_engine::autonomous_executor) fn register(
         &self,
-        server_model: &ServerModel,
+        source_reader: &SourceReader,
     ) -> Result<()> {
         let mut sources = self
             .sources
             .write()
             .expect("another thread sharing the same internal got panic");
 
-        if server_model.server_type().is_source() {
-            if sources.get(server_model.name()).is_some() {
-                Ok(())
-            } else {
-                let server = SourceSubtaskFactory::source(
-                    server_model.server_type(),
-                    server_model.options(),
-                )?;
-                let server = Arc::new(Mutex::new(server as Box<dyn SourceSubtask>));
-                let _ = sources.insert(server_model.name().clone(), server);
-                log::debug!(
-                    "[SourceSubtaskRepository] registered source server: {}",
-                    server_model.name()
-                );
-                Ok(())
-            }
+        if sources.get(source_reader.name()).is_some() {
+            Ok(())
         } else {
-            unreachable!()
+            let server =
+                SourceSubtaskFactory::source(source_reader.server_type(), source_reader.options())?;
+            let server = Arc::new(Mutex::new(server as Box<dyn SourceSubtask>));
+            let _ = sources.insert(source_reader.name().clone(), server);
+            log::debug!(
+                "[SourceSubtaskRepository] registered source server: {}",
+                source_reader.name()
+            );
+            Ok(())
         }
     }
 
@@ -63,7 +57,7 @@ impl SourceSubtaskRepository {
     /// `server_name` is not registered yet
     pub(in crate::stream_engine::autonomous_executor) fn get_source_server(
         &self,
-        server_name: &ServerName,
+        server_name: &SourceReaderName,
     ) -> Arc<Mutex<Box<dyn SourceSubtask>>> {
         self.sources
             .read()

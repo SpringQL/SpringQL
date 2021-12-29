@@ -20,7 +20,8 @@ use super::{
     foreign_stream_model::ForeignStreamModel,
     name::{PumpName, StreamName},
     pump_model::PumpModel,
-    server_model::{server_state::ServerState, ServerModel},
+    sink_writer::SinkWriter,
+    source_reader::{source_reader_state::SourceReaderState, SourceReader},
 };
 use crate::error::{Result, SpringError};
 use anyhow::anyhow;
@@ -112,17 +113,10 @@ impl PipelineGraph {
         Ok(())
     }
 
-    pub(super) fn add_server(&mut self, server: ServerModel) -> Result<()> {
-        if server.server_type().is_source() {
-            self._add_source_server(server)
-        } else if server.server_type().is_sink() {
-            self._add_sink_server(server)
-        } else {
-            unreachable!()
-        }
-    }
-
-    pub(crate) fn source_server_state(&self, serving_foreign_stream: &StreamName) -> ServerState {
+    pub(crate) fn source_reader_state(
+        &self,
+        serving_foreign_stream: &StreamName,
+    ) -> SourceReaderState {
         let fst_node = self
             .graph
             .node_indices()
@@ -130,9 +124,9 @@ impl PipelineGraph {
             .unwrap();
 
         if self._at_least_one_started_path_to_sink(fst_node) {
-            ServerState::Started
+            SourceReaderState::Started
         } else {
-            ServerState::Stopped
+            SourceReaderState::Stopped
         }
     }
 
@@ -173,8 +167,8 @@ impl PipelineGraph {
         }
     }
 
-    fn _add_source_server(&mut self, server: ServerModel) -> Result<()> {
-        let serving_to = server.serving_foreign_stream();
+    pub(super) fn add_source_reader(&mut self, source_reader: SourceReader) -> Result<()> {
+        let serving_to = source_reader.dest_foreign_stream();
 
         let upstream_node = self
             .stream_nodes
@@ -186,14 +180,16 @@ impl PipelineGraph {
                 serving_to.name()
             ))
         })?;
-        let _ = self
-            .graph
-            .add_edge(*upstream_node, *downstream_node, Edge::Source(server));
+        let _ = self.graph.add_edge(
+            *upstream_node,
+            *downstream_node,
+            Edge::Source(source_reader),
+        );
         Ok(())
     }
 
-    fn _add_sink_server(&mut self, server: ServerModel) -> Result<()> {
-        let serving_to = server.serving_foreign_stream();
+    pub(super) fn add_sink_writer(&mut self, sink_writer: SinkWriter) -> Result<()> {
+        let serving_to = sink_writer.from_foreign_stream();
 
         let upstream_node = self.stream_nodes.get(serving_to.name()).ok_or_else(|| {
             SpringError::Sql(anyhow!(
@@ -206,7 +202,7 @@ impl PipelineGraph {
         });
         let _ = self
             .graph
-            .add_edge(*upstream_node, downstream_node, Edge::Sink(server));
+            .add_edge(*upstream_node, downstream_node, Edge::Sink(sink_writer));
         Ok(())
     }
 }
