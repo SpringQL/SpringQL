@@ -14,13 +14,13 @@ pub(crate) enum NetProtocol {
 }
 
 #[derive(Clone, Eq, PartialEq, Debug)]
-pub(crate) struct NetServerOptions {
+pub(crate) struct NetOptions {
     pub(crate) protocol: NetProtocol,
     pub(crate) remote_host: IpAddr,
     pub(crate) remote_port: u16,
 }
 
-impl TryFrom<&Options> for NetServerOptions {
+impl TryFrom<&Options> for NetOptions {
     type Error = SpringError;
 
     fn try_from(options: &Options) -> Result<Self> {

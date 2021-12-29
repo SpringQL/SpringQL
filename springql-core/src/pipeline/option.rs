@@ -3,7 +3,7 @@
 pub(crate) mod options_builder;
 
 pub(crate) mod in_memory_queue_server_options;
-pub(crate) mod net_server_options;
+pub(crate) mod net_options;
 
 use crate::error::{Result, SpringError};
 use anyhow::Context;

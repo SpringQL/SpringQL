@@ -11,7 +11,7 @@ use anyhow::Context;
 use super::SinkWriterInstance;
 use crate::{
     error::{foreign_info::ForeignInfo, Result, SpringError},
-    pipeline::option::{net_server_options::NetServerOptions, Options},
+    pipeline::option::{net_options::NetOptions, Options},
     stream_engine::autonomous_executor::row::foreign_row::{
         foreign_sink_row::ForeignSinkRow, format::json::JsonObject,
     },
@@ -29,7 +29,7 @@ pub(in crate::stream_engine) struct NetSinkServerInstance {
 
 impl SinkWriterInstance for NetSinkServerInstance {
     fn start(options: &Options) -> Result<Self> {
-        let options = NetServerOptions::try_from(options)?;
+        let options = NetOptions::try_from(options)?;
         let sock_addr = SocketAddr::new(options.remote_host, options.remote_port);
 
         let tcp_stream =
