@@ -414,7 +414,7 @@ impl SourceReader {
         Self::new(
             SourceReaderType::Net,
             dest_foreign_stream,
-            Options::fx_net_source_server(remote_host, remote_port),
+            Options::fx_net(remote_host, remote_port),
         )
     }
 }
@@ -427,7 +427,7 @@ impl SinkWriter {
         Self::new(
             SinkWriterType::Net,
             from_foreign_stream,
-            Options::fx_net_server(remote_host, remote_port),
+            Options::fx_net(remote_host, remote_port),
         )
     }
 }
@@ -568,15 +568,7 @@ impl ColumnName {
 }
 
 impl Options {
-    pub(crate) fn fx_net_source_server(remote_host: IpAddr, remote_port: u16) -> Self {
-        OptionsBuilder::default()
-            .add("PROTOCOL", "TCP")
-            .add("REMOTE_HOST", remote_host.to_string())
-            .add("REMOTE_PORT", remote_port.to_string())
-            .build()
-    }
-
-    pub(crate) fn fx_net_server(remote_host: IpAddr, remote_port: u16) -> Self {
+    pub(crate) fn fx_net(remote_host: IpAddr, remote_port: u16) -> Self {
         OptionsBuilder::default()
             .add("PROTOCOL", "TCP")
             .add("REMOTE_HOST", remote_host.to_string())

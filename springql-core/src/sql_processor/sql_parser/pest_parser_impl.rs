@@ -137,7 +137,7 @@ impl PestParserImpl {
             &Self::parse_column_definition,
             &identity,
         )?;
-        let server_name = parse_child(
+        let source_reader_name = parse_child(
             &mut params,
             Rule::server_name,
             Self::parse_server_name,
@@ -164,11 +164,11 @@ impl PestParserImpl {
         }
         let options = options.build();
 
-        let server_type = match server_name.as_ref() {
+        let server_type = match source_reader_name.as_ref() {
             "NET_SERVER" => Ok(SourceReaderType::Net),
             _ => Err(SpringError::Sql(anyhow!(
                 "Invalid server name: {}",
-                server_name
+                source_reader_name
             ))),
         }?;
         let source = SourceReader::new(server_type, Arc::new(foreign_stream), options);

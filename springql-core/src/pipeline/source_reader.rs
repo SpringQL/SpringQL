@@ -17,20 +17,20 @@ use super::{
 #[derive(Clone, PartialEq, Eq, Debug, Serialize, Deserialize)]
 pub(crate) struct SourceReader {
     name: SourceReaderName,
-    server_type: SourceReaderType,
+    source_reader_type: SourceReaderType,
     dest_foreign_stream: Arc<ForeignStreamModel>,
     options: Options,
 }
 
 impl SourceReader {
     pub(crate) fn new(
-        server_type: SourceReaderType,
+        source_reader_type: SourceReaderType,
         dest_foreign_stream: Arc<ForeignStreamModel>,
         options: Options,
     ) -> Self {
         Self {
-            name: SourceReaderName::from(&server_type),
-            server_type,
+            name: SourceReaderName::from(&source_reader_type),
+            source_reader_type,
             dest_foreign_stream,
             options,
         }
@@ -44,8 +44,8 @@ impl SourceReader {
         pipeline_graph.source_reader_state(self.dest_foreign_stream.name())
     }
 
-    pub(crate) fn server_type(&self) -> &SourceReaderType {
-        &self.server_type
+    pub(crate) fn source_reader_type(&self) -> &SourceReaderType {
+        &self.source_reader_type
     }
 
     pub(crate) fn dest_foreign_stream(&self) -> Arc<ForeignStreamModel> {

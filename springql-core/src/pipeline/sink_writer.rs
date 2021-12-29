@@ -6,32 +6,27 @@ use std::sync::Arc;
 
 use serde::{Deserialize, Serialize};
 
-
-
 use self::sink_writer_type::SinkWriterType;
 
-use super::{
-    foreign_stream_model::ForeignStreamModel, name::SinkWriterName, option::Options,
-    
-};
+use super::{foreign_stream_model::ForeignStreamModel, name::SinkWriterName, option::Options};
 
 #[derive(Clone, PartialEq, Eq, Debug, Serialize, Deserialize)]
 pub(crate) struct SinkWriter {
     name: SinkWriterName,
-    server_type: SinkWriterType,
+    sink_writer_type: SinkWriterType,
     from_foreign_stream: Arc<ForeignStreamModel>,
     options: Options,
 }
 
 impl SinkWriter {
     pub(crate) fn new(
-        server_type: SinkWriterType,
+        sink_writer_type: SinkWriterType,
         from_foreign_stream: Arc<ForeignStreamModel>,
         options: Options,
     ) -> Self {
         Self {
-            name: SinkWriterName::from(&server_type),
-            server_type,
+            name: SinkWriterName::from(&sink_writer_type),
+            sink_writer_type,
             from_foreign_stream,
             options,
         }
@@ -41,8 +36,8 @@ impl SinkWriter {
         &self.name
     }
 
-    pub(crate) fn server_type(&self) -> &SinkWriterType {
-        &self.server_type
+    pub(crate) fn sink_writer_type(&self) -> &SinkWriterType {
+        &self.sink_writer_type
     }
 
     pub(crate) fn from_foreign_stream(&self) -> Arc<ForeignStreamModel> {

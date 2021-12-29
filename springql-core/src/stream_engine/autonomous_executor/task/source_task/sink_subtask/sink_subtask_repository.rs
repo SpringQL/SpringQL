@@ -39,7 +39,7 @@ impl SinkSubtaskRepository {
             Ok(())
         } else {
             let server =
-                SinkSubtaskFactory::sink(sink_writer.server_type(), sink_writer.options())?;
+                SinkSubtaskFactory::sink(sink_writer.sink_writer_type(), sink_writer.options())?;
             let server = Arc::new(Mutex::new(server as Box<dyn SinkSubtask>));
             let _ = sinks.insert(sink_writer.name().clone(), server);
             log::debug!(

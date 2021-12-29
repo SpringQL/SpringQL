@@ -41,7 +41,7 @@ impl SourceSubtaskRepository {
             Ok(())
         } else {
             let server =
-                SourceSubtaskFactory::source(source_reader.server_type(), source_reader.options())?;
+                SourceSubtaskFactory::source(source_reader.source_reader_type(), source_reader.options())?;
             let server = Arc::new(Mutex::new(server as Box<dyn SourceSubtask>));
             let _ = sources.insert(source_reader.name().clone(), server);
             log::debug!(
