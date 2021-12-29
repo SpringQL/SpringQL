@@ -306,8 +306,6 @@ create_source_stream_command = {
     ~ "("
     ~ column_definition ~ ("," ~ column_definition)*
     ~ ")"
-    ~ ^"SERVER" ~ source_reader_name
-    ~ option_specifications?
 }
 
 /*
@@ -342,6 +340,19 @@ create_pump_command = {
     ~ column_name ~ ("," ~ column_name)*
     ~ ")"
     ~ select_stream_command
+}
+
+/*
+ * ----------------------------------------------------------------------------
+ * CREATE SOURCE READER
+ * ----------------------------------------------------------------------------
+ */
+
+create_source_reader_command = {
+    ^"CREATE" ~ ^"SOURCE" ~ ^"READER" ~ ^"FOR"
+    ~ stream_name
+    ~ source_reader_name
+    ~ option_specifications?
 }
 
 /*
