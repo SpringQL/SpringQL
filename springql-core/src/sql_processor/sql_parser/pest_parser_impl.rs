@@ -5,7 +5,7 @@ mod helper;
 
 use crate::error::{Result, SpringError};
 use crate::pipeline::foreign_stream_model::ForeignStreamModel;
-use crate::pipeline::name::{ColumnName, PumpName, SourceReaderName, StreamName};
+use crate::pipeline::name::{ColumnName, PumpName, SinkWriterName, SourceReaderName, StreamName};
 use crate::pipeline::option::options_builder::OptionsBuilder;
 use crate::pipeline::pump_model::pump_state::PumpState;
 use crate::pipeline::relation::column::column_constraint::ColumnConstraint;
@@ -139,8 +139,8 @@ impl PestParserImpl {
         )?;
         let source_reader_name = parse_child(
             &mut params,
-            Rule::server_name,
-            Self::parse_server_name,
+            Rule::source_reader_name,
+            Self::parse_source_reader_name,
             identity,
         )?;
         let option_syntaxes = try_parse_child(
@@ -197,10 +197,10 @@ impl PestParserImpl {
             &Self::parse_column_definition,
             &identity,
         )?;
-        let server_name = parse_child(
+        let sink_writer_name = parse_child(
             &mut params,
-            Rule::server_name,
-            Self::parse_server_name,
+            Rule::sink_writer_name,
+            Self::parse_sink_writer_name,
             identity,
         )?;
         let option_syntaxes = try_parse_child(
@@ -224,12 +224,12 @@ impl PestParserImpl {
         }
         let options = options.build();
 
-        let server_type = match server_name.as_ref() {
+        let server_type = match sink_writer_name.as_ref() {
             "NET_SERVER" => Ok(SinkWriterType::Net),
             "IN_MEMORY_QUEUE" => Ok(SinkWriterType::InMemoryQueue),
             _ => Err(SpringError::Sql(anyhow!(
                 "Invalid server name: {}",
-                server_name
+                sink_writer_name
             ))),
         }?;
         let sink = SinkWriter::new(server_type, Arc::new(foreign_stream), options);
@@ -437,12 +437,20 @@ impl PestParserImpl {
         )
     }
 
-    fn parse_server_name(mut params: FnParseParams) -> Result<SourceReaderName> {
+    fn parse_source_reader_name(mut params: FnParseParams) -> Result<SourceReaderName> {
         parse_child(
             &mut params,
             Rule::identifier,
             Self::parse_identifier,
             SourceReaderName::new,
+        )
+    }
+    fn parse_sink_writer_name(mut params: FnParseParams) -> Result<SinkWriterName> {
+        parse_child(
+            &mut params,
+            Rule::identifier,
+            Self::parse_identifier,
+            SinkWriterName::new,
         )
     }
 

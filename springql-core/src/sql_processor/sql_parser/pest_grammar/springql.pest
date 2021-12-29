@@ -306,7 +306,7 @@ create_source_stream_command = {
     ~ "("
     ~ column_definition ~ ("," ~ column_definition)*
     ~ ")"
-    ~ ^"SERVER" ~ server_name
+    ~ ^"SERVER" ~ source_reader_name
     ~ option_specifications?
 }
 
@@ -322,7 +322,7 @@ create_sink_stream_command = {
     ~ "("
     ~ column_definition ~ ("," ~ column_definition)*
     ~ ")"
-    ~ ^"SERVER" ~ server_name
+    ~ ^"SERVER" ~ sink_writer_name
     ~ option_specifications?
 }
 
@@ -382,7 +382,11 @@ pump_name = {
     identifier
 }
 
-server_name = {
+source_reader_name = {
+    identifier
+}
+
+sink_writer_name = {
     identifier
 }
 

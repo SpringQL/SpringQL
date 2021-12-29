@@ -68,6 +68,11 @@ impl AsRef<str> for SourceReaderName {
         &self.0
     }
 }
+impl AsRef<str> for SinkWriterName {
+    fn as_ref(&self) -> &str {
+        &self.0
+    }
+}
 
 impl ColumnName {
     pub(crate) fn arrival_rowtime() -> Self {
