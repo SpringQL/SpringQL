@@ -115,7 +115,7 @@ mod tests {
         let mut engine = StreamEngine::new(n_worker_threads);
         engine
             .alter_pipeline(
-                AlterPipelineCommand::fx_create_foreign_stream_trade_with_source_server(
+                AlterPipelineCommand::fx_create_foreign_stream_trade_with_source(
                     fst_trade_source.clone(),
                     source.host_ip(),
                     source.port(),
@@ -124,7 +124,7 @@ mod tests {
             .unwrap();
         engine
             .alter_pipeline(
-                AlterPipelineCommand::fx_create_foreign_stream_trade_with_sink_server(
+                AlterPipelineCommand::fx_create_foreign_stream_trade_with_sink(
                     fst_trade_sink.clone(),
                     sink.host_ip(),
                     sink.port(),

@@ -194,7 +194,7 @@ impl StreamColumns {
 }
 
 impl AlterPipelineCommand {
-    pub(in crate::stream_engine) fn fx_create_foreign_stream_trade_with_source_server(
+    pub(in crate::stream_engine) fn fx_create_foreign_stream_trade_with_source(
         stream_name: StreamName,
         source_server_host: IpAddr,
         source_server_port: u16,
@@ -204,7 +204,7 @@ impl AlterPipelineCommand {
         Self::CreateForeignSourceStream(source)
     }
 
-    pub(in crate::stream_engine) fn fx_create_foreign_stream_trade_with_sink_server(
+    pub(in crate::stream_engine) fn fx_create_foreign_stream_trade_with_sink(
         stream_name: StreamName,
         sink_server_host: IpAddr,
         sink_server_port: u16,
