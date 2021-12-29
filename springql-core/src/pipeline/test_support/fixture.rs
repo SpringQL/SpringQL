@@ -17,7 +17,7 @@ use crate::{
             sql_type::SqlType,
         },
         sink_writer::{sink_writer_type::SinkWriterType, SinkWriter},
-        source_reader::{source_reader_type::SourceReaderType, SourceReader},
+        source_reader_model::{source_reader_type::SourceReaderType, SourceReaderModel},
         stream_model::{stream_shape::StreamShape, StreamModel},
         Pipeline,
     },
@@ -36,8 +36,11 @@ impl Pipeline {
             "fst_1",
         )));
 
-        let source_a =
-            SourceReader::fx_net_started(fst_1.clone(), source_remote_host, source_remote_port);
+        let source_a = SourceReaderModel::fx_net_started(
+            fst_1.clone(),
+            source_remote_host,
+            source_remote_port,
+        );
 
         let mut pipeline = Pipeline::default();
         pipeline.add_foreign_stream(fst_1).unwrap();
@@ -61,8 +64,11 @@ impl Pipeline {
             "fst_2",
         )));
 
-        let source_a =
-            SourceReader::fx_net_started(fst_1.clone(), source_remote_host, source_remote_port);
+        let source_a = SourceReaderModel::fx_net_started(
+            fst_1.clone(),
+            source_remote_host,
+            source_remote_port,
+        );
         let sink_c = SinkWriter::fx_net(fst_2.clone(), sink_remote_host, sink_remote_port);
 
         let pu_b = PumpModel::fx_trade_stopped(
@@ -100,8 +106,11 @@ impl Pipeline {
             "fst_2",
         )));
 
-        let source_a =
-            SourceReader::fx_net_started(fst_1.clone(), source_remote_host, source_remote_port);
+        let source_a = SourceReaderModel::fx_net_started(
+            fst_1.clone(),
+            source_remote_host,
+            source_remote_port,
+        );
         let sink_c = SinkWriter::fx_net(fst_2.clone(), sink_remote_host, sink_remote_port);
 
         let pu_b = PumpModel::fx_trade(
@@ -150,10 +159,16 @@ impl Pipeline {
             "fst_4",
         )));
 
-        let source_a =
-            SourceReader::fx_net_started(fst_1.clone(), source_remote_host, source_remote_port);
-        let source_b =
-            SourceReader::fx_net_started(fst_2.clone(), source_remote_host, source_remote_port);
+        let source_a = SourceReaderModel::fx_net_started(
+            fst_1.clone(),
+            source_remote_host,
+            source_remote_port,
+        );
+        let source_b = SourceReaderModel::fx_net_started(
+            fst_2.clone(),
+            source_remote_host,
+            source_remote_port,
+        );
 
         let sink_e = SinkWriter::fx_net(fst_3.clone(), sink1_remote_host, sink1_remote_port);
         let sink_f = SinkWriter::fx_net(fst_4.clone(), sink2_remote_host, sink2_remote_port);
@@ -212,10 +227,16 @@ impl Pipeline {
             "fst_3",
         )));
 
-        let source_a =
-            SourceReader::fx_net_started(fst_1.clone(), source_remote_host, source_remote_port);
-        let source_b =
-            SourceReader::fx_net_started(fst_2.clone(), source_remote_host, source_remote_port);
+        let source_a = SourceReaderModel::fx_net_started(
+            fst_1.clone(),
+            source_remote_host,
+            source_remote_port,
+        );
+        let source_b = SourceReaderModel::fx_net_started(
+            fst_2.clone(),
+            source_remote_host,
+            source_remote_port,
+        );
 
         let sink_e = SinkWriter::fx_net(fst_3.clone(), sink_remote_host, sink_remote_port);
 
@@ -282,10 +303,16 @@ impl Pipeline {
             "fst_9",
         )));
 
-        let source_a =
-            SourceReader::fx_net_started(fst_1.clone(), source_remote_host, source_remote_port);
-        let source_b =
-            SourceReader::fx_net_started(fst_2.clone(), source_remote_host, source_remote_port);
+        let source_a = SourceReaderModel::fx_net_started(
+            fst_1.clone(),
+            source_remote_host,
+            source_remote_port,
+        );
+        let source_b = SourceReaderModel::fx_net_started(
+            fst_2.clone(),
+            source_remote_host,
+            source_remote_port,
+        );
 
         let sink_l = SinkWriter::fx_net(fst_8.clone(), sink1_remote_host, sink1_remote_port);
         let sink_m = SinkWriter::fx_net(fst_9.clone(), sink2_remote_host, sink2_remote_port);
@@ -405,7 +432,7 @@ impl ForeignStreamModel {
     }
 }
 
-impl SourceReader {
+impl SourceReaderModel {
     pub(crate) fn fx_net_started(
         dest_foreign_stream: Arc<ForeignStreamModel>,
         remote_host: IpAddr,

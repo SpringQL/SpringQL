@@ -16,7 +16,7 @@ pub(crate) mod pipeline_version;
 pub(crate) mod pump_model;
 pub(crate) mod relation;
 pub(crate) mod sink_writer;
-pub(crate) mod source_reader;
+pub(crate) mod source_reader_model;
 pub(crate) mod stream_model;
 
 #[cfg(test)]
@@ -34,7 +34,7 @@ use serde::{Deserialize, Serialize};
 use self::{
     foreign_stream_model::ForeignStreamModel, name::PumpName, pipeline_graph::PipelineGraph,
     pipeline_version::PipelineVersion, pump_model::PumpModel, sink_writer::SinkWriter,
-    source_reader::SourceReader,
+    source_reader_model::SourceReaderModel,
 };
 
 #[cfg(test)] // TODO remove
@@ -113,7 +113,7 @@ impl Pipeline {
     /// # Failure
     ///
     /// TODO
-    pub(super) fn add_source_reader(&mut self, source_reader: SourceReader) -> Result<()> {
+    pub(super) fn add_source_reader(&mut self, source_reader: SourceReaderModel) -> Result<()> {
         self.update_version();
         self.graph.add_source_reader(source_reader)
     }
@@ -125,7 +125,7 @@ impl Pipeline {
         self.graph.add_sink_writer(sink_writer)
     }
 
-    pub(super) fn all_sources(&self) -> Vec<&SourceReader> {
+    pub(super) fn all_sources(&self) -> Vec<&SourceReaderModel> {
         self.graph
             .as_petgraph()
             .edge_references()

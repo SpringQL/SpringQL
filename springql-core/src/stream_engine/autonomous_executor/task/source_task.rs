@@ -10,7 +10,7 @@ use crate::error::Result;
 use crate::pipeline::foreign_stream_model::ForeignStreamModel;
 use crate::pipeline::name::SourceReaderName;
 use crate::pipeline::pipeline_graph::PipelineGraph;
-use crate::pipeline::source_reader::SourceReader;
+use crate::pipeline::source_reader_model::SourceReaderModel;
 use crate::stream_engine::autonomous_executor::row::Row;
 use crate::stream_engine::autonomous_executor::RowRepository;
 use crate::stream_engine::dependency_injection::DependencyInjection;
@@ -29,7 +29,7 @@ pub(crate) struct SourceTask {
 
 impl SourceTask {
     pub(in crate::stream_engine) fn new(
-        source_reader: &SourceReader,
+        source_reader: &SourceReaderModel,
         pipeline_graph: &PipelineGraph,
     ) -> Self {
         let id = TaskId::from_source_reader(source_reader.dest_foreign_stream().name().clone());

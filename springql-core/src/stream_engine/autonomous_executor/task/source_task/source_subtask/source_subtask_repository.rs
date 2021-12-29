@@ -9,7 +9,7 @@ use std::{
 
 use crate::{
     error::Result,
-    pipeline::{name::SourceReaderName, source_reader::SourceReader},
+    pipeline::{name::SourceReaderName, source_reader_model::SourceReaderModel},
     stream_engine::autonomous_executor::task::source_task::source_subtask::source_subtask_factory::SourceSubtaskFactory,
 };
 
@@ -30,7 +30,7 @@ impl SourceSubtaskRepository {
     ///   - failed to start subtask.
     pub(in crate::stream_engine::autonomous_executor) fn register(
         &self,
-        source_reader: &SourceReader,
+        source_reader: &SourceReaderModel,
     ) -> Result<()> {
         let mut sources = self
             .sources
@@ -40,8 +40,10 @@ impl SourceSubtaskRepository {
         if sources.get(source_reader.name()).is_some() {
             Ok(())
         } else {
-            let subtask =
-                SourceSubtaskFactory::source(source_reader.source_reader_type(), source_reader.options())?;
+            let subtask = SourceSubtaskFactory::source(
+                source_reader.source_reader_type(),
+                source_reader.options(),
+            )?;
             let subtask = Arc::new(Mutex::new(subtask as Box<dyn SourceSubtask>));
             let _ = sources.insert(source_reader.name().clone(), subtask);
             log::debug!(

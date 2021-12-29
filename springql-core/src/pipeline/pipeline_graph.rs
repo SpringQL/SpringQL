@@ -21,7 +21,7 @@ use super::{
     name::{PumpName, StreamName},
     pump_model::PumpModel,
     sink_writer::SinkWriter,
-    source_reader::{source_reader_state::SourceReaderState, SourceReader},
+    source_reader_model::{source_reader_state::SourceReaderState, SourceReaderModel},
 };
 use crate::error::{Result, SpringError};
 use anyhow::anyhow;
@@ -167,7 +167,7 @@ impl PipelineGraph {
         }
     }
 
-    pub(super) fn add_source_reader(&mut self, source_reader: SourceReader) -> Result<()> {
+    pub(super) fn add_source_reader(&mut self, source_reader: SourceReaderModel) -> Result<()> {
         let serving_to = source_reader.dest_foreign_stream();
 
         let upstream_node = self

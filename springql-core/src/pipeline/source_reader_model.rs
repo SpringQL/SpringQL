@@ -15,14 +15,14 @@ use super::{
 };
 
 #[derive(Clone, PartialEq, Eq, Debug, Serialize, Deserialize)]
-pub(crate) struct SourceReader {
+pub(crate) struct SourceReaderModel {
     name: SourceReaderName,
     source_reader_type: SourceReaderType,
     dest_foreign_stream: Arc<ForeignStreamModel>,
     options: Options,
 }
 
-impl SourceReader {
+impl SourceReaderModel {
     pub(crate) fn new(
         source_reader_type: SourceReaderType,
         dest_foreign_stream: Arc<ForeignStreamModel>,

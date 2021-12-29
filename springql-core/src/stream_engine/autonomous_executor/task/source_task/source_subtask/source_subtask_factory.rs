@@ -2,7 +2,7 @@
 
 use crate::error::Result;
 use crate::pipeline::option::Options;
-use crate::pipeline::source_reader::source_reader_type::SourceReaderType;
+use crate::pipeline::source_reader_model::source_reader_type::SourceReaderType;
 use crate::stream_engine::autonomous_executor::task::source_task::source_subtask::SourceSubtask;
 
 use super::net::NetSourceSubtask;

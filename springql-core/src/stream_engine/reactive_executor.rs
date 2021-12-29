@@ -7,7 +7,7 @@ use crate::{
         name::PumpName,
         pump_model::{pump_state::PumpState, PumpModel},
         sink_writer::SinkWriter,
-        source_reader::SourceReader,
+        source_reader_model::SourceReaderModel,
         Pipeline,
     },
 };
@@ -48,7 +48,7 @@ impl ReactiveExecutor {
 
     fn create_foreign_source_stream(
         mut pipeline: Pipeline,
-        source: SourceReader,
+        source: SourceReaderModel,
     ) -> Result<Pipeline> {
         let fst = source.dest_foreign_stream();
         pipeline.add_foreign_stream(fst)?;

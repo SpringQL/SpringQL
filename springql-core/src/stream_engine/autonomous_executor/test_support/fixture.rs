@@ -11,7 +11,7 @@ use crate::{
         pipeline_graph::PipelineGraph,
         pump_model::{pump_state::PumpState, PumpModel},
         sink_writer::SinkWriter,
-        source_reader::SourceReader,
+        source_reader_model::SourceReaderModel,
     },
     stream_engine::dependency_injection::test_di::TestDI,
     stream_engine::{
@@ -200,7 +200,8 @@ impl AlterPipelineCommand {
         source_server_port: u16,
     ) -> Self {
         let stream = Arc::new(ForeignStreamModel::fx_trade_with_name(stream_name));
-        let source = SourceReader::fx_net_started(stream, source_server_host, source_server_port);
+        let source =
+            SourceReaderModel::fx_net_started(stream, source_server_host, source_server_port);
         Self::CreateForeignSourceStream(source)
     }
 
