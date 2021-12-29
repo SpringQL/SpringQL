@@ -10,6 +10,9 @@ pub(in crate::stream_engine::autonomous_executor) mod net;
 pub(in crate::stream_engine::autonomous_executor) mod source_reader_factory;
 pub(in crate::stream_engine::autonomous_executor) mod source_reader_repository;
 
+/// Instance of SourceReaderModel.
+///
+/// Since agents and servers may live as long as a program lives, source task cannot hold hold implementations of this trait.
 pub(in crate::stream_engine::autonomous_executor) trait SourceReader:
     Debug + Sync + Send + 'static
 {
