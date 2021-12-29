@@ -8,7 +8,7 @@ use std::{
 
 use anyhow::Context;
 
-use super::SinkWriterInstance;
+use super::SinkSubtask;
 use crate::{
     error::{foreign_info::ForeignInfo, Result, SpringError},
     pipeline::option::{net_options::NetOptions, Options},
@@ -22,12 +22,12 @@ const CONNECT_TIMEOUT_SECS: u64 = 1;
 const WRITE_TIMEOUT_MSECS: u64 = 100;
 
 #[derive(Debug)]
-pub(in crate::stream_engine) struct NetSinkServerInstance {
+pub(in crate::stream_engine) struct NetSinkSubtask {
     foreign_addr: SocketAddr,
     tcp_stream_writer: BufWriter<TcpStream>, // TODO UDP
 }
 
-impl SinkWriterInstance for NetSinkServerInstance {
+impl SinkSubtask for NetSinkSubtask {
     fn start(options: &Options) -> Result<Self> {
         let options = NetOptions::try_from(options)?;
         let sock_addr = SocketAddr::new(options.remote_host, options.remote_port);
@@ -105,7 +105,7 @@ mod tests {
             .add("REMOTE_PORT", sink.port().to_string())
             .build();
 
-        let mut server = NetSinkServerInstance::start(&options).unwrap();
+        let mut server = NetSinkSubtask::start(&options).unwrap();
 
         server
             .send_row(ForeignSinkRow::fx_city_temperature_tokyo())

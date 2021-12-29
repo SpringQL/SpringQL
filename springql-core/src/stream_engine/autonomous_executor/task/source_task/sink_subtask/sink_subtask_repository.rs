@@ -8,12 +8,12 @@ use std::{
 use crate::{pipeline::server_model::ServerModel, stream_engine::autonomous_executor::task::source_task::sink_subtask::sink_subtask_factory::SinkSubtaskFactory};
 use crate::{error::Result, pipeline::name::ServerName};
 
-use super::SinkWriterInstance;
+use super::SinkSubtask;
 
 #[allow(clippy::type_complexity)]
 #[derive(Debug, Default)]
 pub(in crate::stream_engine) struct SinkSubtaskRepository {
-    sinks: RwLock<HashMap<ServerName, Arc<Mutex<Box<dyn SinkWriterInstance>>>>>,
+    sinks: RwLock<HashMap<ServerName, Arc<Mutex<Box<dyn SinkSubtask>>>>>,
 }
 
 impl SinkSubtaskRepository {
@@ -38,7 +38,7 @@ impl SinkSubtaskRepository {
             } else {
                 let server =
                     SinkSubtaskFactory::sink(server_model.server_type(), server_model.options())?;
-                let server = Arc::new(Mutex::new(server as Box<dyn SinkWriterInstance>));
+                let server = Arc::new(Mutex::new(server as Box<dyn SinkSubtask>));
                 let _ = sinks.insert(server_model.name().clone(), server);
                 log::debug!(
                     "[ServerRepository] registered sink server: {}",
@@ -57,7 +57,7 @@ impl SinkSubtaskRepository {
     pub(in crate::stream_engine::autonomous_executor) fn get_sink_server(
         &self,
         server_name: &ServerName,
-    ) -> Arc<Mutex<Box<dyn SinkWriterInstance>>> {
+    ) -> Arc<Mutex<Box<dyn SinkSubtask>>> {
         self.sinks
             .read()
             .expect("another thread sharing the same internal got panic")
