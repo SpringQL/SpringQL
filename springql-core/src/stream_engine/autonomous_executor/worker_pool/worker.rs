@@ -19,7 +19,7 @@ use crate::{
             task::{
                 source_task::{
                     sink_writer::sink_writer_repository::SinkWriterRepository,
-                    source_subtask::source_subtask_repository::SourceSubtaskRepository,
+                    source_reader::source_reader_repository::SourceReaderRepository,
                 },
                 task_context::TaskContext,
             },
@@ -41,7 +41,7 @@ impl Worker {
         id: WorkerId,
         scheduler_read: SchedulerRead<DI>,
         row_repo: Arc<DI::RowRepositoryType>,
-        source_subtask_repo: Arc<SourceSubtaskRepository>,
+        source_reader_repo: Arc<SourceReaderRepository>,
         sink_writer_repo: Arc<SinkWriterRepository>,
     ) -> Self {
         let (stop_button, stop_receiver) = mpsc::sync_channel(0);
@@ -51,7 +51,7 @@ impl Worker {
                 id,
                 scheduler_read.clone(),
                 row_repo,
-                source_subtask_repo,
+                source_reader_repo,
                 sink_writer_repo,
                 stop_receiver,
             )
@@ -63,7 +63,7 @@ impl Worker {
         id: WorkerId,
         scheduler: SchedulerRead<DI>,
         row_repo: Arc<DI::RowRepositoryType>,
-        source_subtask_repo: Arc<SourceSubtaskRepository>,
+        source_reader_repo: Arc<SourceReaderRepository>,
         sink_writer_repo: Arc<SinkWriterRepository>,
         stop_receiver: mpsc::Receiver<()>,
     ) {
@@ -84,7 +84,7 @@ impl Worker {
                     scheduler.task_graph().as_ref(),
                     task.id().clone(),
                     row_repo.clone(),
-                    source_subtask_repo.clone(),
+                    source_reader_repo.clone(),
                     sink_writer_repo.clone(),
                 );
 

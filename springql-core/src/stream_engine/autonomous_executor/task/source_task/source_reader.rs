@@ -7,10 +7,10 @@ use crate::{
 use std::fmt::Debug;
 
 pub(in crate::stream_engine::autonomous_executor) mod net;
-pub(in crate::stream_engine::autonomous_executor) mod source_subtask_factory;
-pub(in crate::stream_engine::autonomous_executor) mod source_subtask_repository;
+pub(in crate::stream_engine::autonomous_executor) mod source_reader_factory;
+pub(in crate::stream_engine::autonomous_executor) mod source_reader_repository;
 
-pub(in crate::stream_engine::autonomous_executor) trait SourceSubtask:
+pub(in crate::stream_engine::autonomous_executor) trait SourceReader:
     Debug + Sync + Send + 'static
 {
     /// Blocks until the source subtask is ready to provide ForeignSourceRow.

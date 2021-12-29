@@ -20,7 +20,7 @@ use self::{
     scheduler::{scheduler_read::SchedulerRead, scheduler_write::SchedulerWrite},
     task::source_task::{
         sink_writer::sink_writer_repository::SinkWriterRepository,
-        source_subtask::source_subtask_repository::SourceSubtaskRepository,
+        source_reader::source_reader_repository::SourceReaderRepository,
     },
     worker_pool::WorkerPool,
 };
@@ -41,7 +41,7 @@ where
     scheduler_write: SchedulerWrite<DI>,
 
     row_repo: Arc<DI::RowRepositoryType>,
-    source_subtask_repo: Arc<SourceSubtaskRepository>,
+    source_reader_repo: Arc<SourceReaderRepository>,
     sink_writer_repo: Arc<SinkWriterRepository>,
 
     #[allow(unused)] // not referenced but just holding ownership to make workers continuously run
@@ -58,7 +58,7 @@ where
         let scheduler_read = SchedulerRead::new(scheduler);
 
         let row_repo = Arc::new(DI::RowRepositoryType::default());
-        let source_subtask_repo = Arc::new(SourceSubtaskRepository::default());
+        let source_reader_repo = Arc::new(SourceReaderRepository::default());
         let sink_writer_repo = Arc::new(SinkWriterRepository::default());
 
         Self {
@@ -68,11 +68,11 @@ where
                 n_worker_threads,
                 scheduler_read,
                 row_repo.clone(),
-                source_subtask_repo.clone(),
+                source_reader_repo.clone(),
                 sink_writer_repo.clone(),
             ),
             row_repo,
-            source_subtask_repo,
+            source_reader_repo,
             sink_writer_repo,
         }
     }
@@ -91,7 +91,7 @@ where
         pipeline
             .all_sources()
             .into_iter()
-            .try_for_each(|source_reader| self.source_subtask_repo.register(source_reader))?;
+            .try_for_each(|source_reader| self.source_reader_repo.register(source_reader))?;
         pipeline
             .all_sinks()
             .into_iter()

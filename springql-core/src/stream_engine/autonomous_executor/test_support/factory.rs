@@ -5,9 +5,9 @@ use std::sync::Arc;
 use springql_foreign_service::source::{source_input::ForeignSourceInput, ForeignSource};
 
 use crate::stream_engine::autonomous_executor::task::source_task::sink_writer::sink_writer_repository::SinkWriterRepository;
-use crate::stream_engine::autonomous_executor::task::source_task::source_subtask::net::NetSourceSubtask;
-use crate::stream_engine::autonomous_executor::task::source_task::source_subtask::SourceSubtask;
-use crate::stream_engine::autonomous_executor::task::source_task::source_subtask::source_subtask_repository::SourceSubtaskRepository;
+use crate::stream_engine::autonomous_executor::task::source_task::source_reader::net::NetSourceReader;
+use crate::stream_engine::autonomous_executor::task::source_task::source_reader::SourceReader;
+use crate::stream_engine::autonomous_executor::task::source_task::source_reader::source_reader_repository::SourceReaderRepository;
 use crate::{
     pipeline::{
         name::ColumnName, option::options_builder::OptionsBuilder,
@@ -34,7 +34,7 @@ use crate::{
     },
 };
 
-impl NetSourceSubtask {
+impl NetSourceReader {
     pub(in crate::stream_engine) fn factory_with_test_source(input: ForeignSourceInput) -> Self {
         let source = ForeignSource::start(input).unwrap();
 
@@ -44,7 +44,7 @@ impl NetSourceSubtask {
             .add("REMOTE_PORT", source.port().to_string())
             .build();
 
-        NetSourceSubtask::start(&options).unwrap()
+        NetSourceReader::start(&options).unwrap()
     }
 }
 
@@ -149,7 +149,7 @@ impl<DI: DependencyInjection> TaskContext<DI> {
         downstream_tasks: Vec<TaskId>,
     ) -> Self {
         let row_repo = DI::RowRepositoryType::default();
-        let source_subtask_repo = SourceSubtaskRepository::default();
+        let source_reader_repo = SourceReaderRepository::default();
         let sink_writer_repo = SinkWriterRepository::default();
 
         let mut tasks = downstream_tasks.clone();
@@ -160,7 +160,7 @@ impl<DI: DependencyInjection> TaskContext<DI> {
             task,
             downstream_tasks,
             Arc::new(row_repo),
-            Arc::new(source_subtask_repo),
+            Arc::new(source_reader_repo),
             Arc::new(sink_writer_repo),
         )
     }

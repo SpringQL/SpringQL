@@ -10,18 +10,18 @@ use std::{
 use crate::{
     error::Result,
     pipeline::{name::SourceReaderName, source_reader_model::SourceReaderModel},
-    stream_engine::autonomous_executor::task::source_task::source_subtask::source_subtask_factory::SourceSubtaskFactory,
+    stream_engine::autonomous_executor::task::source_task::source_reader::source_reader_factory::SourceReaderFactory,
 };
 
-use super::SourceSubtask;
+use super::SourceReader;
 
 #[allow(clippy::type_complexity)]
 #[derive(Debug, Default)]
-pub(in crate::stream_engine) struct SourceSubtaskRepository {
-    sources: RwLock<HashMap<SourceReaderName, Arc<Mutex<Box<dyn SourceSubtask>>>>>,
+pub(in crate::stream_engine) struct SourceReaderRepository {
+    sources: RwLock<HashMap<SourceReaderName, Arc<Mutex<Box<dyn SourceReader>>>>>,
 }
 
-impl SourceSubtaskRepository {
+impl SourceReaderRepository {
     /// Do nothing if a source reader with the same name already exists.
     ///
     /// # Failures
@@ -40,14 +40,14 @@ impl SourceSubtaskRepository {
         if sources.get(source_reader.name()).is_some() {
             Ok(())
         } else {
-            let subtask = SourceSubtaskFactory::source(
+            let subtask = SourceReaderFactory::source(
                 source_reader.source_reader_type(),
                 source_reader.options(),
             )?;
-            let subtask = Arc::new(Mutex::new(subtask as Box<dyn SourceSubtask>));
+            let subtask = Arc::new(Mutex::new(subtask as Box<dyn SourceReader>));
             let _ = sources.insert(source_reader.name().clone(), subtask);
             log::debug!(
-                "[SourceSubtaskRepository] registered source subtask: {}",
+                "[SourceReaderRepository] registered source subtask: {}",
                 source_reader.name()
             );
             Ok(())
@@ -57,10 +57,10 @@ impl SourceSubtaskRepository {
     /// # Panics
     ///
     /// `name` is not registered yet
-    pub(in crate::stream_engine::autonomous_executor) fn get_source_subtask(
+    pub(in crate::stream_engine::autonomous_executor) fn get_source_reader(
         &self,
         name: &SourceReaderName,
-    ) -> Arc<Mutex<Box<dyn SourceSubtask>>> {
+    ) -> Arc<Mutex<Box<dyn SourceReader>>> {
         self.sources
             .read()
             .expect("another thread sharing the same internal got panic")
