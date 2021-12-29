@@ -4,7 +4,7 @@ use super::format::json::JsonObject;
 use crate::error::Result;
 use crate::stream_engine::autonomous_executor::row::{value::sql_value::SqlValue, Row};
 
-/// Output row into foreign systems (retrieved by SinkServer).
+/// Output row into foreign systems (retrieved by SinkWriter).
 ///
 /// Immediately converted from Row on stream-engine boundary.
 #[derive(PartialEq, Debug)]

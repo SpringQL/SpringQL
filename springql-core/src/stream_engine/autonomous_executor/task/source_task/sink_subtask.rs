@@ -13,7 +13,7 @@ pub(in crate::stream_engine::autonomous_executor) mod sink_subtask_repository;
 pub(in crate::stream_engine) trait SinkSubtask:
     Debug + Sync + Send + 'static
 {
-    /// Blocks until the server is ready to send ForeignSinkRow to foreign sink.
+    /// Blocks until the sink subtask is ready to send ForeignSinkRow to foreign sink.
     fn start(options: &Options) -> Result<Self>
     where
         Self: Sized;

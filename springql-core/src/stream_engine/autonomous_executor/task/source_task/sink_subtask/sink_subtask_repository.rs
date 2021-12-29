@@ -20,12 +20,12 @@ pub(in crate::stream_engine) struct SinkSubtaskRepository {
 }
 
 impl SinkSubtaskRepository {
-    /// Do nothing if a server with the same name already exists.
+    /// Do nothing if a sink writer with the same name already exists.
     ///
     /// # Failures
     ///
     /// - [SpringError::ForeignIo](crate::error::SpringError::ForeignIo) when:
-    ///   - failed to start server.
+    ///   - failed to start subtask.
     pub(in crate::stream_engine::autonomous_executor) fn register(
         &self,
         sink_writer: &SinkWriter,
@@ -38,12 +38,12 @@ impl SinkSubtaskRepository {
         if sinks.get(sink_writer.name()).is_some() {
             Ok(())
         } else {
-            let server =
+            let subtask =
                 SinkSubtaskFactory::sink(sink_writer.sink_writer_type(), sink_writer.options())?;
-            let server = Arc::new(Mutex::new(server as Box<dyn SinkSubtask>));
-            let _ = sinks.insert(sink_writer.name().clone(), server);
+            let subtask = Arc::new(Mutex::new(subtask as Box<dyn SinkSubtask>));
+            let _ = sinks.insert(sink_writer.name().clone(), subtask);
             log::debug!(
-                "[ServerRepository] registered sink server: {}",
+                "[SinkSubtaskRepository] registered sink subtask: {}",
                 sink_writer.name()
             );
             Ok(())
@@ -52,8 +52,8 @@ impl SinkSubtaskRepository {
 
     /// # Panics
     ///
-    /// `server_name` is not registered yet
-    pub(in crate::stream_engine::autonomous_executor) fn get_sink_server(
+    /// `name` is not registered yet
+    pub(in crate::stream_engine::autonomous_executor) fn get_sink_subtask(
         &self,
         name: &SinkWriterName,
     ) -> Arc<Mutex<Box<dyn SinkSubtask>>> {
@@ -61,7 +61,7 @@ impl SinkSubtaskRepository {
             .read()
             .expect("another thread sharing the same internal got panic")
             .get(name)
-            .unwrap_or_else(|| panic!("server name ({}) not registered yet", name))
+            .unwrap_or_else(|| panic!("sink name ({}) not registered yet", name))
             .clone()
     }
 }

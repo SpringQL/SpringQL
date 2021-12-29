@@ -164,14 +164,14 @@ impl PestParserImpl {
         }
         let options = options.build();
 
-        let server_type = match source_reader_name.as_ref() {
+        let source_reader_type = match source_reader_name.as_ref() {
             "NET_SERVER" => Ok(SourceReaderType::Net),
             _ => Err(SpringError::Sql(anyhow!(
-                "Invalid server name: {}",
+                "Invalid source reader name: {}",
                 source_reader_name
             ))),
         }?;
-        let source = SourceReader::new(server_type, Arc::new(foreign_stream), options);
+        let source = SourceReader::new(source_reader_type, Arc::new(foreign_stream), options);
 
         Ok(ParseSuccess::CommandWithoutQuery(Command::AlterPipeline(
             AlterPipelineCommand::CreateForeignSourceStream(source),
@@ -224,15 +224,15 @@ impl PestParserImpl {
         }
         let options = options.build();
 
-        let server_type = match sink_writer_name.as_ref() {
+        let sink_writer_type = match sink_writer_name.as_ref() {
             "NET_SERVER" => Ok(SinkWriterType::Net),
             "IN_MEMORY_QUEUE" => Ok(SinkWriterType::InMemoryQueue),
             _ => Err(SpringError::Sql(anyhow!(
-                "Invalid server name: {}",
+                "Invalid sink writer name: {}",
                 sink_writer_name
             ))),
         }?;
-        let sink = SinkWriter::new(server_type, Arc::new(foreign_stream), options);
+        let sink = SinkWriter::new(sink_writer_type, Arc::new(foreign_stream), options);
 
         Ok(ParseSuccess::CommandWithoutQuery(Command::AlterPipeline(
             AlterPipelineCommand::CreateForeignSinkStream(sink),

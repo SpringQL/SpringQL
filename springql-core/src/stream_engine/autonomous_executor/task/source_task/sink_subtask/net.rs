@@ -49,7 +49,7 @@ impl SinkSubtask for NetSinkSubtask {
 
         let tcp_stream_writer = BufWriter::new(tcp_stream);
 
-        log::info!("[NetSinkServerInstance] Ready to write into {}", sock_addr);
+        log::info!("[NetSinkSubtask] Ready to write into {}", sock_addr);
 
         Ok(Self {
             tcp_stream_writer,
@@ -61,10 +61,7 @@ impl SinkSubtask for NetSinkSubtask {
         let mut json_s = JsonObject::from(row).to_string();
         json_s.push('\n');
 
-        log::info!(
-            "[NetSinkServerInstance] Writing message to remote: {}",
-            json_s
-        );
+        log::info!("[NetSinkSubtask] Writing message to remote: {}", json_s);
 
         self.tcp_stream_writer
             .write_all(json_s.as_bytes())
@@ -96,7 +93,7 @@ mod tests {
     };
 
     #[test]
-    fn test_sink_server_tcp() {
+    fn test_sink_subtask_tcp() {
         let sink = ForeignSink::start().unwrap();
 
         let options = OptionsBuilder::default()
@@ -105,15 +102,15 @@ mod tests {
             .add("REMOTE_PORT", sink.port().to_string())
             .build();
 
-        let mut server = NetSinkSubtask::start(&options).unwrap();
+        let mut sink_subtask = NetSinkSubtask::start(&options).unwrap();
 
-        server
+        sink_subtask
             .send_row(ForeignSinkRow::fx_city_temperature_tokyo())
             .unwrap();
-        server
+        sink_subtask
             .send_row(ForeignSinkRow::fx_city_temperature_osaka())
             .unwrap();
-        server
+        sink_subtask
             .send_row(ForeignSinkRow::fx_city_temperature_london())
             .unwrap();
 

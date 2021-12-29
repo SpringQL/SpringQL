@@ -91,11 +91,11 @@ where
         pipeline
             .all_sources()
             .into_iter()
-            .try_for_each(|server_model| self.source_subtask_repo.register(server_model))?;
+            .try_for_each(|source_reader| self.source_subtask_repo.register(source_reader))?;
         pipeline
             .all_sinks()
             .into_iter()
-            .try_for_each(|server_model| self.sink_subtask_repo.register(server_model))?;
+            .try_for_each(|sink_writer| self.sink_subtask_repo.register(sink_writer))?;
 
         scheduler.notify_pipeline_update(pipeline)
     }

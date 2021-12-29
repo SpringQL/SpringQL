@@ -31,8 +31,8 @@ impl From<&PipelineGraph> for TaskGraph {
             |_, edge| {
                 let task = match edge {
                     Edge::Pump(pump) => Task::Pump(PumpTask::from(pump.as_ref())),
-                    Edge::Source(server) => Task::Source(SourceTask::new(server, pipeline_graph)),
-                    Edge::Sink(server) => Task::Sink(SinkTask::new(server)),
+                    Edge::Source(source) => Task::Source(SourceTask::new(source, pipeline_graph)),
+                    Edge::Sink(sink) => Task::Sink(SinkTask::new(sink)),
                 };
                 Arc::new(task)
             },

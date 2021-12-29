@@ -13,7 +13,7 @@ use crate::{
 
 use super::format::json::JsonObject;
 
-/// Input row from foreign sources (retrieved from SourceServer).
+/// Input row from foreign sources (retrieved from SourceReader).
 ///
 /// Immediately converted into Row on stream-engine boundary.
 #[derive(Eq, PartialEq, Debug)]

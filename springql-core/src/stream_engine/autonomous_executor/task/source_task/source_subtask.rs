@@ -13,7 +13,7 @@ pub(in crate::stream_engine::autonomous_executor) mod source_subtask_repository;
 pub(in crate::stream_engine::autonomous_executor) trait SourceSubtask:
     Debug + Sync + Send + 'static
 {
-    /// Blocks until the server is ready to provide ForeignSourceRow.
+    /// Blocks until the source subtask is ready to provide ForeignSourceRow.
     fn start(options: &Options) -> Result<Self>
     where
         Self: Sized;

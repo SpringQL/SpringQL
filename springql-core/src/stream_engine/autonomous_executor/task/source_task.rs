@@ -23,7 +23,7 @@ use super::task_state::TaskState;
 pub(crate) struct SourceTask {
     id: TaskId,
     state: TaskState,
-    server_name: SourceReaderName,
+    source_reader_name: SourceReaderName,
     downstream: Arc<ForeignStreamModel>,
 }
 
@@ -32,12 +32,12 @@ impl SourceTask {
         source_reader: &SourceReader,
         pipeline_graph: &PipelineGraph,
     ) -> Self {
-        let id = TaskId::from_source_server(source_reader.dest_foreign_stream().name().clone());
+        let id = TaskId::from_source_reader(source_reader.dest_foreign_stream().name().clone());
         let downstream = source_reader.dest_foreign_stream();
         Self {
             id,
             state: TaskState::from(&source_reader.state(pipeline_graph)),
-            server_name: source_reader.name().clone(),
+            source_reader_name: source_reader.name().clone(),
             downstream,
         }
     }
@@ -63,13 +63,13 @@ impl SourceTask {
     }
 
     fn collect_next<DI: DependencyInjection>(&self, context: &TaskContext<DI>) -> Result<Row> {
-        let source_server = context
+        let source_reader = context
             .source_subtask_repository()
-            .get_source_server(&self.server_name);
+            .get_source_subtask(&self.source_reader_name);
 
-        let foreign_row = source_server
+        let foreign_row = source_reader
             .lock()
-            .expect("other worker threads sharing the same server must not get panic")
+            .expect("other worker threads sharing the same subtask must not get panic")
             .next_row()?;
         foreign_row.into_row::<DI>(self.downstream.shape())
     }

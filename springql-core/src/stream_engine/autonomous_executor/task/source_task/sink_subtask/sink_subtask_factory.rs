@@ -17,8 +17,8 @@ impl SinkSubtaskFactory {
     ) -> Result<Box<dyn SinkSubtask>> {
         match sink_writer_type {
             SinkWriterType::Net => {
-                let server = NetSinkSubtask::start(options)?;
-                Ok(Box::new(server) as Box<dyn SinkSubtask>)
+                let sink_subtask = NetSinkSubtask::start(options)?;
+                Ok(Box::new(sink_subtask) as Box<dyn SinkSubtask>)
             }
             SinkWriterType::InMemoryQueue => {
                 let sink = InMemoryQueueSinkSubtask::start(options)?;
