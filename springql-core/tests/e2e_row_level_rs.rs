@@ -46,26 +46,18 @@ fn test_e2e_source_sink() -> Result<()> {
     let source_input = vec![json_oracle, json_ibm, json_google];
 
     let test_source =
-        ForeignSource::start(ForeignSourceInput::new_fifo_batch(source_input.clone()))
-            .unwrap();
+        ForeignSource::start(ForeignSourceInput::new_fifo_batch(source_input.clone())).unwrap();
     let test_sink = ForeignSink::start().unwrap();
 
     let ddls = vec![
-        format!(
-            "
+        "
         CREATE SOURCE STREAM source_trade (
           ts TIMESTAMP NOT NULL ROWTIME,    
           ticker TEXT NOT NULL,
           amount INTEGER NOT NULL
-        ) SERVER NET_SERVER OPTIONS (
-          PROTOCOL 'TCP',
-          REMOTE_HOST '{remote_host}',
-          REMOTE_PORT '{remote_port}'
         );
-        ",
-            remote_host = test_source.host_ip(),
-            remote_port = test_source.port()
-        ),
+        "
+        .to_string(),
         format!(
             "
         CREATE SINK STREAM sink_trade (
@@ -87,10 +79,18 @@ fn test_e2e_source_sink() -> Result<()> {
           SELECT STREAM ts, ticker, amount FROM source_trade;
         "
         .to_string(),
-        "
-        ALTER PUMP pu_passthrough START;
-        "
-        .to_string(),
+        format!(
+            "
+        CREATE SOURCE READER FOR source_trade
+          NET_SERVER OPTIONS (
+            PROTOCOL 'TCP',
+            REMOTE_HOST '{remote_host}',
+            REMOTE_PORT '{remote_port}'
+          );
+        ",
+            remote_host = test_source.host_ip(),
+            remote_port = test_source.port()
+        ),
     ];
 
     let _pipeline = apply_ddls(&ddls);
@@ -115,26 +115,18 @@ fn test_e2e_projection() -> Result<()> {
     });
 
     let test_source =
-        ForeignSource::start(ForeignSourceInput::new_fifo_batch(vec![json_oracle]))
-            .unwrap();
+        ForeignSource::start(ForeignSourceInput::new_fifo_batch(vec![json_oracle])).unwrap();
     let test_sink = ForeignSink::start().unwrap();
 
     let ddls = vec![
-        format!(
-            "
+        "
         CREATE SOURCE STREAM source_trade (
           ts TIMESTAMP NOT NULL ROWTIME,    
           ticker TEXT NOT NULL,
           amount INTEGER NOT NULL
-        ) SERVER NET_SERVER OPTIONS (
-          PROTOCOL 'TCP',
-          REMOTE_HOST '{remote_host}',
-          REMOTE_PORT '{remote_port}'
         );
-        ",
-            remote_host = test_source.host_ip(),
-            remote_port = test_source.port()
-        ),
+        "
+        .to_string(),
         format!(
             "
         CREATE SINK STREAM sink_trade (
@@ -159,6 +151,18 @@ fn test_e2e_projection() -> Result<()> {
         ALTER PUMP pu_projection START;
         "
         .to_string(),
+        format!(
+            "
+        CREATE SOURCE READER FOR source_trade
+          NET_SERVER OPTIONS (
+            PROTOCOL 'TCP',
+            REMOTE_HOST '{remote_host}',
+            REMOTE_PORT '{remote_port}'
+          );
+        ",
+            remote_host = test_source.host_ip(),
+            remote_port = test_source.port()
+        ),
     ];
 
     let _pipeline = apply_ddls(&ddls);
@@ -200,21 +204,14 @@ fn test_e2e_pop_from_in_memory_queue() {
     .unwrap();
 
     let ddls = vec![
-        format!(
-            "
+        "
         CREATE SOURCE STREAM source_trade (
           ts TIMESTAMP NOT NULL ROWTIME,    
           ticker TEXT NOT NULL,
           amount INTEGER NOT NULL
-        ) SERVER NET_SERVER OPTIONS (
-          PROTOCOL 'TCP',
-          REMOTE_HOST '{remote_host}',
-          REMOTE_PORT '{remote_port}'
         );
-        ",
-            remote_host = test_source.host_ip(),
-            remote_port = test_source.port()
-        ),
+        "
+        .to_string(),
         format!(
             "
         CREATE SINK STREAM sink_trade (
@@ -236,6 +233,18 @@ fn test_e2e_pop_from_in_memory_queue() {
         ALTER PUMP pu_projection START;
         "
         .to_string(),
+        format!(
+            "
+        CREATE SOURCE READER FOR source_trade
+          NET_SERVER OPTIONS (
+            PROTOCOL 'TCP',
+            REMOTE_HOST '{remote_host}',
+            REMOTE_PORT '{remote_port}'
+          );
+        ",
+            remote_host = test_source.host_ip(),
+            remote_port = test_source.port()
+        ),
     ];
 
     let pipeline = apply_ddls(&ddls);
