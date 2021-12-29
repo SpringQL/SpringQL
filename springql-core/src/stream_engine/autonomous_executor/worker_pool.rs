@@ -10,9 +10,9 @@ use self::worker::{worker_id::WorkerId, Worker};
 
 use super::{
     scheduler::scheduler_read::SchedulerRead,
-    task::source_task::{
-        sink_writer::sink_writer_repository::SinkWriterRepository,
-        source_reader::source_reader_repository::SourceReaderRepository,
+    task::{
+        sink_task::sink_writer::sink_writer_repository::SinkWriterRepository,
+        source_task::source_reader::source_reader_repository::SourceReaderRepository,
     },
 };
 

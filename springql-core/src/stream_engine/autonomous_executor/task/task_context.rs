@@ -5,12 +5,9 @@ use std::sync::Arc;
 use crate::stream_engine::dependency_injection::DependencyInjection;
 
 use super::{
-    source_task::{
-        sink_writer::sink_writer_repository::SinkWriterRepository,
-        source_reader::source_reader_repository::SourceReaderRepository,
-    },
-    task_graph::TaskGraph,
-    task_id::TaskId,
+    sink_task::sink_writer::sink_writer_repository::SinkWriterRepository,
+    source_task::source_reader::source_reader_repository::SourceReaderRepository,
+    task_graph::TaskGraph, task_id::TaskId,
 };
 
 #[derive(Debug)]

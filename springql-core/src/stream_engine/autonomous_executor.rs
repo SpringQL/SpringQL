@@ -18,9 +18,9 @@ pub(in crate::stream_engine) use scheduler::{FlowEfficientScheduler, Scheduler};
 
 use self::{
     scheduler::{scheduler_read::SchedulerRead, scheduler_write::SchedulerWrite},
-    task::source_task::{
-        sink_writer::sink_writer_repository::SinkWriterRepository,
-        source_reader::source_reader_repository::SourceReaderRepository,
+    task::{
+        sink_task::sink_writer::sink_writer_repository::SinkWriterRepository,
+        source_task::source_reader::source_reader_repository::SourceReaderRepository,
     },
     worker_pool::WorkerPool,
 };

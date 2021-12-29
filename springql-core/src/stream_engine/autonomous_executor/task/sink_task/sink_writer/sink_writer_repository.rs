@@ -5,11 +5,8 @@ use std::{
     sync::{Arc, Mutex, RwLock},
 };
 
+use crate::{pipeline::sink_writer_model::SinkWriterModel, stream_engine::autonomous_executor::task::sink_task::sink_writer::sink_writer_factory::SinkWriterFactory};
 use crate::{error::Result, pipeline::name::SinkWriterName};
-use crate::{
-    pipeline::sink_writer_model::SinkWriterModel,
-    stream_engine::autonomous_executor::task::source_task::sink_writer::sink_writer_factory::SinkWriterFactory,
-};
 
 use super::SinkWriter;
 

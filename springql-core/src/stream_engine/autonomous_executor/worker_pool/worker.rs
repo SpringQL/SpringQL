@@ -17,11 +17,8 @@ use crate::{
         autonomous_executor::{
             scheduler::scheduler_read::SchedulerRead,
             task::{
-                source_task::{
-                    sink_writer::sink_writer_repository::SinkWriterRepository,
-                    source_reader::source_reader_repository::SourceReaderRepository,
-                },
-                task_context::TaskContext,
+                source_task::source_reader::source_reader_repository::SourceReaderRepository,
+                task_context::TaskContext, sink_task::sink_writer::sink_writer_repository::SinkWriterRepository,
             },
             Scheduler,
         },
