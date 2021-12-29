@@ -12,10 +12,10 @@ use crate::pipeline::relation::column::column_constraint::ColumnConstraint;
 use crate::pipeline::relation::column::column_data_type::ColumnDataType;
 use crate::pipeline::relation::column::column_definition::ColumnDefinition;
 use crate::pipeline::relation::sql_type::SqlType;
-use crate::pipeline::sink_writer::sink_writer_type::SinkWriterType;
-use crate::pipeline::sink_writer::SinkWriter;
-use crate::pipeline::source_reader::source_reader_type::SourceReaderType;
-use crate::pipeline::source_reader::SourceReader;
+use crate::pipeline::sink_writer_model::sink_writer_type::SinkWriterType;
+use crate::pipeline::sink_writer_model::SinkWriterModel;
+use crate::pipeline::source_reader_model::source_reader_type::SourceReaderType;
+use crate::pipeline::source_reader_model::SourceReaderModel;
 use crate::pipeline::stream_model::stream_shape::StreamShape;
 use crate::pipeline::stream_model::StreamModel;
 use crate::sql_processor::sql_parser::syntax::{
@@ -171,7 +171,7 @@ impl PestParserImpl {
                 source_reader_name
             ))),
         }?;
-        let source = SourceReader::new(source_reader_type, Arc::new(foreign_stream), options);
+        let source = SourceReaderModel::new(source_reader_type, Arc::new(foreign_stream), options);
 
         Ok(ParseSuccess::CommandWithoutQuery(Command::AlterPipeline(
             AlterPipelineCommand::CreateForeignSourceStream(source),
@@ -232,7 +232,7 @@ impl PestParserImpl {
                 sink_writer_name
             ))),
         }?;
-        let sink = SinkWriter::new(sink_writer_type, Arc::new(foreign_stream), options);
+        let sink = SinkWriterModel::new(sink_writer_type, Arc::new(foreign_stream), options);
 
         Ok(ParseSuccess::CommandWithoutQuery(Command::AlterPipeline(
             AlterPipelineCommand::CreateForeignSinkStream(sink),

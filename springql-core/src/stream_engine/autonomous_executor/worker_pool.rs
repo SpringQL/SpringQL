@@ -10,9 +10,9 @@ use self::worker::{worker_id::WorkerId, Worker};
 
 use super::{
     scheduler::scheduler_read::SchedulerRead,
-    task::source_task::{
-        sink_subtask::sink_subtask_repository::SinkSubtaskRepository,
-        source_subtask::source_subtask_repository::SourceSubtaskRepository,
+    task::{
+        sink_task::sink_writer::sink_writer_repository::SinkWriterRepository,
+        source_task::source_reader::source_reader_repository::SourceReaderRepository,
     },
 };
 
@@ -24,8 +24,8 @@ impl WorkerPool {
         n_worker_threads: usize,
         scheduler_read: SchedulerRead<DI>,
         row_repo: Arc<DI::RowRepositoryType>,
-        source_subtask_repo: Arc<SourceSubtaskRepository>,
-        sink_subtask_repo: Arc<SinkSubtaskRepository>,
+        source_reader_repo: Arc<SourceReaderRepository>,
+        sink_writer_repo: Arc<SinkWriterRepository>,
     ) -> Self {
         let workers = (0..n_worker_threads)
             .map(|id| {
@@ -33,8 +33,8 @@ impl WorkerPool {
                     WorkerId::new(id as u16),
                     scheduler_read.clone(),
                     row_repo.clone(),
-                    source_subtask_repo.clone(),
-                    sink_subtask_repo.clone(),
+                    source_reader_repo.clone(),
+                    sink_writer_repo.clone(),
                 )
             })
             .collect();

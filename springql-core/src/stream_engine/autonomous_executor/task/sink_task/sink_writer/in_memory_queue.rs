@@ -9,12 +9,12 @@ use crate::{
     stream_engine::autonomous_executor::row::foreign_row::foreign_sink_row::ForeignSinkRow,
 };
 
-use super::SinkSubtask;
+use super::SinkWriter;
 
 #[derive(Debug)]
-pub(in crate::stream_engine) struct InMemoryQueueSinkSubtask(QueueName);
+pub(in crate::stream_engine) struct InMemoryQueueSinkWriter(QueueName);
 
-impl SinkSubtask for InMemoryQueueSinkSubtask {
+impl SinkWriter for InMemoryQueueSinkWriter {
     fn start(options: &Options) -> Result<Self>
     where
         Self: Sized,

@@ -68,8 +68,8 @@ mod tests {
             name::{PumpName, StreamName},
             option::options_builder::OptionsBuilder,
             pump_model::{pump_state::PumpState, PumpModel},
-            sink_writer::{sink_writer_type::SinkWriterType, SinkWriter},
-            source_reader::{source_reader_type::SourceReaderType, SourceReader},
+            sink_writer_model::{sink_writer_type::SinkWriterType, SinkWriterModel},
+            source_reader_model::{source_reader_type::SourceReaderType, SourceReaderModel},
             stream_model::{stream_shape::StreamShape, StreamModel},
         },
         stream_engine::command::{
@@ -103,7 +103,7 @@ mod tests {
             StreamName::new("source_trade".to_string()),
             Arc::new(expected_shape),
         ));
-        let expected_source = SourceReader::new(
+        let expected_source = SourceReaderModel::new(
             SourceReaderType::Net,
             Arc::new(expected_stream),
             expected_options,
@@ -111,7 +111,9 @@ mod tests {
 
         assert_eq!(
             command,
-            Command::AlterPipeline(AlterPipelineCommand::CreateForeignSourceStream(expected_source))
+            Command::AlterPipeline(AlterPipelineCommand::CreateForeignSourceStream(
+                expected_source
+            ))
         );
     }
 
@@ -138,7 +140,7 @@ mod tests {
             StreamName::new("sink_trade".to_string()),
             Arc::new(expected_shape),
         ));
-        let expected_sink = SinkWriter::new(
+        let expected_sink = SinkWriterModel::new(
             SinkWriterType::Net,
             Arc::new(expected_stream),
             expected_options,

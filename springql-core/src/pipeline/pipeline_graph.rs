@@ -20,8 +20,8 @@ use super::{
     foreign_stream_model::ForeignStreamModel,
     name::{PumpName, StreamName},
     pump_model::PumpModel,
-    sink_writer::SinkWriter,
-    source_reader::{source_reader_state::SourceReaderState, SourceReader},
+    sink_writer_model::SinkWriterModel,
+    source_reader_model::{source_reader_state::SourceReaderState, SourceReaderModel},
 };
 use crate::error::{Result, SpringError};
 use anyhow::anyhow;
@@ -167,7 +167,7 @@ impl PipelineGraph {
         }
     }
 
-    pub(super) fn add_source_reader(&mut self, source_reader: SourceReader) -> Result<()> {
+    pub(super) fn add_source_reader(&mut self, source_reader: SourceReaderModel) -> Result<()> {
         let serving_to = source_reader.dest_foreign_stream();
 
         let upstream_node = self
@@ -188,7 +188,7 @@ impl PipelineGraph {
         Ok(())
     }
 
-    pub(super) fn add_sink_writer(&mut self, sink_writer: SinkWriter) -> Result<()> {
+    pub(super) fn add_sink_writer(&mut self, sink_writer: SinkWriterModel) -> Result<()> {
         let serving_to = sink_writer.from_foreign_stream();
 
         let upstream_node = self.stream_nodes.get(serving_to.name()).ok_or_else(|| {

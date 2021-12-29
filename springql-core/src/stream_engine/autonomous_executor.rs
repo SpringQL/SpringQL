@@ -18,9 +18,9 @@ pub(in crate::stream_engine) use scheduler::{FlowEfficientScheduler, Scheduler};
 
 use self::{
     scheduler::{scheduler_read::SchedulerRead, scheduler_write::SchedulerWrite},
-    task::source_task::{
-        sink_subtask::sink_subtask_repository::SinkSubtaskRepository,
-        source_subtask::source_subtask_repository::SourceSubtaskRepository,
+    task::{
+        sink_task::sink_writer::sink_writer_repository::SinkWriterRepository,
+        source_task::source_reader::source_reader_repository::SourceReaderRepository,
     },
     worker_pool::WorkerPool,
 };
@@ -41,8 +41,8 @@ where
     scheduler_write: SchedulerWrite<DI>,
 
     row_repo: Arc<DI::RowRepositoryType>,
-    source_subtask_repo: Arc<SourceSubtaskRepository>,
-    sink_subtask_repo: Arc<SinkSubtaskRepository>,
+    source_reader_repo: Arc<SourceReaderRepository>,
+    sink_writer_repo: Arc<SinkWriterRepository>,
 
     #[allow(unused)] // not referenced but just holding ownership to make workers continuously run
     worker_pool: WorkerPool,
@@ -58,8 +58,8 @@ where
         let scheduler_read = SchedulerRead::new(scheduler);
 
         let row_repo = Arc::new(DI::RowRepositoryType::default());
-        let source_subtask_repo = Arc::new(SourceSubtaskRepository::default());
-        let sink_subtask_repo = Arc::new(SinkSubtaskRepository::default());
+        let source_reader_repo = Arc::new(SourceReaderRepository::default());
+        let sink_writer_repo = Arc::new(SinkWriterRepository::default());
 
         Self {
             scheduler_write,
@@ -68,12 +68,12 @@ where
                 n_worker_threads,
                 scheduler_read,
                 row_repo.clone(),
-                source_subtask_repo.clone(),
-                sink_subtask_repo.clone(),
+                source_reader_repo.clone(),
+                sink_writer_repo.clone(),
             ),
             row_repo,
-            source_subtask_repo,
-            sink_subtask_repo,
+            source_reader_repo,
+            sink_writer_repo,
         }
     }
 
@@ -91,11 +91,11 @@ where
         pipeline
             .all_sources()
             .into_iter()
-            .try_for_each(|source_reader| self.source_subtask_repo.register(source_reader))?;
+            .try_for_each(|source_reader| self.source_reader_repo.register(source_reader))?;
         pipeline
             .all_sinks()
             .into_iter()
-            .try_for_each(|sink_writer| self.sink_subtask_repo.register(sink_writer))?;
+            .try_for_each(|sink_writer| self.sink_writer_repo.register(sink_writer))?;
 
         scheduler.notify_pipeline_update(pipeline)
     }

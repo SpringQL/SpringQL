@@ -6,8 +6,8 @@ use crate::{
     pipeline::{
         name::PumpName,
         pump_model::{pump_state::PumpState, PumpModel},
-        sink_writer::SinkWriter,
-        source_reader::SourceReader,
+        sink_writer_model::SinkWriterModel,
+        source_reader_model::SourceReaderModel,
         Pipeline,
     },
 };
@@ -48,14 +48,17 @@ impl ReactiveExecutor {
 
     fn create_foreign_source_stream(
         mut pipeline: Pipeline,
-        source: SourceReader,
+        source: SourceReaderModel,
     ) -> Result<Pipeline> {
         let fst = source.dest_foreign_stream();
         pipeline.add_foreign_stream(fst)?;
         pipeline.add_source_reader(source)?;
         Ok(pipeline)
     }
-    fn create_foreign_sink_stream(mut pipeline: Pipeline, sink: SinkWriter) -> Result<Pipeline> {
+    fn create_foreign_sink_stream(
+        mut pipeline: Pipeline,
+        sink: SinkWriterModel,
+    ) -> Result<Pipeline> {
         let fst = sink.from_foreign_stream();
         pipeline.add_foreign_stream(fst)?;
         pipeline.add_sink_writer(sink)?;

@@ -5,12 +5,9 @@ use std::sync::Arc;
 use crate::stream_engine::dependency_injection::DependencyInjection;
 
 use super::{
-    source_task::{
-        sink_subtask::sink_subtask_repository::SinkSubtaskRepository,
-        source_subtask::source_subtask_repository::SourceSubtaskRepository,
-    },
-    task_graph::TaskGraph,
-    task_id::TaskId,
+    sink_task::sink_writer::sink_writer_repository::SinkWriterRepository,
+    source_task::source_reader::source_reader_repository::SourceReaderRepository,
+    task_graph::TaskGraph, task_id::TaskId,
 };
 
 #[derive(Debug)]
@@ -20,8 +17,8 @@ pub(in crate::stream_engine) struct TaskContext<DI: DependencyInjection> {
 
     row_repo: Arc<DI::RowRepositoryType>,
 
-    source_subtask_repo: Arc<SourceSubtaskRepository>,
-    sink_subtask_repo: Arc<SinkSubtaskRepository>,
+    source_reader_repo: Arc<SourceReaderRepository>,
+    sink_writer_repo: Arc<SinkWriterRepository>,
 }
 
 impl<DI: DependencyInjection> TaskContext<DI> {
@@ -29,16 +26,16 @@ impl<DI: DependencyInjection> TaskContext<DI> {
         task_graph: &TaskGraph,
         task: TaskId,
         row_repo: Arc<DI::RowRepositoryType>,
-        source_subtask_repo: Arc<SourceSubtaskRepository>,
-        sink_subtask_repo: Arc<SinkSubtaskRepository>,
+        source_reader_repo: Arc<SourceReaderRepository>,
+        sink_writer_repo: Arc<SinkWriterRepository>,
     ) -> Self {
         let downstream_tasks = task_graph.downstream_tasks(task.clone());
         Self {
             task,
             downstream_tasks,
             row_repo,
-            source_subtask_repo,
-            sink_subtask_repo,
+            source_reader_repo,
+            sink_writer_repo,
         }
     }
 
@@ -54,13 +51,11 @@ impl<DI: DependencyInjection> TaskContext<DI> {
         self.row_repo.clone()
     }
 
-    pub(in crate::stream_engine) fn source_subtask_repository(
-        &self,
-    ) -> Arc<SourceSubtaskRepository> {
-        self.source_subtask_repo.clone()
+    pub(in crate::stream_engine) fn source_reader_repository(&self) -> Arc<SourceReaderRepository> {
+        self.source_reader_repo.clone()
     }
-    pub(in crate::stream_engine) fn sink_subtask_repository(&self) -> Arc<SinkSubtaskRepository> {
-        self.sink_subtask_repo.clone()
+    pub(in crate::stream_engine) fn sink_writer_repository(&self) -> Arc<SinkWriterRepository> {
+        self.sink_writer_repo.clone()
     }
 }
 
@@ -70,15 +65,15 @@ impl<DI: DependencyInjection> TaskContext<DI> {
         task: TaskId,
         downstream_tasks: Vec<TaskId>,
         row_repo: Arc<DI::RowRepositoryType>,
-        source_subtask_repo: Arc<SourceSubtaskRepository>,
-        sink_subtask_repo: Arc<SinkSubtaskRepository>,
+        source_reader_repo: Arc<SourceReaderRepository>,
+        sink_writer_repo: Arc<SinkWriterRepository>,
     ) -> Self {
         Self {
             task,
             downstream_tasks,
             row_repo,
-            source_subtask_repo,
-            sink_subtask_repo,
+            source_reader_repo,
+            sink_writer_repo,
         }
     }
 }

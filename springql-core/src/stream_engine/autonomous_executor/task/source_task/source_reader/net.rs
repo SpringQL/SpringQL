@@ -16,19 +16,19 @@ use crate::{
     },
 };
 
-use super::SourceSubtask;
+use super::SourceReader;
 
 // TODO config
 const CONNECT_TIMEOUT_SECS: u64 = 1;
 const READ_TIMEOUT_MSECS: u64 = 100;
 
 #[derive(Debug)]
-pub(in crate::stream_engine) struct NetSourceSubtask {
+pub(in crate::stream_engine) struct NetSourceReader {
     foreign_addr: SocketAddr,
     tcp_stream_reader: BufReader<TcpStream>, // TODO UDP
 }
 
-impl SourceSubtask for NetSourceSubtask {
+impl SourceReader for NetSourceReader {
     /// # Failure
     ///
     /// - [SpringError::ForeignIo](crate::error::SpringError::ForeignIo)
@@ -54,7 +54,7 @@ impl SourceSubtask for NetSourceSubtask {
 
         let tcp_stream_reader = BufReader::new(tcp_stream);
 
-        log::info!("[NetSourceSubtask] Ready to read from {}", sock_addr);
+        log::info!("[NetSourceReader] Ready to read from {}", sock_addr);
 
         Ok(Self {
             tcp_stream_reader,
@@ -85,7 +85,7 @@ impl SourceSubtask for NetSourceSubtask {
     }
 }
 
-impl NetSourceSubtask {
+impl NetSourceReader {
     fn parse_resp(&self, json_s: &str) -> Result<ForeignSourceRow> {
         let json_v = serde_json::from_str(json_s)
             .with_context(|| {
@@ -105,7 +105,7 @@ impl NetSourceSubtask {
     }
 }
 
-impl NetSourceSubtask {}
+impl NetSourceReader {}
 
 #[cfg(test)]
 mod tests {
@@ -135,7 +135,7 @@ mod tests {
             .add("REMOTE_PORT", source.port().to_string())
             .build();
 
-        let mut subtask = NetSourceSubtask::start(&options)?;
+        let mut subtask = NetSourceReader::start(&options)?;
 
         assert_eq!(subtask.next_row()?, ForeignSourceRow::from_json(j2));
         assert_eq!(subtask.next_row()?, ForeignSourceRow::from_json(j3));

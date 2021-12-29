@@ -17,11 +17,8 @@ use crate::{
         autonomous_executor::{
             scheduler::scheduler_read::SchedulerRead,
             task::{
-                source_task::{
-                    sink_subtask::sink_subtask_repository::SinkSubtaskRepository,
-                    source_subtask::source_subtask_repository::SourceSubtaskRepository,
-                },
-                task_context::TaskContext,
+                source_task::source_reader::source_reader_repository::SourceReaderRepository,
+                task_context::TaskContext, sink_task::sink_writer::sink_writer_repository::SinkWriterRepository,
             },
             Scheduler,
         },
@@ -41,8 +38,8 @@ impl Worker {
         id: WorkerId,
         scheduler_read: SchedulerRead<DI>,
         row_repo: Arc<DI::RowRepositoryType>,
-        source_subtask_repo: Arc<SourceSubtaskRepository>,
-        sink_subtask_repo: Arc<SinkSubtaskRepository>,
+        source_reader_repo: Arc<SourceReaderRepository>,
+        sink_writer_repo: Arc<SinkWriterRepository>,
     ) -> Self {
         let (stop_button, stop_receiver) = mpsc::sync_channel(0);
 
@@ -51,8 +48,8 @@ impl Worker {
                 id,
                 scheduler_read.clone(),
                 row_repo,
-                source_subtask_repo,
-                sink_subtask_repo,
+                source_reader_repo,
+                sink_writer_repo,
                 stop_receiver,
             )
         });
@@ -63,8 +60,8 @@ impl Worker {
         id: WorkerId,
         scheduler: SchedulerRead<DI>,
         row_repo: Arc<DI::RowRepositoryType>,
-        source_subtask_repo: Arc<SourceSubtaskRepository>,
-        sink_subtask_repo: Arc<SinkSubtaskRepository>,
+        source_reader_repo: Arc<SourceReaderRepository>,
+        sink_writer_repo: Arc<SinkWriterRepository>,
         stop_receiver: mpsc::Receiver<()>,
     ) {
         let mut cur_worker_state =
@@ -84,8 +81,8 @@ impl Worker {
                     scheduler.task_graph().as_ref(),
                     task.id().clone(),
                     row_repo.clone(),
-                    source_subtask_repo.clone(),
-                    sink_subtask_repo.clone(),
+                    source_reader_repo.clone(),
+                    sink_writer_repo.clone(),
                 );
 
                 task.run(&context).unwrap_or_else(Self::handle_error)

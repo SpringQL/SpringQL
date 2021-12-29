@@ -1,7 +1,7 @@
 // Copyright (c) 2021 TOYOTA MOTOR CORPORATION. Licensed under MIT OR Apache-2.0.
 
 use crate::pipeline::{
-    pump_model::pump_state::PumpState, source_reader::source_reader_state::SourceReaderState,
+    pump_model::pump_state::PumpState, source_reader_model::source_reader_state::SourceReaderState,
 };
 
 #[derive(Clone, Eq, PartialEq, Debug)]

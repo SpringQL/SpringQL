@@ -3,14 +3,14 @@
 use crate::pipeline::{
     name::PumpName,
     pump_model::{pump_state::PumpState, PumpModel},
-    sink_writer::SinkWriter,
-    source_reader::SourceReader,
+    sink_writer_model::SinkWriterModel,
+    source_reader_model::SourceReaderModel,
 };
 
 #[derive(Clone, Eq, PartialEq, Debug)]
 pub(crate) enum AlterPipelineCommand {
-    CreateForeignSourceStream(SourceReader),
-    CreateForeignSinkStream(SinkWriter),
+    CreateForeignSourceStream(SourceReaderModel),
+    CreateForeignSinkStream(SinkWriterModel),
     CreatePump(PumpModel),
     AlterPump { name: PumpName, state: PumpState },
 }
