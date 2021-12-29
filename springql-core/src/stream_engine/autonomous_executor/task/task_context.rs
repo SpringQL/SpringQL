@@ -6,7 +6,7 @@ use crate::stream_engine::dependency_injection::DependencyInjection;
 
 use super::{
     source_task::{
-        sink_subtask::sink_subtask_repository::SinkSubtaskRepository,
+        sink_writer::sink_writer_repository::SinkWriterRepository,
         source_subtask::source_subtask_repository::SourceSubtaskRepository,
     },
     task_graph::TaskGraph,
@@ -21,7 +21,7 @@ pub(in crate::stream_engine) struct TaskContext<DI: DependencyInjection> {
     row_repo: Arc<DI::RowRepositoryType>,
 
     source_subtask_repo: Arc<SourceSubtaskRepository>,
-    sink_subtask_repo: Arc<SinkSubtaskRepository>,
+    sink_writer_repo: Arc<SinkWriterRepository>,
 }
 
 impl<DI: DependencyInjection> TaskContext<DI> {
@@ -30,7 +30,7 @@ impl<DI: DependencyInjection> TaskContext<DI> {
         task: TaskId,
         row_repo: Arc<DI::RowRepositoryType>,
         source_subtask_repo: Arc<SourceSubtaskRepository>,
-        sink_subtask_repo: Arc<SinkSubtaskRepository>,
+        sink_writer_repo: Arc<SinkWriterRepository>,
     ) -> Self {
         let downstream_tasks = task_graph.downstream_tasks(task.clone());
         Self {
@@ -38,7 +38,7 @@ impl<DI: DependencyInjection> TaskContext<DI> {
             downstream_tasks,
             row_repo,
             source_subtask_repo,
-            sink_subtask_repo,
+            sink_writer_repo,
         }
     }
 
@@ -59,8 +59,8 @@ impl<DI: DependencyInjection> TaskContext<DI> {
     ) -> Arc<SourceSubtaskRepository> {
         self.source_subtask_repo.clone()
     }
-    pub(in crate::stream_engine) fn sink_subtask_repository(&self) -> Arc<SinkSubtaskRepository> {
-        self.sink_subtask_repo.clone()
+    pub(in crate::stream_engine) fn sink_writer_repository(&self) -> Arc<SinkWriterRepository> {
+        self.sink_writer_repo.clone()
     }
 }
 
@@ -71,14 +71,14 @@ impl<DI: DependencyInjection> TaskContext<DI> {
         downstream_tasks: Vec<TaskId>,
         row_repo: Arc<DI::RowRepositoryType>,
         source_subtask_repo: Arc<SourceSubtaskRepository>,
-        sink_subtask_repo: Arc<SinkSubtaskRepository>,
+        sink_writer_repo: Arc<SinkWriterRepository>,
     ) -> Self {
         Self {
             task,
             downstream_tasks,
             row_repo,
             source_subtask_repo,
-            sink_subtask_repo,
+            sink_writer_repo,
         }
     }
 }

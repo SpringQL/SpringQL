@@ -19,7 +19,7 @@ pub(in crate::stream_engine) use scheduler::{FlowEfficientScheduler, Scheduler};
 use self::{
     scheduler::{scheduler_read::SchedulerRead, scheduler_write::SchedulerWrite},
     task::source_task::{
-        sink_subtask::sink_subtask_repository::SinkSubtaskRepository,
+        sink_writer::sink_writer_repository::SinkWriterRepository,
         source_subtask::source_subtask_repository::SourceSubtaskRepository,
     },
     worker_pool::WorkerPool,
@@ -42,7 +42,7 @@ where
 
     row_repo: Arc<DI::RowRepositoryType>,
     source_subtask_repo: Arc<SourceSubtaskRepository>,
-    sink_subtask_repo: Arc<SinkSubtaskRepository>,
+    sink_writer_repo: Arc<SinkWriterRepository>,
 
     #[allow(unused)] // not referenced but just holding ownership to make workers continuously run
     worker_pool: WorkerPool,
@@ -59,7 +59,7 @@ where
 
         let row_repo = Arc::new(DI::RowRepositoryType::default());
         let source_subtask_repo = Arc::new(SourceSubtaskRepository::default());
-        let sink_subtask_repo = Arc::new(SinkSubtaskRepository::default());
+        let sink_writer_repo = Arc::new(SinkWriterRepository::default());
 
         Self {
             scheduler_write,
@@ -69,11 +69,11 @@ where
                 scheduler_read,
                 row_repo.clone(),
                 source_subtask_repo.clone(),
-                sink_subtask_repo.clone(),
+                sink_writer_repo.clone(),
             ),
             row_repo,
             source_subtask_repo,
-            sink_subtask_repo,
+            sink_writer_repo,
         }
     }
 
@@ -95,7 +95,7 @@ where
         pipeline
             .all_sinks()
             .into_iter()
-            .try_for_each(|sink_writer| self.sink_subtask_repo.register(sink_writer))?;
+            .try_for_each(|sink_writer| self.sink_writer_repo.register(sink_writer))?;
 
         scheduler.notify_pipeline_update(pipeline)
     }

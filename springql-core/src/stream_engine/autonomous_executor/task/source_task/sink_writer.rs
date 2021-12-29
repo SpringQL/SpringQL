@@ -7,10 +7,10 @@ use std::fmt::Debug;
 
 pub(in crate::stream_engine::autonomous_executor) mod in_memory_queue;
 pub(in crate::stream_engine::autonomous_executor) mod net;
-pub(in crate::stream_engine::autonomous_executor) mod sink_subtask_factory;
-pub(in crate::stream_engine::autonomous_executor) mod sink_subtask_repository;
+pub(in crate::stream_engine::autonomous_executor) mod sink_writer_factory;
+pub(in crate::stream_engine::autonomous_executor) mod sink_writer_repository;
 
-pub(in crate::stream_engine) trait SinkSubtask:
+pub(in crate::stream_engine) trait SinkWriter:
     Debug + Sync + Send + 'static
 {
     /// Blocks until the sink subtask is ready to send ForeignSinkRow to foreign sink.

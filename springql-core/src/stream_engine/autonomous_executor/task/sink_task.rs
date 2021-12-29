@@ -50,11 +50,11 @@ impl SinkTask {
     fn emit<DI: DependencyInjection>(&self, row: Row, context: &TaskContext<DI>) -> Result<()> {
         let f_row = ForeignSinkRow::from(row);
 
-        let sink_subtask = context
-            .sink_subtask_repository()
-            .get_sink_subtask(&self.sink_writer_name);
+        let sink_writer = context
+            .sink_writer_repository()
+            .get_sink_writer(&self.sink_writer_name);
 
-        sink_subtask
+        sink_writer
             .lock()
             .expect("other worker threads sharing the same sink subtask must not get panic")
             .send_row(f_row)?;

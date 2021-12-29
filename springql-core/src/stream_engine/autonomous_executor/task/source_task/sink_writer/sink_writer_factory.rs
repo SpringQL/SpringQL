@@ -4,25 +4,25 @@ use crate::error::Result;
 use crate::pipeline::option::Options;
 use crate::pipeline::sink_writer_model::sink_writer_type::SinkWriterType;
 
-use super::in_memory_queue::InMemoryQueueSinkSubtask;
-use super::net::NetSinkSubtask;
-use super::SinkSubtask;
+use super::in_memory_queue::InMemoryQueueSinkWriter;
+use super::net::NetSinkWriter;
+use super::SinkWriter;
 
-pub(in crate::stream_engine) struct SinkSubtaskFactory;
+pub(in crate::stream_engine) struct SinkWriterFactory;
 
-impl SinkSubtaskFactory {
+impl SinkWriterFactory {
     pub(in crate::stream_engine) fn sink(
         sink_writer_type: &SinkWriterType,
         options: &Options,
-    ) -> Result<Box<dyn SinkSubtask>> {
+    ) -> Result<Box<dyn SinkWriter>> {
         match sink_writer_type {
             SinkWriterType::Net => {
-                let sink_subtask = NetSinkSubtask::start(options)?;
-                Ok(Box::new(sink_subtask) as Box<dyn SinkSubtask>)
+                let sink_writer = NetSinkWriter::start(options)?;
+                Ok(Box::new(sink_writer) as Box<dyn SinkWriter>)
             }
             SinkWriterType::InMemoryQueue => {
-                let sink = InMemoryQueueSinkSubtask::start(options)?;
-                Ok(Box::new(sink) as Box<dyn SinkSubtask>)
+                let sink = InMemoryQueueSinkWriter::start(options)?;
+                Ok(Box::new(sink) as Box<dyn SinkWriter>)
             }
         }
     }
