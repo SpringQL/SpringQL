@@ -5,20 +5,18 @@ use std::{
     sync::{Arc, Mutex, RwLock},
 };
 
-use super::sink::SinkWriterInstance;
+use crate::{pipeline::server_model::ServerModel, stream_engine::autonomous_executor::task::source_task::sink_subtask::sink_subtask_factory::SinkSubtaskFactory};
 use crate::{error::Result, pipeline::name::ServerName};
-use crate::{
-    pipeline::server_model::ServerModel,
-    stream_engine::autonomous_executor::server_instance::server_instance_factory::ServerInstanceFactory,
-};
+
+use super::SinkWriterInstance;
 
 #[allow(clippy::type_complexity)]
 #[derive(Debug, Default)]
-pub(in crate::stream_engine) struct ServerRepository {
+pub(in crate::stream_engine) struct SinkSubtaskRepository {
     sinks: RwLock<HashMap<ServerName, Arc<Mutex<Box<dyn SinkWriterInstance>>>>>,
 }
 
-impl ServerRepository {
+impl SinkSubtaskRepository {
     /// Do nothing if a server with the same name already exists.
     ///
     /// # Failures
@@ -38,10 +36,8 @@ impl ServerRepository {
             if sinks.get(server_model.name()).is_some() {
                 Ok(())
             } else {
-                let server = ServerInstanceFactory::sink(
-                    server_model.server_type(),
-                    server_model.options(),
-                )?;
+                let server =
+                    SinkSubtaskFactory::sink(server_model.server_type(), server_model.options())?;
                 let server = Arc::new(Mutex::new(server as Box<dyn SinkWriterInstance>));
                 let _ = sinks.insert(server_model.name().clone(), server);
                 log::debug!(

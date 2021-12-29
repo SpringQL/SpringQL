@@ -16,9 +16,11 @@ use crate::{
     stream_engine::{
         autonomous_executor::{
             scheduler::scheduler_read::SchedulerRead,
-            server_instance::server_repository::ServerRepository,
             task::{
-                source_task::source_subtask::source_subtask_repository::SourceSubtaskRepository,
+                source_task::{
+                    sink_subtask::sink_subtask_repository::SinkSubtaskRepository,
+                    source_subtask::source_subtask_repository::SourceSubtaskRepository,
+                },
                 task_context::TaskContext,
             },
             Scheduler,
@@ -40,7 +42,7 @@ impl Worker {
         scheduler_read: SchedulerRead<DI>,
         row_repo: Arc<DI::RowRepositoryType>,
         source_subtask_repo: Arc<SourceSubtaskRepository>,
-        server_repo: Arc<ServerRepository>,
+        sink_subtask_repo: Arc<SinkSubtaskRepository>,
     ) -> Self {
         let (stop_button, stop_receiver) = mpsc::sync_channel(0);
 
@@ -50,7 +52,7 @@ impl Worker {
                 scheduler_read.clone(),
                 row_repo,
                 source_subtask_repo,
-                server_repo,
+                sink_subtask_repo,
                 stop_receiver,
             )
         });
@@ -62,7 +64,7 @@ impl Worker {
         scheduler: SchedulerRead<DI>,
         row_repo: Arc<DI::RowRepositoryType>,
         source_subtask_repo: Arc<SourceSubtaskRepository>,
-        server_repo: Arc<ServerRepository>,
+        sink_subtask_repo: Arc<SinkSubtaskRepository>,
         stop_receiver: mpsc::Receiver<()>,
     ) {
         let mut cur_worker_state =
@@ -83,7 +85,7 @@ impl Worker {
                     task.id().clone(),
                     row_repo.clone(),
                     source_subtask_repo.clone(),
-                    server_repo.clone(),
+                    sink_subtask_repo.clone(),
                 );
 
                 task.run(&context).unwrap_or_else(Self::handle_error)

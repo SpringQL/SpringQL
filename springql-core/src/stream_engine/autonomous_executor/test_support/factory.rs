@@ -4,6 +4,7 @@ use std::sync::Arc;
 
 use springql_foreign_service::source::{source_input::ForeignSourceInput, ForeignSource};
 
+use crate::stream_engine::autonomous_executor::task::source_task::sink_subtask::sink_subtask_repository::SinkSubtaskRepository;
 use crate::stream_engine::autonomous_executor::task::source_task::source_subtask::net::NetSourceServerInstance;
 use crate::stream_engine::autonomous_executor::task::source_task::source_subtask::SourceReaderInstance;
 use crate::stream_engine::autonomous_executor::task::source_task::source_subtask::source_subtask_repository::SourceSubtaskRepository;
@@ -20,7 +21,7 @@ use crate::{
                 value::sql_value::{nn_sql_value::NnSqlValue, SqlValue},
                 Row,
             },
-            server_instance::server_repository::ServerRepository,
+
         },
         RowRepository,
     },
@@ -149,7 +150,7 @@ impl<DI: DependencyInjection> TaskContext<DI> {
     ) -> Self {
         let row_repo = DI::RowRepositoryType::default();
         let source_subtask_repo = SourceSubtaskRepository::default();
-        let server_repo = ServerRepository::default();
+        let sink_subtask_repo = SinkSubtaskRepository::default();
 
         let mut tasks = downstream_tasks.clone();
         tasks.push(task.clone());
@@ -160,7 +161,7 @@ impl<DI: DependencyInjection> TaskContext<DI> {
             downstream_tasks,
             Arc::new(row_repo),
             Arc::new(source_subtask_repo),
-            Arc::new(server_repo),
+            Arc::new(sink_subtask_repo),
         )
     }
 }

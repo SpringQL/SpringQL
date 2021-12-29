@@ -1,6 +1,5 @@
 // Copyright (c) 2021 TOYOTA MOTOR CORPORATION. Licensed under MIT OR Apache-2.0.
 
-pub(in crate::stream_engine) mod server_instance;
 pub(in crate::stream_engine) mod task;
 
 pub(crate) mod row;
@@ -19,8 +18,10 @@ pub(in crate::stream_engine) use scheduler::{FlowEfficientScheduler, Scheduler};
 
 use self::{
     scheduler::{scheduler_read::SchedulerRead, scheduler_write::SchedulerWrite},
-    server_instance::server_repository::ServerRepository,
-    task::source_task::source_subtask::source_subtask_repository::SourceSubtaskRepository,
+    task::source_task::{
+        sink_subtask::sink_subtask_repository::SinkSubtaskRepository,
+        source_subtask::source_subtask_repository::SourceSubtaskRepository,
+    },
     worker_pool::WorkerPool,
 };
 
@@ -41,7 +42,7 @@ where
 
     row_repo: Arc<DI::RowRepositoryType>,
     source_subtask_repo: Arc<SourceSubtaskRepository>,
-    server_repo: Arc<ServerRepository>,
+    sink_subtask_repo: Arc<SinkSubtaskRepository>,
 
     #[allow(unused)] // not referenced but just holding ownership to make workers continuously run
     worker_pool: WorkerPool,
@@ -58,7 +59,7 @@ where
 
         let row_repo = Arc::new(DI::RowRepositoryType::default());
         let source_subtask_repo = Arc::new(SourceSubtaskRepository::default());
-        let server_repo = Arc::new(ServerRepository::default());
+        let sink_subtask_repo = Arc::new(SinkSubtaskRepository::default());
 
         Self {
             scheduler_write,
@@ -68,11 +69,11 @@ where
                 scheduler_read,
                 row_repo.clone(),
                 source_subtask_repo.clone(),
-                server_repo.clone(),
+                sink_subtask_repo.clone(),
             ),
             row_repo,
             source_subtask_repo,
-            server_repo,
+            sink_subtask_repo,
         }
     }
 
@@ -94,7 +95,7 @@ where
         pipeline
             .all_sinks()
             .into_iter()
-            .try_for_each(|server_model| self.server_repo.register(server_model))?;
+            .try_for_each(|server_model| self.sink_subtask_repo.register(server_model))?;
 
         scheduler.notify_pipeline_update(pipeline)
     }

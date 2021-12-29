@@ -2,14 +2,15 @@
 
 use std::sync::Arc;
 
-use crate::stream_engine::{
-    autonomous_executor::server_instance::server_repository::ServerRepository,
-    dependency_injection::DependencyInjection,
-};
+use crate::stream_engine::dependency_injection::DependencyInjection;
 
 use super::{
-    source_task::source_subtask::source_subtask_repository::SourceSubtaskRepository,
-    task_graph::TaskGraph, task_id::TaskId,
+    source_task::{
+        sink_subtask::sink_subtask_repository::SinkSubtaskRepository,
+        source_subtask::source_subtask_repository::SourceSubtaskRepository,
+    },
+    task_graph::TaskGraph,
+    task_id::TaskId,
 };
 
 #[derive(Debug)]
@@ -20,7 +21,7 @@ pub(in crate::stream_engine) struct TaskContext<DI: DependencyInjection> {
     row_repo: Arc<DI::RowRepositoryType>,
 
     source_subtask_repo: Arc<SourceSubtaskRepository>,
-    server_repo: Arc<ServerRepository>,
+    sink_subtask_repo: Arc<SinkSubtaskRepository>,
 }
 
 impl<DI: DependencyInjection> TaskContext<DI> {
@@ -29,7 +30,7 @@ impl<DI: DependencyInjection> TaskContext<DI> {
         task: TaskId,
         row_repo: Arc<DI::RowRepositoryType>,
         source_subtask_repo: Arc<SourceSubtaskRepository>,
-        server_repo: Arc<ServerRepository>,
+        sink_subtask_repo: Arc<SinkSubtaskRepository>,
     ) -> Self {
         let downstream_tasks = task_graph.downstream_tasks(task.clone());
         Self {
@@ -37,7 +38,7 @@ impl<DI: DependencyInjection> TaskContext<DI> {
             downstream_tasks,
             row_repo,
             source_subtask_repo,
-            server_repo,
+            sink_subtask_repo,
         }
     }
 
@@ -58,8 +59,8 @@ impl<DI: DependencyInjection> TaskContext<DI> {
     ) -> Arc<SourceSubtaskRepository> {
         self.source_subtask_repo.clone()
     }
-    pub(in crate::stream_engine) fn server_repository(&self) -> Arc<ServerRepository> {
-        self.server_repo.clone()
+    pub(in crate::stream_engine) fn sink_subtask_repository(&self) -> Arc<SinkSubtaskRepository> {
+        self.sink_subtask_repo.clone()
     }
 }
 
@@ -70,14 +71,14 @@ impl<DI: DependencyInjection> TaskContext<DI> {
         downstream_tasks: Vec<TaskId>,
         row_repo: Arc<DI::RowRepositoryType>,
         source_subtask_repo: Arc<SourceSubtaskRepository>,
-        server_repo: Arc<ServerRepository>,
+        sink_subtask_repo: Arc<SinkSubtaskRepository>,
     ) -> Self {
         Self {
             task,
             downstream_tasks,
             row_repo,
             source_subtask_repo,
-            server_repo,
+            sink_subtask_repo,
         }
     }
 }

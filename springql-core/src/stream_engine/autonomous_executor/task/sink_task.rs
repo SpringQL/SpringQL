@@ -51,7 +51,7 @@ impl SinkTask {
         let f_row = ForeignSinkRow::from(row);
 
         let sink_server = context
-            .server_repository()
+            .sink_subtask_repository()
             .get_sink_server(&self.server_name);
 
         sink_server
