@@ -24,6 +24,7 @@ keyword = {
     | ^"ALTER"
     | ^"BIGINT"
     | ^"CREATE"
+    | ^"FOR"
     | ^"FROM"
     | ^"INSERT"
     | ^"INTEGER"
@@ -42,6 +43,7 @@ keyword = {
     | ^"STREAM"
     | ^"TEXT"
     | ^"TIMESTAMP"
+    | ^"TYPE"
 }
 
 /*
@@ -349,9 +351,9 @@ create_pump_command = {
  */
 
 create_source_reader_command = {
-    ^"CREATE" ~ ^"SOURCE" ~ ^"READER" ~ ^"FOR"
-    ~ stream_name
-    ~ source_reader_name
+    ^"CREATE" ~ ^"SOURCE" ~ ^"READER" ~ source_reader_name 
+    ~ ^"FOR" ~ stream_name
+    ~ ^"TYPE" ~ source_reader_type
     ~ option_specifications?
 }
 
@@ -394,6 +396,9 @@ pump_name = {
 }
 
 source_reader_name = {
+    identifier
+}
+source_reader_type = {
     identifier
 }
 
