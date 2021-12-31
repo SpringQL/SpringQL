@@ -4,17 +4,17 @@ pub(super) mod worker;
 
 use std::sync::Arc;
 
-use crate::stream_engine::dependency_injection::DependencyInjection;
-
-use self::worker::{worker_id::WorkerId, Worker};
-
-use super::{
-    scheduler::scheduler_read::SchedulerRead,
-    task::{
+use crate::stream_engine::{
+    autonomous_executor::task::{
         sink_task::sink_writer::sink_writer_repository::SinkWriterRepository,
         source_task::source_reader::source_reader_repository::SourceReaderRepository,
     },
+    dependency_injection::DependencyInjection,
 };
+
+use self::worker::{worker_id::WorkerId, Worker};
+
+use super::scheduler::scheduler_read::SchedulerRead;
 
 #[derive(Debug)]
 pub(super) struct WorkerPool(Vec<Worker>);

@@ -11,8 +11,8 @@ use std::sync::Arc;
 
 use crate::error::Result;
 use crate::pipeline::{pipeline_version::PipelineVersion, Pipeline};
-
-use super::task::{task_graph::TaskGraph, Task};
+use crate::stream_engine::autonomous_executor::task::task_graph::TaskGraph;
+use crate::stream_engine::autonomous_executor::task::Task;
 
 pub(crate) trait WorkerState {}
 

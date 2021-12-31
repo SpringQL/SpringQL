@@ -50,13 +50,14 @@ mod dependency_injection;
 mod in_memory_queue_repository;
 mod sql_executor;
 
+pub(in crate::stream_engine) use autonomous_executor::Scheduler;
 pub(crate) use autonomous_executor::{
     row::value::{sql_convertible::SqlConvertible, sql_value::SqlValue},
     ForeignSinkRow,
 };
 
 use crate::{error::Result, pipeline::name::QueueName};
-use autonomous_executor::{CurrentTimestamp, RowRepository, Scheduler};
+use autonomous_executor::{CurrentTimestamp, RowRepository};
 
 use self::{
     autonomous_executor::AutonomousExecutor, command::alter_pipeline_command::AlterPipelineCommand,

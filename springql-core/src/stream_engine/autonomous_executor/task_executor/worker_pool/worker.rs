@@ -15,12 +15,12 @@ use crate::{
     error::SpringError,
     stream_engine::{
         autonomous_executor::{
-            scheduler::scheduler_read::SchedulerRead,
             task::{
+                sink_task::sink_writer::sink_writer_repository::SinkWriterRepository,
                 source_task::source_reader::source_reader_repository::SourceReaderRepository,
-                task_context::TaskContext, sink_task::sink_writer::sink_writer_repository::SinkWriterRepository,
+                task_context::TaskContext,
             },
-            Scheduler,
+            task_executor::{scheduler::scheduler_read::SchedulerRead, Scheduler},
         },
         dependency_injection::DependencyInjection,
     },
