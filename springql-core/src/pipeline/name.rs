@@ -90,11 +90,6 @@ impl StreamName {
     }
 }
 
-impl SourceReaderName {
-    pub(crate) fn net_source() -> Self {
-        Self::new("NET_SERVER_SOURCE".to_string())
-    }
-}
 impl SinkWriterName {
     pub(crate) fn net_sink() -> Self {
         Self::new("NET_SERVER_SINK".to_string())

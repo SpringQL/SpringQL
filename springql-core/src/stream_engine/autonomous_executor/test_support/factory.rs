@@ -4,6 +4,7 @@ use std::sync::Arc;
 
 use springql_foreign_service::source::{source_input::ForeignSourceInput, ForeignSource};
 
+use crate::pipeline::{self, Pipeline};
 use crate::stream_engine::autonomous_executor::task::sink_task::sink_writer::sink_writer_repository::SinkWriterRepository;
 use crate::stream_engine::autonomous_executor::task::source_task::source_reader::net::NetSourceReader;
 use crate::stream_engine::autonomous_executor::task::source_task::source_reader::SourceReader;

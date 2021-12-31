@@ -2,7 +2,10 @@
 
 use std::sync::Arc;
 
-use crate::stream_engine::dependency_injection::DependencyInjection;
+use crate::{
+    pipeline::{self, Pipeline},
+    stream_engine::dependency_injection::DependencyInjection,
+};
 
 use super::{
     sink_task::sink_writer::sink_writer_repository::SinkWriterRepository,

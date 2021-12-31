@@ -125,7 +125,7 @@ impl PestParserImpl {
      */
 
     fn parse_create_source_stream_command(mut params: FnParseParams) -> Result<ParseSuccess> {
-        let foreign_stream_name = parse_child(
+        let source_stream_name = parse_child(
             &mut params,
             Rule::stream_name,
             Self::parse_stream_name,
@@ -137,10 +137,39 @@ impl PestParserImpl {
             &Self::parse_column_definition,
             &identity,
         )?;
+
+        let stream_shape = StreamShape::new(column_definitions)?;
+        let source_stream =
+            ForeignStreamModel::new(StreamModel::new(source_stream_name, Arc::new(stream_shape)));
+
+        Ok(ParseSuccess::CommandWithoutQuery(Command::AlterPipeline(
+            AlterPipelineCommand::CreateSourceStream(source_stream),
+        )))
+    }
+
+    /*
+     * ----------------------------------------------------------------------------
+     * CREATE SOURCE READER
+     * ----------------------------------------------------------------------------
+     */
+
+    fn parse_create_source_reader_command(mut params: FnParseParams) -> Result<ParseSuccess> {
         let source_reader_name = parse_child(
             &mut params,
             Rule::source_reader_name,
             Self::parse_source_reader_name,
+            identity,
+        )?;
+        let source_stream_name = parse_child(
+            &mut params,
+            Rule::stream_name,
+            Self::parse_stream_name,
+            identity,
+        )?;
+        let source_reader_type = parse_child(
+            &mut params,
+            Rule::source_reader_type,
+            Self::parse_source_reader_type,
             identity,
         )?;
         let option_syntaxes = try_parse_child(
@@ -150,12 +179,6 @@ impl PestParserImpl {
             &identity,
         )?;
 
-        let stream_shape = StreamShape::new(column_definitions)?;
-        let foreign_stream = ForeignStreamModel::new(StreamModel::new(
-            foreign_stream_name,
-            Arc::new(stream_shape),
-        ));
-
         let mut options = OptionsBuilder::default();
         if let Some(option_syntaxes) = option_syntaxes {
             for o in option_syntaxes {
@@ -164,17 +187,15 @@ impl PestParserImpl {
         }
         let options = options.build();
 
-        let source_reader_type = match source_reader_name.as_ref() {
-            "NET_SERVER" => Ok(SourceReaderType::Net),
-            _ => Err(SpringError::Sql(anyhow!(
-                "Invalid source reader name: {}",
-                source_reader_name
-            ))),
-        }?;
-        let source = SourceReaderModel::new(source_reader_type, Arc::new(foreign_stream), options);
+        let source_reader = SourceReaderModel::new(
+            source_reader_name,
+            source_reader_type,
+            source_stream_name,
+            options,
+        );
 
         Ok(ParseSuccess::CommandWithoutQuery(Command::AlterPipeline(
-            AlterPipelineCommand::CreateForeignSourceStream(source),
+            AlterPipelineCommand::CreateSourceReader(source_reader),
         )))
     }
 
@@ -444,6 +465,21 @@ impl PestParserImpl {
             Self::parse_identifier,
             SourceReaderName::new,
         )
+    }
+    fn parse_source_reader_type(mut params: FnParseParams) -> Result<SourceReaderType> {
+        let typ = parse_child(
+            &mut params,
+            Rule::identifier,
+            Self::parse_identifier,
+            identity,
+        )?;
+        match typ.as_ref() {
+            "NET_SERVER" => Ok(SourceReaderType::Net),
+            _ => Err(SpringError::Sql(anyhow!(
+                "Invalid source reader name: {}",
+                typ
+            ))),
+        }
     }
     fn parse_sink_writer_name(mut params: FnParseParams) -> Result<SinkWriterName> {
         parse_child(

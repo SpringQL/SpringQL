@@ -32,8 +32,12 @@ use crate::{
 use serde::{Deserialize, Serialize};
 
 use self::{
-    foreign_stream_model::ForeignStreamModel, name::PumpName, pipeline_graph::PipelineGraph,
-    pipeline_version::PipelineVersion, pump_model::PumpModel, sink_writer_model::SinkWriterModel,
+    foreign_stream_model::ForeignStreamModel,
+    name::{PumpName, StreamName},
+    pipeline_graph::PipelineGraph,
+    pipeline_version::PipelineVersion,
+    pump_model::PumpModel,
+    sink_writer_model::SinkWriterModel,
     source_reader_model::SourceReaderModel,
 };
 
@@ -54,6 +58,14 @@ impl Pipeline {
 
     pub(super) fn as_graph(&self) -> &PipelineGraph {
         &self.graph
+    }
+
+    /// # Failure
+    ///
+    /// - [SpringError::Sql](crate::error::SpringError::Sql) when:
+    ///   - Stream is not registered in pipeline
+    pub(super) fn get_foreign_stream(&self, stream: &StreamName) -> Result<Arc<ForeignStreamModel>> {
+        self.graph.get_foreign_stream(stream)
     }
 
     /// # Failure

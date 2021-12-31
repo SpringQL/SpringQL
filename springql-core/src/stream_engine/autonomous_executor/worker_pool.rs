@@ -4,7 +4,7 @@ pub(super) mod worker;
 
 use std::sync::Arc;
 
-use crate::stream_engine::dependency_injection::DependencyInjection;
+use crate::{pipeline::Pipeline, stream_engine::dependency_injection::DependencyInjection};
 
 use self::worker::{worker_id::WorkerId, Worker};
 

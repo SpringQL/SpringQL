@@ -32,7 +32,7 @@ impl ReactiveExecutor {
 
     fn new_pipeline(mut pipeline: Pipeline, command: AlterPipelineCommand) -> Result<Pipeline> {
         match command {
-            AlterPipelineCommand::CreateForeignSourceStream(source) => {
+            AlterPipelineCommand::CreateSourceStream(source) => {
                 Self::create_foreign_source_stream(pipeline, source)
             }
             AlterPipelineCommand::CreateForeignSinkStream(sink) => {
@@ -50,7 +50,7 @@ impl ReactiveExecutor {
         mut pipeline: Pipeline,
         source: SourceReaderModel,
     ) -> Result<Pipeline> {
-        let fst = source.dest_foreign_stream();
+        let fst = source.dest_source_stream();
         pipeline.add_foreign_stream(fst)?;
         pipeline.add_source_reader(source)?;
         Ok(pipeline)

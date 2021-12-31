@@ -7,7 +7,7 @@ use super::{
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;
 
-#[derive(Eq, PartialEq, Debug, Serialize, Deserialize, new)]
+#[derive(Clone, Eq, PartialEq, Debug, Serialize, Deserialize, new)]
 pub(crate) struct ForeignStreamModel(StreamModel);
 
 impl ForeignStreamModel {
