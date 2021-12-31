@@ -12,15 +12,15 @@ use crate::{
     },
 };
 
-/// Executor of pipeline management.
+/// Executor of SQL.
 ///
 /// All methods (recursive) are called from main thread.
 #[derive(Debug, Default)]
-pub(in crate::stream_engine) struct ReactiveExecutor {
+pub(in crate::stream_engine) struct SqlExecutor {
     pipeline: Pipeline,
 }
 
-impl ReactiveExecutor {
+impl SqlExecutor {
     pub(in crate::stream_engine) fn alter_pipeline(
         &mut self,
         command: AlterPipelineCommand,
