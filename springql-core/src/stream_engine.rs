@@ -6,7 +6,7 @@
 //!
 //! Stream engine has 2 executors:
 //!
-//! 1. Reactive executor
+//! 1. SQL executor
 //! 2. Autonomous executor
 //!
 //! Reactive executor receives commands from user interface to quickly change some status of a pipeline.
