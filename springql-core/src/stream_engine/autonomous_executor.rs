@@ -4,6 +4,7 @@ pub(in crate::stream_engine) mod task;
 
 pub(crate) mod row;
 
+mod latest_pipeline;
 mod task_executor;
 
 use crate::{error::Result, pipeline::Pipeline};
