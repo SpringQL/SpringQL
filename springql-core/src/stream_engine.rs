@@ -94,7 +94,8 @@ where
     pub(crate) fn alter_pipeline(&mut self, command: AlterPipelineCommand) -> Result<()> {
         log::debug!("[StreamEngine] alter_pipeline({:?})", command);
         let pipeline = self.reactive_executor.alter_pipeline(command)?;
-        self.autonomous_executor.notify_pipeline_update(pipeline)
+        self.autonomous_executor.notify_pipeline_update(pipeline);
+        Ok(())
     }
 
     /// Blocking call

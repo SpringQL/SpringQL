@@ -1,6 +1,7 @@
 // Copyright (c) 2021 TOYOTA MOTOR CORPORATION. Licensed under MIT OR Apache-2.0.
 
 mod scheduler;
+mod task_executor_lock;
 mod worker_pool;
 
 use crate::{
@@ -13,11 +14,15 @@ pub(in crate::stream_engine) use scheduler::{FlowEfficientScheduler, Scheduler};
 
 use self::{
     scheduler::{scheduler_read::SchedulerRead, scheduler_write::SchedulerWrite},
+    task_executor_lock::{PipelineUpdateLockGuard, TaskExecutorLock},
     worker_pool::WorkerPool,
 };
-use super::task::{
-    sink_task::sink_writer::sink_writer_repository::SinkWriterRepository,
-    source_task::source_reader::source_reader_repository::SourceReaderRepository,
+use super::{
+    current_pipeline::CurrentPipeline,
+    task::{
+        sink_task::sink_writer::sink_writer_repository::SinkWriterRepository,
+        source_task::source_reader::source_reader_repository::SourceReaderRepository,
+    },
 };
 
 /// Task executor executes task graph's dataflow by internal worker threads.
@@ -29,6 +34,10 @@ pub(in crate::stream_engine) struct TaskExecutor<DI>
 where
     DI: DependencyInjection,
 {
+    task_executor_lock: TaskExecutorLock,
+
+    current_pipeline: Arc<CurrentPipeline>,
+
     scheduler_write: SchedulerWrite<DI>,
 
     row_repo: Arc<DI::RowRepositoryType>,
@@ -42,7 +51,12 @@ impl<DI> TaskExecutor<DI>
 where
     DI: DependencyInjection,
 {
-    pub(in crate::stream_engine) fn new(n_worker_threads: usize) -> Self {
+    pub(in crate::stream_engine::autonomous_executor) fn new(
+        n_worker_threads: usize,
+        latest_pipeline: Arc<CurrentPipeline>,
+    ) -> Self {
+        let task_executor_lock = TaskExecutorLock::default();
+
         let scheduler = Arc::new(RwLock::new(DI::SchedulerType::default()));
         let scheduler_write = SchedulerWrite::new(scheduler.clone());
         let scheduler_read = SchedulerRead::new(scheduler);
@@ -52,6 +66,10 @@ where
         let sink_writer_repo = Arc::new(SinkWriterRepository::default());
 
         Self {
+            task_executor_lock,
+
+            current_pipeline: latest_pipeline,
+
             scheduler_write,
 
             _worker_pool: WorkerPool::new::<DI>(
@@ -67,16 +85,24 @@ where
         }
     }
 
-    pub(in crate::stream_engine) fn notify_pipeline_update(
+    /// AutonomousExecutor acquires lock when pipeline is updated.
+    pub(in crate::stream_engine::autonomous_executor) fn pipeline_update_lock(
         &self,
-        pipeline: Pipeline,
-    ) -> Result<()> {
-        let mut scheduler = self.scheduler_write.write_lock();
-        // 1. Worker executing main_loop (having read lock to scheduler) continues its task.
-        // 2. Enter write lock.
-        // 3. (Worker cannot get read lock to schedule to start next task)
+    ) -> PipelineUpdateLockGuard {
+        self.task_executor_lock.pipeline_update()
+    }
 
-        self.row_repo.reset(scheduler.task_graph().all_tasks());
+    /// Stop all source tasks and executes pump tasks and sink tasks to finish all rows remaining in queues.
+    pub(in crate::stream_engine::autonomous_executor) fn cleanup(
+        &self,
+        _lock_guard: &PipelineUpdateLockGuard,
+    ) -> Result<()> {
+        // TODO do not just remove rows in queues. Do the things in doc comment.
+
+        let pipeline = self.current_pipeline.pipeline();
+        let task_graph = self.current_pipeline.task_graph();
+
+        self.row_repo.reset(task_graph.all_tasks());
 
         pipeline
             .all_sources()
@@ -87,6 +113,7 @@ where
             .into_iter()
             .try_for_each(|sink_writer| self.sink_writer_repo.register(sink_writer))?;
 
+        let mut scheduler = self.scheduler_write.write_lock();
         scheduler.notify_pipeline_update(pipeline)
     }
 }

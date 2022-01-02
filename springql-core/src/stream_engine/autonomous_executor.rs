@@ -4,10 +4,12 @@ pub(in crate::stream_engine) mod task;
 
 pub(crate) mod row;
 
-mod latest_pipeline;
+mod current_pipeline;
 mod task_executor;
 
-use crate::{error::Result, pipeline::Pipeline};
+use std::sync::Arc;
+
+use crate::pipeline::Pipeline;
 
 pub(crate) use row::ForeignSinkRow;
 pub(in crate::stream_engine) use row::{
@@ -15,7 +17,7 @@ pub(in crate::stream_engine) use row::{
 };
 pub(in crate::stream_engine) use task_executor::{FlowEfficientScheduler, Scheduler};
 
-use self::task_executor::TaskExecutor;
+use self::{current_pipeline::CurrentPipeline, task_executor::TaskExecutor};
 
 use super::dependency_injection::DependencyInjection;
 
@@ -32,6 +34,8 @@ pub(in crate::stream_engine) struct AutonomousExecutor<DI>
 where
     DI: DependencyInjection,
 {
+    latest_pipeline: Arc<CurrentPipeline>,
+
     task_executor: TaskExecutor<DI>,
 }
 
@@ -40,14 +44,17 @@ where
     DI: DependencyInjection,
 {
     pub(in crate::stream_engine) fn new(n_worker_threads: usize) -> Self {
-        let task_executor = TaskExecutor::new(n_worker_threads);
-        Self { task_executor }
+        let latest_pipeline = Arc::new(CurrentPipeline::default());
+        let task_executor = TaskExecutor::new(n_worker_threads, latest_pipeline.clone());
+        Self {
+            latest_pipeline,
+            task_executor,
+        }
     }
 
-    pub(in crate::stream_engine) fn notify_pipeline_update(
-        &self,
-        pipeline: Pipeline,
-    ) -> Result<()> {
-        self.task_executor.notify_pipeline_update(pipeline)
+    pub(in crate::stream_engine) fn notify_pipeline_update(&self, pipeline: Pipeline) {
+        let lock = self.task_executor.pipeline_update_lock();
+        self.task_executor.cleanup(&lock);
+        self.latest_pipeline.update(pipeline);
     }
 }
