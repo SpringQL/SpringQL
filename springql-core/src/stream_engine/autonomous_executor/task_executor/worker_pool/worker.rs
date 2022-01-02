@@ -15,6 +15,7 @@ use crate::{
     error::SpringError,
     stream_engine::{
         autonomous_executor::{
+            current_pipeline::{self, CurrentPipeline},
             task::{
                 sink_task::sink_writer::sink_writer_repository::SinkWriterRepository,
                 source_task::source_reader::source_reader_repository::SourceReaderRepository,
@@ -36,6 +37,7 @@ pub(super) struct Worker {
 impl Worker {
     pub(super) fn new<DI: DependencyInjection>(
         id: WorkerId,
+        current_pipeline: Arc<CurrentPipeline>,
         scheduler_read: SchedulerRead<DI>,
         row_repo: Arc<DI::RowRepositoryType>,
         source_reader_repo: Arc<SourceReaderRepository>,
@@ -46,6 +48,7 @@ impl Worker {
         let _ = thread::spawn(move || {
             Self::main_loop::<DI>(
                 id,
+                current_pipeline,
                 scheduler_read.clone(),
                 row_repo,
                 source_reader_repo,
@@ -58,6 +61,7 @@ impl Worker {
 
     fn main_loop<DI: DependencyInjection>(
         id: WorkerId,
+        current_pipeline: Arc<CurrentPipeline>,
         scheduler: SchedulerRead<DI>,
         row_repo: Arc<DI::RowRepositoryType>,
         source_reader_repo: Arc<SourceReaderRepository>,
@@ -78,8 +82,8 @@ impl Worker {
                 cur_worker_state = next_worker_state;
 
                 let context = TaskContext::<DI>::new(
-                    scheduler.task_graph().as_ref(),
                     task.id().clone(),
+                    current_pipeline.clone(),
                     row_repo.clone(),
                     source_reader_repo.clone(),
                     sink_writer_repo.clone(),

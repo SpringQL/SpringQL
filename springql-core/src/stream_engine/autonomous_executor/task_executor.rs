@@ -66,12 +66,13 @@ where
         Self {
             task_executor_lock,
 
-            current_pipeline,
+            current_pipeline: current_pipeline.clone(),
 
             scheduler_write,
 
             _worker_pool: WorkerPool::new::<DI>(
                 n_worker_threads,
+                current_pipeline,
                 scheduler_read,
                 row_repo.clone(),
                 source_reader_repo.clone(),

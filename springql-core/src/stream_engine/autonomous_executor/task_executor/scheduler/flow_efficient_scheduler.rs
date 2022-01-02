@@ -266,8 +266,7 @@ mod tests {
     use crate::{
         pipeline::{name::PumpName, Pipeline},
         stream_engine::autonomous_executor::{
-            current_pipeline::{self, CurrentPipeline},
-            task::task_id::TaskId,
+            current_pipeline::CurrentPipeline, task::task_id::TaskId,
         },
     };
 
