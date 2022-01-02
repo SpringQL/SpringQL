@@ -4,9 +4,7 @@ mod scheduler;
 mod task_executor_lock;
 mod worker_pool;
 
-use crate::{
-    error::Result, pipeline::Pipeline, stream_engine::dependency_injection::DependencyInjection,
-};
+use crate::{error::Result, stream_engine::dependency_injection::DependencyInjection};
 use std::sync::{Arc, RwLock};
 
 pub(in crate::stream_engine) use super::row::RowRepository;
