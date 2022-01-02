@@ -15,7 +15,7 @@ use crate::{
     error::SpringError,
     stream_engine::{
         autonomous_executor::{
-            current_pipeline::{self, CurrentPipeline},
+            current_pipeline::CurrentPipeline,
             task::{
                 sink_task::sink_writer::sink_writer_repository::SinkWriterRepository,
                 source_task::source_reader::source_reader_repository::SourceReaderRepository,

@@ -3,7 +3,7 @@
 use std::sync::Arc;
 
 use crate::stream_engine::{
-    autonomous_executor::current_pipeline::{self, CurrentPipeline},
+    autonomous_executor::current_pipeline::CurrentPipeline,
     dependency_injection::DependencyInjection,
 };
 

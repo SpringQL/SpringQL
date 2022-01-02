@@ -279,7 +279,7 @@ mod tests {
 
         let mut scheduler = FlowEfficientScheduler::default();
 
-        let mut current_pipeline = CurrentPipeline::default();
+        let current_pipeline = CurrentPipeline::default();
         current_pipeline.update(pipeline);
         scheduler.notify_pipeline_update(&current_pipeline).unwrap();
 

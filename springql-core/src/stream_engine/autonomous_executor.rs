@@ -7,9 +7,9 @@ pub(crate) mod row;
 mod current_pipeline;
 mod task_executor;
 
-use std::sync::Arc;
-
+use crate::error::Result;
 use crate::pipeline::Pipeline;
+use std::sync::Arc;
 
 pub(crate) use row::ForeignSinkRow;
 pub(in crate::stream_engine) use row::{
@@ -52,9 +52,13 @@ where
         }
     }
 
-    pub(in crate::stream_engine) fn notify_pipeline_update(&self, pipeline: Pipeline) {
+    pub(in crate::stream_engine) fn notify_pipeline_update(
+        &self,
+        pipeline: Pipeline,
+    ) -> Result<()> {
         let lock = self.task_executor.pipeline_update_lock();
-        self.task_executor.cleanup(&lock);
+        self.task_executor.cleanup(&lock)?;
         self.latest_pipeline.update(pipeline);
+        Ok(())
     }
 }

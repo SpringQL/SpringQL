@@ -103,23 +103,3 @@ impl QuerySubtask {
             .map(|parent_edge| parent_edge.source())
     }
 }
-
-#[cfg(test)]
-impl QuerySubtask {
-    fn run_expect<DI: DependencyInjection>(
-        &mut self,
-        expected: Vec<Row>,
-        context: &TaskContext<DI>,
-    ) {
-        use crate::error::SpringError;
-        use pretty_assertions::assert_eq;
-
-        for expected_row in expected {
-            assert_eq!(self.run::<DI>(context).unwrap(), expected_row);
-        }
-        assert!(matches!(
-            self.run::<DI>(context).unwrap_err(),
-            SpringError::InputTimeout { .. }
-        ));
-    }
-}
