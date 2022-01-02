@@ -22,8 +22,9 @@ pub(crate) trait Scheduler: Debug + Default + Sync + Send + 'static {
 
     /// Called from main thread.
     fn notify_pipeline_update(&mut self, current_pipeline: &CurrentPipeline) -> Result<()> {
-        let pipeline = current_pipeline.pipeline();
-        let task_graph = current_pipeline.task_graph();
+        let inner = current_pipeline.read();
+        let pipeline = inner.pipeline();
+        let task_graph = inner.task_graph();
         self._notify_pipeline_version(pipeline.version());
         self._notify_task_graph_update(task_graph)
     }

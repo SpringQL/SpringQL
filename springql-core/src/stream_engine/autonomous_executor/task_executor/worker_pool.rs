@@ -35,7 +35,7 @@ impl WorkerPool {
             .map(|id| {
                 Worker::new::<DI>(
                     WorkerId::new(id as u16),
-                    current_pipeline,
+                    current_pipeline.clone(),
                     scheduler_read.clone(),
                     row_repo.clone(),
                     source_reader_repo.clone(),

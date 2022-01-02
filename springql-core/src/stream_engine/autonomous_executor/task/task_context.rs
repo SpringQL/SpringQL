@@ -47,7 +47,8 @@ impl<DI: DependencyInjection> TaskContext<DI> {
     }
 
     pub(in crate::stream_engine) fn downstream_tasks(&self) -> Vec<TaskId> {
-        let task_graph = self.current_pipeline.task_graph();
+        let inner = self.current_pipeline.read();
+        let task_graph = inner.task_graph();
         task_graph.downstream_tasks(self.task.clone())
     }
 
@@ -67,14 +68,14 @@ impl<DI: DependencyInjection> TaskContext<DI> {
 impl<DI: DependencyInjection> TaskContext<DI> {
     pub(in crate::stream_engine) fn _test_factory(
         task: TaskId,
-        downstream_tasks: Vec<TaskId>,
+        current_pipeline: Arc<CurrentPipeline>,
         row_repo: Arc<DI::RowRepositoryType>,
         source_reader_repo: Arc<SourceReaderRepository>,
         sink_writer_repo: Arc<SinkWriterRepository>,
     ) -> Self {
         Self {
             task,
-            downstream_tasks,
+            current_pipeline,
             row_repo,
             source_reader_repo,
             sink_writer_repo,

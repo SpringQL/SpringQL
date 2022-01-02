@@ -98,8 +98,9 @@ where
     ) -> Result<()> {
         // TODO do not just remove rows in queues. Do the things in doc comment.
 
-        let pipeline = self.current_pipeline.pipeline();
-        let task_graph = self.current_pipeline.task_graph();
+        let inner = self.current_pipeline.read();
+        let pipeline = inner.pipeline();
+        let task_graph = inner.task_graph();
 
         self.row_repo.reset(task_graph.all_tasks());
 

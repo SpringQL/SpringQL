@@ -13,9 +13,7 @@ use super::task::task_graph::TaskGraph;
 ///
 /// This instance works as a reader-writer lock for autonomous executor (AutonomousExecutor updates pipeline and children read it).
 #[derive(Debug, Default)]
-pub(in crate::stream_engine::autonomous_executor) struct CurrentPipeline(
-    RwLock<CurrentPipelineInner>,
-);
+pub(crate) struct CurrentPipeline(RwLock<CurrentPipelineInner>);
 
 impl CurrentPipeline {
     /// Blocks until it gets internal write lock.
@@ -27,17 +25,10 @@ impl CurrentPipeline {
         inner.borrow_mut().update(pipeline);
     }
 
-    pub(in crate::stream_engine::autonomous_executor) fn pipeline(&self) -> &Pipeline {
-        let inner = self.read();
-        inner.pipeline()
-    }
-    pub(in crate::stream_engine::autonomous_executor) fn task_graph(&self) -> &TaskGraph {
-        let inner = self.read();
-        inner.task_graph()
-    }
-
     /// Blocks until it gets internal read lock.
-    fn read(&self) -> RwLockReadGuard<'_, CurrentPipelineInner> {
+    pub(in crate::stream_engine::autonomous_executor) fn read(
+        &self,
+    ) -> RwLockReadGuard<'_, CurrentPipelineInner> {
         self.0
             .read()
             .expect("another thread sharing the same LatestPipeline must not panic")
@@ -45,7 +36,7 @@ impl CurrentPipeline {
 }
 
 #[derive(Debug, Default)]
-struct CurrentPipelineInner {
+pub(in crate::stream_engine::autonomous_executor) struct CurrentPipelineInner {
     pipeline: Pipeline,
     task_graph: TaskGraph,
 }
@@ -57,10 +48,10 @@ impl CurrentPipelineInner {
         self.task_graph = task_graph;
     }
 
-    fn pipeline(&self) -> &Pipeline {
+    pub(in crate::stream_engine::autonomous_executor) fn pipeline(&self) -> &Pipeline {
         &self.pipeline
     }
-    fn task_graph(&self) -> &TaskGraph {
+    pub(in crate::stream_engine::autonomous_executor) fn task_graph(&self) -> &TaskGraph {
         &self.task_graph
     }
 }
