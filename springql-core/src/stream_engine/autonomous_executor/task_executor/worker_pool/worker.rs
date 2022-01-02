@@ -21,7 +21,10 @@ use crate::{
                 source_task::source_reader::source_reader_repository::SourceReaderRepository,
                 task_context::TaskContext,
             },
-            task_executor::{scheduler::scheduler_read::SchedulerRead, Scheduler},
+            task_executor::{
+                scheduler::scheduler_read::SchedulerRead, task_executor_lock::TaskExecutorLock,
+                Scheduler,
+            },
         },
         dependency_injection::DependencyInjection,
     },
@@ -37,6 +40,7 @@ pub(super) struct Worker {
 impl Worker {
     pub(super) fn new<DI: DependencyInjection>(
         id: WorkerId,
+        task_executor_lock: Arc<TaskExecutorLock>,
         current_pipeline: Arc<CurrentPipeline>,
         scheduler_read: SchedulerRead<DI>,
         row_repo: Arc<DI::RowRepositoryType>,
@@ -48,6 +52,7 @@ impl Worker {
         let _ = thread::spawn(move || {
             Self::main_loop::<DI>(
                 id,
+                task_executor_lock.clone(),
                 current_pipeline,
                 scheduler_read.clone(),
                 row_repo,
@@ -61,6 +66,7 @@ impl Worker {
 
     fn main_loop<DI: DependencyInjection>(
         id: WorkerId,
+        task_executor_lock: Arc<TaskExecutorLock>,
         current_pipeline: Arc<CurrentPipeline>,
         scheduler: SchedulerRead<DI>,
         row_repo: Arc<DI::RowRepositoryType>,
@@ -74,6 +80,7 @@ impl Worker {
         log::debug!("[Worker#{}] Started", id);
 
         while stop_receiver.try_recv().is_err() {
+            let _lock = task_executor_lock.task_execution();
             let scheduler = scheduler.read_lock();
 
             if let Some((task, next_worker_state)) = scheduler.next_task(cur_worker_state.clone()) {

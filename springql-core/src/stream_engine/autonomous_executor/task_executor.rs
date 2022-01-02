@@ -32,7 +32,7 @@ pub(in crate::stream_engine) struct TaskExecutor<DI>
 where
     DI: DependencyInjection,
 {
-    task_executor_lock: TaskExecutorLock,
+    task_executor_lock: Arc<TaskExecutorLock>,
 
     current_pipeline: Arc<CurrentPipeline>,
 
@@ -53,7 +53,7 @@ where
         n_worker_threads: usize,
         current_pipeline: Arc<CurrentPipeline>,
     ) -> Self {
-        let task_executor_lock = TaskExecutorLock::default();
+        let task_executor_lock = Arc::new(TaskExecutorLock::default());
 
         let scheduler = Arc::new(RwLock::new(DI::SchedulerType::default()));
         let scheduler_write = SchedulerWrite::new(scheduler.clone());
@@ -64,7 +64,7 @@ where
         let sink_writer_repo = Arc::new(SinkWriterRepository::default());
 
         Self {
-            task_executor_lock,
+            task_executor_lock: task_executor_lock.clone(),
 
             current_pipeline: current_pipeline.clone(),
 
@@ -72,6 +72,7 @@ where
 
             _worker_pool: WorkerPool::new::<DI>(
                 n_worker_threads,
+                task_executor_lock,
                 current_pipeline,
                 scheduler_read,
                 row_repo.clone(),
