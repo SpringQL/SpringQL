@@ -51,7 +51,7 @@ where
 {
     pub(in crate::stream_engine::autonomous_executor) fn new(
         n_worker_threads: usize,
-        latest_pipeline: Arc<CurrentPipeline>,
+        current_pipeline: Arc<CurrentPipeline>,
     ) -> Self {
         let task_executor_lock = TaskExecutorLock::default();
 
@@ -66,7 +66,7 @@ where
         Self {
             task_executor_lock,
 
-            current_pipeline: latest_pipeline,
+            current_pipeline,
 
             scheduler_write,
 
@@ -112,6 +112,6 @@ where
             .try_for_each(|sink_writer| self.sink_writer_repo.register(sink_writer))?;
 
         let mut scheduler = self.scheduler_write.write_lock();
-        scheduler.notify_pipeline_update(pipeline)
+        scheduler.notify_pipeline_update(self.current_pipeline.as_ref())
     }
 }
