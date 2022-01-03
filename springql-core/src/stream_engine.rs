@@ -50,7 +50,6 @@ mod dependency_injection;
 mod in_memory_queue_repository;
 mod sql_executor;
 
-pub(in crate::stream_engine) use autonomous_executor::Scheduler;
 pub(crate) use autonomous_executor::{
     row::value::{sql_convertible::SqlConvertible, sql_value::SqlValue},
     ForeignSinkRow,

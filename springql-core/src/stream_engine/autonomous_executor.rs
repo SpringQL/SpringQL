@@ -15,7 +15,6 @@ pub(crate) use row::ForeignSinkRow;
 pub(in crate::stream_engine) use row::{
     CurrentTimestamp, NaiveRowRepository, RowRepository, Timestamp,
 };
-pub(in crate::stream_engine) use task_executor::{FlowEfficientScheduler, Scheduler};
 
 use self::{current_pipeline::CurrentPipeline, task_executor::TaskExecutor};
 

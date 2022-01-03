@@ -17,7 +17,7 @@ use crate::stream_engine::{
 
 use self::worker::{worker_id::WorkerId, Worker};
 
-use super::{scheduler::scheduler_read::SchedulerRead, task_executor_lock::TaskExecutorLock};
+use super::task_executor_lock::TaskExecutorLock;
 
 #[derive(Debug)]
 pub(super) struct WorkerPool(Vec<Worker>);
@@ -27,7 +27,6 @@ impl WorkerPool {
         n_worker_threads: usize,
         task_executor_lock: Arc<TaskExecutorLock>,
         current_pipeline: Arc<CurrentPipeline>,
-        scheduler_read: SchedulerRead<DI>,
         row_repo: Arc<DI::RowRepositoryType>,
         source_reader_repo: Arc<SourceReaderRepository>,
         sink_writer_repo: Arc<SinkWriterRepository>,
@@ -38,7 +37,6 @@ impl WorkerPool {
                     WorkerId::new(id as u16),
                     task_executor_lock.clone(),
                     current_pipeline.clone(),
-                    scheduler_read.clone(),
                     row_repo.clone(),
                     source_reader_repo.clone(),
                     sink_writer_repo.clone(),

@@ -5,13 +5,11 @@ mod task_executor_lock;
 mod worker_pool;
 
 use crate::{error::Result, stream_engine::dependency_injection::DependencyInjection};
-use std::sync::{Arc, RwLock};
+use std::sync::Arc;
 
 pub(in crate::stream_engine) use super::row::RowRepository;
-pub(in crate::stream_engine) use scheduler::{FlowEfficientScheduler, Scheduler};
 
 use self::{
-    scheduler::{scheduler_read::SchedulerRead, scheduler_write::SchedulerWrite},
     task_executor_lock::{PipelineUpdateLockGuard, TaskExecutorLock},
     worker_pool::WorkerPool,
 };
@@ -36,8 +34,6 @@ where
 
     current_pipeline: Arc<CurrentPipeline>,
 
-    scheduler_write: SchedulerWrite<DI>,
-
     row_repo: Arc<DI::RowRepositoryType>,
     source_reader_repo: Arc<SourceReaderRepository>,
     sink_writer_repo: Arc<SinkWriterRepository>,
@@ -55,10 +51,6 @@ where
     ) -> Self {
         let task_executor_lock = Arc::new(TaskExecutorLock::default());
 
-        let scheduler = Arc::new(RwLock::new(DI::SchedulerType::default()));
-        let scheduler_write = SchedulerWrite::new(scheduler.clone());
-        let scheduler_read = SchedulerRead::new(scheduler);
-
         let row_repo = Arc::new(DI::RowRepositoryType::default());
         let source_reader_repo = Arc::new(SourceReaderRepository::default());
         let sink_writer_repo = Arc::new(SinkWriterRepository::default());
@@ -68,13 +60,10 @@ where
 
             current_pipeline: current_pipeline.clone(),
 
-            scheduler_write,
-
             _worker_pool: WorkerPool::new::<DI>(
                 n_worker_threads,
                 task_executor_lock,
                 current_pipeline,
-                scheduler_read,
                 row_repo.clone(),
                 source_reader_repo.clone(),
                 sink_writer_repo.clone(),

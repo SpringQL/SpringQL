@@ -22,8 +22,8 @@ use crate::{
                 task_context::TaskContext,
             },
             task_executor::{
-                scheduler::scheduler_read::SchedulerRead, task_executor_lock::TaskExecutorLock,
-                Scheduler,
+                scheduler::{flow_efficient_scheduler::FlowEfficientScheduler, Scheduler},
+                task_executor_lock::TaskExecutorLock,
             },
         },
         dependency_injection::DependencyInjection,
@@ -42,7 +42,6 @@ impl Worker {
         id: WorkerId,
         task_executor_lock: Arc<TaskExecutorLock>,
         current_pipeline: Arc<CurrentPipeline>,
-        scheduler_read: SchedulerRead<DI>,
         row_repo: Arc<DI::RowRepositoryType>,
         source_reader_repo: Arc<SourceReaderRepository>,
         sink_writer_repo: Arc<SinkWriterRepository>,
@@ -54,7 +53,6 @@ impl Worker {
                 id,
                 task_executor_lock.clone(),
                 current_pipeline,
-                scheduler_read.clone(),
                 row_repo,
                 source_reader_repo,
                 sink_writer_repo,
@@ -68,20 +66,18 @@ impl Worker {
         id: WorkerId,
         task_executor_lock: Arc<TaskExecutorLock>,
         current_pipeline: Arc<CurrentPipeline>,
-        scheduler: SchedulerRead<DI>,
         row_repo: Arc<DI::RowRepositoryType>,
         source_reader_repo: Arc<SourceReaderRepository>,
         sink_writer_repo: Arc<SinkWriterRepository>,
         stop_receiver: mpsc::Receiver<()>,
     ) {
-        let mut cur_worker_state =
-            <<DI as DependencyInjection>::SchedulerType as Scheduler>::W::default();
+        let mut scheduler = FlowEfficientScheduler::default();
+        let mut cur_worker_state = <FlowEfficientScheduler as Scheduler>::W::default();
 
         log::debug!("[Worker#{}] Started", id);
 
         while stop_receiver.try_recv().is_err() {
             let _lock = task_executor_lock.task_execution();
-            let scheduler = scheduler.read_lock();
 
             if let Some((task, next_worker_state)) = scheduler.next_task(cur_worker_state.clone()) {
                 log::debug!("[Worker#{}] Scheduled task:{}", id, task.id());

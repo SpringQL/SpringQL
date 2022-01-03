@@ -1,11 +1,7 @@
 // Copyright (c) 2021 TOYOTA MOTOR CORPORATION. Licensed under MIT OR Apache-2.0.
 
-pub(super) mod scheduler_read;
-pub(super) mod scheduler_write;
+pub(in crate::stream_engine::autonomous_executor) mod flow_efficient_scheduler;
 
-mod flow_efficient_scheduler;
-
-pub(crate) use flow_efficient_scheduler::FlowEfficientScheduler;
 use std::fmt::Debug;
 use std::sync::Arc;
 
