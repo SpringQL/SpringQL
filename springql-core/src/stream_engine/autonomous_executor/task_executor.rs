@@ -26,10 +26,7 @@ use super::{
 ///
 /// All interface methods are called from main thread, while `new()` spawns worker threads.
 #[derive(Debug)]
-pub(in crate::stream_engine) struct TaskExecutor<DI>
-where
-    DI: DependencyInjection,
-{
+pub(in crate::stream_engine) struct TaskExecutor<DI: DependencyInjection> {
     task_executor_lock: Arc<TaskExecutorLock>,
 
     current_pipeline: Arc<CurrentPipeline>,
@@ -38,13 +35,10 @@ where
     source_reader_repo: Arc<SourceReaderRepository>,
     sink_writer_repo: Arc<SinkWriterRepository>,
 
-    _worker_pool: WorkerPool, // not referenced but just holding ownership to make workers continuously run
+    worker_pool: WorkerPool,
 }
 
-impl<DI> TaskExecutor<DI>
-where
-    DI: DependencyInjection,
-{
+impl<DI: DependencyInjection> TaskExecutor<DI> {
     pub(in crate::stream_engine::autonomous_executor) fn new(
         n_worker_threads: usize,
         current_pipeline: Arc<CurrentPipeline>,
@@ -60,7 +54,7 @@ where
 
             current_pipeline: current_pipeline.clone(),
 
-            _worker_pool: WorkerPool::new::<DI>(
+            worker_pool: WorkerPool::new::<DI>(
                 n_worker_threads,
                 task_executor_lock,
                 current_pipeline,
@@ -81,6 +75,15 @@ where
         self.task_executor_lock.pipeline_update()
     }
 
+    /// Update workers' internal current pipeline.
+    pub(in crate::stream_engine::autonomous_executor) fn update_pipeline(
+        &self,
+        _lock_guard: &PipelineUpdateLockGuard,
+        current_pipeline: Arc<CurrentPipeline>,
+    ) {
+        self.worker_pool.interrupt_pipeline_update(current_pipeline)
+    }
+
     /// Stop all source tasks and executes pump tasks and sink tasks to finish all rows remaining in queues.
     pub(in crate::stream_engine::autonomous_executor) fn cleanup(
         &self,
@@ -88,9 +91,8 @@ where
     ) -> Result<()> {
         // TODO do not just remove rows in queues. Do the things in doc comment.
 
-        let inner = self.current_pipeline.read();
-        let pipeline = inner.pipeline();
-        let task_graph = inner.task_graph();
+        let pipeline = self.current_pipeline.pipeline();
+        let task_graph = self.current_pipeline.task_graph();
 
         self.row_repo.reset(task_graph.all_tasks());
 
@@ -103,7 +105,6 @@ where
             .into_iter()
             .try_for_each(|sink_writer| self.sink_writer_repo.register(sink_writer))?;
 
-        let mut scheduler = self.scheduler_write.write_lock();
-        scheduler.notify_pipeline_update(self.current_pipeline.as_ref())
+        Ok(())
     }
 }

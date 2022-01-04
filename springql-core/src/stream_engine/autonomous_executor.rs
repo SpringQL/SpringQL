@@ -29,35 +29,29 @@ pub(super) mod test_support;
 ///
 /// All interface methods are called from main thread, while `new()` spawns worker threads.
 #[derive(Debug)]
-pub(in crate::stream_engine) struct AutonomousExecutor<DI>
-where
-    DI: DependencyInjection,
-{
-    latest_pipeline: Arc<CurrentPipeline>,
-
+pub(in crate::stream_engine) struct AutonomousExecutor<DI: DependencyInjection> {
     task_executor: TaskExecutor<DI>,
 }
 
-impl<DI> AutonomousExecutor<DI>
-where
-    DI: DependencyInjection,
-{
+impl<DI: DependencyInjection> AutonomousExecutor<DI> {
     pub(in crate::stream_engine) fn new(n_worker_threads: usize) -> Self {
-        let latest_pipeline = Arc::new(CurrentPipeline::default());
-        let task_executor = TaskExecutor::new(n_worker_threads, latest_pipeline.clone());
-        Self {
-            latest_pipeline,
-            task_executor,
-        }
+        let current_pipeline = Arc::new(CurrentPipeline::new(Pipeline::default()));
+        let task_executor = TaskExecutor::new(n_worker_threads, current_pipeline);
+        Self { task_executor }
     }
 
     pub(in crate::stream_engine) fn notify_pipeline_update(
-        &self,
+        &mut self,
         pipeline: Pipeline,
     ) -> Result<()> {
-        let lock = self.task_executor.pipeline_update_lock();
-        self.task_executor.cleanup(&lock)?;
-        self.latest_pipeline.update(pipeline);
+        let task_executor = &self.task_executor;
+
+        let lock = task_executor.pipeline_update_lock();
+
+        task_executor.cleanup(&lock)?;
+
+        let current_pipeline = Arc::new(CurrentPipeline::new(pipeline));
+        task_executor.update_pipeline(&lock, current_pipeline);
         Ok(())
     }
 }

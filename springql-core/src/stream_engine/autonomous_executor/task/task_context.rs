@@ -13,7 +13,7 @@ use super::{
 };
 
 #[derive(Debug)]
-pub(in crate::stream_engine) struct TaskContext<DI: DependencyInjection> {
+pub(in crate::stream_engine::autonomous_executor) struct TaskContext<DI: DependencyInjection> {
     task: TaskId,
 
     // why a task need to know pipeline? -> source tasks need to know source stream's shape.
@@ -26,7 +26,7 @@ pub(in crate::stream_engine) struct TaskContext<DI: DependencyInjection> {
 }
 
 impl<DI: DependencyInjection> TaskContext<DI> {
-    pub(in crate::stream_engine) fn new(
+    pub(in crate::stream_engine::autonomous_executor) fn new(
         task: TaskId,
         current_pipeline: Arc<CurrentPipeline>,
         row_repo: Arc<DI::RowRepositoryType>,
@@ -47,8 +47,7 @@ impl<DI: DependencyInjection> TaskContext<DI> {
     }
 
     pub(in crate::stream_engine) fn downstream_tasks(&self) -> Vec<TaskId> {
-        let inner = self.current_pipeline.read();
-        let task_graph = inner.task_graph();
+        let task_graph = self.current_pipeline.task_graph();
         task_graph.downstream_tasks(self.task.clone())
     }
 

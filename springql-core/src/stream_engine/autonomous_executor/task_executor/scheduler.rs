@@ -13,14 +13,13 @@ use crate::stream_engine::autonomous_executor::task::Task;
 
 pub(crate) trait WorkerState {}
 
-pub(crate) trait Scheduler: Debug + Default + Sync + Send + 'static {
+pub(in crate::stream_engine::autonomous_executor) trait Scheduler: Debug + Default + Sync + Send + 'static {
     type W: WorkerState + Clone + Default;
 
     /// Called from main thread.
     fn notify_pipeline_update(&mut self, current_pipeline: &CurrentPipeline) -> Result<()> {
-        let inner = current_pipeline.read();
-        let pipeline = inner.pipeline();
-        let task_graph = inner.task_graph();
+        let pipeline = current_pipeline.pipeline();
+        let task_graph = current_pipeline.task_graph();
         self._notify_pipeline_version(pipeline.version());
         self._notify_task_graph_update(task_graph)
     }

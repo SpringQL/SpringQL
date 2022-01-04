@@ -2,7 +2,7 @@
 
 pub(super) mod worker;
 
-use std::sync::Arc;
+use std::{cell::RefCell, sync::Arc};
 
 use crate::stream_engine::{
     autonomous_executor::{
@@ -20,7 +20,14 @@ use self::worker::{worker_id::WorkerId, Worker};
 use super::task_executor_lock::TaskExecutorLock;
 
 #[derive(Debug)]
-pub(super) struct WorkerPool(Vec<Worker>);
+pub(super) struct WorkerPool {
+    /// Worker pool gets interruption from task executor on, for example, pipeline update.
+    /// Worker pool holder cannot always be mutable, worker pool is better to have mutability for each worker.
+    ///
+    /// Mutation to workers only happens inside task executor lock like `PipelineUpdateLockGuard`,
+    /// so here uses RefCell instead of Mutex nor RwLock to avoid lock cost to workers.
+    workers: RefCell<Vec<Worker>>,
+}
 
 impl WorkerPool {
     pub(super) fn new<DI: DependencyInjection>(
@@ -43,6 +50,15 @@ impl WorkerPool {
                 )
             })
             .collect();
-        Self(workers)
+        Self {
+            workers: RefCell::new(workers),
+        }
+    }
+
+    /// Interruption from task executor to update worker's pipeline.
+    pub(super) fn interrupt_pipeline_update(&self, current_pipeline: Arc<CurrentPipeline>) {
+        for worker in self.workers.borrow_mut().iter_mut() {
+            worker.interrupt_pipeline_update(current_pipeline.clone());
+        }
     }
 }

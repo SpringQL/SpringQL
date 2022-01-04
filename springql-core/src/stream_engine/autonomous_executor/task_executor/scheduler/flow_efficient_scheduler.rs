@@ -279,8 +279,7 @@ mod tests {
 
         let mut scheduler = FlowEfficientScheduler::default();
 
-        let current_pipeline = CurrentPipeline::default();
-        current_pipeline.update(pipeline);
+        let current_pipeline = CurrentPipeline::new(pipeline);
         scheduler.notify_pipeline_update(&current_pipeline).unwrap();
 
         if let Some((first_task, next_task_idx)) = scheduler.next_task(cur_task_idx) {
