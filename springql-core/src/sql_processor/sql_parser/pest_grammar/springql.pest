@@ -45,6 +45,7 @@ keyword = {
     | ^"TEXT"
     | ^"TIMESTAMP"
     | ^"TYPE"
+    | ^"WRITER"
 }
 
 /*
@@ -291,6 +292,7 @@ command = {
         create_source_stream_command
         | create_source_reader_command
         | create_sink_stream_command
+        | create_sink_writer_command
         | create_pump_command
     )
     ~ ";"?
@@ -322,9 +324,7 @@ create_sink_stream_command = {
     ~ stream_name
     ~ "("
     ~ column_definition ~ ("," ~ column_definition)*
-    ~ ")"
-    ~ ^"SERVER" ~ sink_writer_name
-    ~ option_specifications?
+    ~ ")"    
 }
 
 /*
@@ -355,6 +355,19 @@ create_source_reader_command = {
     ^"CREATE" ~ ^"SOURCE" ~ ^"READER" ~ source_reader_name 
     ~ ^"FOR" ~ stream_name
     ~ ^"TYPE" ~ source_reader_type
+    ~ option_specifications?
+}
+
+/*
+ * ----------------------------------------------------------------------------
+ * CREATE SINK WRITER
+ * ----------------------------------------------------------------------------
+ */
+
+create_sink_writer_command = {
+    ^"CREATE" ~ ^"SINK" ~ ^"WRITER" ~ sink_writer_name 
+    ~ ^"FOR" ~ stream_name
+    ~ ^"TYPE" ~ sink_writer_type
     ~ option_specifications?
 }
 
@@ -392,6 +405,9 @@ source_reader_type = {
 }
 
 sink_writer_name = {
+    identifier
+}
+sink_writer_type = {
     identifier
 }
 
