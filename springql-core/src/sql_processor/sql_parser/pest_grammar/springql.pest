@@ -33,6 +33,7 @@ keyword = {
     | ^"NULL"
     | ^"OPTIONS"
     | ^"PUMP"
+    | ^"READER"
     | ^"ROWTIME"
     | ^"SELECT"
     | ^"SERVER"
