@@ -3,20 +3,21 @@
 //! - Pipeline
 //!   - Stream
 //!     - (native) Stream
-//!     - Source/Sink Foreign Stream
+//!     - Source/Sink Stream
 //!   - Source Reader
 //!   - Sink Writer
 //!   - Pump
 
-pub(crate) mod foreign_stream_model;
 pub(crate) mod name;
 pub(crate) mod option;
 pub(crate) mod pipeline_graph;
 pub(crate) mod pipeline_version;
 pub(crate) mod pump_model;
 pub(crate) mod relation;
+pub(crate) mod sink_stream_model;
 pub(crate) mod sink_writer_model;
 pub(crate) mod source_reader_model;
+pub(crate) mod source_stream_model;
 pub(crate) mod stream_model;
 
 #[cfg(test)]
@@ -32,9 +33,9 @@ use crate::{
 use serde::{Deserialize, Serialize};
 
 use self::{
-    foreign_stream_model::ForeignStreamModel, name::StreamName, pipeline_graph::PipelineGraph,
-    pipeline_version::PipelineVersion, pump_model::PumpModel, sink_writer_model::SinkWriterModel,
-    source_reader_model::SourceReaderModel,
+    name::StreamName, pipeline_graph::PipelineGraph, pipeline_version::PipelineVersion,
+    pump_model::PumpModel, sink_stream_model::SinkStreamModel, sink_writer_model::SinkWriterModel,
+    source_reader_model::SourceReaderModel, source_stream_model::SourceStreamModel,
 };
 
 #[cfg(test)] // TODO remove
@@ -60,11 +61,8 @@ impl Pipeline {
     ///
     /// - [SpringError::Sql](crate::error::SpringError::Sql) when:
     ///   - Stream is not registered in pipeline
-    pub(super) fn get_foreign_stream(
-        &self,
-        stream: &StreamName,
-    ) -> Result<Arc<ForeignStreamModel>> {
-        self.graph.get_foreign_stream(stream)
+    pub(super) fn get_source_stream(&self, stream: &StreamName) -> Result<Arc<SourceStreamModel>> {
+        self.graph.get_source_stream(stream)
     }
 
     /// # Failure
@@ -83,13 +81,23 @@ impl Pipeline {
     ///
     /// - [SpringError::Sql](crate::error::SpringError::Sql) when:
     ///   - Name of foreign stream is already used in the same pipeline
-    pub(super) fn add_foreign_stream(
+    pub(super) fn add_source_stream(
         &mut self,
-        foreign_stream: Arc<ForeignStreamModel>,
+        source_stream: Arc<SourceStreamModel>,
     ) -> Result<()> {
         self.update_version();
-        self.register_name(foreign_stream.name().as_ref())?;
-        self.graph.add_foreign_stream(foreign_stream)
+        self.register_name(source_stream.name().as_ref())?;
+        self.graph.add_source_stream(source_stream)
+    }
+
+    /// # Failure
+    ///
+    /// - [SpringError::Sql](crate::error::SpringError::Sql) when:
+    ///   - Name of foreign stream is already used in the same pipeline
+    pub(super) fn add_sink_stream(&mut self, sink_stream: Arc<SinkStreamModel>) -> Result<()> {
+        self.update_version();
+        self.register_name(sink_stream.name().as_ref())?;
+        self.graph.add_sink_stream(sink_stream)
     }
 
     /// # Failure

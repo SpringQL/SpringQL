@@ -6,12 +6,13 @@ use serde_json::json;
 
 use crate::{
     pipeline::{
-        foreign_stream_model::ForeignStreamModel,
         name::{PumpName, StreamName},
         pipeline_graph::PipelineGraph,
         pump_model::PumpModel,
+        sink_stream_model::SinkStreamModel,
         sink_writer_model::SinkWriterModel,
         source_reader_model::SourceReaderModel,
+        source_stream_model::SourceStreamModel,
     },
     stream_engine::dependency_injection::test_di::TestDI,
     stream_engine::{
@@ -195,7 +196,7 @@ impl StreamColumns {
 
 impl AlterPipelineCommand {
     pub(in crate::stream_engine) fn fx_create_source_stream_trade(stream_name: StreamName) -> Self {
-        let stream = ForeignStreamModel::fx_trade_with_name(stream_name);
+        let stream = SourceStreamModel::fx_trade_with_name(stream_name);
         Self::CreateSourceStream(stream)
     }
 
@@ -209,7 +210,7 @@ impl AlterPipelineCommand {
     }
 
     pub(in crate::stream_engine) fn fx_create_sink_stream_trade(stream_name: StreamName) -> Self {
-        let stream = ForeignStreamModel::fx_trade_with_name(stream_name);
+        let stream = SinkStreamModel::fx_trade_with_name(stream_name);
         Self::CreateSinkStream(stream)
     }
 

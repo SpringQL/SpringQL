@@ -4,7 +4,6 @@ use std::{net::IpAddr, sync::Arc};
 
 use crate::{
     pipeline::{
-        foreign_stream_model::ForeignStreamModel,
         name::{ColumnName, PumpName, SinkWriterName, SourceReaderName, StreamName},
         option::{options_builder::OptionsBuilder, Options},
         pump_model::PumpModel,
@@ -15,8 +14,10 @@ use crate::{
             },
             sql_type::SqlType,
         },
+        sink_stream_model::SinkStreamModel,
         sink_writer_model::{sink_writer_type::SinkWriterType, SinkWriterModel},
         source_reader_model::{source_reader_type::SourceReaderType, SourceReaderModel},
+        source_stream_model::SourceStreamModel,
         stream_model::{stream_shape::StreamShape, StreamModel},
         Pipeline,
     },
@@ -31,12 +32,12 @@ impl Pipeline {
     /// (0)--a-->[1]
     /// ```
     pub(crate) fn fx_source_only() -> Self {
-        let fst_1 = Arc::new(ForeignStreamModel::fx_trade_with_name(StreamName::factory(
+        let fst_1 = Arc::new(SourceStreamModel::fx_trade_with_name(StreamName::factory(
             "fst_1",
         )));
 
         let mut pipeline = Pipeline::default();
-        pipeline.add_foreign_stream(fst_1).unwrap();
+        pipeline.add_source_stream(fst_1).unwrap();
         pipeline
     }
 
@@ -49,10 +50,10 @@ impl Pipeline {
         sink_remote_host: IpAddr,
         sink_remote_port: u16,
     ) -> Self {
-        let fst_1 = Arc::new(ForeignStreamModel::fx_trade_with_name(StreamName::factory(
+        let fst_1 = Arc::new(SourceStreamModel::fx_trade_with_name(StreamName::factory(
             "fst_1",
         )));
-        let fst_2 = Arc::new(ForeignStreamModel::fx_trade_with_name(StreamName::factory(
+        let fst_2 = Arc::new(SinkStreamModel::fx_trade_with_name(StreamName::factory(
             "fst_2",
         )));
 
@@ -69,8 +70,8 @@ impl Pipeline {
 
         let mut pipeline = Pipeline::default();
 
-        pipeline.add_foreign_stream(fst_1).unwrap();
-        pipeline.add_foreign_stream(fst_2).unwrap();
+        pipeline.add_source_stream(fst_1).unwrap();
+        pipeline.add_sink_stream(fst_2).unwrap();
 
         pipeline.add_source_reader(source_a).unwrap();
         pipeline.add_sink_writer(sink_c).unwrap();
@@ -93,17 +94,17 @@ impl Pipeline {
         sink2_remote_host: IpAddr,
         sink2_remote_port: u16,
     ) -> Self {
-        let fst_1 = Arc::new(ForeignStreamModel::fx_trade_with_name(StreamName::factory(
+        let fst_1 = Arc::new(SourceStreamModel::fx_trade_with_name(StreamName::factory(
             "fst_1",
         )));
-        let fst_2 = Arc::new(ForeignStreamModel::fx_trade_with_name(StreamName::factory(
+        let fst_2 = Arc::new(SourceStreamModel::fx_trade_with_name(StreamName::factory(
             "fst_2",
         )));
 
-        let fst_3 = Arc::new(ForeignStreamModel::fx_trade_with_name(StreamName::factory(
+        let fst_3 = Arc::new(SinkStreamModel::fx_trade_with_name(StreamName::factory(
             "fst_3",
         )));
-        let fst_4 = Arc::new(ForeignStreamModel::fx_trade_with_name(StreamName::factory(
+        let fst_4 = Arc::new(SinkStreamModel::fx_trade_with_name(StreamName::factory(
             "fst_4",
         )));
 
@@ -130,11 +131,11 @@ impl Pipeline {
 
         let mut pipeline = Pipeline::default();
 
-        pipeline.add_foreign_stream(fst_1).unwrap();
-        pipeline.add_foreign_stream(fst_2).unwrap();
+        pipeline.add_source_stream(fst_1).unwrap();
+        pipeline.add_source_stream(fst_2).unwrap();
 
-        pipeline.add_foreign_stream(fst_3).unwrap();
-        pipeline.add_foreign_stream(fst_4).unwrap();
+        pipeline.add_sink_stream(fst_3).unwrap();
+        pipeline.add_sink_stream(fst_4).unwrap();
 
         pipeline.add_source_reader(source_a).unwrap();
         pipeline.add_source_reader(source_b).unwrap();
@@ -160,14 +161,14 @@ impl Pipeline {
         sink_remote_host: IpAddr,
         sink_remote_port: u16,
     ) -> Self {
-        let fst_1 = Arc::new(ForeignStreamModel::fx_trade_with_name(StreamName::factory(
+        let fst_1 = Arc::new(SourceStreamModel::fx_trade_with_name(StreamName::factory(
             "fst_1",
         )));
-        let fst_2 = Arc::new(ForeignStreamModel::fx_trade_with_name(StreamName::factory(
+        let fst_2 = Arc::new(SourceStreamModel::fx_trade_with_name(StreamName::factory(
             "fst_2",
         )));
 
-        let fst_3 = Arc::new(ForeignStreamModel::fx_trade_with_name(StreamName::factory(
+        let fst_3 = Arc::new(SinkStreamModel::fx_trade_with_name(StreamName::factory(
             "fst_3",
         )));
 
@@ -192,10 +193,10 @@ impl Pipeline {
 
         let mut pipeline = Pipeline::default();
 
-        pipeline.add_foreign_stream(fst_1).unwrap();
-        pipeline.add_foreign_stream(fst_2).unwrap();
+        pipeline.add_source_stream(fst_1).unwrap();
+        pipeline.add_source_stream(fst_2).unwrap();
 
-        pipeline.add_foreign_stream(fst_3).unwrap();
+        pipeline.add_sink_stream(fst_3).unwrap();
 
         pipeline.add_source_reader(source_a).unwrap();
         pipeline.add_source_reader(source_b).unwrap();
@@ -224,10 +225,10 @@ impl Pipeline {
         sink2_remote_host: IpAddr,
         sink2_remote_port: u16,
     ) -> Self {
-        let fst_1 = Arc::new(ForeignStreamModel::fx_trade_with_name(StreamName::factory(
+        let fst_1 = Arc::new(SourceStreamModel::fx_trade_with_name(StreamName::factory(
             "fst_1",
         )));
-        let fst_2 = Arc::new(ForeignStreamModel::fx_trade_with_name(StreamName::factory(
+        let fst_2 = Arc::new(SourceStreamModel::fx_trade_with_name(StreamName::factory(
             "fst_2",
         )));
         let st_3 = Arc::new(StreamModel::fx_trade_with_name(StreamName::factory("st_3")));
@@ -235,10 +236,10 @@ impl Pipeline {
         let st_5 = Arc::new(StreamModel::fx_trade_with_name(StreamName::factory("st_5")));
         let st_6 = Arc::new(StreamModel::fx_trade_with_name(StreamName::factory("st_6")));
         let st_7 = Arc::new(StreamModel::fx_trade_with_name(StreamName::factory("st_7")));
-        let fst_8 = Arc::new(ForeignStreamModel::fx_trade_with_name(StreamName::factory(
+        let fst_8 = Arc::new(SinkStreamModel::fx_trade_with_name(StreamName::factory(
             "fst_8",
         )));
-        let fst_9 = Arc::new(ForeignStreamModel::fx_trade_with_name(StreamName::factory(
+        let fst_9 = Arc::new(SinkStreamModel::fx_trade_with_name(StreamName::factory(
             "fst_9",
         )));
 
@@ -300,11 +301,11 @@ impl Pipeline {
 
         let mut pipeline = Pipeline::default();
 
-        pipeline.add_foreign_stream(fst_1).unwrap();
-        pipeline.add_foreign_stream(fst_2).unwrap();
+        pipeline.add_source_stream(fst_1).unwrap();
+        pipeline.add_source_stream(fst_2).unwrap();
 
-        pipeline.add_foreign_stream(fst_8).unwrap();
-        pipeline.add_foreign_stream(fst_9).unwrap();
+        pipeline.add_sink_stream(fst_8).unwrap();
+        pipeline.add_sink_stream(fst_9).unwrap();
 
         pipeline.add_source_reader(source_a).unwrap();
         pipeline.add_source_reader(source_b).unwrap();
@@ -361,7 +362,13 @@ impl StreamModel {
     }
 }
 
-impl ForeignStreamModel {
+impl SourceStreamModel {
+    pub(crate) fn fx_trade_with_name(name: StreamName) -> Self {
+        Self::new(StreamModel::new(name, Arc::new(StreamShape::fx_trade())))
+    }
+}
+
+impl SinkStreamModel {
     pub(crate) fn fx_trade_with_name(name: StreamName) -> Self {
         Self::new(StreamModel::new(name, Arc::new(StreamShape::fx_trade())))
     }

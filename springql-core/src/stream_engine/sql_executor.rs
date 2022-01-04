@@ -6,8 +6,9 @@ use super::command::alter_pipeline_command::AlterPipelineCommand;
 use crate::{
     error::Result,
     pipeline::{
-        foreign_stream_model::ForeignStreamModel, pump_model::PumpModel,
-        sink_writer_model::SinkWriterModel, source_reader_model::SourceReaderModel, Pipeline,
+        pump_model::PumpModel, sink_stream_model::SinkStreamModel,
+        sink_writer_model::SinkWriterModel, source_reader_model::SourceReaderModel,
+        source_stream_model::SourceStreamModel, Pipeline,
     },
 };
 
@@ -49,9 +50,9 @@ impl SqlExecutor {
 
     fn create_foreign_source_stream(
         mut pipeline: Pipeline,
-        source_stream: ForeignStreamModel,
+        source_stream: SourceStreamModel,
     ) -> Result<Pipeline> {
-        pipeline.add_foreign_stream(Arc::new(source_stream))?;
+        pipeline.add_source_stream(Arc::new(source_stream))?;
         Ok(pipeline)
     }
     fn create_foreign_source_reader(
@@ -64,9 +65,9 @@ impl SqlExecutor {
 
     fn create_foreign_sink_stream(
         mut pipeline: Pipeline,
-        sink_stream: ForeignStreamModel,
+        sink_stream: SinkStreamModel,
     ) -> Result<Pipeline> {
-        pipeline.add_foreign_stream(Arc::new(sink_stream))?;
+        pipeline.add_sink_stream(Arc::new(sink_stream))?;
         Ok(pipeline)
     }
     fn create_foreign_sink_writer(

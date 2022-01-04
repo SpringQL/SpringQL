@@ -53,7 +53,7 @@ impl SourceTask {
         let source_stream = context
             .current_pipeline()
             .pipeline()
-            .get_foreign_stream(&self.source_stream_name)?;
+            .get_source_stream(&self.source_stream_name)?;
 
         let foreign_row = source_reader
             .lock()
