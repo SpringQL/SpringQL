@@ -80,22 +80,8 @@ impl<DI: DependencyInjection> TaskExecutor<DI> {
         &self,
         _lock_guard: &PipelineUpdateLockGuard,
         current_pipeline: Arc<CurrentPipeline>,
-    ) {
-        self.worker_pool.interrupt_pipeline_update(current_pipeline)
-    }
-
-    /// Stop all source tasks and executes pump tasks and sink tasks to finish all rows remaining in queues.
-    pub(in crate::stream_engine::autonomous_executor) fn cleanup(
-        &self,
-        _lock_guard: &PipelineUpdateLockGuard,
     ) -> Result<()> {
-        // TODO do not just remove rows in queues. Do the things in doc comment.
-
         let pipeline = self.current_pipeline.pipeline();
-        let task_graph = self.current_pipeline.task_graph();
-
-        self.row_repo.reset(task_graph.all_tasks());
-
         pipeline
             .all_sources()
             .into_iter()
@@ -105,6 +91,19 @@ impl<DI: DependencyInjection> TaskExecutor<DI> {
             .into_iter()
             .try_for_each(|sink_writer| self.sink_writer_repo.register(sink_writer))?;
 
+        self.worker_pool.interrupt_pipeline_update(current_pipeline);
+
         Ok(())
+    }
+
+    /// Stop all source tasks and executes pump tasks and sink tasks to finish all rows remaining in queues.
+    pub(in crate::stream_engine::autonomous_executor) fn cleanup(
+        &self,
+        _lock_guard: &PipelineUpdateLockGuard,
+    ) {
+        // TODO do not just remove rows in queues. Do the things in doc comment.
+
+        let task_graph = self.current_pipeline.task_graph();
+        self.row_repo.reset(task_graph.all_tasks());
     }
 }

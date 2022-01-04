@@ -48,10 +48,10 @@ impl<DI: DependencyInjection> AutonomousExecutor<DI> {
 
         let lock = task_executor.pipeline_update_lock();
 
-        task_executor.cleanup(&lock)?;
+        task_executor.cleanup(&lock);
 
         let current_pipeline = Arc::new(CurrentPipeline::new(pipeline));
-        task_executor.update_pipeline(&lock, current_pipeline);
+        task_executor.update_pipeline(&lock, current_pipeline)?;
         Ok(())
     }
 }
