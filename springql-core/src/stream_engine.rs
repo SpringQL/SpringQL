@@ -52,7 +52,7 @@ mod sql_executor;
 
 pub(crate) use autonomous_executor::{
     row::value::{sql_convertible::SqlConvertible, sql_value::SqlValue},
-    ForeignSinkRow,
+    SinkRow,
 };
 
 use crate::{error::Result, pipeline::name::QueueName};
@@ -102,7 +102,7 @@ where
     ///
     /// - [SpringError::Unavailable](crate::error::SpringError::Unavailable) when:
     ///   - queue named `queue_name` does not exist.
-    pub(crate) fn pop_in_memory_queue(&mut self, queue_name: QueueName) -> Result<ForeignSinkRow> {
+    pub(crate) fn pop_in_memory_queue(&mut self, queue_name: QueueName) -> Result<SinkRow> {
         let q = InMemoryQueueRepository::instance().get(&queue_name)?;
         let row = q.pop();
         Ok(row)

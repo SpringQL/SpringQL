@@ -11,7 +11,7 @@ use crate::error::Result;
 use crate::pipeline::Pipeline;
 use std::sync::Arc;
 
-pub(crate) use row::ForeignSinkRow;
+pub(crate) use row::SinkRow;
 pub(in crate::stream_engine) use row::{
     CurrentTimestamp, NaiveRowRepository, RowRepository, Timestamp,
 };

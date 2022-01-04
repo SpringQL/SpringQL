@@ -2,7 +2,7 @@
 
 use crate::error::Result;
 use crate::pipeline::option::Options;
-use crate::stream_engine::autonomous_executor::row::foreign_row::foreign_sink_row::ForeignSinkRow;
+use crate::stream_engine::autonomous_executor::row::foreign_row::sink_row::SinkRow;
 use std::fmt::Debug;
 
 pub(in crate::stream_engine::autonomous_executor) mod in_memory_queue;
@@ -28,5 +28,5 @@ pub(in crate::stream_engine) trait SinkWriter:
     /// - [SpringError::ForeignIo](crate::error::SpringError::ForeignIo) when:
     ///   - Remote sink has failed to parse request.
     ///   - Unknown foreign error.
-    fn send_row(&mut self, row: ForeignSinkRow) -> Result<()>;
+    fn send_row(&mut self, row: SinkRow) -> Result<()>;
 }

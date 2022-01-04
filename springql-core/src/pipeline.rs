@@ -80,7 +80,7 @@ impl Pipeline {
     /// # Failure
     ///
     /// - [SpringError::Sql](crate::error::SpringError::Sql) when:
-    ///   - Name of foreign stream is already used in the same pipeline
+    ///   - Name of source stream is already used in the same pipeline
     pub(super) fn add_source_stream(
         &mut self,
         source_stream: Arc<SourceStreamModel>,
@@ -93,7 +93,7 @@ impl Pipeline {
     /// # Failure
     ///
     /// - [SpringError::Sql](crate::error::SpringError::Sql) when:
-    ///   - Name of foreign stream is already used in the same pipeline
+    ///   - Name of sink stream is already used in the same pipeline
     pub(super) fn add_sink_stream(&mut self, sink_stream: Arc<SinkStreamModel>) -> Result<()> {
         self.update_version();
         self.register_name(sink_stream.name().as_ref())?;

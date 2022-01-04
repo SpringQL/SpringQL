@@ -8,10 +8,10 @@ use crate::stream_engine::autonomous_executor::row::{value::sql_value::SqlValue,
 ///
 /// Immediately converted from Row on stream-engine boundary.
 #[derive(PartialEq, Debug)]
-pub(crate) struct ForeignSinkRow(Row);
+pub(crate) struct SinkRow(Row);
 
-impl From<ForeignSinkRow> for JsonObject {
-    fn from(foreign_sink_row: ForeignSinkRow) -> Self {
+impl From<SinkRow> for JsonObject {
+    fn from(foreign_sink_row: SinkRow) -> Self {
         let map = foreign_sink_row
             .0
             .into_iter()
@@ -22,13 +22,13 @@ impl From<ForeignSinkRow> for JsonObject {
     }
 }
 
-impl From<Row> for ForeignSinkRow {
+impl From<Row> for SinkRow {
     fn from(row: Row) -> Self {
         Self(row)
     }
 }
 
-impl ForeignSinkRow {
+impl SinkRow {
     /// # Failure
     ///
     /// - [SpringError::Sql](crate::error::SpringError::Sql) when:
@@ -52,7 +52,7 @@ mod tests {
     #[test]
     fn test_into_json() {
         let row = Row::fx_city_temperature_tokyo();
-        let f_row = ForeignSinkRow(row);
+        let f_row = SinkRow(row);
 
         let json = JsonObject::new(json!({
             "ts": Timestamp::fx_ts1().to_string(),
@@ -66,7 +66,7 @@ mod tests {
     #[test]
     fn test_from_row_arrival_rowtime() {
         let row = Row::fx_no_promoted_rowtime();
-        let f_row = ForeignSinkRow::from(row);
+        let f_row = SinkRow::from(row);
         let f_json = JsonObject::from(f_row);
         let mut f_colvals = f_json.into_column_values().unwrap();
         let f_rowtime_sql_value = f_colvals.remove(&ColumnName::arrival_rowtime()).unwrap();

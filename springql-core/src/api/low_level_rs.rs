@@ -12,7 +12,7 @@ use crate::{
     error::Result,
     pipeline::name::QueueName,
     sql_processor::SqlProcessor,
-    stream_engine::{command::Command, ForeignSinkRow, SqlConvertible, SqlValue},
+    stream_engine::{command::Command, SinkRow, SqlConvertible, SqlValue},
 };
 
 use self::engine_mutex::EngineMutex;
@@ -43,10 +43,10 @@ pub struct SpringPipeline {
 
 /// Row object from an in memory queue.
 #[derive(Debug)]
-pub struct SpringRow(ForeignSinkRow);
+pub struct SpringRow(SinkRow);
 
-impl From<ForeignSinkRow> for SpringRow {
-    fn from(foreign_sink_row: ForeignSinkRow) -> Self {
+impl From<SinkRow> for SpringRow {
+    fn from(foreign_sink_row: SinkRow) -> Self {
         Self(foreign_sink_row)
     }
 }
