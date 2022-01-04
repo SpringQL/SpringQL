@@ -32,12 +32,8 @@ use crate::{
 use serde::{Deserialize, Serialize};
 
 use self::{
-    foreign_stream_model::ForeignStreamModel,
-    name::{PumpName, StreamName},
-    pipeline_graph::PipelineGraph,
-    pipeline_version::PipelineVersion,
-    pump_model::PumpModel,
-    sink_writer_model::SinkWriterModel,
+    foreign_stream_model::ForeignStreamModel, name::StreamName, pipeline_graph::PipelineGraph,
+    pipeline_version::PipelineVersion, pump_model::PumpModel, sink_writer_model::SinkWriterModel,
     source_reader_model::SourceReaderModel,
 };
 
@@ -64,16 +60,11 @@ impl Pipeline {
     ///
     /// - [SpringError::Sql](crate::error::SpringError::Sql) when:
     ///   - Stream is not registered in pipeline
-    pub(super) fn get_foreign_stream(&self, stream: &StreamName) -> Result<Arc<ForeignStreamModel>> {
+    pub(super) fn get_foreign_stream(
+        &self,
+        stream: &StreamName,
+    ) -> Result<Arc<ForeignStreamModel>> {
         self.graph.get_foreign_stream(stream)
-    }
-
-    /// # Failure
-    ///
-    /// - [SpringError::Sql](crate::error::SpringError::Sql) when:
-    ///   - Pump is not registered in pipeline
-    pub(super) fn get_pump(&self, pump: &PumpName) -> Result<&PumpModel> {
-        self.graph.get_pump(pump)
     }
 
     /// # Failure
@@ -86,16 +77,6 @@ impl Pipeline {
         self.update_version();
         self.register_name(pump.name().as_ref())?;
         self.graph.add_pump(pump)
-    }
-
-    /// # Failure
-    ///
-    /// - [SpringError::Sql](crate::error::SpringError::Sql) when:
-    ///   - Pump is not registered in pipeline
-    pub(super) fn remove_pump(&mut self, name: &PumpName) -> Result<()> {
-        self.update_version();
-        self.deregister_name(name.as_ref())?;
-        self.graph.remove_pump(name)
     }
 
     /// # Failure
@@ -166,21 +147,6 @@ impl Pipeline {
         if !self.object_names.insert(name.to_string()) {
             Err(SpringError::Sql(anyhow!(
                 r#"name "{}" already exists in pipeline"#,
-                name
-            )))
-        } else {
-            Ok(())
-        }
-    }
-
-    /// # Failure
-    ///
-    /// - [SpringError::Sql](crate::error::SpringError::Sql) when:
-    ///   - Name is not registered in pipeline
-    fn deregister_name(&mut self, name: &str) -> Result<()> {
-        if !self.object_names.remove(name) {
-            Err(SpringError::Sql(anyhow!(
-                r#"name "{}" is not registered in pipeline"#,
                 name
             )))
         } else {

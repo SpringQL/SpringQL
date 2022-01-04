@@ -1,19 +1,14 @@
 // Copyright (c) 2021 TOYOTA MOTOR CORPORATION. Licensed under MIT OR Apache-2.0.
 
-pub(crate) mod pump_state;
-
 use serde::{Deserialize, Serialize};
 
 use crate::stream_engine::command::{insert_plan::InsertPlan, query_plan::QueryPlan};
-
-use self::pump_state::PumpState;
 
 use super::name::{PumpName, StreamName};
 
 #[derive(Clone, Eq, PartialEq, Debug, Serialize, Deserialize, new)]
 pub(crate) struct PumpModel {
     name: PumpName,
-    state: PumpState,
     query_plan: QueryPlan,
     insert_plan: InsertPlan,
 }
@@ -21,10 +16,6 @@ pub(crate) struct PumpModel {
 impl PumpModel {
     pub(crate) fn name(&self) -> &PumpName {
         &self.name
-    }
-
-    pub(crate) fn state(&self) -> &PumpState {
-        &self.state
     }
 
     pub(crate) fn query_plan(&self) -> &QueryPlan {
@@ -42,12 +33,5 @@ impl PumpModel {
 
     pub(crate) fn downstream(&self) -> &StreamName {
         self.insert_plan.stream()
-    }
-
-    pub(crate) fn started(&self) -> Self {
-        Self {
-            state: PumpState::Started,
-            ..self.clone()
-        }
     }
 }

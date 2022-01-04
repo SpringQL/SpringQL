@@ -79,10 +79,6 @@ fn test_e2e_source_sink() -> Result<()> {
           SELECT STREAM ts, ticker, amount FROM source_trade;
         "
         .to_string(),
-        "
-        ALTER PUMP pu_passthrough START;
-        "
-        .to_string(),
         format!(
             "
         CREATE SOURCE READER tcp_trade FOR source_trade
@@ -149,10 +145,6 @@ fn test_e2e_projection() -> Result<()> {
         CREATE PUMP pu_projection AS
           INSERT INTO sink_trade (ts, ticker)
           SELECT STREAM ts, ticker FROM source_trade;
-        "
-        .to_string(),
-        "
-        ALTER PUMP pu_projection START;
         "
         .to_string(),
         format!(
@@ -231,10 +223,6 @@ fn test_e2e_pop_from_in_memory_queue() {
         CREATE PUMP pu_projection AS
           INSERT INTO sink_trade (ts, amount)
           SELECT STREAM ts, amount FROM source_trade;
-        "
-        .to_string(),
-        "
-        ALTER PUMP pu_projection START;
         "
         .to_string(),
         format!(

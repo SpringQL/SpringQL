@@ -291,7 +291,6 @@ command = {
         | create_source_reader_command
         | create_sink_stream_command
         | create_pump_command
-        | alter_pump_command
     )
     ~ ";"?
     ~ EOI
@@ -356,18 +355,6 @@ create_source_reader_command = {
     ~ ^"FOR" ~ stream_name
     ~ ^"TYPE" ~ source_reader_type
     ~ option_specifications?
-}
-
-/*
- * ----------------------------------------------------------------------------
- * ALTER PUMP
- * ----------------------------------------------------------------------------
- */
-
-alter_pump_command = {
-    ^"ALTER" ~ ^"PUMP"
-    ~ pump_name
-    ~ ^"START"
 }
 
 /*

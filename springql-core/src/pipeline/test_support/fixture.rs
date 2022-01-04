@@ -7,7 +7,6 @@ use crate::{
         foreign_stream_model::ForeignStreamModel,
         name::{ColumnName, PumpName, SourceReaderName, StreamName},
         option::{options_builder::OptionsBuilder, Options},
-        pump_model::pump_state::PumpState,
         pump_model::PumpModel,
         relation::{
             column::{
@@ -399,24 +398,6 @@ impl PumpModel {
         ];
         Self::new(
             name,
-            PumpState::Started,
-            QueryPlan::fx_collect_projection(upstream, select_columns),
-            InsertPlan::fx_trade(downstream),
-        )
-    }
-    pub(crate) fn fx_trade_stopped(
-        name: PumpName,
-        upstream: StreamName,
-        downstream: StreamName,
-    ) -> Self {
-        let select_columns = vec![
-            ColumnName::fx_timestamp(),
-            ColumnName::fx_ticker(),
-            ColumnName::fx_amount(),
-        ];
-        Self::new(
-            name,
-            PumpState::Stopped,
             QueryPlan::fx_collect_projection(upstream, select_columns),
             InsertPlan::fx_trade(downstream),
         )

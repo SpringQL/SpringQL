@@ -7,7 +7,6 @@ use crate::error::{Result, SpringError};
 use crate::pipeline::foreign_stream_model::ForeignStreamModel;
 use crate::pipeline::name::{ColumnName, PumpName, SinkWriterName, SourceReaderName, StreamName};
 use crate::pipeline::option::options_builder::OptionsBuilder;
-use crate::pipeline::pump_model::pump_state::PumpState;
 use crate::pipeline::relation::column::column_constraint::ColumnConstraint;
 use crate::pipeline::relation::column::column_data_type::ColumnDataType;
 use crate::pipeline::relation::column::column_definition::ColumnDefinition;
@@ -108,12 +107,6 @@ impl PestParserImpl {
             &mut params,
             Rule::create_pump_command,
             Self::parse_create_pump_command,
-            identity,
-        )?)
-        .or(try_parse_child(
-            &mut params,
-            Rule::alter_pump_command,
-            Self::parse_alter_pump_command,
             identity,
         )?)
         .ok_or_else(|| {
@@ -303,27 +296,6 @@ impl PestParserImpl {
             select_stream_syntax,
             insert_plan: InsertPlan::new(into_stream, insert_column_names),
         })
-    }
-
-    /*
-     * ----------------------------------------------------------------------------
-     * ALTER PUMP
-     * ----------------------------------------------------------------------------
-     */
-
-    fn parse_alter_pump_command(mut params: FnParseParams) -> Result<ParseSuccess> {
-        let pump_name = parse_child(
-            &mut params,
-            Rule::pump_name,
-            &Self::parse_pump_name,
-            &identity,
-        )?;
-        Ok(ParseSuccess::CommandWithoutQuery(Command::AlterPipeline(
-            AlterPipelineCommand::AlterPump {
-                name: pump_name,
-                state: PumpState::Started,
-            },
-        )))
     }
 
     /*
