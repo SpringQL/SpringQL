@@ -4,17 +4,18 @@ mod generated_parser;
 mod helper;
 
 use crate::error::{Result, SpringError};
-use crate::pipeline::foreign_stream_model::ForeignStreamModel;
 use crate::pipeline::name::{ColumnName, PumpName, SinkWriterName, SourceReaderName, StreamName};
 use crate::pipeline::option::options_builder::OptionsBuilder;
 use crate::pipeline::relation::column::column_constraint::ColumnConstraint;
 use crate::pipeline::relation::column::column_data_type::ColumnDataType;
 use crate::pipeline::relation::column::column_definition::ColumnDefinition;
 use crate::pipeline::relation::sql_type::SqlType;
+use crate::pipeline::sink_stream_model::SinkStreamModel;
 use crate::pipeline::sink_writer_model::sink_writer_type::SinkWriterType;
 use crate::pipeline::sink_writer_model::SinkWriterModel;
 use crate::pipeline::source_reader_model::source_reader_type::SourceReaderType;
 use crate::pipeline::source_reader_model::SourceReaderModel;
+use crate::pipeline::source_stream_model::SourceStreamModel;
 use crate::pipeline::stream_model::stream_shape::StreamShape;
 use crate::pipeline::stream_model::StreamModel;
 use crate::sql_processor::sql_parser::syntax::{
@@ -145,7 +146,7 @@ impl PestParserImpl {
 
         let stream_shape = StreamShape::new(column_definitions)?;
         let source_stream =
-            ForeignStreamModel::new(StreamModel::new(source_stream_name, Arc::new(stream_shape)));
+            SourceStreamModel::new(StreamModel::new(source_stream_name, Arc::new(stream_shape)));
 
         Ok(ParseSuccess::CommandWithoutQuery(Command::AlterPipeline(
             AlterPipelineCommand::CreateSourceStream(source_stream),
@@ -226,7 +227,7 @@ impl PestParserImpl {
 
         let stream_shape = StreamShape::new(column_definitions)?;
         let sink_stream =
-            ForeignStreamModel::new(StreamModel::new(sink_stream_name, Arc::new(stream_shape)));
+            SinkStreamModel::new(StreamModel::new(sink_stream_name, Arc::new(stream_shape)));
 
         Ok(ParseSuccess::CommandWithoutQuery(Command::AlterPipeline(
             AlterPipelineCommand::CreateSinkStream(sink_stream),

@@ -13,7 +13,7 @@ use crate::{
     error::{foreign_info::ForeignInfo, Result, SpringError},
     pipeline::option::{net_options::NetOptions, Options},
     stream_engine::autonomous_executor::row::foreign_row::{
-        foreign_sink_row::ForeignSinkRow, format::json::JsonObject,
+        format::json::JsonObject, sink_row::SinkRow,
     },
 };
 
@@ -57,7 +57,7 @@ impl SinkWriter for NetSinkWriter {
         })
     }
 
-    fn send_row(&mut self, row: ForeignSinkRow) -> Result<()> {
+    fn send_row(&mut self, row: SinkRow) -> Result<()> {
         let mut json_s = JsonObject::from(row).to_string();
         json_s.push('\n');
 
@@ -105,13 +105,13 @@ mod tests {
         let mut sink_writer = NetSinkWriter::start(&options).unwrap();
 
         sink_writer
-            .send_row(ForeignSinkRow::fx_city_temperature_tokyo())
+            .send_row(SinkRow::fx_city_temperature_tokyo())
             .unwrap();
         sink_writer
-            .send_row(ForeignSinkRow::fx_city_temperature_osaka())
+            .send_row(SinkRow::fx_city_temperature_osaka())
             .unwrap();
         sink_writer
-            .send_row(ForeignSinkRow::fx_city_temperature_london())
+            .send_row(SinkRow::fx_city_temperature_london())
             .unwrap();
 
         assert_eq!(

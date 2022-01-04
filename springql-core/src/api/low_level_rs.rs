@@ -12,7 +12,7 @@ use crate::{
     error::Result,
     pipeline::name::QueueName,
     sql_processor::SqlProcessor,
-    stream_engine::{command::Command, ForeignSinkRow, SqlConvertible, SqlValue},
+    stream_engine::{command::Command, SinkRow, SqlConvertible, SqlValue},
 };
 
 use self::engine_mutex::EngineMutex;
@@ -43,11 +43,11 @@ pub struct SpringPipeline {
 
 /// Row object from an in memory queue.
 #[derive(Debug)]
-pub struct SpringRow(ForeignSinkRow);
+pub struct SpringRow(SinkRow);
 
-impl From<ForeignSinkRow> for SpringRow {
-    fn from(foreign_sink_row: ForeignSinkRow) -> Self {
-        Self(foreign_sink_row)
+impl From<SinkRow> for SpringRow {
+    fn from(sink_row: SinkRow) -> Self {
+        Self(sink_row)
     }
 }
 
@@ -90,8 +90,8 @@ pub fn spring_command(pipeline: &SpringPipeline, sql: &str) -> Result<()> {
 ///   - queue named `queue` does not exist.
 pub fn spring_pop(pipeline: &SpringPipeline, queue: &str) -> Result<SpringRow> {
     let mut engine = pipeline.engine.get()?;
-    let foreign_row = engine.pop_in_memory_queue(QueueName::new(queue.to_string()))?;
-    Ok(SpringRow::from(foreign_row))
+    let sink_row = engine.pop_in_memory_queue(QueueName::new(queue.to_string()))?;
+    Ok(SpringRow::from(sink_row))
 }
 
 /// Get an integer column.

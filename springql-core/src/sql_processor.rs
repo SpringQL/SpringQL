@@ -64,12 +64,13 @@ mod tests {
     use super::*;
     use crate::{
         pipeline::{
-            foreign_stream_model::ForeignStreamModel,
             name::{PumpName, SinkWriterName, SourceReaderName, StreamName},
             option::options_builder::OptionsBuilder,
             pump_model::PumpModel,
+            sink_stream_model::SinkStreamModel,
             sink_writer_model::{sink_writer_type::SinkWriterType, SinkWriterModel},
             source_reader_model::{source_reader_type::SourceReaderType, SourceReaderModel},
+            source_stream_model::SourceStreamModel,
             stream_model::{stream_shape::StreamShape, StreamModel},
         },
         stream_engine::command::{
@@ -94,7 +95,7 @@ mod tests {
         let command = processor.compile(sql).unwrap();
 
         let expected_shape = StreamShape::fx_trade();
-        let expected_stream = ForeignStreamModel::new(StreamModel::new(
+        let expected_stream = SourceStreamModel::new(StreamModel::new(
             StreamName::new("source_trade".to_string()),
             Arc::new(expected_shape),
         ));
@@ -150,7 +151,7 @@ mod tests {
         let command = processor.compile(sql).unwrap();
 
         let expected_shape = StreamShape::fx_trade();
-        let expected_stream = ForeignStreamModel::new(StreamModel::new(
+        let expected_stream = SinkStreamModel::new(StreamModel::new(
             StreamName::new("sink_trade".to_string()),
             Arc::new(expected_shape),
         ));

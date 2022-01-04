@@ -52,7 +52,7 @@ mod sql_executor;
 
 pub(crate) use autonomous_executor::{
     row::value::{sql_convertible::SqlConvertible, sql_value::SqlValue},
-    ForeignSinkRow,
+    SinkRow,
 };
 
 use crate::{error::Result, pipeline::name::QueueName};
@@ -102,7 +102,7 @@ where
     ///
     /// - [SpringError::Unavailable](crate::error::SpringError::Unavailable) when:
     ///   - queue named `queue_name` does not exist.
-    pub(crate) fn pop_in_memory_queue(&mut self, queue_name: QueueName) -> Result<ForeignSinkRow> {
+    pub(crate) fn pop_in_memory_queue(&mut self, queue_name: QueueName) -> Result<SinkRow> {
         let q = InMemoryQueueRepository::instance().get(&queue_name)?;
         let row = q.pop();
         Ok(row)
@@ -136,38 +136,38 @@ mod tests {
             ForeignSource::start(ForeignSourceInput::new_fifo_batch(source_input)).unwrap();
         let sink = ForeignSink::start().unwrap();
 
-        let fst_trade_source = StreamName::factory("fst_trade_source");
-        let fst_trade_sink = StreamName::factory("fst_trade_sink");
+        let st_trade_source = StreamName::factory("st_trade_source");
+        let st_trade_sink = StreamName::factory("st_trade_sink");
         let pu_trade_source_p1 = PumpName::factory("pu_trade_source_p1");
 
         let mut engine = StreamEngine::new(n_worker_threads);
         engine
             .alter_pipeline(AlterPipelineCommand::fx_create_source_stream_trade(
-                fst_trade_source.clone(),
+                st_trade_source.clone(),
             ))
             .unwrap();
         engine
             .alter_pipeline(AlterPipelineCommand::fx_create_sink_stream_trade(
-                fst_trade_sink.clone(),
+                st_trade_sink.clone(),
             ))
             .unwrap();
         engine
             .alter_pipeline(AlterPipelineCommand::fx_create_pump(
                 pu_trade_source_p1,
-                fst_trade_source.clone(),
-                fst_trade_sink.clone(),
+                st_trade_source.clone(),
+                st_trade_sink.clone(),
             ))
             .unwrap();
         engine
             .alter_pipeline(AlterPipelineCommand::fx_create_sink_writer_trade(
-                fst_trade_sink,
+                st_trade_sink,
                 sink.host_ip(),
                 sink.port(),
             ))
             .unwrap();
         engine
             .alter_pipeline(AlterPipelineCommand::fx_create_source_reader_trade(
-                fst_trade_source,
+                st_trade_source,
                 source.host_ip(),
                 source.port(),
             ))

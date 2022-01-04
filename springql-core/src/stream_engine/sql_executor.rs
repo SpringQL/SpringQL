@@ -6,8 +6,9 @@ use super::command::alter_pipeline_command::AlterPipelineCommand;
 use crate::{
     error::Result,
     pipeline::{
-        foreign_stream_model::ForeignStreamModel, pump_model::PumpModel,
-        sink_writer_model::SinkWriterModel, source_reader_model::SourceReaderModel, Pipeline,
+        pump_model::PumpModel, sink_stream_model::SinkStreamModel,
+        sink_writer_model::SinkWriterModel, source_reader_model::SourceReaderModel,
+        source_stream_model::SourceStreamModel, Pipeline,
     },
 };
 
@@ -32,29 +33,29 @@ impl SqlExecutor {
     fn new_pipeline(pipeline: Pipeline, command: AlterPipelineCommand) -> Result<Pipeline> {
         match command {
             AlterPipelineCommand::CreateSourceStream(source_stream) => {
-                Self::create_foreign_source_stream(pipeline, source_stream)
+                Self::create_source_stream(pipeline, source_stream)
             }
             AlterPipelineCommand::CreateSourceReader(source_reader) => {
-                Self::create_foreign_source_reader(pipeline, source_reader)
+                Self::create_source_reader(pipeline, source_reader)
             }
             AlterPipelineCommand::CreateSinkStream(sink_stream) => {
-                Self::create_foreign_sink_stream(pipeline, sink_stream)
+                Self::create_sink_stream(pipeline, sink_stream)
             }
             AlterPipelineCommand::CreateSinkWriter(sink_writer) => {
-                Self::create_foreign_sink_writer(pipeline, sink_writer)
+                Self::create_sink_writer(pipeline, sink_writer)
             }
             AlterPipelineCommand::CreatePump(pump) => Self::create_pump(pipeline, pump),
         }
     }
 
-    fn create_foreign_source_stream(
+    fn create_source_stream(
         mut pipeline: Pipeline,
-        source_stream: ForeignStreamModel,
+        source_stream: SourceStreamModel,
     ) -> Result<Pipeline> {
-        pipeline.add_foreign_stream(Arc::new(source_stream))?;
+        pipeline.add_source_stream(Arc::new(source_stream))?;
         Ok(pipeline)
     }
-    fn create_foreign_source_reader(
+    fn create_source_reader(
         mut pipeline: Pipeline,
         source_reader: SourceReaderModel,
     ) -> Result<Pipeline> {
@@ -62,14 +63,14 @@ impl SqlExecutor {
         Ok(pipeline)
     }
 
-    fn create_foreign_sink_stream(
+    fn create_sink_stream(
         mut pipeline: Pipeline,
-        sink_stream: ForeignStreamModel,
+        sink_stream: SinkStreamModel,
     ) -> Result<Pipeline> {
-        pipeline.add_foreign_stream(Arc::new(sink_stream))?;
+        pipeline.add_sink_stream(Arc::new(sink_stream))?;
         Ok(pipeline)
     }
-    fn create_foreign_sink_writer(
+    fn create_sink_writer(
         mut pipeline: Pipeline,
         sink_writer: SinkWriterModel,
     ) -> Result<Pipeline> {

@@ -2,7 +2,7 @@
 
 use crate::{
     error::Result, pipeline::option::Options,
-    stream_engine::autonomous_executor::row::foreign_row::foreign_source_row::ForeignSourceRow,
+    stream_engine::autonomous_executor::row::foreign_row::source_row::SourceRow,
 };
 use std::fmt::Debug;
 
@@ -16,12 +16,12 @@ pub(in crate::stream_engine::autonomous_executor) mod source_reader_repository;
 pub(in crate::stream_engine::autonomous_executor) trait SourceReader:
     Debug + Sync + Send + 'static
 {
-    /// Blocks until the source subtask is ready to provide ForeignSourceRow.
+    /// Blocks until the source subtask is ready to provide SourceRow.
     fn start(options: &Options) -> Result<Self>
     where
         Self: Sized;
 
-    /// Returns currently available foreign row from foreign source.
+    /// Returns currently available row from foreign source.
     ///
     /// # Failure
     ///
@@ -30,5 +30,5 @@ pub(in crate::stream_engine::autonomous_executor) trait SourceReader:
     /// - [SpringError::ForeignIo](crate::error::SpringError::ForeignIo) when:
     ///   - Failed to parse response from remote source.
     ///   - Unknown foreign error.
-    fn next_row(&mut self) -> Result<ForeignSourceRow>;
+    fn next_row(&mut self) -> Result<SourceRow>;
 }

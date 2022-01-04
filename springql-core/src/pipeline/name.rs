@@ -85,8 +85,8 @@ impl StreamName {
         Self::new("__st_virtual_root__".to_string())
     }
 
-    pub(crate) fn virtual_leaf(sink_foreign_stream: StreamName) -> Self {
-        Self::new(format!("__st_virtual_leaf__{}__", sink_foreign_stream))
+    pub(crate) fn virtual_leaf(sink_stream: StreamName) -> Self {
+        Self::new(format!("__st_virtual_leaf__{}__", sink_stream))
     }
 }
 

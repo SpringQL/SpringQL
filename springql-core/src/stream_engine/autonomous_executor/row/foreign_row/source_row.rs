@@ -17,9 +17,9 @@ use super::format::json::JsonObject;
 ///
 /// Immediately converted into Row on stream-engine boundary.
 #[derive(Eq, PartialEq, Debug)]
-pub(in crate::stream_engine) struct ForeignSourceRow(JsonObject);
+pub(in crate::stream_engine) struct SourceRow(JsonObject);
 
-impl ForeignSourceRow {
+impl SourceRow {
     pub(in crate::stream_engine) fn from_json(json: JsonObject) -> Self {
         Self(json)
     }
@@ -27,12 +27,12 @@ impl ForeignSourceRow {
     /// # Failure
     ///
     /// - [SpringError::InvalidFormat](crate::error::SpringError::InvalidFormat) when:
-    ///   - This foreign input row cannot be converted into row.
+    ///   - This input row cannot be converted into row.
     pub(in crate::stream_engine::autonomous_executor) fn into_row<DI: DependencyInjection>(
         self,
         stream_shape: Arc<StreamShape>,
     ) -> Result<Row> {
-        // ForeignSourceRow -> JsonObject -> HashMap<ColumnName, SqlValue> -> StreamColumns -> Row
+        // SourceRow -> JsonObject -> HashMap<ColumnName, SqlValue> -> StreamColumns -> Row
 
         let column_values = self.0.into_column_values()?;
         let stream_columns = StreamColumns::new(stream_shape, column_values)?;
@@ -50,7 +50,7 @@ mod tests {
     fn test_json_into_row() {
         let stream = Arc::new(StreamShape::fx_city_temperature());
 
-        let fr = ForeignSourceRow::fx_city_temperature_tokyo();
+        let fr = SourceRow::fx_city_temperature_tokyo();
         let r = Row::fx_city_temperature_tokyo();
         assert_eq!(fr.into_row::<TestDI>(stream).unwrap(), r);
     }

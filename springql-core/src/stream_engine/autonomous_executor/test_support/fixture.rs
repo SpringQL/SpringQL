@@ -6,24 +6,23 @@ use serde_json::json;
 
 use crate::{
     pipeline::{
-        foreign_stream_model::ForeignStreamModel,
         name::{PumpName, StreamName},
         pipeline_graph::PipelineGraph,
         pump_model::PumpModel,
+        sink_stream_model::SinkStreamModel,
         sink_writer_model::SinkWriterModel,
         source_reader_model::SourceReaderModel,
+        source_stream_model::SourceStreamModel,
     },
-    stream_engine::dependency_injection::test_di::TestDI,
+    stream_engine::{
+        autonomous_executor::row::foreign_row::source_row::SourceRow,
+        dependency_injection::test_di::TestDI, SinkRow,
+    },
     stream_engine::{
         autonomous_executor::{
             row::{
-                column::stream_column::StreamColumns,
-                foreign_row::{
-                    foreign_sink_row::ForeignSinkRow, foreign_source_row::ForeignSourceRow,
-                    format::json::JsonObject,
-                },
-                timestamp::Timestamp,
-                Row,
+                column::stream_column::StreamColumns, foreign_row::format::json::JsonObject,
+                timestamp::Timestamp, Row,
             },
             task::task_graph::TaskGraph,
         },
@@ -97,7 +96,7 @@ impl JsonObject {
     }
 }
 
-impl ForeignSourceRow {
+impl SourceRow {
     pub(in crate::stream_engine) fn fx_city_temperature_tokyo() -> Self {
         Self::from_json(JsonObject::fx_city_temperature_tokyo())
     }
@@ -119,7 +118,7 @@ impl ForeignSourceRow {
     }
 }
 
-impl ForeignSinkRow {
+impl SinkRow {
     pub(in crate::stream_engine) fn fx_city_temperature_tokyo() -> Self {
         Row::fx_city_temperature_tokyo().into()
     }
@@ -195,7 +194,7 @@ impl StreamColumns {
 
 impl AlterPipelineCommand {
     pub(in crate::stream_engine) fn fx_create_source_stream_trade(stream_name: StreamName) -> Self {
-        let stream = ForeignStreamModel::fx_trade_with_name(stream_name);
+        let stream = SourceStreamModel::fx_trade_with_name(stream_name);
         Self::CreateSourceStream(stream)
     }
 
@@ -209,7 +208,7 @@ impl AlterPipelineCommand {
     }
 
     pub(in crate::stream_engine) fn fx_create_sink_stream_trade(stream_name: StreamName) -> Self {
-        let stream = ForeignStreamModel::fx_trade_with_name(stream_name);
+        let stream = SinkStreamModel::fx_trade_with_name(stream_name);
         Self::CreateSinkStream(stream)
     }
 

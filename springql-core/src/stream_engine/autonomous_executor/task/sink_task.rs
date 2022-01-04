@@ -8,7 +8,7 @@ use crate::pipeline::name::SinkWriterName;
 use crate::pipeline::sink_writer_model::SinkWriterModel;
 use crate::stream_engine::autonomous_executor::row::Row;
 use crate::stream_engine::{
-    autonomous_executor::{row::foreign_row::foreign_sink_row::ForeignSinkRow, RowRepository},
+    autonomous_executor::{row::foreign_row::sink_row::SinkRow, RowRepository},
     dependency_injection::DependencyInjection,
 };
 
@@ -44,7 +44,7 @@ impl SinkTask {
     }
 
     fn emit<DI: DependencyInjection>(&self, row: Row, context: &TaskContext<DI>) -> Result<()> {
-        let f_row = ForeignSinkRow::from(row);
+        let f_row = SinkRow::from(row);
 
         let sink_writer = context
             .sink_writer_repository()

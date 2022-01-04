@@ -8,9 +8,9 @@ use serde::{Deserialize, Serialize};
 use std::sync::Arc;
 
 #[derive(Clone, Eq, PartialEq, Debug, Serialize, Deserialize, new)]
-pub(crate) struct ForeignStreamModel(StreamModel);
+pub(crate) struct SourceStreamModel(StreamModel);
 
-impl ForeignStreamModel {
+impl SourceStreamModel {
     pub(crate) fn name(&self) -> &StreamName {
         self.0.name()
     }

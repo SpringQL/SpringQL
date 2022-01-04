@@ -7,19 +7,19 @@ use std::{
     time::Duration,
 };
 
-use crate::stream_engine::autonomous_executor::row::foreign_row::foreign_sink_row::ForeignSinkRow;
+use crate::stream_engine::autonomous_executor::row::foreign_row::sink_row::SinkRow;
 
 /// TODO config
 const SLEEP_MSECS: u64 = 10;
 
 #[derive(Debug, Default)]
 pub(in crate::stream_engine) struct InMemoryQueue(
-    Mutex<VecDeque<ForeignSinkRow>>, // TODO faster (lock-free?) queue
+    Mutex<VecDeque<SinkRow>>, // TODO faster (lock-free?) queue
 );
 
 impl InMemoryQueue {
     /// Blocking call    
-    pub(in crate::stream_engine) fn pop(&self) -> ForeignSinkRow {
+    pub(in crate::stream_engine) fn pop(&self) -> SinkRow {
         loop {
             let r = self.lock().pop_front();
             if let Some(r) = r {
@@ -30,11 +30,11 @@ impl InMemoryQueue {
         }
     }
 
-    pub(in crate::stream_engine) fn push(&self, row: ForeignSinkRow) {
+    pub(in crate::stream_engine) fn push(&self, row: SinkRow) {
         self.lock().push_back(row)
     }
 
-    fn lock(&self) -> MutexGuard<'_, VecDeque<ForeignSinkRow>> {
+    fn lock(&self) -> MutexGuard<'_, VecDeque<SinkRow>> {
         self.0
             .lock()
             .expect("another thread sharing the same InMemoryQueue internal got panic")

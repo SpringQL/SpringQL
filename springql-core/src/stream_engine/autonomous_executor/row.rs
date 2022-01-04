@@ -8,7 +8,7 @@ pub(in crate::stream_engine) mod foreign_row;
 pub(in crate::stream_engine::autonomous_executor) mod row_repository;
 pub(in crate::stream_engine::autonomous_executor) mod timestamp;
 
-pub(crate) use foreign_row::ForeignSinkRow;
+pub(crate) use foreign_row::SinkRow;
 pub(in crate::stream_engine) use row_repository::{NaiveRowRepository, RowRepository};
 pub(crate) use timestamp::{current_timestamp::CurrentTimestamp, Timestamp};
 
