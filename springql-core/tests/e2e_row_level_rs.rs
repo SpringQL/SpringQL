@@ -58,27 +58,32 @@ fn test_e2e_source_sink() -> Result<()> {
         );
         "
         .to_string(),
-        format!(
-            "
+        "
         CREATE SINK STREAM sink_trade (
           ts TIMESTAMP NOT NULL,    
           ticker TEXT NOT NULL,
           amount INTEGER NOT NULL
-        ) SERVER NET_SERVER OPTIONS (
-          PROTOCOL 'TCP',
-          REMOTE_HOST '{remote_host}',
-          REMOTE_PORT '{remote_port}'
         );
-        ",
-            remote_host = test_sink.host_ip(),
-            remote_port = test_sink.port()
-        ),
+        "
+        .to_string(),
         "
         CREATE PUMP pu_passthrough AS
           INSERT INTO sink_trade (ts, ticker, amount)
           SELECT STREAM ts, ticker, amount FROM source_trade;
         "
         .to_string(),
+        format!(
+            "
+        CREATE SINK WRITER tcp_sink_trade FOR sink_trade (
+          TYPE NET_SERVER OPTIONS (
+            PROTOCOL 'TCP',
+            REMOTE_HOST '{remote_host}',
+            REMOTE_PORT '{remote_port}'
+        );
+        ",
+            remote_host = test_sink.host_ip(),
+            remote_port = test_sink.port()
+        ),
         format!(
             "
         CREATE SOURCE READER tcp_trade FOR source_trade
@@ -127,26 +132,31 @@ fn test_e2e_projection() -> Result<()> {
         );
         "
         .to_string(),
-        format!(
-            "
+        "
         CREATE SINK STREAM sink_trade (
           ts TIMESTAMP NOT NULL,    
           ticker TEXT NOT NULL
-        ) SERVER NET_SERVER OPTIONS (
-          PROTOCOL 'TCP',
-          REMOTE_HOST '{remote_host}',
-          REMOTE_PORT '{remote_port}'
         );
-        ",
-            remote_host = test_sink.host_ip(),
-            remote_port = test_sink.port()
-        ),
+        "
+        .to_string(),
         "
         CREATE PUMP pu_projection AS
           INSERT INTO sink_trade (ts, ticker)
           SELECT STREAM ts, ticker FROM source_trade;
         "
         .to_string(),
+        format!(
+            "
+      CREATE SINK WRITER tcp_sink_trade FOR sink_trade (
+        TYPE NET_SERVER OPTIONS (
+          PROTOCOL 'TCP',
+          REMOTE_HOST '{remote_host}',
+          REMOTE_PORT '{remote_port}'
+      );
+      ",
+            remote_host = test_sink.host_ip(),
+            remote_port = test_sink.port()
+        ),
         format!(
             "
         CREATE SOURCE READER tcp_trade FOR source_trade
@@ -208,23 +218,28 @@ fn test_e2e_pop_from_in_memory_queue() {
         );
         "
         .to_string(),
-        format!(
-            "
+        "
         CREATE SINK STREAM sink_trade (
           ts TIMESTAMP NOT NULL,    
           amount INTEGER NOT NULL
-        ) SERVER IN_MEMORY_QUEUE OPTIONS (
-          NAME '{queue_name}'
         );
-        ",
-            queue_name = queue_name,
-        ),
+        "
+        .to_string(),
         "
         CREATE PUMP pu_projection AS
           INSERT INTO sink_trade (ts, amount)
           SELECT STREAM ts, amount FROM source_trade;
         "
         .to_string(),
+        format!(
+            "
+      CREATE SINK WRITER queue_sink_trade FOR sink_trade (
+        TYPE IN_MEMORY_QUEUE OPTIONS (
+          NAME '{queue_name}'
+      );
+      ",
+            queue_name = queue_name,
+        ),
         format!(
             "
         CREATE SOURCE READER tcp_trade FOR source_trade
