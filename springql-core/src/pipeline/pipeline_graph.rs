@@ -5,8 +5,8 @@
 //! Nodes are streams and edges are one of source reader, sink writer, or pump.
 //! Some internal node may have multiple incoming edges. In this case, these edges share the same pump.
 //!
-//! A PipelineGraph has a "virtual root stream", who has outgoing edges to all source streams.
-//! It also has "virtual leaf streams", who has an incoming edge from each sink stream.
+//! A PipelineGraph has a "virtual root stream", who has outgoing edges to all source streams, to keep source readers.
+//! It also has "virtual leaf streams", who has an incoming edge from each sink stream, to keep sink writers.
 
 pub(crate) mod edge;
 pub(crate) mod stream_node;
