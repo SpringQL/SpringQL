@@ -78,36 +78,40 @@ impl WorkerThread {
         log::debug!("[Worker#{}] Started", id);
 
         while stop_receiver.try_recv().is_err() {
-            current_pipeline = Self::handle_interruption(
-                id,
-                &pipeline_update_receiver,
-                current_pipeline,
-                &mut scheduler,
-            );
+            if let Ok(_lock) = task_executor_lock.try_task_execution() {
+                if let Some((task, next_worker_state)) = scheduler.next_task(cur_worker_state) {
+                    log::debug!("[Worker#{}] Scheduled task:{}", id, task.id());
 
-            let _lock = task_executor_lock.task_execution();
+                    cur_worker_state = next_worker_state;
 
-            if let Some((task, next_worker_state)) = scheduler.next_task(cur_worker_state) {
-                log::debug!("[Worker#{}] Scheduled task:{}", id, task.id());
+                    let context = TaskContext::<DI>::new(
+                        task.id().clone(),
+                        current_pipeline.clone(),
+                        row_repo.clone(),
+                        source_reader_repo.clone(),
+                        sink_writer_repo.clone(),
+                    );
 
-                cur_worker_state = next_worker_state;
-
-                let context = TaskContext::<DI>::new(
-                    task.id().clone(),
-                    current_pipeline.clone(),
-                    row_repo.clone(),
-                    source_reader_repo.clone(),
-                    sink_writer_repo.clone(),
-                );
-
-                task.run(&context).unwrap_or_else(Self::handle_error)
+                    task.run(&context).unwrap_or_else(Self::handle_error)
+                } else {
+                    thread::sleep(Duration::from_millis(TASK_WAIT_MSEC))
+                }
             } else {
-                thread::sleep(Duration::from_millis(TASK_WAIT_MSEC))
+                current_pipeline = Self::handle_interruption(
+                    id,
+                    &pipeline_update_receiver,
+                    current_pipeline,
+                    &mut scheduler,
+                );
             }
         }
     }
 
     /// May re-create CurrentPipeline and update scheduler state.
+    ///
+    /// # Returns
+    ///
+    /// Some on interruption.
     fn handle_interruption(
         id: WorkerId,
         pipeline_update_receiver: &mpsc::Receiver<Arc<CurrentPipeline>>,

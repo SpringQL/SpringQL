@@ -1,3 +1,4 @@
+use anyhow::anyhow;
 use std::sync::{RwLock, RwLockReadGuard, RwLockWriteGuard};
 
 /// Task executor is responsible for queues' cleanup on pipeline update.
@@ -20,14 +21,16 @@ impl TaskExecutorLock {
         PipelineUpdateLockGuard(write_lock)
     }
 
-    pub(in crate::stream_engine::autonomous_executor) fn task_execution(
+    /// # Returns
+    ///
+    /// Ok on successful lock, Err on write lock.
+    pub(in crate::stream_engine::autonomous_executor) fn try_task_execution(
         &self,
-    ) -> TaskExecutionLockGuard {
-        let read_lock = self
-            .0
-            .read()
-            .expect("another thread sharing the same TaskExecutorLock must not panic");
-        TaskExecutionLockGuard(read_lock)
+    ) -> Result<TaskExecutionLockGuard, anyhow::Error> {
+        self.0
+            .try_read()
+            .map(TaskExecutionLockGuard)
+            .map_err(|_| anyhow!("write lock may be taken"))
     }
 }
 
