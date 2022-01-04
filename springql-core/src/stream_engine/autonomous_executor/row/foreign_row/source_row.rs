@@ -27,12 +27,12 @@ impl SourceRow {
     /// # Failure
     ///
     /// - [SpringError::InvalidFormat](crate::error::SpringError::InvalidFormat) when:
-    ///   - This foreign input row cannot be converted into row.
+    ///   - This input row cannot be converted into row.
     pub(in crate::stream_engine::autonomous_executor) fn into_row<DI: DependencyInjection>(
         self,
         stream_shape: Arc<StreamShape>,
     ) -> Result<Row> {
-        // ForeignSourceRow -> JsonObject -> HashMap<ColumnName, SqlValue> -> StreamColumns -> Row
+        // SourceRow -> JsonObject -> HashMap<ColumnName, SqlValue> -> StreamColumns -> Row
 
         let column_values = self.0.into_column_values()?;
         let stream_columns = StreamColumns::new(stream_shape, column_values)?;

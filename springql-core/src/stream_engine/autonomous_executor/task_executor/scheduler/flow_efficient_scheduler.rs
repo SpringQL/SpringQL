@@ -4,7 +4,7 @@
 //!
 //! # Basic idea
 //!
-//! 1. Collect a foreign row from a source.
+//! 1. Collect a row from a source.
 //! 2. Repeatedly pass the row to downstream streams until sink without collecting another row from the source.
 //! 3. Goto 1.
 //!
@@ -12,7 +12,7 @@
 //!
 //! ## Scheduling model
 //!
-//! A pipeline is a DAG where nodes are (foreign or native) streams and edges are pumps, source readers, or sink writers.
+//! A pipeline is a DAG where nodes are (source, sink, or native) streams and edges are pumps, source readers, or sink writers.
 //!
 //! A node has 1 or more incoming edges and 1 or more outgoing edges.
 //!
@@ -28,8 +28,8 @@
 //! This is a sample pipeline DAG.
 //!
 //! - `[1]` - `[9]`: A stream.
-//!   - `[1]` and `[2]` are source foreign stream.
-//!   - `[8]` and `[9]` are sink foreign stream.
+//!   - `[1]` and `[2]` are source stream.
+//!   - `[8]` and `[9]` are sink stream.
 //!   - `[3]` - `[7]` are native stream.
 //! - `(0)`: A virtual root stream, which is introduced to make nodes traversal algorithm simpler.
 //! - `a` and `b`: Source readers.

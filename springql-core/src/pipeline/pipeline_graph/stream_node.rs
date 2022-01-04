@@ -15,7 +15,7 @@ pub(crate) enum StreamNode {
     Source(Arc<SourceStreamModel>),
     Sink(Arc<SinkStreamModel>),
     VirtualRoot,
-    VirtualLeaf { parent_foreign_stream: StreamName },
+    VirtualLeaf { parent_sink_stream: StreamName },
 }
 
 impl StreamNode {
@@ -25,9 +25,9 @@ impl StreamNode {
             StreamNode::Source(stream) => stream.name().clone(),
             StreamNode::Sink(stream) => stream.name().clone(),
             StreamNode::VirtualRoot => StreamName::virtual_root(),
-            StreamNode::VirtualLeaf {
-                parent_foreign_stream,
-            } => StreamName::virtual_leaf(parent_foreign_stream.clone()),
+            StreamNode::VirtualLeaf { parent_sink_stream } => {
+                StreamName::virtual_leaf(parent_sink_stream.clone())
+            }
         }
     }
 }

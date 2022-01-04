@@ -11,8 +11,8 @@ use crate::stream_engine::autonomous_executor::row::{value::sql_value::SqlValue,
 pub(crate) struct SinkRow(Row);
 
 impl From<SinkRow> for JsonObject {
-    fn from(foreign_sink_row: SinkRow) -> Self {
-        let map = foreign_sink_row
+    fn from(sink_row: SinkRow) -> Self {
+        let map = sink_row
             .0
             .into_iter()
             .map(|(col, val)| (col.to_string(), serde_json::Value::from(val)))

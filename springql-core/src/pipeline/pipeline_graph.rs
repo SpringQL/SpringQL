@@ -1,7 +1,7 @@
 // Copyright (c) 2021 TOYOTA MOTOR CORPORATION. Licensed under MIT OR Apache-2.0.
 
-//! A PipelineGraph has a "virtual root stream", who has outgoing edges to all source foreign streams.
-//! It also has "virtual leaf streams", who has an incoming edge from each sink foreign stream.
+//! A PipelineGraph has a "virtual root stream", who has outgoing edges to all source streams.
+//! It also has "virtual leaf streams", who has an incoming edge from each sink stream.
 
 pub(crate) mod edge;
 pub(crate) mod stream_node;
@@ -168,7 +168,7 @@ impl PipelineGraph {
             ))
         })?;
         let downstream_node = self.graph.add_node(StreamNode::VirtualLeaf {
-            parent_foreign_stream: from_stream.clone(),
+            parent_sink_stream: from_stream.clone(),
         });
         let _ = self
             .graph

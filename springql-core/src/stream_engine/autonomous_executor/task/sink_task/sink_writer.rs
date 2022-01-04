@@ -16,7 +16,7 @@ pub(in crate::stream_engine::autonomous_executor) mod sink_writer_repository;
 pub(in crate::stream_engine) trait SinkWriter:
     Debug + Sync + Send + 'static
 {
-    /// Blocks until the sink subtask is ready to send ForeignSinkRow to foreign sink.
+    /// Blocks until the sink subtask is ready to send SinkRow to foreign sink.
     fn start(options: &Options) -> Result<Self>
     where
         Self: Sized;

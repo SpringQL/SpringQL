@@ -55,11 +55,11 @@ impl SourceTask {
             .pipeline()
             .get_source_stream(&self.source_stream_name)?;
 
-        let foreign_row = source_reader
+        let source_row = source_reader
             .lock()
             .expect("other worker threads sharing the same subtask must not get panic")
             .next_row()?;
 
-        foreign_row.into_row::<DI>(source_stream.shape())
+        source_row.into_row::<DI>(source_stream.shape())
     }
 }
