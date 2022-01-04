@@ -20,7 +20,7 @@ pub(crate) struct SinkTask {
 
 impl SinkTask {
     pub(in crate::stream_engine) fn new(sink_writer: &SinkWriterModel) -> Self {
-        let id = TaskId::from_sink_writer(sink_writer.from_foreign_stream().name().clone());
+        let id = TaskId::from_sink_writer(sink_writer.from_sink_stream().clone());
         Self {
             id,
             sink_writer_name: sink_writer.name().clone(),

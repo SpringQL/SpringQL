@@ -65,7 +65,7 @@ mod tests {
     use crate::{
         pipeline::{
             foreign_stream_model::ForeignStreamModel,
-            name::{PumpName, SourceReaderName, StreamName},
+            name::{PumpName, SinkWriterName, SourceReaderName, StreamName},
             option::options_builder::OptionsBuilder,
             pump_model::PumpModel,
             sink_writer_model::{sink_writer_type::SinkWriterType, SinkWriterModel},
@@ -145,29 +145,47 @@ mod tests {
               ts TIMESTAMP NOT NULL ROWTIME,    
               ticker TEXT NOT NULL,
               amount INTEGER NOT NULL
-            ) SERVER NET_SERVER OPTIONS (
-              REMOTE_PORT '17890'
             );
             ";
         let command = processor.compile(sql).unwrap();
 
         let expected_shape = StreamShape::fx_trade();
-        let expected_options = OptionsBuilder::default()
-            .add("REMOTE_PORT", "17890")
-            .build();
         let expected_stream = ForeignStreamModel::new(StreamModel::new(
             StreamName::new("sink_trade".to_string()),
             Arc::new(expected_shape),
         ));
+
+        assert_eq!(
+            command,
+            Command::AlterPipeline(AlterPipelineCommand::CreateSinkStream(expected_stream))
+        );
+    }
+
+    #[test]
+    fn test_create_sink_writer() {
+        let processor = SqlProcessor::default();
+
+        let sql = "
+            CREATE SINK WRITER tcp_sink_trade FOR sink_trade
+              TYPE NET_SERVER OPTIONS (
+                REMOTE_PORT '17890'
+              );
+            ";
+        let command = processor.compile(sql).unwrap();
+
+        let expected_options = OptionsBuilder::default()
+            .add("REMOTE_PORT", "17890")
+            .build();
         let expected_sink = SinkWriterModel::new(
+            SinkWriterName::new("tcp_sink_trade".to_string()),
             SinkWriterType::Net,
-            Arc::new(expected_stream),
+            StreamName::new("sink_trade".to_string()),
             expected_options,
         );
 
         assert_eq!(
             command,
-            Command::AlterPipeline(AlterPipelineCommand::CreateForeignSinkStream(expected_sink))
+            Command::AlterPipeline(AlterPipelineCommand::CreateSinkWriter(expected_sink))
         );
     }
 

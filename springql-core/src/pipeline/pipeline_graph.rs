@@ -151,16 +151,16 @@ impl PipelineGraph {
     }
 
     pub(super) fn add_sink_writer(&mut self, sink_writer: SinkWriterModel) -> Result<()> {
-        let serving_to = sink_writer.from_foreign_stream();
+        let from_stream = sink_writer.from_sink_stream();
 
-        let upstream_node = self.stream_nodes.get(serving_to.name()).ok_or_else(|| {
+        let upstream_node = self.stream_nodes.get(from_stream).ok_or_else(|| {
             SpringError::Sql(anyhow!(
                 r#"upstream "{}" does not exist in pipeline"#,
-                serving_to.name()
+                from_stream
             ))
         })?;
         let downstream_node = self.graph.add_node(StreamNode::VirtualLeaf {
-            parent_foreign_stream: serving_to.name().clone(),
+            parent_foreign_stream: from_stream.clone(),
         });
         let _ = self
             .graph

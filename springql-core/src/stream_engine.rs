@@ -147,19 +147,22 @@ mod tests {
             ))
             .unwrap();
         engine
-            .alter_pipeline(
-                AlterPipelineCommand::fx_create_foreign_stream_trade_with_sink(
-                    fst_trade_sink.clone(),
-                    sink.host_ip(),
-                    sink.port(),
-                ),
-            )
+            .alter_pipeline(AlterPipelineCommand::fx_create_sink_stream_trade(
+                fst_trade_sink.clone(),
+            ))
             .unwrap();
         engine
             .alter_pipeline(AlterPipelineCommand::fx_create_pump(
                 pu_trade_source_p1,
                 fst_trade_source.clone(),
+                fst_trade_sink.clone(),
+            ))
+            .unwrap();
+        engine
+            .alter_pipeline(AlterPipelineCommand::fx_create_sink_writer_trade(
                 fst_trade_sink,
+                sink.host_ip(),
+                sink.port(),
             ))
             .unwrap();
         engine
