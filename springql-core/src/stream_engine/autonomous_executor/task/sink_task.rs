@@ -2,7 +2,6 @@
 
 pub(in crate::stream_engine::autonomous_executor) mod sink_writer;
 
-use super::task_state::TaskState;
 use super::{task_context::TaskContext, task_id::TaskId};
 use crate::error::Result;
 use crate::pipeline::name::SinkWriterName;
@@ -30,11 +29,6 @@ impl SinkTask {
 
     pub(in crate::stream_engine) fn id(&self) -> &TaskId {
         &self.id
-    }
-
-    pub(in crate::stream_engine) fn state(&self) -> TaskState {
-        // sink tasks are always STARTED (not necessarily scheduled until all upstream pumps get STARTED)
-        TaskState::Started
     }
 
     pub(in crate::stream_engine::autonomous_executor) fn run<DI: DependencyInjection>(

@@ -7,7 +7,7 @@ use crate::{
     error::Result,
     pipeline::{
         name::{ColumnName, StreamName},
-        pump_model::{pump_state::PumpState, PumpModel},
+        pump_model::PumpModel,
     },
     sql_processor::sql_parser::parse_success::ParseSuccess,
     stream_engine::command::{
@@ -29,7 +29,7 @@ impl SqlProcessor {
                 insert_plan,
             } => {
                 let query_plan = self.compile_select_stream(select_stream_syntax);
-                let pump = PumpModel::new(pump_name, PumpState::Stopped, query_plan, insert_plan);
+                let pump = PumpModel::new(pump_name, query_plan, insert_plan);
                 Command::AlterPipeline(AlterPipelineCommand::CreatePump(pump))
             }
             ParseSuccess::CommandWithoutQuery(command) => command,
@@ -67,7 +67,7 @@ mod tests {
             foreign_stream_model::ForeignStreamModel,
             name::{PumpName, SourceReaderName, StreamName},
             option::options_builder::OptionsBuilder,
-            pump_model::{pump_state::PumpState, PumpModel},
+            pump_model::PumpModel,
             sink_writer_model::{sink_writer_type::SinkWriterType, SinkWriterModel},
             source_reader_model::{source_reader_type::SourceReaderType, SourceReaderModel},
             stream_model::{stream_shape::StreamShape, StreamModel},
@@ -101,9 +101,7 @@ mod tests {
 
         assert_eq!(
             command,
-            Command::AlterPipeline(AlterPipelineCommand::CreateSourceStream(
-                expected_stream
-            ))
+            Command::AlterPipeline(AlterPipelineCommand::CreateSourceStream(expected_stream))
         );
     }
 
@@ -134,9 +132,7 @@ mod tests {
 
         assert_eq!(
             command,
-            Command::AlterPipeline(AlterPipelineCommand::CreateSourceReader(
-                expected_source
-            ))
+            Command::AlterPipeline(AlterPipelineCommand::CreateSourceReader(expected_source))
         );
     }
 
@@ -188,7 +184,6 @@ mod tests {
 
         let expected_pump = PumpModel::new(
             PumpName::new("pu_passthrough".to_string()),
-            PumpState::Stopped,
             QueryPlan::fx_collect_projection(
                 StreamName::new("source_trade".to_string()),
                 vec![
@@ -203,26 +198,6 @@ mod tests {
         assert_eq!(
             command,
             Command::AlterPipeline(AlterPipelineCommand::CreatePump(expected_pump))
-        );
-    }
-
-    #[test]
-    fn test_alter_pump_start() {
-        let processor = SqlProcessor::default();
-
-        let sql = "
-            ALTER PUMP pu_passthrough START;
-            ";
-        let command = processor.compile(sql).unwrap();
-
-        let expected_pump = PumpName::new("pu_passthrough".to_string());
-
-        assert_eq!(
-            command,
-            Command::AlterPipeline(AlterPipelineCommand::AlterPump {
-                name: expected_pump,
-                state: PumpState::Started,
-            })
         );
     }
 }

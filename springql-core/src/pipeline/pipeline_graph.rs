@@ -8,10 +8,7 @@ pub(crate) mod stream_node;
 
 use std::{collections::HashMap, sync::Arc};
 
-use petgraph::{
-    graph::{DiGraph, EdgeReference, NodeIndex},
-    visit::EdgeRef,
-};
+use petgraph::graph::{DiGraph, EdgeReference, NodeIndex};
 use serde::{Deserialize, Serialize};
 
 use self::{edge::Edge, stream_node::StreamNode};
@@ -82,15 +79,6 @@ impl PipelineGraph {
         }
     }
 
-    pub(super) fn get_pump(&self, name: &PumpName) -> Result<&PumpModel> {
-        let edge = self._find_pump(name)?;
-        if let Edge::Pump(pump) = edge.weight() {
-            Ok(pump)
-        } else {
-            unreachable!()
-        }
-    }
-
     pub(super) fn add_pump(&mut self, pump: PumpModel) -> Result<()> {
         let pump = Arc::new(pump);
 
@@ -114,15 +102,6 @@ impl PipelineGraph {
                 .add_edge(*upstream_node, *downstream_node, Edge::Pump(pump.clone()));
         }
 
-        Ok(())
-    }
-
-    pub(super) fn remove_pump(&mut self, name: &PumpName) -> Result<()> {
-        let edge_idx = {
-            let edge = self._find_pump(name)?;
-            edge.id()
-        };
-        self.graph.remove_edge(edge_idx);
         Ok(())
     }
 

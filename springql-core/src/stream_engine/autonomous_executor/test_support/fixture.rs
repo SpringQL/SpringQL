@@ -9,7 +9,7 @@ use crate::{
         foreign_stream_model::ForeignStreamModel,
         name::{PumpName, StreamName},
         pipeline_graph::PipelineGraph,
-        pump_model::{pump_state::PumpState, PumpModel},
+        pump_model::PumpModel,
         sink_writer_model::SinkWriterModel,
         source_reader_model::SourceReaderModel,
     },
@@ -223,15 +223,8 @@ impl AlterPipelineCommand {
         upstream: StreamName,
         downstream: StreamName,
     ) -> Self {
-        let pump = PumpModel::fx_trade_stopped(pump_name, upstream, downstream);
+        let pump = PumpModel::fx_trade(pump_name, upstream, downstream);
         Self::CreatePump(pump)
-    }
-
-    pub(in crate::stream_engine) fn fx_alter_pump_start(pump_name: PumpName) -> Self {
-        Self::AlterPump {
-            name: pump_name,
-            state: PumpState::Started,
-        }
     }
 }
 
