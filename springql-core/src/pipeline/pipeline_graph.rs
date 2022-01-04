@@ -1,7 +1,12 @@
 // Copyright (c) 2021 TOYOTA MOTOR CORPORATION. Licensed under MIT OR Apache-2.0.
 
-//! A PipelineGraph has a "virtual root stream", who has outgoing edges to all source streams.
-//! It also has "virtual leaf streams", who has an incoming edge from each sink stream.
+//! Pipeline is the most important structural view of stream processing, similar to RDBMS's ER-diagram.
+//!
+//! Nodes are streams and edges are one of source reader, sink writer, or pump.
+//! Some internal node may have multiple incoming edges. In this case, these edges share the same pump.
+//!
+//! A PipelineGraph has a "virtual root stream", who has outgoing edges to all source streams, to keep source readers.
+//! It also has "virtual leaf streams", who has an incoming edge from each sink stream, to keep sink writers.
 
 pub(crate) mod edge;
 pub(crate) mod stream_node;
@@ -49,6 +54,11 @@ impl Default for PipelineGraph {
 }
 
 impl PipelineGraph {
+    // TODO remove after TaskGraph get newer
+    pub(crate) fn as_petgraph(&self) -> &DiGraph<StreamNode, Edge> {
+        &self.graph
+    }
+
     #[cfg(test)] // TODO remove
     pub(super) fn add_stream(&mut self, stream: Arc<StreamModel>) -> Result<()> {
         let st_name = stream.name().clone();
@@ -87,6 +97,25 @@ impl PipelineGraph {
         }
     }
 
+    pub(super) fn all_sources(&self) -> Vec<&SourceReaderModel> {
+        self.graph
+            .edge_references()
+            .filter_map(|edge| match edge.weight() {
+                Edge::Pump(_) | Edge::Sink(_) => None,
+                Edge::Source(s) => Some(s),
+            })
+            .collect()
+    }
+    pub(super) fn all_sinks(&self) -> Vec<&SinkWriterModel> {
+        self.graph
+            .edge_references()
+            .filter_map(|edge| match edge.weight() {
+                Edge::Pump(_) | Edge::Source(_) => None,
+                Edge::Sink(s) => Some(s),
+            })
+            .collect()
+    }
+
     pub(super) fn add_pump(&mut self, pump: PumpModel) -> Result<()> {
         let pump = Arc::new(pump);
 
@@ -111,10 +140,6 @@ impl PipelineGraph {
         }
 
         Ok(())
-    }
-
-    pub(crate) fn as_petgraph(&self) -> &DiGraph<StreamNode, Edge> {
-        &self.graph
     }
 
     fn _find_stream(&self, name: &StreamName) -> Result<NodeIndex> {
