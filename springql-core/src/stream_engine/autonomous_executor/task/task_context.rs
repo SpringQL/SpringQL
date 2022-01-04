@@ -2,18 +2,22 @@
 
 use std::sync::Arc;
 
-use crate::stream_engine::dependency_injection::DependencyInjection;
+use crate::stream_engine::{
+    autonomous_executor::current_pipeline::CurrentPipeline,
+    dependency_injection::DependencyInjection,
+};
 
 use super::{
     sink_task::sink_writer::sink_writer_repository::SinkWriterRepository,
-    source_task::source_reader::source_reader_repository::SourceReaderRepository,
-    task_graph::TaskGraph, task_id::TaskId,
+    source_task::source_reader::source_reader_repository::SourceReaderRepository, task_id::TaskId,
 };
 
 #[derive(Debug)]
-pub(in crate::stream_engine) struct TaskContext<DI: DependencyInjection> {
+pub(in crate::stream_engine::autonomous_executor) struct TaskContext<DI: DependencyInjection> {
     task: TaskId,
-    downstream_tasks: Vec<TaskId>,
+
+    // why a task need to know pipeline? -> source tasks need to know source stream's shape.
+    current_pipeline: Arc<CurrentPipeline>,
 
     row_repo: Arc<DI::RowRepositoryType>,
 
@@ -22,17 +26,16 @@ pub(in crate::stream_engine) struct TaskContext<DI: DependencyInjection> {
 }
 
 impl<DI: DependencyInjection> TaskContext<DI> {
-    pub(in crate::stream_engine) fn new(
-        task_graph: &TaskGraph,
+    pub(in crate::stream_engine::autonomous_executor) fn new(
         task: TaskId,
+        current_pipeline: Arc<CurrentPipeline>,
         row_repo: Arc<DI::RowRepositoryType>,
         source_reader_repo: Arc<SourceReaderRepository>,
         sink_writer_repo: Arc<SinkWriterRepository>,
     ) -> Self {
-        let downstream_tasks = task_graph.downstream_tasks(task.clone());
         Self {
             task,
-            downstream_tasks,
+            current_pipeline,
             row_repo,
             source_reader_repo,
             sink_writer_repo,
@@ -44,7 +47,8 @@ impl<DI: DependencyInjection> TaskContext<DI> {
     }
 
     pub(in crate::stream_engine) fn downstream_tasks(&self) -> Vec<TaskId> {
-        self.downstream_tasks.clone()
+        let task_graph = self.current_pipeline.task_graph();
+        task_graph.downstream_tasks(self.task.clone())
     }
 
     pub(in crate::stream_engine) fn row_repository(&self) -> Arc<DI::RowRepositoryType> {
@@ -63,14 +67,14 @@ impl<DI: DependencyInjection> TaskContext<DI> {
 impl<DI: DependencyInjection> TaskContext<DI> {
     pub(in crate::stream_engine) fn _test_factory(
         task: TaskId,
-        downstream_tasks: Vec<TaskId>,
+        current_pipeline: Arc<CurrentPipeline>,
         row_repo: Arc<DI::RowRepositoryType>,
         source_reader_repo: Arc<SourceReaderRepository>,
         sink_writer_repo: Arc<SinkWriterRepository>,
     ) -> Self {
         Self {
             task,
-            downstream_tasks,
+            current_pipeline,
             row_repo,
             source_reader_repo,
             sink_writer_repo,

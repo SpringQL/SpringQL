@@ -2,111 +2,64 @@
 
 pub(in crate::stream_engine::autonomous_executor) mod worker_id;
 
-// TODO config
-const TASK_WAIT_MSEC: u64 = 100;
+mod worker_thread;
 
-use std::{
-    sync::{mpsc, Arc},
-    thread,
-    time::Duration,
-};
+use std::sync::{mpsc, Arc};
 
-use crate::{
-    error::SpringError,
-    stream_engine::{
-        autonomous_executor::{
-            task::{
-                sink_task::sink_writer::sink_writer_repository::SinkWriterRepository,
-                source_task::source_reader::source_reader_repository::SourceReaderRepository,
-                task_context::TaskContext,
-            },
-            task_executor::{scheduler::scheduler_read::SchedulerRead, Scheduler},
+use crate::stream_engine::{
+    autonomous_executor::{
+        current_pipeline::CurrentPipeline,
+        task::{
+            sink_task::sink_writer::sink_writer_repository::SinkWriterRepository,
+            source_task::source_reader::source_reader_repository::SourceReaderRepository,
         },
-        dependency_injection::DependencyInjection,
+        task_executor::task_executor_lock::TaskExecutorLock,
     },
+    dependency_injection::DependencyInjection,
 };
 
-use self::worker_id::WorkerId;
+use self::{worker_id::WorkerId, worker_thread::WorkerThread};
 
 #[derive(Debug)]
 pub(super) struct Worker {
+    pipeline_update_signal: mpsc::SyncSender<Arc<CurrentPipeline>>,
     stop_button: mpsc::SyncSender<()>,
 }
 
 impl Worker {
     pub(super) fn new<DI: DependencyInjection>(
         id: WorkerId,
-        scheduler_read: SchedulerRead<DI>,
+        task_executor_lock: Arc<TaskExecutorLock>,
+        current_pipeline: Arc<CurrentPipeline>,
         row_repo: Arc<DI::RowRepositoryType>,
         source_reader_repo: Arc<SourceReaderRepository>,
         sink_writer_repo: Arc<SinkWriterRepository>,
     ) -> Self {
+        let (pipeline_update_signal, pipeline_update_receiver) = mpsc::sync_channel(0);
         let (stop_button, stop_receiver) = mpsc::sync_channel(0);
 
-        let _ = thread::spawn(move || {
-            Self::main_loop::<DI>(
-                id,
-                scheduler_read.clone(),
-                row_repo,
-                source_reader_repo,
-                sink_writer_repo,
-                stop_receiver,
-            )
-        });
-        Self { stop_button }
-    }
+        let _ = WorkerThread::run::<DI>(
+            id,
+            task_executor_lock,
+            current_pipeline,
+            row_repo,
+            source_reader_repo,
+            sink_writer_repo,
+            pipeline_update_receiver,
+            stop_receiver,
+        );
 
-    fn main_loop<DI: DependencyInjection>(
-        id: WorkerId,
-        scheduler: SchedulerRead<DI>,
-        row_repo: Arc<DI::RowRepositoryType>,
-        source_reader_repo: Arc<SourceReaderRepository>,
-        sink_writer_repo: Arc<SinkWriterRepository>,
-        stop_receiver: mpsc::Receiver<()>,
-    ) {
-        let mut cur_worker_state =
-            <<DI as DependencyInjection>::SchedulerType as Scheduler>::W::default();
-
-        log::debug!("[Worker#{}] Started", id);
-
-        while stop_receiver.try_recv().is_err() {
-            let scheduler = scheduler.read_lock();
-
-            if let Some((task, next_worker_state)) = scheduler.next_task(cur_worker_state.clone()) {
-                log::debug!("[Worker#{}] Scheduled task:{}", id, task.id());
-
-                cur_worker_state = next_worker_state;
-
-                let context = TaskContext::<DI>::new(
-                    scheduler.task_graph().as_ref(),
-                    task.id().clone(),
-                    row_repo.clone(),
-                    source_reader_repo.clone(),
-                    sink_writer_repo.clone(),
-                );
-
-                task.run(&context).unwrap_or_else(Self::handle_error)
-            } else {
-                thread::sleep(Duration::from_millis(TASK_WAIT_MSEC))
-            }
+        Self {
+            pipeline_update_signal,
+            stop_button,
         }
     }
 
-    fn handle_error(e: SpringError) {
-        match e {
-            SpringError::ForeignSourceTimeout { .. } | SpringError::InputTimeout { .. } => {
-                log::trace!("{:?}", e)
-            }
-
-            SpringError::ForeignIo { .. }
-            | SpringError::SpringQlCoreIo(_)
-            | SpringError::Unavailable { .. } => log::warn!("{:?}", e),
-
-            SpringError::InvalidOption { .. }
-            | SpringError::InvalidFormat { .. }
-            | SpringError::Sql(_)
-            | SpringError::ThreadPoisoned(_) => log::error!("{:?}", e),
-        }
+    /// Interruption from task executor to update worker's pipeline.
+    pub(super) fn interrupt_pipeline_update(&mut self, current_pipeline: Arc<CurrentPipeline>) {
+        self.pipeline_update_signal
+            .send(current_pipeline)
+            .expect("failed to send new pipeline to worker thread");
     }
 }
 

@@ -4,17 +4,19 @@ pub(in crate::stream_engine) mod task;
 
 pub(crate) mod row;
 
+mod current_pipeline;
 mod task_executor;
 
-use crate::{error::Result, pipeline::Pipeline};
+use crate::error::Result;
+use crate::pipeline::Pipeline;
+use std::sync::Arc;
 
 pub(crate) use row::ForeignSinkRow;
 pub(in crate::stream_engine) use row::{
     CurrentTimestamp, NaiveRowRepository, RowRepository, Timestamp,
 };
-pub(in crate::stream_engine) use task_executor::{FlowEfficientScheduler, Scheduler};
 
-use self::task_executor::TaskExecutor;
+use self::{current_pipeline::CurrentPipeline, task_executor::TaskExecutor};
 
 use super::dependency_injection::DependencyInjection;
 
@@ -27,26 +29,30 @@ pub(super) mod test_support;
 ///
 /// All interface methods are called from main thread, while `new()` spawns worker threads.
 #[derive(Debug)]
-pub(in crate::stream_engine) struct AutonomousExecutor<DI>
-where
-    DI: DependencyInjection,
-{
+pub(in crate::stream_engine) struct AutonomousExecutor<DI: DependencyInjection> {
     task_executor: TaskExecutor<DI>,
 }
 
-impl<DI> AutonomousExecutor<DI>
-where
-    DI: DependencyInjection,
-{
+impl<DI: DependencyInjection> AutonomousExecutor<DI> {
     pub(in crate::stream_engine) fn new(n_worker_threads: usize) -> Self {
-        let task_executor = TaskExecutor::new(n_worker_threads);
+        let current_pipeline = Arc::new(CurrentPipeline::new(Pipeline::default()));
+        let task_executor = TaskExecutor::new(n_worker_threads, current_pipeline);
         Self { task_executor }
     }
 
     pub(in crate::stream_engine) fn notify_pipeline_update(
-        &self,
+        &mut self,
         pipeline: Pipeline,
     ) -> Result<()> {
-        self.task_executor.notify_pipeline_update(pipeline)
+        let task_executor = &self.task_executor;
+
+        let lock = task_executor.pipeline_update_lock();
+
+        let current_pipeline = Arc::new(CurrentPipeline::new(pipeline));
+
+        task_executor.cleanup(&lock, current_pipeline.task_graph());
+        task_executor.update_pipeline(&lock, current_pipeline)?;
+
+        Ok(())
     }
 }

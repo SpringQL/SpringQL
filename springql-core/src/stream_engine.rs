@@ -39,9 +39,9 @@
 //!
 //! 1. PerformanceMonitorWorker periodically reports performance metrics to MemoryStateMachine.
 //! 2. When MemoryStateMachine detect condition to transit memory state:
-//!   - [* -> Moderate] MemoryStateMachine sets task scheduler to FlowEfficientScheduler.
-//!   - [* -> Severe] MemoryStateMachine sets task scheduler to MemoryReducingScheduler.
-//!   - [* -> Critical] MemoryStateMachine locks TaskExecutor, kicks Purger, and waits for next performance metrics.
+//!   - [* -> Moderate] MemoryStateMachine notifies state transition to TaskExecutor and TaskExecutor sets task scheduler to FlowEfficientScheduler.
+//!   - [* -> Severe] MemoryStateMachine notifies state transition to TaskExecutor and TaskExecutor sets task scheduler to MemoryReducingScheduler.
+//!   - [* -> Critical] MemoryStateMachine notifies state transition to TaskExecutor; and TaskExecutor locks source workers and generic workers, kicks Purger, and waits for next performance metrics.
 
 pub(crate) mod command;
 
@@ -50,7 +50,6 @@ mod dependency_injection;
 mod in_memory_queue_repository;
 mod sql_executor;
 
-pub(in crate::stream_engine) use autonomous_executor::Scheduler;
 pub(crate) use autonomous_executor::{
     row::value::{sql_convertible::SqlConvertible, sql_value::SqlValue},
     ForeignSinkRow,
