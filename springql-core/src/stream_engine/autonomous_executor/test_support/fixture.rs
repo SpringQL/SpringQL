@@ -1,6 +1,6 @@
 // Copyright (c) 2021 TOYOTA MOTOR CORPORATION. Licensed under MIT OR Apache-2.0.
 
-use std::{net::IpAddr, sync::Arc};
+use std::net::IpAddr;
 
 use serde_json::json;
 
@@ -208,14 +208,18 @@ impl AlterPipelineCommand {
         Self::CreateSourceReader(source)
     }
 
-    pub(in crate::stream_engine) fn fx_create_foreign_stream_trade_with_sink(
+    pub(in crate::stream_engine) fn fx_create_sink_stream_trade(stream_name: StreamName) -> Self {
+        let stream = ForeignStreamModel::fx_trade_with_name(stream_name);
+        Self::CreateSinkStream(stream)
+    }
+
+    pub(in crate::stream_engine) fn fx_create_sink_writer_trade(
         stream_name: StreamName,
         sink_server_host: IpAddr,
         sink_server_port: u16,
     ) -> Self {
-        let stream = Arc::new(ForeignStreamModel::fx_trade_with_name(stream_name));
-        let sink = SinkWriterModel::fx_net(stream, sink_server_host, sink_server_port);
-        Self::CreateForeignSinkStream(sink)
+        let sink = SinkWriterModel::fx_net(stream_name, sink_server_host, sink_server_port);
+        Self::CreateSinkWriter(sink)
     }
 
     pub(in crate::stream_engine) fn fx_create_pump(

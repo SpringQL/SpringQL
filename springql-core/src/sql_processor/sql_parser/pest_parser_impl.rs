@@ -105,6 +105,12 @@ impl PestParserImpl {
         )?)
         .or(try_parse_child(
             &mut params,
+            Rule::create_sink_writer_command,
+            Self::parse_create_sink_writer_command,
+            identity,
+        )?)
+        .or(try_parse_child(
+            &mut params,
             Rule::create_pump_command,
             Self::parse_create_pump_command,
             identity,
@@ -205,7 +211,7 @@ impl PestParserImpl {
      */
 
     fn parse_create_sink_stream_command(mut params: FnParseParams) -> Result<ParseSuccess> {
-        let foreign_stream_name = parse_child(
+        let sink_stream_name = parse_child(
             &mut params,
             Rule::stream_name,
             Self::parse_stream_name,
@@ -217,10 +223,39 @@ impl PestParserImpl {
             &Self::parse_column_definition,
             &identity,
         )?;
+
+        let stream_shape = StreamShape::new(column_definitions)?;
+        let sink_stream =
+            ForeignStreamModel::new(StreamModel::new(sink_stream_name, Arc::new(stream_shape)));
+
+        Ok(ParseSuccess::CommandWithoutQuery(Command::AlterPipeline(
+            AlterPipelineCommand::CreateSinkStream(sink_stream),
+        )))
+    }
+
+    /*
+     * ----------------------------------------------------------------------------
+     * CREATE SINK WRITER
+     * ----------------------------------------------------------------------------
+     */
+
+    fn parse_create_sink_writer_command(mut params: FnParseParams) -> Result<ParseSuccess> {
         let sink_writer_name = parse_child(
             &mut params,
             Rule::sink_writer_name,
             Self::parse_sink_writer_name,
+            identity,
+        )?;
+        let sink_stream_name = parse_child(
+            &mut params,
+            Rule::stream_name,
+            Self::parse_stream_name,
+            identity,
+        )?;
+        let sink_writer_type = parse_child(
+            &mut params,
+            Rule::sink_writer_type,
+            Self::parse_sink_writer_type,
             identity,
         )?;
         let option_syntaxes = try_parse_child(
@@ -230,12 +265,6 @@ impl PestParserImpl {
             &identity,
         )?;
 
-        let stream_shape = StreamShape::new(column_definitions)?;
-        let foreign_stream = ForeignStreamModel::new(StreamModel::new(
-            foreign_stream_name,
-            Arc::new(stream_shape),
-        ));
-
         let mut options = OptionsBuilder::default();
         if let Some(option_syntaxes) = option_syntaxes {
             for o in option_syntaxes {
@@ -244,18 +273,15 @@ impl PestParserImpl {
         }
         let options = options.build();
 
-        let sink_writer_type = match sink_writer_name.as_ref() {
-            "NET_SERVER" => Ok(SinkWriterType::Net),
-            "IN_MEMORY_QUEUE" => Ok(SinkWriterType::InMemoryQueue),
-            _ => Err(SpringError::Sql(anyhow!(
-                "Invalid sink writer name: {}",
-                sink_writer_name
-            ))),
-        }?;
-        let sink = SinkWriterModel::new(sink_writer_type, Arc::new(foreign_stream), options);
+        let sink_writer = SinkWriterModel::new(
+            sink_writer_name,
+            sink_writer_type,
+            sink_stream_name,
+            options,
+        );
 
         Ok(ParseSuccess::CommandWithoutQuery(Command::AlterPipeline(
-            AlterPipelineCommand::CreateForeignSinkStream(sink),
+            AlterPipelineCommand::CreateSinkWriter(sink_writer),
         )))
     }
 
@@ -459,6 +485,7 @@ impl PestParserImpl {
             ))),
         }
     }
+
     fn parse_sink_writer_name(mut params: FnParseParams) -> Result<SinkWriterName> {
         parse_child(
             &mut params,
@@ -466,6 +493,22 @@ impl PestParserImpl {
             Self::parse_identifier,
             SinkWriterName::new,
         )
+    }
+    fn parse_sink_writer_type(mut params: FnParseParams) -> Result<SinkWriterType> {
+        let typ = parse_child(
+            &mut params,
+            Rule::identifier,
+            Self::parse_identifier,
+            identity,
+        )?;
+        match typ.as_ref() {
+            "NET_SERVER" => Ok(SinkWriterType::Net),
+            "IN_MEMORY_QUEUE" => Ok(SinkWriterType::InMemoryQueue),
+            _ => Err(SpringError::Sql(anyhow!(
+                "Invalid source reader name: {}",
+                typ
+            ))),
+        }
     }
 
     fn parse_column_name(mut params: FnParseParams) -> Result<ColumnName> {

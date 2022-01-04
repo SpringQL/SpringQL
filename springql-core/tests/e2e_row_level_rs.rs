@@ -74,7 +74,7 @@ fn test_e2e_source_sink() -> Result<()> {
         .to_string(),
         format!(
             "
-        CREATE SINK WRITER tcp_sink_trade FOR sink_trade (
+        CREATE SINK WRITER tcp_sink_trade FOR sink_trade
           TYPE NET_SERVER OPTIONS (
             PROTOCOL 'TCP',
             REMOTE_HOST '{remote_host}',
@@ -147,7 +147,7 @@ fn test_e2e_projection() -> Result<()> {
         .to_string(),
         format!(
             "
-      CREATE SINK WRITER tcp_sink_trade FOR sink_trade (
+      CREATE SINK WRITER tcp_sink_trade FOR sink_trade
         TYPE NET_SERVER OPTIONS (
           PROTOCOL 'TCP',
           REMOTE_HOST '{remote_host}',
@@ -233,7 +233,7 @@ fn test_e2e_pop_from_in_memory_queue() {
         .to_string(),
         format!(
             "
-      CREATE SINK WRITER queue_sink_trade FOR sink_trade (
+      CREATE SINK WRITER queue_sink_trade FOR sink_trade
         TYPE IN_MEMORY_QUEUE OPTIONS (
           NAME '{queue_name}'
       );

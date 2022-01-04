@@ -2,36 +2,24 @@
 
 pub(crate) mod sink_writer_type;
 
-use std::sync::Arc;
-
 use serde::{Deserialize, Serialize};
 
 use self::sink_writer_type::SinkWriterType;
 
-use super::{foreign_stream_model::ForeignStreamModel, name::SinkWriterName, option::Options};
+use super::{
+    name::{SinkWriterName, StreamName},
+    option::Options,
+};
 
-#[derive(Clone, PartialEq, Eq, Debug, Serialize, Deserialize)]
+#[derive(Clone, PartialEq, Eq, Debug, Serialize, Deserialize, new)]
 pub(crate) struct SinkWriterModel {
     name: SinkWriterName,
     sink_writer_type: SinkWriterType,
-    from_foreign_stream: Arc<ForeignStreamModel>,
+    from_sink_stream: StreamName,
     options: Options,
 }
 
 impl SinkWriterModel {
-    pub(crate) fn new(
-        sink_writer_type: SinkWriterType,
-        from_foreign_stream: Arc<ForeignStreamModel>,
-        options: Options,
-    ) -> Self {
-        Self {
-            name: SinkWriterName::from(&sink_writer_type),
-            sink_writer_type,
-            from_foreign_stream,
-            options,
-        }
-    }
-
     pub(crate) fn name(&self) -> &SinkWriterName {
         &self.name
     }
@@ -40,8 +28,8 @@ impl SinkWriterModel {
         &self.sink_writer_type
     }
 
-    pub(crate) fn from_foreign_stream(&self) -> Arc<ForeignStreamModel> {
-        self.from_foreign_stream.clone()
+    pub(crate) fn from_sink_stream(&self) -> &StreamName {
+        &self.from_sink_stream
     }
 
     pub(crate) fn options(&self) -> &Options {
