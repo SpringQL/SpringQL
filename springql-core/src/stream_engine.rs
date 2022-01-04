@@ -142,13 +142,16 @@ mod tests {
 
         let mut engine = StreamEngine::new(n_worker_threads);
         engine
-            .alter_pipeline(
-                AlterPipelineCommand::fx_create_source_reader_trade(
-                    fst_trade_source.clone(),
-                    source.host_ip(),
-                    source.port(),
-                ),
-            )
+            .alter_pipeline(AlterPipelineCommand::fx_create_source_stream_trade(
+                fst_trade_source.clone(),
+            ))
+            .unwrap();
+        engine
+            .alter_pipeline(AlterPipelineCommand::fx_create_source_reader_trade(
+                fst_trade_source.clone(),
+                source.host_ip(),
+                source.port(),
+            ))
             .unwrap();
         engine
             .alter_pipeline(

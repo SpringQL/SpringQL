@@ -194,17 +194,17 @@ impl StreamColumns {
 }
 
 impl AlterPipelineCommand {
+    pub(in crate::stream_engine) fn fx_create_source_stream_trade(stream_name: StreamName) -> Self {
+        let stream = ForeignStreamModel::fx_trade_with_name(stream_name);
+        Self::CreateSourceStream(stream)
+    }
+
     pub(in crate::stream_engine) fn fx_create_source_reader_trade(
         stream_name: StreamName,
         source_server_host: IpAddr,
         source_server_port: u16,
     ) -> Self {
-        let stream = Arc::new(ForeignStreamModel::fx_trade_with_name(stream_name));
-        let source = SourceReaderModel::fx_net(
-            stream.name().clone(),
-            source_server_host,
-            source_server_port,
-        );
+        let source = SourceReaderModel::fx_net(stream_name, source_server_host, source_server_port);
         Self::CreateSourceReader(source)
     }
 

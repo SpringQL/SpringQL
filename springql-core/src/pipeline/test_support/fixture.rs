@@ -31,17 +31,13 @@ impl Pipeline {
     /// ```text
     /// (0)--a-->[1]
     /// ```
-    pub(crate) fn fx_source_only(source_remote_host: IpAddr, source_remote_port: u16) -> Self {
+    pub(crate) fn fx_source_only() -> Self {
         let fst_1 = Arc::new(ForeignStreamModel::fx_trade_with_name(StreamName::factory(
             "fst_1",
         )));
 
-        let source_a =
-            SourceReaderModel::fx_net(fst_1.name().clone(), source_remote_host, source_remote_port);
-
         let mut pipeline = Pipeline::default();
         pipeline.add_foreign_stream(fst_1).unwrap();
-        pipeline.add_source_reader(source_a).unwrap();
         pipeline
     }
 
