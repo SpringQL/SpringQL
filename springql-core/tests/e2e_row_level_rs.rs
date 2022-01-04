@@ -79,6 +79,10 @@ fn test_e2e_source_sink() -> Result<()> {
           SELECT STREAM ts, ticker, amount FROM source_trade;
         "
         .to_string(),
+        "
+        ALTER PUMP pu_passthrough START;
+        "
+        .to_string(),
         format!(
             "
         CREATE SOURCE READER tcp_trade FOR source_trade
