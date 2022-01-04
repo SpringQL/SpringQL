@@ -136,38 +136,38 @@ mod tests {
             ForeignSource::start(ForeignSourceInput::new_fifo_batch(source_input)).unwrap();
         let sink = ForeignSink::start().unwrap();
 
-        let fst_trade_source = StreamName::factory("fst_trade_source");
-        let fst_trade_sink = StreamName::factory("fst_trade_sink");
+        let st_trade_source = StreamName::factory("st_trade_source");
+        let st_trade_sink = StreamName::factory("st_trade_sink");
         let pu_trade_source_p1 = PumpName::factory("pu_trade_source_p1");
 
         let mut engine = StreamEngine::new(n_worker_threads);
         engine
             .alter_pipeline(AlterPipelineCommand::fx_create_source_stream_trade(
-                fst_trade_source.clone(),
+                st_trade_source.clone(),
             ))
             .unwrap();
         engine
             .alter_pipeline(AlterPipelineCommand::fx_create_sink_stream_trade(
-                fst_trade_sink.clone(),
+                st_trade_sink.clone(),
             ))
             .unwrap();
         engine
             .alter_pipeline(AlterPipelineCommand::fx_create_pump(
                 pu_trade_source_p1,
-                fst_trade_source.clone(),
-                fst_trade_sink.clone(),
+                st_trade_source.clone(),
+                st_trade_sink.clone(),
             ))
             .unwrap();
         engine
             .alter_pipeline(AlterPipelineCommand::fx_create_sink_writer_trade(
-                fst_trade_sink,
+                st_trade_sink,
                 sink.host_ip(),
                 sink.port(),
             ))
             .unwrap();
         engine
             .alter_pipeline(AlterPipelineCommand::fx_create_source_reader_trade(
-                fst_trade_source,
+                st_trade_source,
                 source.host_ip(),
                 source.port(),
             ))

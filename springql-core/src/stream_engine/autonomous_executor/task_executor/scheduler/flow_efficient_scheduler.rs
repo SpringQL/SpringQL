@@ -309,9 +309,9 @@ mod tests {
                 test_sink.port(),
             ),
             vec![
-                TaskId::from_source_reader(StreamName::factory("fst_1")),
+                TaskId::from_source_reader(StreamName::factory("st_1")),
                 TaskId::from_pump(PumpName::factory("pu_b")),
-                TaskId::from_sink_writer(StreamName::factory("fst_2")),
+                TaskId::from_sink_writer(StreamName::factory("st_2")),
             ],
         )
     }
@@ -332,12 +332,12 @@ mod tests {
                 test_sink2.port(),
             ),
             vec![
-                TaskId::from_source_reader(StreamName::factory("fst_1")),
+                TaskId::from_source_reader(StreamName::factory("st_1")),
                 TaskId::from_pump(PumpName::factory("pu_c")),
-                TaskId::from_sink_writer(StreamName::factory("fst_3")),
-                TaskId::from_source_reader(StreamName::factory("fst_2")),
+                TaskId::from_sink_writer(StreamName::factory("st_3")),
+                TaskId::from_source_reader(StreamName::factory("st_2")),
                 TaskId::from_pump(PumpName::factory("pu_d")),
-                TaskId::from_sink_writer(StreamName::factory("fst_4")),
+                TaskId::from_sink_writer(StreamName::factory("st_4")),
             ],
         )
     }
@@ -354,11 +354,11 @@ mod tests {
                 test_sink.port(),
             ),
             vec![
-                TaskId::from_source_reader(StreamName::factory("fst_2")),
+                TaskId::from_source_reader(StreamName::factory("st_2")),
                 TaskId::from_pump(PumpName::factory("pu_d")),
-                TaskId::from_source_reader(StreamName::factory("fst_1")),
+                TaskId::from_source_reader(StreamName::factory("st_1")),
                 TaskId::from_pump(PumpName::factory("pu_c")),
-                TaskId::from_sink_writer(StreamName::factory("fst_3")),
+                TaskId::from_sink_writer(StreamName::factory("st_3")),
             ],
         )
     }
@@ -378,19 +378,19 @@ mod tests {
                 test_sink2.port(),
             ),
             vec![
-                TaskId::from_source_reader(StreamName::factory("fst_1")),
+                TaskId::from_source_reader(StreamName::factory("st_1")),
                 TaskId::from_pump(PumpName::factory("pu_c")),
                 TaskId::from_pump(PumpName::factory("pu_f")),
-                TaskId::from_source_reader(StreamName::factory("fst_2")),
+                TaskId::from_source_reader(StreamName::factory("st_2")),
                 TaskId::from_pump(PumpName::factory("pu_d")),
                 TaskId::from_pump(PumpName::factory("pu_g")),
                 TaskId::from_pump(PumpName::factory("pu_e")),
                 TaskId::from_pump(PumpName::factory("pu_h")),
                 TaskId::from_pump(PumpName::factory("pu_j")),
-                TaskId::from_sink_writer(StreamName::factory("fst_8")),
+                TaskId::from_sink_writer(StreamName::factory("st_8")),
                 TaskId::from_pump(PumpName::factory("pu_i")),
                 TaskId::from_pump(PumpName::factory("pu_k")),
-                TaskId::from_sink_writer(StreamName::factory("fst_9")),
+                TaskId::from_sink_writer(StreamName::factory("st_9")),
             ],
         )
     }
