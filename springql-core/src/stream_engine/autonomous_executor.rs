@@ -6,6 +6,7 @@ pub(crate) mod row;
 
 mod current_pipeline;
 mod task_executor;
+mod task_graph;
 
 use crate::error::Result;
 use crate::pipeline::Pipeline;

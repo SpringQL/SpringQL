@@ -4,7 +4,6 @@ pub(super) mod pump_task;
 pub(super) mod sink_task;
 pub(super) mod source_task;
 pub(super) mod task_context;
-pub(super) mod task_graph;
 pub(super) mod task_id;
 
 use crate::{error::Result, stream_engine::dependency_injection::DependencyInjection};
