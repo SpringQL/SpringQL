@@ -46,6 +46,10 @@ impl<DI: DependencyInjection> TaskContext<DI> {
         self.task.clone()
     }
 
+    pub(in crate::stream_engine) fn current_pipeline(&self) -> Arc<CurrentPipeline> {
+        self.current_pipeline.clone()
+    }
+
     pub(in crate::stream_engine) fn downstream_tasks(&self) -> Vec<TaskId> {
         let task_graph = self.current_pipeline.task_graph();
         task_graph.downstream_tasks(self.task.clone())

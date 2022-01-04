@@ -1,9 +1,12 @@
 // Copyright (c) 2021 TOYOTA MOTOR CORPORATION. Licensed under MIT OR Apache-2.0.
 
+use std::sync::Arc;
+
 use super::command::alter_pipeline_command::AlterPipelineCommand;
 use crate::{
     error::Result,
     pipeline::{
+        foreign_stream_model::ForeignStreamModel,
         name::PumpName,
         pump_model::{pump_state::PumpState, PumpModel},
         sink_writer_model::SinkWriterModel,
@@ -32,8 +35,11 @@ impl SqlExecutor {
 
     fn new_pipeline(mut pipeline: Pipeline, command: AlterPipelineCommand) -> Result<Pipeline> {
         match command {
-            AlterPipelineCommand::CreateForeignSourceStream(source) => {
-                Self::create_foreign_source_stream(pipeline, source)
+            AlterPipelineCommand::CreateSourceStream(source_stream) => {
+                Self::create_foreign_source_stream(pipeline, source_stream)
+            }
+            AlterPipelineCommand::CreateSourceReader(source_reader) => {
+                Self::create_foreign_source_reader(pipeline, source_reader)
             }
             AlterPipelineCommand::CreateForeignSinkStream(sink) => {
                 Self::create_foreign_sink_stream(pipeline, sink)
@@ -48,11 +54,16 @@ impl SqlExecutor {
 
     fn create_foreign_source_stream(
         mut pipeline: Pipeline,
-        source: SourceReaderModel,
+        source_stream: ForeignStreamModel,
     ) -> Result<Pipeline> {
-        let fst = source.dest_foreign_stream();
-        pipeline.add_foreign_stream(fst)?;
-        pipeline.add_source_reader(source)?;
+        pipeline.add_foreign_stream(Arc::new(source_stream))?;
+        Ok(pipeline)
+    }
+    fn create_foreign_source_reader(
+        mut pipeline: Pipeline,
+        source_reader: SourceReaderModel,
+    ) -> Result<Pipeline> {
+        pipeline.add_source_reader(source_reader)?;
         Ok(pipeline)
     }
     fn create_foreign_sink_stream(

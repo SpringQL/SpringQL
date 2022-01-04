@@ -21,7 +21,7 @@ use super::{
     name::{PumpName, StreamName},
     pump_model::PumpModel,
     sink_writer_model::SinkWriterModel,
-    source_reader_model::{source_reader_state::SourceReaderState, SourceReaderModel},
+    source_reader_model::SourceReaderModel,
 };
 use crate::error::{Result, SpringError};
 use anyhow::anyhow;
@@ -69,6 +69,19 @@ impl PipelineGraph {
         Ok(())
     }
 
+    pub(super) fn get_foreign_stream(&self, name: &StreamName) -> Result<Arc<ForeignStreamModel>> {
+        let node = self._find_stream(name)?;
+        let stream_node = self.graph.node_weight(node).expect("index found");
+        if let StreamNode::Foreign(foreign_stream) = stream_node {
+            Ok(foreign_stream.clone())
+        } else {
+            Err(SpringError::Sql(anyhow!(
+                r#"stream "{}" is not a foreign stream"#,
+                name
+            )))
+        }
+    }
+
     pub(super) fn get_pump(&self, name: &PumpName) -> Result<&PumpModel> {
         let edge = self._find_pump(name)?;
         if let Edge::Pump(pump) = edge.weight() {
@@ -113,27 +126,15 @@ impl PipelineGraph {
         Ok(())
     }
 
-    pub(crate) fn source_reader_state(
-        &self,
-        serving_foreign_stream: &StreamName,
-    ) -> SourceReaderState {
-        let fst_node = self
-            .graph
-            .node_indices()
-            .find(|n| &self.graph[*n].name() == serving_foreign_stream)
-            .unwrap();
-
-        if self._at_least_one_started_path_to_sink(fst_node) {
-            SourceReaderState::Started
-        } else {
-            SourceReaderState::Stopped
-        }
-    }
-
     pub(crate) fn as_petgraph(&self) -> &DiGraph<StreamNode, Edge> {
         &self.graph
     }
 
+    fn _find_stream(&self, name: &StreamName) -> Result<NodeIndex> {
+        Ok(*self.stream_nodes.get(name).ok_or_else(|| {
+            SpringError::Sql(anyhow!(r#"stream "{}" does not exist in pipeline"#, name))
+        })?)
+    }
     fn _find_pump(&self, name: &PumpName) -> Result<EdgeReference<Edge>> {
         self.graph
             .edge_references()
@@ -149,35 +150,17 @@ impl PipelineGraph {
             })
     }
 
-    fn _at_least_one_started_path_to_sink(&self, node: NodeIndex) -> bool {
-        let mut outgoing_edges = self
-            .graph
-            .edges_directed(node, petgraph::Direction::Outgoing);
-
-        if outgoing_edges
-            .clone()
-            .any(|edge| matches!(edge.weight(), Edge::Sink(_)))
-        {
-            true
-        } else {
-            outgoing_edges.any(|started_edge| {
-                let next_node = started_edge.target();
-                self._at_least_one_started_path_to_sink(next_node)
-            })
-        }
-    }
-
     pub(super) fn add_source_reader(&mut self, source_reader: SourceReaderModel) -> Result<()> {
-        let serving_to = source_reader.dest_foreign_stream();
+        let dest_stream = source_reader.dest_source_stream();
 
         let upstream_node = self
             .stream_nodes
             .get(&StreamName::virtual_root())
             .expect("virtual root always available");
-        let downstream_node = self.stream_nodes.get(serving_to.name()).ok_or_else(|| {
+        let downstream_node = self.stream_nodes.get(dest_stream).ok_or_else(|| {
             SpringError::Sql(anyhow!(
                 r#"downstream "{}" does not exist in pipeline"#,
-                serving_to.name()
+                dest_stream
             ))
         })?;
         let _ = self.graph.add_edge(

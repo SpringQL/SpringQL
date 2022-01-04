@@ -84,7 +84,6 @@ pub(crate) trait RowRepository: Debug + Default + Sync + Send {
 
     /// Move `row` to downstream tasks.
     fn emit(&self, row: Row, downstream_tasks: &[TaskId]) -> Result<()> {
-        debug_assert!(!downstream_tasks.is_empty());
         log::debug!(
             "[RowRepository] emit_owned({:?}, {:?})",
             row,

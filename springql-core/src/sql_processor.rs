@@ -65,7 +65,7 @@ mod tests {
     use crate::{
         pipeline::{
             foreign_stream_model::ForeignStreamModel,
-            name::{PumpName, StreamName},
+            name::{PumpName, SourceReaderName, StreamName},
             option::options_builder::OptionsBuilder,
             pump_model::{pump_state::PumpState, PumpModel},
             sink_writer_model::{sink_writer_type::SinkWriterType, SinkWriterModel},
@@ -89,29 +89,52 @@ mod tests {
               ts TIMESTAMP NOT NULL ROWTIME,    
               ticker TEXT NOT NULL,
               amount INTEGER NOT NULL
-            ) SERVER NET_SERVER OPTIONS (
-              REMOTE_PORT '17890'
             );
             ";
         let command = processor.compile(sql).unwrap();
 
         let expected_shape = StreamShape::fx_trade();
-        let expected_options = OptionsBuilder::default()
-            .add("REMOTE_PORT", "17890")
-            .build();
         let expected_stream = ForeignStreamModel::new(StreamModel::new(
             StreamName::new("source_trade".to_string()),
             Arc::new(expected_shape),
         ));
+
+        assert_eq!(
+            command,
+            Command::AlterPipeline(AlterPipelineCommand::CreateSourceStream(
+                expected_stream
+            ))
+        );
+    }
+
+    #[test]
+    fn test_create_source_reader() {
+        let processor = SqlProcessor::default();
+
+        let sql = "
+            CREATE SOURCE READER tcp_source FOR source_trade
+              TYPE NET_SERVER OPTIONS (
+                REMOTE_PORT '17890'
+              );
+            ";
+        let command = processor.compile(sql).unwrap();
+
+        let expected_name = SourceReaderName::new("tcp_source".to_string());
+
+        let expected_options = OptionsBuilder::default()
+            .add("REMOTE_PORT", "17890")
+            .build();
+        let expected_dest_source_stream = StreamName::new("source_trade".to_string());
         let expected_source = SourceReaderModel::new(
+            expected_name,
             SourceReaderType::Net,
-            Arc::new(expected_stream),
+            expected_dest_source_stream,
             expected_options,
         );
 
         assert_eq!(
             command,
-            Command::AlterPipeline(AlterPipelineCommand::CreateForeignSourceStream(
+            Command::AlterPipeline(AlterPipelineCommand::CreateSourceReader(
                 expected_source
             ))
         );

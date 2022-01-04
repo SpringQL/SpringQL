@@ -306,11 +306,7 @@ mod tests {
 
     #[test]
     fn test_source_only_pipeline() {
-        let test_source = ForeignSource::start(ForeignSourceInput::new_fifo_batch(vec![])).unwrap();
-        t(
-            Pipeline::fx_source_only(test_source.host_ip(), test_source.port()),
-            vec![],
-        )
+        t(Pipeline::fx_source_only(), vec![])
     }
 
     #[test]

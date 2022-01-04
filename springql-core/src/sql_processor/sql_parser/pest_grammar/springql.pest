@@ -24,6 +24,7 @@ keyword = {
     | ^"ALTER"
     | ^"BIGINT"
     | ^"CREATE"
+    | ^"FOR"
     | ^"FROM"
     | ^"INSERT"
     | ^"INTEGER"
@@ -42,6 +43,7 @@ keyword = {
     | ^"STREAM"
     | ^"TEXT"
     | ^"TIMESTAMP"
+    | ^"TYPE"
 }
 
 /*
@@ -286,6 +288,7 @@ timestamp_type = {
 command = {
     SOI ~ (
         create_source_stream_command
+        | create_source_reader_command
         | create_sink_stream_command
         | create_pump_command
         | alter_pump_command
@@ -306,8 +309,6 @@ create_source_stream_command = {
     ~ "("
     ~ column_definition ~ ("," ~ column_definition)*
     ~ ")"
-    ~ ^"SERVER" ~ source_reader_name
-    ~ option_specifications?
 }
 
 /*
@@ -342,6 +343,19 @@ create_pump_command = {
     ~ column_name ~ ("," ~ column_name)*
     ~ ")"
     ~ select_stream_command
+}
+
+/*
+ * ----------------------------------------------------------------------------
+ * CREATE SOURCE READER
+ * ----------------------------------------------------------------------------
+ */
+
+create_source_reader_command = {
+    ^"CREATE" ~ ^"SOURCE" ~ ^"READER" ~ source_reader_name 
+    ~ ^"FOR" ~ stream_name
+    ~ ^"TYPE" ~ source_reader_type
+    ~ option_specifications?
 }
 
 /*
@@ -383,6 +397,9 @@ pump_name = {
 }
 
 source_reader_name = {
+    identifier
+}
+source_reader_type = {
     identifier
 }
 
