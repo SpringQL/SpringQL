@@ -1,5 +1,10 @@
 // Copyright (c) 2021 TOYOTA MOTOR CORPORATION. Licensed under MIT OR Apache-2.0.
 
+//! Pipeline is the most important structural view of stream processing, similar to RDBMS's ER-diagram.
+//!
+//! Nodes are streams and edges are one of source reader, sink writer, or pump.
+//! Some internal node may have multiple incoming edges. In this case, these edges share the same pump.
+//!
 //! A PipelineGraph has a "virtual root stream", who has outgoing edges to all source streams.
 //! It also has "virtual leaf streams", who has an incoming edge from each sink stream.
 
