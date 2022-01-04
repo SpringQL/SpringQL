@@ -18,6 +18,7 @@ use super::{
     task::{
         sink_task::sink_writer::sink_writer_repository::SinkWriterRepository,
         source_task::source_reader::source_reader_repository::SourceReaderRepository,
+        task_graph::TaskGraph,
     },
 };
 
@@ -28,8 +29,6 @@ use super::{
 #[derive(Debug)]
 pub(in crate::stream_engine) struct TaskExecutor<DI: DependencyInjection> {
     task_executor_lock: Arc<TaskExecutorLock>,
-
-    current_pipeline: Arc<CurrentPipeline>,
 
     row_repo: Arc<DI::RowRepositoryType>,
     source_reader_repo: Arc<SourceReaderRepository>,
@@ -51,8 +50,6 @@ impl<DI: DependencyInjection> TaskExecutor<DI> {
 
         Self {
             task_executor_lock: task_executor_lock.clone(),
-
-            current_pipeline: current_pipeline.clone(),
 
             worker_pool: WorkerPool::new::<DI>(
                 n_worker_threads,
@@ -81,7 +78,7 @@ impl<DI: DependencyInjection> TaskExecutor<DI> {
         _lock_guard: &PipelineUpdateLockGuard,
         current_pipeline: Arc<CurrentPipeline>,
     ) -> Result<()> {
-        let pipeline = self.current_pipeline.pipeline();
+        let pipeline = current_pipeline.pipeline();
         pipeline
             .all_sources()
             .into_iter()
@@ -100,10 +97,10 @@ impl<DI: DependencyInjection> TaskExecutor<DI> {
     pub(in crate::stream_engine::autonomous_executor) fn cleanup(
         &self,
         _lock_guard: &PipelineUpdateLockGuard,
+        task_graph: &TaskGraph,
     ) {
         // TODO do not just remove rows in queues. Do the things in doc comment.
 
-        let task_graph = self.current_pipeline.task_graph();
         self.row_repo.reset(task_graph.all_tasks());
     }
 }
