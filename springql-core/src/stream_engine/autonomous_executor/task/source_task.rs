@@ -13,12 +13,10 @@ use crate::stream_engine::dependency_injection::DependencyInjection;
 
 use super::task_context::TaskContext;
 use super::task_id::TaskId;
-use super::task_state::TaskState;
 
 #[derive(Debug)]
 pub(crate) struct SourceTask {
     id: TaskId,
-    state: TaskState,
     source_reader_name: SourceReaderName,
     source_stream_name: StreamName,
 }
@@ -28,7 +26,6 @@ impl SourceTask {
         let id = TaskId::from_source_reader(source_reader.dest_source_stream().clone());
         Self {
             id,
-            state: TaskState::Started,
             source_reader_name: source_reader.name().clone(),
             source_stream_name: source_reader.dest_source_stream().clone(),
         }
@@ -36,10 +33,6 @@ impl SourceTask {
 
     pub(in crate::stream_engine) fn id(&self) -> &TaskId {
         &self.id
-    }
-
-    pub(in crate::stream_engine) fn state(&self) -> &TaskState {
-        &self.state
     }
 
     pub(in crate::stream_engine::autonomous_executor) fn run<DI: DependencyInjection>(

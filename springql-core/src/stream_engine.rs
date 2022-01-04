@@ -157,7 +157,7 @@ mod tests {
             .unwrap();
         engine
             .alter_pipeline(AlterPipelineCommand::fx_create_pump(
-                pu_trade_source_p1.clone(),
+                pu_trade_source_p1,
                 fst_trade_source.clone(),
                 fst_trade_sink,
             ))
@@ -167,14 +167,6 @@ mod tests {
                 fst_trade_source,
                 source.host_ip(),
                 source.port(),
-            ))
-            .unwrap();
-
-        assert!(sink.receive().is_err());
-
-        engine
-            .alter_pipeline(AlterPipelineCommand::fx_alter_pump_start(
-                pu_trade_source_p1,
             ))
             .unwrap();
 

@@ -104,13 +104,13 @@ use crate::{
     pipeline::{name::StreamName, pipeline_version::PipelineVersion},
 };
 use petgraph::{
-    graph::{DiGraph, EdgeReference, NodeIndex},
+    graph::{DiGraph, NodeIndex},
     visit::EdgeRef,
 };
 use std::{collections::HashSet, sync::Arc};
 
 use crate::stream_engine::autonomous_executor::task::{
-    task_graph::TaskGraph, task_id::TaskId, task_state::TaskState, Task,
+    task_graph::TaskGraph, task_id::TaskId, Task,
 };
 
 use super::{Scheduler, WorkerState};
@@ -212,7 +212,7 @@ impl FlowEfficientScheduler {
             .collect()
     }
 
-    /// Push started tasks to seq_task_schedule in DFS post-order.
+    /// Push tasks to seq_task_schedule in DFS post-order.
     fn _leaf_to_root_dfs_post_order(
         cur_node: NodeIndex,
         graph: &DiGraph<StreamName, Arc<Task>>,
@@ -223,11 +223,8 @@ impl FlowEfficientScheduler {
         for incoming_edge in incoming_edges {
             let task = incoming_edge.weight();
 
-            if !unvisited.remove(&task.id())  // already visited
-            || matches!(task.state(), TaskState::Stopped)  // Do not schedule parent tasks even if they are STARTED (until all tasks throughout source-to-sink get STARTED) in order not to create buffered WIP rows.
-            || !Self::_all_parent_started(incoming_edge, graph)
-            // all incoming tasks must be STARTED for this task to be scheduled.
-            {
+            if !unvisited.remove(&task.id()) {
+                // already visited
                 break;
             } else {
                 let parent_node = incoming_edge.source();
@@ -242,15 +239,6 @@ impl FlowEfficientScheduler {
         }
 
         Ok(())
-    }
-
-    fn _all_parent_started(
-        edge_ref: EdgeReference<Arc<Task>>,
-        graph: &DiGraph<StreamName, Arc<Task>>,
-    ) -> bool {
-        let parent_node = edge_ref.source();
-        let mut parent_edges = graph.edges_directed(parent_node, petgraph::Direction::Incoming);
-        parent_edges.all(|parent_edge| matches!(parent_edge.weight().state(), TaskState::Started))
     }
 }
 
@@ -307,21 +295,6 @@ mod tests {
     #[test]
     fn test_source_only_pipeline() {
         t(Pipeline::fx_source_only(), vec![])
-    }
-
-    #[test]
-    fn test_linear_pipeline_stopped() {
-        let test_source = ForeignSource::start(ForeignSourceInput::new_fifo_batch(vec![])).unwrap();
-        let test_sink = ForeignSink::start().unwrap();
-        t(
-            Pipeline::fx_linear_stopped(
-                test_source.host_ip(),
-                test_source.port(),
-                test_sink.host_ip(),
-                test_sink.port(),
-            ),
-            vec![],
-        )
     }
 
     #[test]

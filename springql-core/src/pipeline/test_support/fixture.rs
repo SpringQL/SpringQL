@@ -42,45 +42,6 @@ impl Pipeline {
     }
 
     /// ```text
-    /// (0)--a-->[1]--b(STOPPED)-->[2]--c-->
-    /// ```
-    pub(crate) fn fx_linear_stopped(
-        source_remote_host: IpAddr,
-        source_remote_port: u16,
-        sink_remote_host: IpAddr,
-        sink_remote_port: u16,
-    ) -> Self {
-        let fst_1 = Arc::new(ForeignStreamModel::fx_trade_with_name(StreamName::factory(
-            "fst_1",
-        )));
-        let fst_2 = Arc::new(ForeignStreamModel::fx_trade_with_name(StreamName::factory(
-            "fst_2",
-        )));
-
-        let source_a =
-            SourceReaderModel::fx_net(fst_1.name().clone(), source_remote_host, source_remote_port);
-        let sink_c = SinkWriterModel::fx_net(fst_2.clone(), sink_remote_host, sink_remote_port);
-
-        let pu_b = PumpModel::fx_trade_stopped(
-            PumpName::factory("pu_b"),
-            fst_1.name().clone(),
-            fst_2.name().clone(),
-        );
-
-        let mut pipeline = Pipeline::default();
-
-        pipeline.add_foreign_stream(fst_1).unwrap();
-        pipeline.add_foreign_stream(fst_2).unwrap();
-
-        pipeline.add_source_reader(source_a).unwrap();
-        pipeline.add_sink_writer(sink_c).unwrap();
-
-        pipeline.add_pump(pu_b).unwrap();
-
-        pipeline
-    }
-
-    /// ```text
     /// (0)--a-->[1]--b-->[2]--c-->
     /// ```
     pub(crate) fn fx_linear(
