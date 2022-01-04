@@ -125,7 +125,6 @@ impl WorkerState for CurrentTaskIdx {}
 #[derive(Debug, Default)]
 pub(crate) struct FlowEfficientScheduler {
     pipeline_version: PipelineVersion,
-    task_graph: Arc<TaskGraph>,
     seq_task_schedule: Vec<Arc<Task>>,
 }
 
@@ -169,10 +168,8 @@ impl Scheduler for FlowEfficientScheduler {
     ///
     /// - [SpringError::ForeignIo](crate::error::SpringError::ForeignIo) when:
     ///   - failed to start a source reader.
-    fn _notify_task_graph_update(&mut self, task_graph: TaskGraph) -> Result<()> {
-        self.task_graph = Arc::new(task_graph);
-
-        let graph = self.task_graph.as_petgraph();
+    fn _notify_task_graph_update(&mut self, task_graph: &TaskGraph) -> Result<()> {
+        let graph = task_graph.as_petgraph();
 
         let mut unvisited = graph
             .edge_weights()
@@ -200,14 +197,10 @@ impl Scheduler for FlowEfficientScheduler {
                 .map(|task| task.id().to_string())
                 .collect::<Vec<_>>()
                 .join(", "),
-            self.task_graph
+            task_graph
         );
 
         Ok(())
-    }
-
-    fn task_graph(&self) -> Arc<TaskGraph> {
-        self.task_graph.clone()
     }
 }
 
@@ -272,7 +265,9 @@ mod tests {
 
     use crate::{
         pipeline::{name::PumpName, Pipeline},
-        stream_engine::autonomous_executor::task::task_id::TaskId,
+        stream_engine::autonomous_executor::{
+            current_pipeline::CurrentPipeline, task::task_id::TaskId,
+        },
     };
 
     use super::*;
@@ -283,7 +278,9 @@ mod tests {
         let mut cur_task_idx = CurrentTaskIdx::default();
 
         let mut scheduler = FlowEfficientScheduler::default();
-        scheduler.notify_pipeline_update(pipeline).unwrap();
+
+        let current_pipeline = CurrentPipeline::new(pipeline);
+        scheduler.notify_pipeline_update(&current_pipeline).unwrap();
 
         if let Some((first_task, next_task_idx)) = scheduler.next_task(cur_task_idx) {
             assert_eq!(first_task.id(), expected.pop_front().unwrap());

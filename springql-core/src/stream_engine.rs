@@ -6,21 +6,49 @@
 //!
 //! Stream engine has 2 executors:
 //!
-//! 1. Reactive executor
+//! 1. SQL executor
 //! 2. Autonomous executor
 //!
-//! Reactive executor quickly changes some status of a pipeline. It does not deal with stream data (Row, to be precise).
+//! Reactive executor receives commands from user interface to quickly change some status of a pipeline.
+//! It also gets interruption from `PerformanceMonitorWorker` to change task execution policy.
+//! It does not deal with stream data (Row, to be precise).
+//!
 //! Autonomous executor deals with stream data.
 //!
 //! Both reactive executor and autonomous executor instance run at a main thread, while autonomous executor has workers which run at different worker threads.
-//! ```
+//!
+//! # `*Executor` structure
+//!
+//! - StreamEngine
+//!   - SqlExecutor (main thread; alters pipeline)
+//!   - AutonomousExecutor
+//!     - MemoryStateMachine (1 thread)
+//!     - TaskExecutor
+//!       - SourceWorkerPool (N threads; runs source tasks with SourceScheduler)
+//!       - GenericWorkerPool (M threads; runs pump and sink tasks with a dynamically-chosen scheduler)
+//!     - PerformanceMonitorWorker (1 thread)
+//!
+//! # `*Executor` interaction
+//!
+//! ## SQL command flow
+//!
+//! 1. SQL from user (via C API, for example) -> [api](crate::api) -> SqlExecutor.
+//! 2. SqlExecutor locks TaskExecutor, kicks Purger, and notifies pipeline update to TaskExecutor.
+//!
+//! ## Memory state transition
+//!
+//! 1. PerformanceMonitorWorker periodically reports performance metrics to MemoryStateMachine.
+//! 2. When MemoryStateMachine detect condition to transit memory state:
+//!   - [* -> Moderate] MemoryStateMachine notifies state transition to TaskExecutor and TaskExecutor sets task scheduler to FlowEfficientScheduler.
+//!   - [* -> Severe] MemoryStateMachine notifies state transition to TaskExecutor and TaskExecutor sets task scheduler to MemoryReducingScheduler.
+//!   - [* -> Critical] MemoryStateMachine notifies state transition to TaskExecutor; and TaskExecutor locks source workers and generic workers, kicks Purger, and waits for next performance metrics.
 
 pub(crate) mod command;
 
 mod autonomous_executor;
 mod dependency_injection;
 mod in_memory_queue_repository;
-mod reactive_executor;
+mod sql_executor;
 
 pub(crate) use autonomous_executor::{
     row::value::{sql_convertible::SqlConvertible, sql_value::SqlValue},
@@ -28,12 +56,12 @@ pub(crate) use autonomous_executor::{
 };
 
 use crate::{error::Result, pipeline::name::QueueName};
-use autonomous_executor::{CurrentTimestamp, RowRepository, Scheduler};
+use autonomous_executor::{CurrentTimestamp, RowRepository};
 
 use self::{
     autonomous_executor::AutonomousExecutor, command::alter_pipeline_command::AlterPipelineCommand,
     dependency_injection::DependencyInjection, in_memory_queue_repository::InMemoryQueueRepository,
-    reactive_executor::ReactiveExecutor,
+    sql_executor::SqlExecutor,
 };
 
 #[cfg(not(test))]
@@ -47,7 +75,7 @@ pub(crate) type StreamEngine = StreamEngineDI<dependency_injection::test_di::Tes
 /// External components (sql-processor) call Access Methods to change stream engine's states and get result from it.
 #[derive(Debug)]
 pub(crate) struct StreamEngineDI<DI: DependencyInjection> {
-    reactive_executor: ReactiveExecutor,
+    reactive_executor: SqlExecutor,
     autonomous_executor: AutonomousExecutor<DI>,
 }
 
@@ -57,7 +85,7 @@ where
 {
     pub(crate) fn new(n_worker_threads: usize) -> Self {
         Self {
-            reactive_executor: ReactiveExecutor::default(),
+            reactive_executor: SqlExecutor::default(),
             autonomous_executor: AutonomousExecutor::new(n_worker_threads),
         }
     }

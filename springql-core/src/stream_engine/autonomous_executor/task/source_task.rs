@@ -6,7 +6,6 @@ use std::fmt::Debug;
 
 use crate::error::Result;
 use crate::pipeline::name::{SourceReaderName, StreamName};
-use crate::pipeline::pipeline_graph::PipelineGraph;
 use crate::pipeline::source_reader_model::SourceReaderModel;
 use crate::stream_engine::autonomous_executor::row::Row;
 use crate::stream_engine::autonomous_executor::RowRepository;
@@ -25,10 +24,7 @@ pub(crate) struct SourceTask {
 }
 
 impl SourceTask {
-    pub(in crate::stream_engine) fn new(
-        source_reader: &SourceReaderModel,
-        pipeline_graph: &PipelineGraph,
-    ) -> Self {
+    pub(in crate::stream_engine) fn new(source_reader: &SourceReaderModel) -> Self {
         let id = TaskId::from_source_reader(source_reader.dest_source_stream().clone());
         Self {
             id,
@@ -64,6 +60,7 @@ impl SourceTask {
             .get_source_reader(&self.source_reader_name);
 
         let source_stream = context
+            .current_pipeline()
             .pipeline()
             .get_foreign_stream(&self.source_stream_name)?;
 

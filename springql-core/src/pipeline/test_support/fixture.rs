@@ -578,18 +578,6 @@ impl Options {
     }
 }
 
-impl StreamName {
-    pub(crate) fn fx_trade_source() -> Self {
-        StreamName::new("fst_trade_source".to_string())
-    }
-}
-
-impl PumpName {
-    pub(crate) fn fx_trade_p1() -> Self {
-        Self::new("pu_trade_p1".to_string())
-    }
-}
-
 impl SourceReaderName {
     pub(crate) fn fx_tcp_trade() -> Self {
         Self::new("tcp_trade".to_string())

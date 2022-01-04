@@ -288,6 +288,7 @@ timestamp_type = {
 command = {
     SOI ~ (
         create_source_stream_command
+        | create_source_reader_command
         | create_sink_stream_command
         | create_pump_command
         | alter_pump_command

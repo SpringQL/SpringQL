@@ -94,6 +94,12 @@ impl PestParserImpl {
         )?
         .or(try_parse_child(
             &mut params,
+            Rule::create_source_reader_command,
+            Self::parse_create_source_reader_command,
+            identity,
+        )?)
+        .or(try_parse_child(
+            &mut params,
             Rule::create_sink_stream_command,
             Self::parse_create_sink_stream_command,
             identity,

@@ -24,7 +24,7 @@ use super::{
     source_reader_model::SourceReaderModel,
 };
 use crate::error::{Result, SpringError};
-use anyhow::{anyhow, Context};
+use anyhow::anyhow;
 
 #[cfg(test)] // TODO remove
 use super::stream_model::StreamModel;
@@ -71,7 +71,7 @@ impl PipelineGraph {
 
     pub(super) fn get_foreign_stream(&self, name: &StreamName) -> Result<Arc<ForeignStreamModel>> {
         let node = self._find_stream(name)?;
-        let stream_node = self.graph[node];
+        let stream_node = self.graph.node_weight(node).expect("index found");
         if let StreamNode::Foreign(foreign_stream) = stream_node {
             Ok(foreign_stream.clone())
         } else {

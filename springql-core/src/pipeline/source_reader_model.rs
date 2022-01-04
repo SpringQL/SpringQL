@@ -2,14 +2,11 @@
 
 pub(crate) mod source_reader_type;
 
-use std::sync::Arc;
-
 use serde::{Deserialize, Serialize};
 
 use self::source_reader_type::SourceReaderType;
 
 use super::{
-    foreign_stream_model::ForeignStreamModel,
     name::{SourceReaderName, StreamName},
     option::Options,
 };

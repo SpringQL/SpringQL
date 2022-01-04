@@ -5,7 +5,7 @@ pub(super) mod prod_di;
 #[cfg(test)]
 pub(super) mod test_di;
 
-use crate::stream_engine::{CurrentTimestamp, RowRepository, Scheduler};
+use crate::stream_engine::{CurrentTimestamp, RowRepository};
 use std::fmt::Debug;
 
 /// Compile-time dependency injection.
@@ -16,6 +16,5 @@ pub(crate) trait DependencyInjection: Debug + 'static {
     type CurrentTimestampType: CurrentTimestamp;
 
     // Autonomous executor
-    type SchedulerType: Scheduler;
     type RowRepositoryType: RowRepository;
 }
