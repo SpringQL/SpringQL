@@ -26,10 +26,7 @@ pub(crate) mod test_support;
 use anyhow::anyhow;
 use std::{collections::HashSet, sync::Arc};
 
-use crate::{
-    error::{Result, SpringError},
-    pipeline::pipeline_graph::edge::Edge,
-};
+use crate::error::{Result, SpringError};
 use serde::{Deserialize, Serialize};
 
 use self::{
@@ -127,24 +124,10 @@ impl Pipeline {
     }
 
     pub(super) fn all_sources(&self) -> Vec<&SourceReaderModel> {
-        self.graph
-            .as_petgraph()
-            .edge_references()
-            .filter_map(|edge| match edge.weight() {
-                Edge::Pump(_) | Edge::Sink(_) => None,
-                Edge::Source(s) => Some(s),
-            })
-            .collect()
+        self.graph.all_sources()
     }
     pub(super) fn all_sinks(&self) -> Vec<&SinkWriterModel> {
-        self.graph
-            .as_petgraph()
-            .edge_references()
-            .filter_map(|edge| match edge.weight() {
-                Edge::Pump(_) | Edge::Source(_) => None,
-                Edge::Sink(s) => Some(s),
-            })
-            .collect()
+        self.graph.all_sinks()
     }
 
     /// # Failure

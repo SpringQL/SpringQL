@@ -54,6 +54,11 @@ impl Default for PipelineGraph {
 }
 
 impl PipelineGraph {
+    // TODO remove after TaskGraph get newer
+    pub(crate) fn as_petgraph(&self) -> &DiGraph<StreamNode, Edge> {
+        &self.graph
+    }
+
     #[cfg(test)] // TODO remove
     pub(super) fn add_stream(&mut self, stream: Arc<StreamModel>) -> Result<()> {
         let st_name = stream.name().clone();
@@ -92,6 +97,25 @@ impl PipelineGraph {
         }
     }
 
+    pub(super) fn all_sources(&self) -> Vec<&SourceReaderModel> {
+        self.graph
+            .edge_references()
+            .filter_map(|edge| match edge.weight() {
+                Edge::Pump(_) | Edge::Sink(_) => None,
+                Edge::Source(s) => Some(s),
+            })
+            .collect()
+    }
+    pub(super) fn all_sinks(&self) -> Vec<&SinkWriterModel> {
+        self.graph
+            .edge_references()
+            .filter_map(|edge| match edge.weight() {
+                Edge::Pump(_) | Edge::Source(_) => None,
+                Edge::Sink(s) => Some(s),
+            })
+            .collect()
+    }
+
     pub(super) fn add_pump(&mut self, pump: PumpModel) -> Result<()> {
         let pump = Arc::new(pump);
 
@@ -116,10 +140,6 @@ impl PipelineGraph {
         }
 
         Ok(())
-    }
-
-    pub(crate) fn as_petgraph(&self) -> &DiGraph<StreamNode, Edge> {
-        &self.graph
     }
 
     fn _find_stream(&self, name: &StreamName) -> Result<NodeIndex> {
