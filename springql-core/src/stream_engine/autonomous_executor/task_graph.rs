@@ -16,6 +16,8 @@ use std::collections::HashMap;
 
 use petgraph::graph::{DiGraph, NodeIndex};
 
+use crate::pipeline::pipeline_graph::{edge::Edge, PipelineGraph};
+
 use self::{
     edge_ref::MyEdgeRef,
     queue_id::{row_queue_id::RowQueueId, window_queue_id::WindowQueueId, QueueId},
@@ -185,5 +187,50 @@ impl TaskGraph {
             .get(queue_id)
             .unwrap_or_else(|| panic!(r#"queue {:?} is not added in the graph"#, queue_id))
             .clone()
+    }
+}
+
+impl From<&PipelineGraph> for TaskGraph {
+    fn from(pipeline_graph: &PipelineGraph) -> Self {
+        let pipeline_petgraph = pipeline_graph.as_petgraph();
+        let mut task_graph = TaskGraph::default();
+
+        // add all task ids
+        pipeline_petgraph.edge_weights().for_each(|edge| {
+            let task_id = TaskId::from(edge);
+            // duplicate task id on JOIN pump task (but it's ok)
+            task_graph.add_task(task_id);
+        });
+
+        // add all queues
+        pipeline_petgraph.edge_references().for_each(|edge_ref| {
+            match edge_ref.weight() {
+                Edge::Pump(pump) => {
+                    let queue_id = QueueId::from_pump(pump);
+                    let target = TaskId::from_pump(pump);
+                    pipeline_graph
+                        .upstream_edges(&edge_ref)
+                        .iter()
+                        .for_each(|source_edge_ref| {
+                            let source_edge = source_edge_ref.weight();
+                            let source = TaskId::from(source_edge);
+                            task_graph.add_queue(queue_id, source, target);
+                        })
+                }
+                Edge::Sink(sink) => {
+                    let queue_id = QueueId::from_sink(sink);
+                    let target = TaskId::from_sink(sink);
+                    let source_edge = pipeline_graph
+                        .upstream_edges(&edge_ref)
+                        .first()
+                        .expect("sink writer must have 1 upstream pump")
+                        .weight();
+                    let source = TaskId::from(source_edge);
+                    task_graph.add_queue(queue_id, source, target);
+                }
+                Edge::Source(_) => {} // no queue is created for source task
+            };
+        });
+        task_graph
     }
 }

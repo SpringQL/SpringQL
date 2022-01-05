@@ -13,7 +13,10 @@ pub(crate) mod stream_node;
 
 use std::{collections::HashMap, sync::Arc};
 
-use petgraph::graph::{DiGraph, EdgeReference, NodeIndex};
+use petgraph::{
+    graph::{DiGraph, EdgeReference, NodeIndex},
+    visit::EdgeRef,
+};
 use serde::{Deserialize, Serialize};
 
 use self::{edge::Edge, stream_node::StreamNode};
@@ -54,11 +57,6 @@ impl Default for PipelineGraph {
 }
 
 impl PipelineGraph {
-    // TODO remove after TaskGraph get newer
-    pub(crate) fn as_petgraph(&self) -> &DiGraph<StreamNode, Edge> {
-        &self.graph
-    }
-
     #[cfg(test)] // TODO remove
     pub(super) fn add_stream(&mut self, stream: Arc<StreamModel>) -> Result<()> {
         let st_name = stream.name().clone();
@@ -95,6 +93,18 @@ impl PipelineGraph {
                 name
             )))
         }
+    }
+
+    /// Find all incoming edges of `edge_ref`'s upstream.
+    pub(crate) fn upstream_edges(
+        &self,
+        edge_ref: &EdgeReference<Edge>,
+    ) -> Vec<EdgeReference<Edge>> {
+        let upstream_node = edge_ref.source();
+        let upstream_edges = self
+            .graph
+            .edges_directed(upstream_node, petgraph::EdgeDirection::Incoming);
+        upstream_edges.collect()
     }
 
     pub(super) fn all_sources(&self) -> Vec<&SourceReaderModel> {
@@ -199,5 +209,10 @@ impl PipelineGraph {
             .graph
             .add_edge(*upstream_node, downstream_node, Edge::Sink(sink_writer));
         Ok(())
+    }
+
+    /// Just for `From<&PipelineGraph> for TaskGraph`
+    pub(crate) fn as_petgraph(&self) -> &DiGraph<StreamNode, Edge> {
+        &self.graph
     }
 }

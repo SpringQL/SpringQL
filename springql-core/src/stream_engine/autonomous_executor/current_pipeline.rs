@@ -2,7 +2,7 @@
 
 use crate::pipeline::Pipeline;
 
-use super::task::task_graph::TaskGraph;
+use super::task_graph::TaskGraph;
 
 /// Current pipeline and corresponding task graph.
 #[derive(Debug)]
