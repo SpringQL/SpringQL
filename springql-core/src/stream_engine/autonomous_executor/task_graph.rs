@@ -91,6 +91,13 @@ impl TaskGraph {
             .collect()
     }
 
+    pub(super) fn upstream_tasks(&self, task_id: &TaskId) -> Vec<TaskId> {
+        self.input_queues(task_id)
+            .iter()
+            .map(|q| self.upstream_task(q))
+            .collect()
+    }
+
     pub(super) fn downstream_tasks(&self, task_id: &TaskId) -> Vec<TaskId> {
         self.output_queues(task_id)
             .iter()
@@ -106,6 +113,14 @@ impl TaskGraph {
         self.tasks()
             .iter()
             .filter(|t| self.task_position(t) == TaskPosition::Source)
+            .cloned()
+            .collect()
+    }
+
+    fn pump_tasks(&self) -> Vec<TaskId> {
+        self.tasks()
+            .iter()
+            .filter(|t| self.task_position(t) == TaskPosition::Intermediate)
             .cloned()
             .collect()
     }
@@ -214,7 +229,7 @@ impl From<&PipelineGraph> for TaskGraph {
                         .for_each(|source_edge_ref| {
                             let source_edge = source_edge_ref.weight();
                             let source = TaskId::from(source_edge);
-                            task_graph.add_queue(queue_id, source, target);
+                            task_graph.add_queue(queue_id.clone(), source, target.clone());
                         })
                 }
                 Edge::Sink(sink) => {

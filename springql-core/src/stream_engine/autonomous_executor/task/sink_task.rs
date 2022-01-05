@@ -2,12 +2,13 @@
 
 pub(in crate::stream_engine::autonomous_executor) mod sink_writer;
 
-use super::{task_context::TaskContext, task_id::TaskId};
+use super::task_context::TaskContext;
 use crate::error::Result;
 use crate::pipeline::name::SinkWriterName;
 use crate::pipeline::sink_writer_model::SinkWriterModel;
 use crate::stream_engine::autonomous_executor::row::foreign_row::sink_row::SinkRow;
 use crate::stream_engine::autonomous_executor::row::Row;
+use crate::stream_engine::autonomous_executor::task_graph::task_id::TaskId;
 
 #[derive(Debug)]
 pub(crate) struct SinkTask {
@@ -17,14 +18,14 @@ pub(crate) struct SinkTask {
 
 impl SinkTask {
     pub(in crate::stream_engine) fn new(sink_writer: &SinkWriterModel) -> Self {
-        let id = TaskId::from_sink_writer(sink_writer.from_sink_stream().clone());
+        let id = TaskId::from_sink(sink_writer);
         Self {
             id,
             sink_writer_name: sink_writer.name().clone(),
         }
     }
 
-    pub(in crate::stream_engine) fn id(&self) -> &TaskId {
+    pub(in crate::stream_engine::autonomous_executor) fn id(&self) -> &TaskId {
         &self.id
     }
 

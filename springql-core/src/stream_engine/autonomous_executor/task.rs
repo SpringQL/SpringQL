@@ -4,14 +4,14 @@ pub(super) mod pump_task;
 pub(super) mod sink_task;
 pub(super) mod source_task;
 pub(super) mod task_context;
-pub(super) mod task_id;
 
 use crate::error::Result;
 
 use self::{
     pump_task::PumpTask, sink_task::SinkTask, source_task::SourceTask, task_context::TaskContext,
-    task_id::TaskId,
 };
+
+use super::task_graph::task_id::TaskId;
 
 #[derive(Debug)]
 pub(crate) enum Task {

@@ -4,11 +4,12 @@ use std::sync::Arc;
 
 use crate::stream_engine::autonomous_executor::{
     current_pipeline::CurrentPipeline, row::row_repository::RowRepository,
+    task_graph::task_id::TaskId,
 };
 
 use super::{
     sink_task::sink_writer::sink_writer_repository::SinkWriterRepository,
-    source_task::source_reader::source_reader_repository::SourceReaderRepository, task_id::TaskId,
+    source_task::source_reader::source_reader_repository::SourceReaderRepository,
 };
 
 #[derive(Debug)]

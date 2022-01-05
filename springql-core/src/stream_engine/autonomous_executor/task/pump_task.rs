@@ -2,9 +2,10 @@
 
 mod pump_subtask;
 
-use super::{task_context::TaskContext, task_id::TaskId};
+use super::task_context::TaskContext;
 use crate::error::Result;
 use crate::pipeline::pump_model::PumpModel;
+use crate::stream_engine::autonomous_executor::task_graph::task_id::TaskId;
 use pump_subtask::insert_subtask::InsertSubtask;
 use pump_subtask::query_subtask::QuerySubtask;
 
@@ -17,7 +18,7 @@ pub(crate) struct PumpTask {
 
 impl From<&PumpModel> for PumpTask {
     fn from(pump: &PumpModel) -> Self {
-        let id = TaskId::from_pump(pump.name().clone());
+        let id = TaskId::from_pump(pump);
         let query_subtask = QuerySubtask::from(pump.query_plan());
         let insert_subtask = InsertSubtask::from(pump.insert_plan());
         Self {
@@ -29,7 +30,7 @@ impl From<&PumpModel> for PumpTask {
 }
 
 impl PumpTask {
-    pub(in crate::stream_engine) fn id(&self) -> &TaskId {
+    pub(in crate::stream_engine::autonomous_executor) fn id(&self) -> &TaskId {
         &self.id
     }
 

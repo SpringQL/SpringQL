@@ -14,7 +14,7 @@ use crate::{
         task::{
             sink_task::sink_writer::sink_writer_repository::SinkWriterRepository,
             source_task::source_reader::source_reader_repository::SourceReaderRepository,
-            task_context::TaskContext,
+            task_context::TaskContext, Task,
         },
         task_executor::{
             scheduler::{flow_efficient_scheduler::FlowEfficientScheduler, Scheduler},
@@ -77,18 +77,20 @@ impl WorkerThread {
 
         while stop_receiver.try_recv().is_err() {
             if let Ok(_lock) = task_executor_lock.try_task_execution() {
-                if let Some((task, next_worker_state)) = scheduler.next_task(cur_worker_state) {
-                    log::debug!("[Worker#{}] Scheduled task:{}", id, task.id());
+                if let Some((task_id, next_worker_state)) = scheduler.next_task(cur_worker_state) {
+                    log::debug!("[Worker#{}] Scheduled task:{}", id, task_id);
 
                     cur_worker_state = next_worker_state;
 
                     let context = TaskContext::new(
-                        task.id().clone(),
+                        task_id,
                         current_pipeline.clone(),
                         row_repo.clone(),
                         source_reader_repo.clone(),
                         sink_writer_repo.clone(),
                     );
+
+                    let task: Task = todo!("TaskRepo::get(task_id)");
 
                     task.run(&context).unwrap_or_else(Self::handle_error)
                 } else {

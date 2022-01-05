@@ -100,6 +100,6 @@ impl TaskExecutor {
     ) {
         // TODO do not just remove rows in queues. Do the things in doc comment.
 
-        self.row_repo.reset(task_graph.all_tasks());  // TODO QueueIds instead
+        self.row_repo.reset(task_graph.tasks());  // TODO QueueIds instead
     }
 }

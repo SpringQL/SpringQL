@@ -3,12 +3,11 @@
 pub(in crate::stream_engine::autonomous_executor) mod flow_efficient_scheduler;
 
 use std::fmt::Debug;
-use std::sync::Arc;
 
 use crate::error::Result;
 use crate::pipeline::pipeline_version::PipelineVersion;
 use crate::stream_engine::autonomous_executor::current_pipeline::CurrentPipeline;
-use crate::stream_engine::autonomous_executor::task::Task;
+use crate::stream_engine::autonomous_executor::task_graph::task_id::TaskId;
 use crate::stream_engine::autonomous_executor::task_graph::TaskGraph;
 
 pub(crate) trait WorkerState {}
@@ -33,5 +32,5 @@ pub(in crate::stream_engine::autonomous_executor) trait Scheduler:
     fn _notify_task_graph_update(&mut self, task_graph: &TaskGraph) -> Result<()>;
 
     /// Called from worker threads.
-    fn next_task(&self, worker_state: Self::W) -> Option<(Arc<Task>, Self::W)>;
+    fn next_task(&self, worker_state: Self::W) -> Option<(TaskId, Self::W)>;
 }

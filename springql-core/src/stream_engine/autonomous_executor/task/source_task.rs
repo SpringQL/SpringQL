@@ -8,9 +8,9 @@ use crate::error::Result;
 use crate::pipeline::name::{SourceReaderName, StreamName};
 use crate::pipeline::source_reader_model::SourceReaderModel;
 use crate::stream_engine::autonomous_executor::row::Row;
+use crate::stream_engine::autonomous_executor::task_graph::task_id::TaskId;
 
 use super::task_context::TaskContext;
-use super::task_id::TaskId;
 
 #[derive(Debug)]
 pub(crate) struct SourceTask {
@@ -21,7 +21,7 @@ pub(crate) struct SourceTask {
 
 impl SourceTask {
     pub(in crate::stream_engine) fn new(source_reader: &SourceReaderModel) -> Self {
-        let id = TaskId::from_source_reader(source_reader.dest_source_stream().clone());
+        let id = TaskId::from_source(source_reader);
         Self {
             id,
             source_reader_name: source_reader.name().clone(),
@@ -29,7 +29,7 @@ impl SourceTask {
         }
     }
 
-    pub(in crate::stream_engine) fn id(&self) -> &TaskId {
+    pub(in crate::stream_engine::autonomous_executor) fn id(&self) -> &TaskId {
         &self.id
     }
 
