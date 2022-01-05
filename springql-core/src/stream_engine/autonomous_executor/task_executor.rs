@@ -12,7 +12,7 @@ use self::{
     worker_pool::WorkerPool,
 };
 use super::{
-    current_pipeline::CurrentPipeline,
+    pipeline_derivatives::PipelineDerivatives,
     row::row_repository::RowRepository,
     task::{
         sink_task::sink_writer::sink_writer_repository::SinkWriterRepository,
@@ -39,7 +39,7 @@ pub(in crate::stream_engine) struct TaskExecutor {
 impl TaskExecutor {
     pub(in crate::stream_engine::autonomous_executor) fn new(
         n_worker_threads: usize,
-        current_pipeline: Arc<CurrentPipeline>,
+        pipeline_derivatives: Arc<PipelineDerivatives>,
     ) -> Self {
         let task_executor_lock = Arc::new(TaskExecutorLock::default());
 
@@ -53,7 +53,7 @@ impl TaskExecutor {
             worker_pool: WorkerPool::new(
                 n_worker_threads,
                 task_executor_lock,
-                current_pipeline,
+                pipeline_derivatives,
                 row_repo.clone(),
                 source_reader_repo.clone(),
                 sink_writer_repo.clone(),
@@ -75,9 +75,9 @@ impl TaskExecutor {
     pub(in crate::stream_engine::autonomous_executor) fn update_pipeline(
         &self,
         _lock_guard: &PipelineUpdateLockGuard,
-        current_pipeline: Arc<CurrentPipeline>,
+        pipeline_derivatives: Arc<PipelineDerivatives>,
     ) -> Result<()> {
-        let pipeline = current_pipeline.pipeline();
+        let pipeline = pipeline_derivatives.pipeline();
         pipeline
             .all_sources()
             .into_iter()
@@ -87,7 +87,8 @@ impl TaskExecutor {
             .into_iter()
             .try_for_each(|sink_writer| self.sink_writer_repo.register(sink_writer))?;
 
-        self.worker_pool.interrupt_pipeline_update(current_pipeline);
+        self.worker_pool
+            .interrupt_pipeline_update(pipeline_derivatives);
 
         Ok(())
     }
@@ -100,6 +101,6 @@ impl TaskExecutor {
     ) {
         // TODO do not just remove rows in queues. Do the things in doc comment.
 
-        self.row_repo.reset(task_graph.tasks());  // TODO QueueIds instead
+        self.row_repo.reset(task_graph.tasks()); // TODO QueueIds instead
     }
 }

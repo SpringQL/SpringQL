@@ -3,7 +3,7 @@
 use std::sync::Arc;
 
 use crate::stream_engine::autonomous_executor::{
-    current_pipeline::CurrentPipeline, row::row_repository::RowRepository,
+    pipeline_derivatives::PipelineDerivatives, row::row_repository::RowRepository,
     task_graph::task_id::TaskId,
 };
 
@@ -17,7 +17,7 @@ pub(in crate::stream_engine::autonomous_executor) struct TaskContext {
     task: TaskId,
 
     // why a task need to know pipeline? -> source tasks need to know source stream's shape.
-    current_pipeline: Arc<CurrentPipeline>,
+    pipeline_derivatives: Arc<PipelineDerivatives>,
 
     row_repo: Arc<RowRepository>,
 
@@ -28,14 +28,14 @@ pub(in crate::stream_engine::autonomous_executor) struct TaskContext {
 impl TaskContext {
     pub(in crate::stream_engine::autonomous_executor) fn new(
         task: TaskId,
-        current_pipeline: Arc<CurrentPipeline>,
+        pipeline_derivatives: Arc<PipelineDerivatives>,
         row_repo: Arc<RowRepository>,
         source_reader_repo: Arc<SourceReaderRepository>,
         sink_writer_repo: Arc<SinkWriterRepository>,
     ) -> Self {
         Self {
             task,
-            current_pipeline,
+            pipeline_derivatives,
             row_repo,
             source_reader_repo,
             sink_writer_repo,
@@ -46,12 +46,12 @@ impl TaskContext {
         self.task.clone()
     }
 
-    pub(in crate::stream_engine) fn current_pipeline(&self) -> Arc<CurrentPipeline> {
-        self.current_pipeline.clone()
+    pub(in crate::stream_engine) fn pipeline_derivatives(&self) -> Arc<PipelineDerivatives> {
+        self.pipeline_derivatives.clone()
     }
 
     pub(in crate::stream_engine) fn downstream_tasks(&self) -> Vec<TaskId> {
-        let task_graph = self.current_pipeline.task_graph();
+        let task_graph = self.pipeline_derivatives.task_graph();
         task_graph.downstream_tasks(&self.task)
     }
 

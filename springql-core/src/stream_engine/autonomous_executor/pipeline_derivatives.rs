@@ -4,14 +4,14 @@ use crate::pipeline::Pipeline;
 
 use super::task_graph::TaskGraph;
 
-/// Current pipeline and corresponding task graph.
+/// Pipeline, and task graph and tasks generated from the pipeline.
 #[derive(Debug)]
-pub(in crate::stream_engine::autonomous_executor) struct CurrentPipeline {
+pub(in crate::stream_engine::autonomous_executor) struct PipelineDerivatives {
     pipeline: Pipeline,
     task_graph: TaskGraph,
 }
 
-impl CurrentPipeline {
+impl PipelineDerivatives {
     pub(in crate::stream_engine::autonomous_executor) fn new(pipeline: Pipeline) -> Self {
         let task_graph = TaskGraph::from(pipeline.as_graph());
         Self {

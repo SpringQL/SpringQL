@@ -6,7 +6,7 @@ use std::fmt::Debug;
 
 use crate::error::Result;
 use crate::pipeline::pipeline_version::PipelineVersion;
-use crate::stream_engine::autonomous_executor::current_pipeline::CurrentPipeline;
+use crate::stream_engine::autonomous_executor::pipeline_derivatives::PipelineDerivatives;
 use crate::stream_engine::autonomous_executor::task_graph::task_id::TaskId;
 use crate::stream_engine::autonomous_executor::task_graph::TaskGraph;
 
@@ -18,9 +18,9 @@ pub(in crate::stream_engine::autonomous_executor) trait Scheduler:
     type W: WorkerState + Clone + Default;
 
     /// Called from main thread.
-    fn notify_pipeline_update(&mut self, current_pipeline: &CurrentPipeline) -> Result<()> {
-        let pipeline = current_pipeline.pipeline();
-        let task_graph = current_pipeline.task_graph();
+    fn notify_pipeline_update(&mut self, pipeline_derivatives: &PipelineDerivatives) -> Result<()> {
+        let pipeline = pipeline_derivatives.pipeline();
+        let task_graph = pipeline_derivatives.task_graph();
         self._notify_pipeline_version(pipeline.version());
         self._notify_task_graph_update(task_graph)
     }

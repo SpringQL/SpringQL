@@ -4,7 +4,7 @@ pub(in crate::stream_engine) mod task;
 
 pub(crate) mod row;
 
-mod current_pipeline;
+mod pipeline_derivatives;
 mod task_executor;
 mod task_graph;
 
@@ -15,7 +15,7 @@ use std::sync::Arc;
 pub(crate) use row::SinkRow;
 pub(in crate::stream_engine) use row::Timestamp;
 
-use self::{current_pipeline::CurrentPipeline, task_executor::TaskExecutor};
+use self::{pipeline_derivatives::PipelineDerivatives, task_executor::TaskExecutor};
 
 #[cfg(test)]
 pub(super) mod test_support;
@@ -32,8 +32,8 @@ pub(in crate::stream_engine) struct AutonomousExecutor {
 
 impl AutonomousExecutor {
     pub(in crate::stream_engine) fn new(n_worker_threads: usize) -> Self {
-        let current_pipeline = Arc::new(CurrentPipeline::new(Pipeline::default()));
-        let task_executor = TaskExecutor::new(n_worker_threads, current_pipeline);
+        let pipeline_derivatives = Arc::new(PipelineDerivatives::new(Pipeline::default()));
+        let task_executor = TaskExecutor::new(n_worker_threads, pipeline_derivatives);
         Self { task_executor }
     }
 
@@ -45,10 +45,10 @@ impl AutonomousExecutor {
 
         let lock = task_executor.pipeline_update_lock();
 
-        let current_pipeline = Arc::new(CurrentPipeline::new(pipeline));
+        let pipeline_derivatives = Arc::new(PipelineDerivatives::new(pipeline));
 
-        task_executor.cleanup(&lock, current_pipeline.task_graph());
-        task_executor.update_pipeline(&lock, current_pipeline)?;
+        task_executor.cleanup(&lock, pipeline_derivatives.task_graph());
+        task_executor.update_pipeline(&lock, pipeline_derivatives)?;
 
         Ok(())
     }

@@ -49,7 +49,7 @@ impl SourceTask {
             .get_source_reader(&self.source_reader_name);
 
         let source_stream = context
-            .current_pipeline()
+            .pipeline_derivatives()
             .pipeline()
             .get_source_stream(&self.source_stream_name)?;
 

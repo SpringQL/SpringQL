@@ -9,7 +9,7 @@ use std::{
 use crate::{
     error::SpringError,
     stream_engine::autonomous_executor::{
-        current_pipeline::CurrentPipeline,
+        pipeline_derivatives::PipelineDerivatives,
         row::row_repository::RowRepository,
         task::{
             sink_task::sink_writer::sink_writer_repository::SinkWriterRepository,
@@ -37,18 +37,18 @@ impl WorkerThread {
     pub(super) fn run(
         id: WorkerId,
         task_executor_lock: Arc<TaskExecutorLock>,
-        current_pipeline: Arc<CurrentPipeline>,
+        pipeline_derivatives: Arc<PipelineDerivatives>,
         row_repo: Arc<RowRepository>,
         source_reader_repo: Arc<SourceReaderRepository>,
         sink_writer_repo: Arc<SinkWriterRepository>,
-        pipeline_update_receiver: mpsc::Receiver<Arc<CurrentPipeline>>,
+        pipeline_update_receiver: mpsc::Receiver<Arc<PipelineDerivatives>>,
         stop_receiver: mpsc::Receiver<()>,
     ) {
         let _ = thread::spawn(move || {
             Self::main_loop(
                 id,
                 task_executor_lock.clone(),
-                current_pipeline,
+                pipeline_derivatives,
                 row_repo,
                 source_reader_repo,
                 sink_writer_repo,
@@ -62,14 +62,14 @@ impl WorkerThread {
     fn main_loop(
         id: WorkerId,
         task_executor_lock: Arc<TaskExecutorLock>,
-        current_pipeline: Arc<CurrentPipeline>,
+        pipeline_derivatives: Arc<PipelineDerivatives>,
         row_repo: Arc<RowRepository>,
         source_reader_repo: Arc<SourceReaderRepository>,
         sink_writer_repo: Arc<SinkWriterRepository>,
-        pipeline_update_receiver: mpsc::Receiver<Arc<CurrentPipeline>>,
+        pipeline_update_receiver: mpsc::Receiver<Arc<PipelineDerivatives>>,
         stop_receiver: mpsc::Receiver<()>,
     ) {
-        let mut current_pipeline = current_pipeline;
+        let mut pipeline_derivatives = pipeline_derivatives;
         let mut scheduler = FlowEfficientScheduler::default();
         let mut cur_worker_state = <FlowEfficientScheduler as Scheduler>::W::default();
 
@@ -84,7 +84,7 @@ impl WorkerThread {
 
                     let context = TaskContext::new(
                         task_id,
-                        current_pipeline.clone(),
+                        pipeline_derivatives.clone(),
                         row_repo.clone(),
                         source_reader_repo.clone(),
                         sink_writer_repo.clone(),
@@ -97,10 +97,10 @@ impl WorkerThread {
                     thread::sleep(Duration::from_millis(TASK_WAIT_MSEC))
                 }
             } else {
-                current_pipeline = Self::handle_interruption(
+                pipeline_derivatives = Self::handle_interruption(
                     id,
                     &pipeline_update_receiver,
-                    current_pipeline,
+                    pipeline_derivatives,
                     &mut scheduler,
                 );
             }
@@ -114,19 +114,19 @@ impl WorkerThread {
     /// Some on interruption.
     fn handle_interruption(
         id: WorkerId,
-        pipeline_update_receiver: &mpsc::Receiver<Arc<CurrentPipeline>>,
-        current_pipeline: Arc<CurrentPipeline>,
+        pipeline_update_receiver: &mpsc::Receiver<Arc<PipelineDerivatives>>,
+        pipeline_derivatives: Arc<PipelineDerivatives>,
         scheduler: &mut FlowEfficientScheduler,
-    ) -> Arc<CurrentPipeline> {
-        if let Ok(current_pipeline) = pipeline_update_receiver.try_recv() {
+    ) -> Arc<PipelineDerivatives> {
+        if let Ok(pipeline_derivatives) = pipeline_update_receiver.try_recv() {
             log::debug!("[Worker#{}] got interruption", id);
 
             scheduler
-                .notify_pipeline_update(current_pipeline.as_ref())
+                .notify_pipeline_update(pipeline_derivatives.as_ref())
                 .expect("failed to update scheduler's state");
-            current_pipeline
+            pipeline_derivatives
         } else {
-            current_pipeline
+            pipeline_derivatives
         }
     }
 

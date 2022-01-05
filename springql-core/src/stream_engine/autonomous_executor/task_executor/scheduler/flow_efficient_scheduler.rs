@@ -235,7 +235,7 @@ impl FlowEfficientScheduler {
 
 //     use crate::{
 //         pipeline::{name::PumpName, Pipeline, source_stream_model::SourceStreamModel},
-//         stream_engine::autonomous_executor::current_pipeline::CurrentPipeline,
+//         stream_engine::autonomous_executor::pipeline_derivatives::CurrentPipeline,
 //     };
 
 //     use super::*;
@@ -247,8 +247,8 @@ impl FlowEfficientScheduler {
 
 //         let mut scheduler = FlowEfficientScheduler::default();
 
-//         let current_pipeline = CurrentPipeline::new(pipeline);
-//         scheduler.notify_pipeline_update(&current_pipeline).unwrap();
+//         let pipeline_derivatives = CurrentPipeline::new(pipeline);
+//         scheduler.notify_pipeline_update(&pipeline_derivatives).unwrap();
 
 //         if let Some((first_task, next_task_idx)) = scheduler.next_task(cur_task_idx) {
 //             assert_eq!(first_task, expected.pop_front().unwrap());
