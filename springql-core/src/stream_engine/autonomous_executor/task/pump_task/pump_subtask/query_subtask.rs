@@ -8,13 +8,10 @@ use petgraph::{
 use self::query_subtask_node::QuerySubtaskNode;
 use crate::{
     error::Result,
+    stream_engine::autonomous_executor::task::task_context::TaskContext,
     stream_engine::{
         autonomous_executor::row::Row,
         command::query_plan::{child_direction::ChildDirection, QueryPlan},
-    },
-    stream_engine::{
-        autonomous_executor::task::task_context::TaskContext,
-        dependency_injection::DependencyInjection,
     },
 };
 
@@ -43,42 +40,35 @@ impl QuerySubtask {
     ///
     /// - [SpringError::InputTimeout](crate::error::SpringError::InputTimeout) when:
     ///   - Input from a source stream is not available within timeout period.
-    pub(in crate::stream_engine::autonomous_executor) fn run<DI: DependencyInjection>(
+    pub(in crate::stream_engine::autonomous_executor) fn run(
         &self,
-        context: &TaskContext<DI>,
+        context: &TaskContext,
     ) -> Result<Row> {
         let mut next_idx = self.leaf_node_idx();
-        let mut next_row = self.run_leaf::<DI>(next_idx, context)?;
+        let mut next_row = self.run_leaf(next_idx, context)?;
 
         while let Some(parent_idx) = self.parent_node_idx(next_idx) {
             next_idx = parent_idx;
-            next_row = self.run_non_leaf::<DI>(next_idx, next_row)?;
+            next_row = self.run_non_leaf(next_idx, next_row)?;
         }
 
         Ok(next_row)
     }
 
-    fn run_non_leaf<DI>(&self, subtask_idx: NodeIndex, downstream_row: Row) -> Result<Row>
-    where
-        DI: DependencyInjection,
-    {
+    fn run_non_leaf(&self, subtask_idx: NodeIndex, downstream_row: Row) -> Result<Row> {
         let subtask = self.tree.node_weight(subtask_idx).expect("must be found");
         match subtask {
             QuerySubtaskNode::Projection(projection_subtask) => {
-                projection_subtask.run::<DI>(downstream_row)
+                projection_subtask.run(downstream_row)
             }
             QuerySubtaskNode::Collect(_) => unreachable!(),
         }
     }
 
-    fn run_leaf<DI: DependencyInjection>(
-        &self,
-        subtask_idx: NodeIndex,
-        context: &TaskContext<DI>,
-    ) -> Result<Row> {
+    fn run_leaf(&self, subtask_idx: NodeIndex, context: &TaskContext) -> Result<Row> {
         let subtask = self.tree.node_weight(subtask_idx).expect("must be found");
         match subtask {
-            QuerySubtaskNode::Collect(collect_subtask) => collect_subtask.run::<DI>(context),
+            QuerySubtaskNode::Collect(collect_subtask) => collect_subtask.run(context),
             _ => unreachable!(),
         }
     }

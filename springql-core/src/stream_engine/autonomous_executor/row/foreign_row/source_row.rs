@@ -5,10 +5,7 @@ use std::sync::Arc;
 use crate::{
     error::Result,
     pipeline::stream_model::stream_shape::StreamShape,
-    stream_engine::{
-        autonomous_executor::row::{column::stream_column::StreamColumns, Row},
-        dependency_injection::DependencyInjection,
-    },
+    stream_engine::autonomous_executor::row::{column::stream_column::StreamColumns, Row},
 };
 
 use super::format::json::JsonObject;
@@ -28,7 +25,7 @@ impl SourceRow {
     ///
     /// - [SpringError::InvalidFormat](crate::error::SpringError::InvalidFormat) when:
     ///   - This input row cannot be converted into row.
-    pub(in crate::stream_engine::autonomous_executor) fn into_row<DI: DependencyInjection>(
+    pub(in crate::stream_engine::autonomous_executor) fn into_row(
         self,
         stream_shape: Arc<StreamShape>,
     ) -> Result<Row> {
@@ -36,13 +33,12 @@ impl SourceRow {
 
         let column_values = self.0.into_column_values()?;
         let stream_columns = StreamColumns::new(stream_shape, column_values)?;
-        Ok(Row::new::<DI>(stream_columns))
+        Ok(Row::new(stream_columns))
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::stream_engine::dependency_injection::test_di::TestDI;
 
     use super::*;
 
@@ -52,6 +48,6 @@ mod tests {
 
         let fr = SourceRow::fx_city_temperature_tokyo();
         let r = Row::fx_city_temperature_tokyo();
-        assert_eq!(fr.into_row::<TestDI>(stream).unwrap(), r);
+        assert_eq!(fr.into_row(stream).unwrap(), r);
     }
 }

@@ -13,13 +13,9 @@ use crate::pipeline::Pipeline;
 use std::sync::Arc;
 
 pub(crate) use row::SinkRow;
-pub(in crate::stream_engine) use row::{
-    CurrentTimestamp, NaiveRowRepository, RowRepository, Timestamp,
-};
+pub(in crate::stream_engine) use row::Timestamp;
 
 use self::{current_pipeline::CurrentPipeline, task_executor::TaskExecutor};
-
-use super::dependency_injection::DependencyInjection;
 
 #[cfg(test)]
 pub(super) mod test_support;
@@ -30,11 +26,11 @@ pub(super) mod test_support;
 ///
 /// All interface methods are called from main thread, while `new()` spawns worker threads.
 #[derive(Debug)]
-pub(in crate::stream_engine) struct AutonomousExecutor<DI: DependencyInjection> {
-    task_executor: TaskExecutor<DI>,
+pub(in crate::stream_engine) struct AutonomousExecutor {
+    task_executor: TaskExecutor,
 }
 
-impl<DI: DependencyInjection> AutonomousExecutor<DI> {
+impl AutonomousExecutor {
     pub(in crate::stream_engine) fn new(n_worker_threads: usize) -> Self {
         let current_pipeline = Arc::new(CurrentPipeline::new(Pipeline::default()));
         let task_executor = TaskExecutor::new(n_worker_threads, current_pipeline);

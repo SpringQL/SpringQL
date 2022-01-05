@@ -4,10 +4,8 @@ mod scheduler;
 mod task_executor_lock;
 mod worker_pool;
 
-use crate::{error::Result, stream_engine::dependency_injection::DependencyInjection};
+use crate::error::Result;
 use std::sync::Arc;
-
-pub(in crate::stream_engine) use super::row::RowRepository;
 
 use self::{
     task_executor_lock::{PipelineUpdateLockGuard, TaskExecutorLock},
@@ -15,6 +13,7 @@ use self::{
 };
 use super::{
     current_pipeline::CurrentPipeline,
+    row::row_repository::RowRepository,
     task::{
         sink_task::sink_writer::sink_writer_repository::SinkWriterRepository,
         source_task::source_reader::source_reader_repository::SourceReaderRepository,
@@ -27,31 +26,31 @@ use super::{
 ///
 /// All interface methods are called from main thread, while `new()` spawns worker threads.
 #[derive(Debug)]
-pub(in crate::stream_engine) struct TaskExecutor<DI: DependencyInjection> {
+pub(in crate::stream_engine) struct TaskExecutor {
     task_executor_lock: Arc<TaskExecutorLock>,
 
-    row_repo: Arc<DI::RowRepositoryType>,
+    row_repo: Arc<RowRepository>,
     source_reader_repo: Arc<SourceReaderRepository>,
     sink_writer_repo: Arc<SinkWriterRepository>,
 
     worker_pool: WorkerPool,
 }
 
-impl<DI: DependencyInjection> TaskExecutor<DI> {
+impl TaskExecutor {
     pub(in crate::stream_engine::autonomous_executor) fn new(
         n_worker_threads: usize,
         current_pipeline: Arc<CurrentPipeline>,
     ) -> Self {
         let task_executor_lock = Arc::new(TaskExecutorLock::default());
 
-        let row_repo = Arc::new(DI::RowRepositoryType::default());
+        let row_repo = Arc::new(RowRepository::default());
         let source_reader_repo = Arc::new(SourceReaderRepository::default());
         let sink_writer_repo = Arc::new(SinkWriterRepository::default());
 
         Self {
             task_executor_lock: task_executor_lock.clone(),
 
-            worker_pool: WorkerPool::new::<DI>(
+            worker_pool: WorkerPool::new(
                 n_worker_threads,
                 task_executor_lock,
                 current_pipeline,

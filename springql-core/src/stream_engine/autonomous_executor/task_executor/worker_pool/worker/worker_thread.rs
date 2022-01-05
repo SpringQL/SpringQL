@@ -8,20 +8,18 @@ use std::{
 
 use crate::{
     error::SpringError,
-    stream_engine::{
-        autonomous_executor::{
-            current_pipeline::CurrentPipeline,
-            task::{
-                sink_task::sink_writer::sink_writer_repository::SinkWriterRepository,
-                source_task::source_reader::source_reader_repository::SourceReaderRepository,
-                task_context::TaskContext,
-            },
-            task_executor::{
-                scheduler::{flow_efficient_scheduler::FlowEfficientScheduler, Scheduler},
-                task_executor_lock::TaskExecutorLock,
-            },
+    stream_engine::autonomous_executor::{
+        current_pipeline::CurrentPipeline,
+        row::row_repository::RowRepository,
+        task::{
+            sink_task::sink_writer::sink_writer_repository::SinkWriterRepository,
+            source_task::source_reader::source_reader_repository::SourceReaderRepository,
+            task_context::TaskContext,
         },
-        dependency_injection::DependencyInjection,
+        task_executor::{
+            scheduler::{flow_efficient_scheduler::FlowEfficientScheduler, Scheduler},
+            task_executor_lock::TaskExecutorLock,
+        },
     },
 };
 
@@ -36,18 +34,18 @@ pub(super) struct WorkerThread;
 
 impl WorkerThread {
     #[allow(clippy::too_many_arguments)]
-    pub(super) fn run<DI: DependencyInjection>(
+    pub(super) fn run(
         id: WorkerId,
         task_executor_lock: Arc<TaskExecutorLock>,
         current_pipeline: Arc<CurrentPipeline>,
-        row_repo: Arc<DI::RowRepositoryType>,
+        row_repo: Arc<RowRepository>,
         source_reader_repo: Arc<SourceReaderRepository>,
         sink_writer_repo: Arc<SinkWriterRepository>,
         pipeline_update_receiver: mpsc::Receiver<Arc<CurrentPipeline>>,
         stop_receiver: mpsc::Receiver<()>,
     ) {
         let _ = thread::spawn(move || {
-            Self::main_loop::<DI>(
+            Self::main_loop(
                 id,
                 task_executor_lock.clone(),
                 current_pipeline,
@@ -61,11 +59,11 @@ impl WorkerThread {
     }
 
     #[allow(clippy::too_many_arguments)]
-    fn main_loop<DI: DependencyInjection>(
+    fn main_loop(
         id: WorkerId,
         task_executor_lock: Arc<TaskExecutorLock>,
         current_pipeline: Arc<CurrentPipeline>,
-        row_repo: Arc<DI::RowRepositoryType>,
+        row_repo: Arc<RowRepository>,
         source_reader_repo: Arc<SourceReaderRepository>,
         sink_writer_repo: Arc<SinkWriterRepository>,
         pipeline_update_receiver: mpsc::Receiver<Arc<CurrentPipeline>>,
@@ -84,7 +82,7 @@ impl WorkerThread {
 
                     cur_worker_state = next_worker_state;
 
-                    let context = TaskContext::<DI>::new(
+                    let context = TaskContext::new(
                         task.id().clone(),
                         current_pipeline.clone(),
                         row_repo.clone(),
