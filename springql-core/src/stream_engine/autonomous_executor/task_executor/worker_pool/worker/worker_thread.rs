@@ -83,14 +83,16 @@ impl WorkerThread {
                     cur_worker_state = next_worker_state;
 
                     let context = TaskContext::new(
-                        task_id,
+                        task_id.clone(),
                         pipeline_derivatives.clone(),
                         row_repo.clone(),
                         source_reader_repo.clone(),
                         sink_writer_repo.clone(),
                     );
 
-                    let task: Task = todo!("TaskRepo::get(task_id)");
+                    let task = pipeline_derivatives
+                        .get_task(&task_id)
+                        .expect("task id got from scheduler");
 
                     task.run(&context).unwrap_or_else(Self::handle_error)
                 } else {
