@@ -18,8 +18,8 @@ use super::{
     task::{
         sink_task::sink_writer::sink_writer_repository::SinkWriterRepository,
         source_task::source_reader::source_reader_repository::SourceReaderRepository,
-        task_graph::TaskGraph,
     },
+    task_graph::TaskGraph,
 };
 
 /// Task executor executes task graph's dataflow by internal worker threads.
