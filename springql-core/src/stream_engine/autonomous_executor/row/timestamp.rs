@@ -2,12 +2,15 @@
 
 //! Timestamp.
 
-pub(crate) mod current_timestamp;
+pub(crate) mod system_timestamp;
 
 use anyhow::Context;
 use chrono::{Duration, NaiveDateTime};
 use serde::{Deserialize, Serialize};
-use std::{ops::Sub, str::FromStr};
+use std::{
+    ops::{Add, Sub},
+    str::FromStr,
+};
 
 use crate::error::SpringError;
 
@@ -38,6 +41,13 @@ impl ToString for Timestamp {
     }
 }
 
+impl Add<Duration> for Timestamp {
+    type Output = Self;
+
+    fn add(self, rhs: Duration) -> Self::Output {
+        Self(self.0 + rhs)
+    }
+}
 impl Sub<Duration> for Timestamp {
     type Output = Self;
 

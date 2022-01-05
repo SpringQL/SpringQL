@@ -10,15 +10,15 @@ pub(in crate::stream_engine::autonomous_executor) mod timestamp;
 
 pub(crate) use foreign_row::SinkRow;
 pub(in crate::stream_engine) use row_repository::{NaiveRowRepository, RowRepository};
-pub(crate) use timestamp::{current_timestamp::CurrentTimestamp, Timestamp};
+pub(crate) use timestamp::Timestamp;
 
 use std::vec;
 
+use self::timestamp::system_timestamp::SystemTimestamp;
 use self::{column::stream_column::StreamColumns, value::sql_value::SqlValue};
 use crate::error::Result;
 use crate::pipeline::name::ColumnName;
 use crate::stream_engine::autonomous_executor::row::value::sql_value::nn_sql_value::NnSqlValue;
-use crate::stream_engine::dependency_injection::DependencyInjection;
 
 /// - Mandatory `rowtime()`, either from `cols` or `arrival_rowtime`.
 /// - PartialEq by all columns (NULL prevents Eq).
@@ -32,14 +32,11 @@ pub(crate) struct Row {
 }
 
 impl Row {
-    pub(in crate::stream_engine::autonomous_executor) fn new<DI>(cols: StreamColumns) -> Self
-    where
-        DI: DependencyInjection,
-    {
+    pub(in crate::stream_engine::autonomous_executor) fn new(cols: StreamColumns) -> Self {
         let arrival_rowtime = if cols.promoted_rowtime().is_some() {
             None
         } else {
-            Some(DI::CurrentTimestampType::now())
+            Some(SystemTimestamp::now())
         };
 
         Row {
@@ -66,15 +63,12 @@ impl Row {
     ///
     /// - [SpringError::Sql](crate::error::SpringError::Sql) when:
     ///   - No column named `column_name` is found from this stream.
-    pub(in crate::stream_engine::autonomous_executor) fn projection<DI>(
+    pub(in crate::stream_engine::autonomous_executor) fn projection(
         &self,
         column_names: &[ColumnName],
-    ) -> Result<Self>
-    where
-        DI: DependencyInjection,
-    {
+    ) -> Result<Self> {
         let new_cols = self.cols.projection(column_names)?;
-        Ok(Self::new::<DI>(new_cols))
+        Ok(Self::new(new_cols))
     }
 
     /// # Failure

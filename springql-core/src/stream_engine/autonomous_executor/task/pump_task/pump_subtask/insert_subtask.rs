@@ -2,11 +2,9 @@
 
 use crate::error::Result;
 use crate::stream_engine::autonomous_executor::row::Row;
+use crate::stream_engine::autonomous_executor::task::task_context::TaskContext;
 use crate::stream_engine::autonomous_executor::RowRepository;
 use crate::stream_engine::command::insert_plan::InsertPlan;
-use crate::stream_engine::{
-    autonomous_executor::task::task_context::TaskContext, dependency_injection::DependencyInjection,
-};
 
 #[derive(Debug)]
 pub(in crate::stream_engine::autonomous_executor) struct InsertSubtask {}
@@ -26,10 +24,10 @@ impl InsertSubtask {
     ///
     /// - [SpringError::InputTimeout](crate::error::SpringError::InputTimeout) when:
     ///   - Input from a source stream is not available within timeout period.
-    pub(in crate::stream_engine::autonomous_executor) fn run<DI: DependencyInjection>(
+    pub(in crate::stream_engine::autonomous_executor) fn run(
         &self,
         row: Row,
-        context: &TaskContext<DI>,
+        context: &TaskContext,
     ) -> Result<()> {
         let row_repo = context.row_repository();
 

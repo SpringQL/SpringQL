@@ -46,7 +46,6 @@
 pub(crate) mod command;
 
 mod autonomous_executor;
-mod dependency_injection;
 mod in_memory_queue_repository;
 mod sql_executor;
 
@@ -56,33 +55,23 @@ pub(crate) use autonomous_executor::{
 };
 
 use crate::{error::Result, pipeline::name::QueueName};
-use autonomous_executor::{CurrentTimestamp, RowRepository};
 
 use self::{
     autonomous_executor::AutonomousExecutor, command::alter_pipeline_command::AlterPipelineCommand,
-    dependency_injection::DependencyInjection, in_memory_queue_repository::InMemoryQueueRepository,
-    sql_executor::SqlExecutor,
+    in_memory_queue_repository::InMemoryQueueRepository, sql_executor::SqlExecutor,
 };
-
-#[cfg(not(test))]
-pub(crate) type StreamEngine = StreamEngineDI<dependency_injection::prod_di::ProdDI>;
-#[cfg(test)]
-pub(crate) type StreamEngine = StreamEngineDI<dependency_injection::test_di::TestDI>;
 
 /// Stream engine has reactive executor and autonomous executor inside.
 ///
 /// Stream engine has Access Methods.
 /// External components (sql-processor) call Access Methods to change stream engine's states and get result from it.
 #[derive(Debug)]
-pub(crate) struct StreamEngineDI<DI: DependencyInjection> {
+pub(crate) struct StreamEngine {
     reactive_executor: SqlExecutor,
-    autonomous_executor: AutonomousExecutor<DI>,
+    autonomous_executor: AutonomousExecutor,
 }
 
-impl<DI> StreamEngineDI<DI>
-where
-    DI: DependencyInjection,
-{
+impl StreamEngine {
     pub(crate) fn new(n_worker_threads: usize) -> Self {
         Self {
             reactive_executor: SqlExecutor::default(),

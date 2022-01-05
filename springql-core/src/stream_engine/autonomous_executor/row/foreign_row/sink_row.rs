@@ -40,11 +40,15 @@ impl SinkRow {
 
 #[cfg(test)]
 mod tests {
+    use chrono::Duration;
     use serde_json::json;
 
     use crate::{
         pipeline::name::ColumnName,
-        stream_engine::autonomous_executor::{row::value::sql_value::SqlValue, Timestamp},
+        stream_engine::autonomous_executor::{
+            row::{timestamp::system_timestamp::SystemTimestamp, value::sql_value::SqlValue},
+            Timestamp,
+        },
     };
 
     use super::*;
@@ -73,7 +77,8 @@ mod tests {
 
         if let SqlValue::NotNull(f_rowtime_nn_sql_value) = f_rowtime_sql_value {
             let f_rowtime: Timestamp = f_rowtime_nn_sql_value.unpack().unwrap();
-            assert_eq!(f_rowtime, Timestamp::fx_now());
+            assert!(SystemTimestamp::now() - Duration::seconds(1) < f_rowtime);
+            assert!(f_rowtime < SystemTimestamp::now() + Duration::seconds(1));
         } else {
             unreachable!()
         };
