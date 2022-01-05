@@ -12,7 +12,7 @@ use crate::pipeline::Pipeline;
 use std::sync::Arc;
 
 pub(crate) use row::SinkRow;
-pub(in crate::stream_engine) use row::{NaiveRowRepository, RowRepository, Timestamp};
+pub(in crate::stream_engine) use row::Timestamp;
 
 use self::{current_pipeline::CurrentPipeline, task_executor::TaskExecutor};
 

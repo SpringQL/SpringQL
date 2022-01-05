@@ -6,10 +6,8 @@ use super::{task_context::TaskContext, task_id::TaskId};
 use crate::error::Result;
 use crate::pipeline::name::SinkWriterName;
 use crate::pipeline::sink_writer_model::SinkWriterModel;
+use crate::stream_engine::autonomous_executor::row::foreign_row::sink_row::SinkRow;
 use crate::stream_engine::autonomous_executor::row::Row;
-use crate::stream_engine::autonomous_executor::{
-    row::foreign_row::sink_row::SinkRow, RowRepository,
-};
 
 #[derive(Debug)]
 pub(crate) struct SinkTask {

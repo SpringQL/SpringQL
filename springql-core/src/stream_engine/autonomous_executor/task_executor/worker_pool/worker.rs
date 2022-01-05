@@ -8,12 +8,12 @@ use std::sync::{mpsc, Arc};
 
 use crate::stream_engine::autonomous_executor::{
     current_pipeline::CurrentPipeline,
+    row::row_repository::RowRepository,
     task::{
         sink_task::sink_writer::sink_writer_repository::SinkWriterRepository,
         source_task::source_reader::source_reader_repository::SourceReaderRepository,
     },
     task_executor::task_executor_lock::TaskExecutorLock,
-    NaiveRowRepository,
 };
 
 use self::{worker_id::WorkerId, worker_thread::WorkerThread};
@@ -29,7 +29,7 @@ impl Worker {
         id: WorkerId,
         task_executor_lock: Arc<TaskExecutorLock>,
         current_pipeline: Arc<CurrentPipeline>,
-        row_repo: Arc<NaiveRowRepository>,
+        row_repo: Arc<RowRepository>,
         source_reader_repo: Arc<SourceReaderRepository>,
         sink_writer_repo: Arc<SinkWriterRepository>,
     ) -> Self {

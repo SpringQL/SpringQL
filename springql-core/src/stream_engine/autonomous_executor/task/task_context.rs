@@ -3,7 +3,7 @@
 use std::sync::Arc;
 
 use crate::stream_engine::autonomous_executor::{
-    current_pipeline::CurrentPipeline, NaiveRowRepository,
+    current_pipeline::CurrentPipeline, row::row_repository::RowRepository,
 };
 
 use super::{
@@ -18,7 +18,7 @@ pub(in crate::stream_engine::autonomous_executor) struct TaskContext {
     // why a task need to know pipeline? -> source tasks need to know source stream's shape.
     current_pipeline: Arc<CurrentPipeline>,
 
-    row_repo: Arc<NaiveRowRepository>,
+    row_repo: Arc<RowRepository>,
 
     source_reader_repo: Arc<SourceReaderRepository>,
     sink_writer_repo: Arc<SinkWriterRepository>,
@@ -28,7 +28,7 @@ impl TaskContext {
     pub(in crate::stream_engine::autonomous_executor) fn new(
         task: TaskId,
         current_pipeline: Arc<CurrentPipeline>,
-        row_repo: Arc<NaiveRowRepository>,
+        row_repo: Arc<RowRepository>,
         source_reader_repo: Arc<SourceReaderRepository>,
         sink_writer_repo: Arc<SinkWriterRepository>,
     ) -> Self {
@@ -54,7 +54,7 @@ impl TaskContext {
         task_graph.downstream_tasks(self.task.clone())
     }
 
-    pub(in crate::stream_engine) fn row_repository(&self) -> Arc<NaiveRowRepository> {
+    pub(in crate::stream_engine) fn row_repository(&self) -> Arc<RowRepository> {
         self.row_repo.clone()
     }
 

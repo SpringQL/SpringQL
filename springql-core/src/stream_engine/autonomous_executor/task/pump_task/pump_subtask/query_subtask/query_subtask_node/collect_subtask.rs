@@ -3,7 +3,6 @@
 use crate::error::Result;
 use crate::stream_engine::autonomous_executor::row::Row;
 use crate::stream_engine::autonomous_executor::task::task_context::TaskContext;
-use crate::stream_engine::autonomous_executor::RowRepository;
 
 #[derive(Debug, new)]
 pub(in crate::stream_engine::autonomous_executor) struct CollectSubtask;

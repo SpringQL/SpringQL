@@ -1,12 +1,13 @@
 // Copyright (c) 2021 TOYOTA MOTOR CORPORATION. Licensed under MIT OR Apache-2.0.
 
-pub(crate) mod naive_row_repository;
+use std::collections::{HashMap, VecDeque};
+use std::sync::Mutex;
 
-pub(crate) use naive_row_repository::NaiveRowRepository;
+use anyhow::Context;
 
-use super::Row;
-use crate::{error::Result, stream_engine::autonomous_executor::task::task_id::TaskId};
-use std::fmt::Debug;
+use crate::error::{Result, SpringError};
+use crate::stream_engine::autonomous_executor::row::Row;
+use crate::stream_engine::autonomous_executor::task::task_id::TaskId;
 
 /// # Concept diagram
 ///
@@ -69,34 +70,80 @@ use std::fmt::Debug;
 ///           +----c------------>[3]---e----------------+
 ///                in buf: [r2]        in buf: []
 /// ```
-pub(crate) trait RowRepository: Debug + Default + Sync + Send {
-    /// Get the next row as `task`'s input.
-    ///
-    /// # Failure
-    ///
-    /// - [SpringError::InputTimeout](crate::error::SpringError::InputTimeout) when:
-    ///   - next row is not available within `timeout`
-    fn collect_next(&self, task: &TaskId) -> Result<Row> {
-        log::debug!("[RowRepository] collect_next({:?})", task);
-        self._collect_next(task)
-    }
-    fn _collect_next(&self, task: &TaskId) -> Result<Row>;
+#[derive(Debug, Default)]
+pub(in crate::stream_engine::autonomous_executor) struct RowRepository {
+    tasks_buf: Mutex<HashMap<TaskId, VecDeque<Row>>>,
+}
 
-    /// Move `row` to downstream tasks.
-    fn emit(&self, row: Row, downstream_tasks: &[TaskId]) -> Result<()> {
+impl RowRepository {
+    pub(in crate::stream_engine::autonomous_executor) fn collect_next(
+        &self,
+        task: &TaskId,
+    ) -> Result<Row> {
+        log::debug!("[RowRepository] collect_next({:?})", task);
+
+        let row_ref = self
+            .tasks_buf
+            .lock()
+            .expect("another thread sharing the same RowRepository internal got panic")
+            .get_mut(task)
+            .with_context(|| {
+                format!(
+                    "task ({:?}) has not yet registered to the RowRepository internal",
+                    task
+                )
+            })
+            .and_then(|rows| rows.pop_back().context("next row not available"))
+            .map_err(|e| SpringError::InputTimeout {
+                source: e,
+                task_name: task.to_string(),
+            })?;
+
+        Ok(row_ref)
+    }
+
+    pub(in crate::stream_engine::autonomous_executor) fn emit(
+        &self,
+        row: Row,
+        downstream_tasks: &[TaskId],
+    ) -> Result<()> {
         log::debug!(
             "[RowRepository] emit_owned({:?}, {:?})",
             row,
             downstream_tasks
         );
-        self._emit(row, downstream_tasks)
-    }
-    fn _emit(&self, row: Row, downstream_tasks: &[TaskId]) -> Result<()>;
 
-    /// Reset repository with new tasks.
-    fn reset(&self, tasks: Vec<TaskId>) {
-        log::debug!("[RowRepository] reset({:?})", tasks);
-        self._reset(tasks)
+        let mut pumps_buf = self
+            .tasks_buf
+            .lock()
+            .expect("another thread sharing the same RowRepository internal got panic");
+
+        if downstream_tasks.len() == 1 {
+            // no row clone
+            let task = downstream_tasks.first().expect("1 len").clone();
+            pumps_buf.entry(task).and_modify(|v| v.push_front(row));
+        } else {
+            for task in downstream_tasks {
+                pumps_buf
+                    .entry(task.clone())
+                    .and_modify(|v| v.push_front(row.clone()));
+            }
+        }
+        Ok(())
     }
-    fn _reset(&self, tasks: Vec<TaskId>);
+
+    pub(in crate::stream_engine::autonomous_executor) fn reset(&self, tasks: Vec<TaskId>) {
+        log::debug!("[RowRepository] reset({:?})", tasks);
+
+        let new_tasks_buf = tasks
+            .into_iter()
+            .map(|t| (t, VecDeque::new()))
+            .collect::<HashMap<TaskId, VecDeque<Row>>>();
+
+        *self
+            .tasks_buf
+            .lock()
+            .expect("another thread sharing the same RowRepository internal got panic") =
+            new_tasks_buf;
+    }
 }

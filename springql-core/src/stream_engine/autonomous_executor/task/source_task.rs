@@ -8,7 +8,6 @@ use crate::error::Result;
 use crate::pipeline::name::{SourceReaderName, StreamName};
 use crate::pipeline::source_reader_model::SourceReaderModel;
 use crate::stream_engine::autonomous_executor::row::Row;
-use crate::stream_engine::autonomous_executor::RowRepository;
 
 use super::task_context::TaskContext;
 use super::task_id::TaskId;

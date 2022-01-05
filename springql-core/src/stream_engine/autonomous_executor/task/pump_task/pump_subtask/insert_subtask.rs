@@ -3,7 +3,6 @@
 use crate::error::Result;
 use crate::stream_engine::autonomous_executor::row::Row;
 use crate::stream_engine::autonomous_executor::task::task_context::TaskContext;
-use crate::stream_engine::autonomous_executor::RowRepository;
 use crate::stream_engine::command::insert_plan::InsertPlan;
 
 #[derive(Debug)]

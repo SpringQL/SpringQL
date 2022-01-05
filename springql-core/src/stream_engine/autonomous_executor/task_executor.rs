@@ -7,20 +7,18 @@ mod worker_pool;
 use crate::error::Result;
 use std::sync::Arc;
 
-pub(in crate::stream_engine) use super::row::RowRepository;
-
 use self::{
     task_executor_lock::{PipelineUpdateLockGuard, TaskExecutorLock},
     worker_pool::WorkerPool,
 };
 use super::{
     current_pipeline::CurrentPipeline,
+    row::row_repository::RowRepository,
     task::{
         sink_task::sink_writer::sink_writer_repository::SinkWriterRepository,
         source_task::source_reader::source_reader_repository::SourceReaderRepository,
         task_graph::TaskGraph,
     },
-    NaiveRowRepository,
 };
 
 /// Task executor executes task graph's dataflow by internal worker threads.
@@ -31,7 +29,7 @@ use super::{
 pub(in crate::stream_engine) struct TaskExecutor {
     task_executor_lock: Arc<TaskExecutorLock>,
 
-    row_repo: Arc<NaiveRowRepository>,
+    row_repo: Arc<RowRepository>,
     source_reader_repo: Arc<SourceReaderRepository>,
     sink_writer_repo: Arc<SinkWriterRepository>,
 
@@ -45,7 +43,7 @@ impl TaskExecutor {
     ) -> Self {
         let task_executor_lock = Arc::new(TaskExecutorLock::default());
 
-        let row_repo = Arc::new(NaiveRowRepository::default());
+        let row_repo = Arc::new(RowRepository::default());
         let source_reader_repo = Arc::new(SourceReaderRepository::default());
         let sink_writer_repo = Arc::new(SinkWriterRepository::default());
 
