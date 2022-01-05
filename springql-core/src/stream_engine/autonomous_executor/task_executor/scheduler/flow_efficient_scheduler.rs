@@ -102,6 +102,7 @@
 use crate::{
     error::Result,
     pipeline::{name::StreamName, pipeline_version::PipelineVersion},
+    stream_engine::autonomous_executor::task_graph::TaskGraph,
 };
 use petgraph::{
     graph::{DiGraph, NodeIndex},
@@ -109,9 +110,7 @@ use petgraph::{
 };
 use std::{collections::HashSet, sync::Arc};
 
-use crate::stream_engine::autonomous_executor::task::{
-    task_graph::TaskGraph, task_id::TaskId, Task,
-};
+use crate::stream_engine::autonomous_executor::task::{task_id::TaskId, Task};
 
 use super::{Scheduler, WorkerState};
 

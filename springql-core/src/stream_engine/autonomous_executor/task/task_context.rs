@@ -51,7 +51,7 @@ impl TaskContext {
 
     pub(in crate::stream_engine) fn downstream_tasks(&self) -> Vec<TaskId> {
         let task_graph = self.current_pipeline.task_graph();
-        task_graph.downstream_tasks(self.task.clone())
+        task_graph.downstream_tasks(&self.task)
     }
 
     pub(in crate::stream_engine) fn row_repository(&self) -> Arc<RowRepository> {

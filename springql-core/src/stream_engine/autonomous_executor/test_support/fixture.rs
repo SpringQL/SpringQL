@@ -7,7 +7,6 @@ use serde_json::json;
 use crate::{
     pipeline::{
         name::{PumpName, StreamName},
-        pipeline_graph::PipelineGraph,
         pump_model::PumpModel,
         sink_stream_model::SinkStreamModel,
         sink_writer_model::SinkWriterModel,
@@ -16,12 +15,9 @@ use crate::{
     },
     stream_engine::{autonomous_executor::row::foreign_row::source_row::SourceRow, SinkRow},
     stream_engine::{
-        autonomous_executor::{
-            row::{
-                column::stream_column::StreamColumns, foreign_row::format::json::JsonObject,
-                timestamp::Timestamp, Row,
-            },
-            task::task_graph::TaskGraph,
+        autonomous_executor::row::{
+            column::stream_column::StreamColumns, foreign_row::format::json::JsonObject,
+            timestamp::Timestamp, Row,
         },
         command::alter_pipeline_command::AlterPipelineCommand,
     },
@@ -221,11 +217,5 @@ impl AlterPipelineCommand {
     ) -> Self {
         let pump = PumpModel::fx_trade(pump_name, upstream, downstream);
         Self::CreatePump(pump)
-    }
-}
-
-impl TaskGraph {
-    pub(in crate::stream_engine) fn fx_empty() -> Self {
-        Self::from(&PipelineGraph::default())
     }
 }

@@ -8,12 +8,14 @@ use std::sync::Arc;
 use crate::error::Result;
 use crate::pipeline::pipeline_version::PipelineVersion;
 use crate::stream_engine::autonomous_executor::current_pipeline::CurrentPipeline;
-use crate::stream_engine::autonomous_executor::task::task_graph::TaskGraph;
 use crate::stream_engine::autonomous_executor::task::Task;
+use crate::stream_engine::autonomous_executor::task_graph::TaskGraph;
 
 pub(crate) trait WorkerState {}
 
-pub(in crate::stream_engine::autonomous_executor) trait Scheduler: Debug + Default + Sync + Send + 'static {
+pub(in crate::stream_engine::autonomous_executor) trait Scheduler:
+    Debug + Default + Sync + Send + 'static
+{
     type W: WorkerState + Clone + Default;
 
     /// Called from main thread.
