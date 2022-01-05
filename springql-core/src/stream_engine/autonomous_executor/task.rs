@@ -7,7 +7,7 @@ pub(super) mod task_context;
 pub(super) mod task_graph;
 pub(super) mod task_id;
 
-use crate::{error::Result, stream_engine::dependency_injection::DependencyInjection};
+use crate::error::Result;
 
 use self::{
     pump_task::PumpTask, sink_task::SinkTask, source_task::SourceTask, task_context::TaskContext,
@@ -30,7 +30,7 @@ impl Task {
         }
     }
 
-    pub(super) fn run<DI: DependencyInjection>(&self, context: &TaskContext<DI>) -> Result<()> {
+    pub(super) fn run(&self, context: &TaskContext) -> Result<()> {
         match self {
             Task::Pump(pump_task) => pump_task.run(context),
             Task::Source(source_task) => source_task.run(context),

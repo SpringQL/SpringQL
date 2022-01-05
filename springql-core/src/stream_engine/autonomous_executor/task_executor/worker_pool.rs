@@ -4,15 +4,13 @@ pub(super) mod worker;
 
 use std::{cell::RefCell, sync::Arc};
 
-use crate::stream_engine::{
-    autonomous_executor::{
-        current_pipeline::CurrentPipeline,
-        task::{
-            sink_task::sink_writer::sink_writer_repository::SinkWriterRepository,
-            source_task::source_reader::source_reader_repository::SourceReaderRepository,
-        },
+use crate::stream_engine::autonomous_executor::{
+    current_pipeline::CurrentPipeline,
+    row::row_repository::RowRepository,
+    task::{
+        sink_task::sink_writer::sink_writer_repository::SinkWriterRepository,
+        source_task::source_reader::source_reader_repository::SourceReaderRepository,
     },
-    dependency_injection::DependencyInjection,
 };
 
 use self::worker::{worker_id::WorkerId, Worker};
@@ -30,17 +28,17 @@ pub(super) struct WorkerPool {
 }
 
 impl WorkerPool {
-    pub(super) fn new<DI: DependencyInjection>(
+    pub(super) fn new(
         n_worker_threads: usize,
         task_executor_lock: Arc<TaskExecutorLock>,
         current_pipeline: Arc<CurrentPipeline>,
-        row_repo: Arc<DI::RowRepositoryType>,
+        row_repo: Arc<RowRepository>,
         source_reader_repo: Arc<SourceReaderRepository>,
         sink_writer_repo: Arc<SinkWriterRepository>,
     ) -> Self {
         let workers = (0..n_worker_threads)
             .map(|id| {
-                Worker::new::<DI>(
+                Worker::new(
                     WorkerId::new(id as u16),
                     task_executor_lock.clone(),
                     current_pipeline.clone(),

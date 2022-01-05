@@ -6,16 +6,14 @@ mod worker_thread;
 
 use std::sync::{mpsc, Arc};
 
-use crate::stream_engine::{
-    autonomous_executor::{
-        current_pipeline::CurrentPipeline,
-        task::{
-            sink_task::sink_writer::sink_writer_repository::SinkWriterRepository,
-            source_task::source_reader::source_reader_repository::SourceReaderRepository,
-        },
-        task_executor::task_executor_lock::TaskExecutorLock,
+use crate::stream_engine::autonomous_executor::{
+    current_pipeline::CurrentPipeline,
+    row::row_repository::RowRepository,
+    task::{
+        sink_task::sink_writer::sink_writer_repository::SinkWriterRepository,
+        source_task::source_reader::source_reader_repository::SourceReaderRepository,
     },
-    dependency_injection::DependencyInjection,
+    task_executor::task_executor_lock::TaskExecutorLock,
 };
 
 use self::{worker_id::WorkerId, worker_thread::WorkerThread};
@@ -27,18 +25,18 @@ pub(super) struct Worker {
 }
 
 impl Worker {
-    pub(super) fn new<DI: DependencyInjection>(
+    pub(super) fn new(
         id: WorkerId,
         task_executor_lock: Arc<TaskExecutorLock>,
         current_pipeline: Arc<CurrentPipeline>,
-        row_repo: Arc<DI::RowRepositoryType>,
+        row_repo: Arc<RowRepository>,
         source_reader_repo: Arc<SourceReaderRepository>,
         sink_writer_repo: Arc<SinkWriterRepository>,
     ) -> Self {
         let (pipeline_update_signal, pipeline_update_receiver) = mpsc::sync_channel(0);
         let (stop_button, stop_receiver) = mpsc::sync_channel(0);
 
-        let _ = WorkerThread::run::<DI>(
+        let _ = WorkerThread::run(
             id,
             task_executor_lock,
             current_pipeline,

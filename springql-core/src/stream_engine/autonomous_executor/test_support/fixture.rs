@@ -14,10 +14,7 @@ use crate::{
         source_reader_model::SourceReaderModel,
         source_stream_model::SourceStreamModel,
     },
-    stream_engine::{
-        autonomous_executor::row::foreign_row::source_row::SourceRow,
-        dependency_injection::test_di::TestDI, SinkRow,
-    },
+    stream_engine::{autonomous_executor::row::foreign_row::source_row::SourceRow, SinkRow},
     stream_engine::{
         autonomous_executor::{
             row::{
@@ -31,10 +28,6 @@ use crate::{
 };
 
 impl Timestamp {
-    pub(in crate::stream_engine) fn fx_now() -> Self {
-        "2000-01-01 12:00:00.123456789".parse().unwrap()
-    }
-
     pub(in crate::stream_engine) fn fx_ts1() -> Self {
         "2021-01-01 13:00:00.000000001".parse().unwrap()
     }
@@ -142,27 +135,27 @@ impl SinkRow {
 
 impl Row {
     pub(in crate::stream_engine) fn fx_city_temperature_tokyo() -> Self {
-        Self::new::<TestDI>(StreamColumns::fx_city_temperature_tokyo())
+        Self::new(StreamColumns::fx_city_temperature_tokyo())
     }
     pub(in crate::stream_engine) fn fx_city_temperature_osaka() -> Self {
-        Self::new::<TestDI>(StreamColumns::fx_city_temperature_osaka())
+        Self::new(StreamColumns::fx_city_temperature_osaka())
     }
     pub(in crate::stream_engine) fn fx_city_temperature_london() -> Self {
-        Self::new::<TestDI>(StreamColumns::fx_city_temperature_london())
+        Self::new(StreamColumns::fx_city_temperature_london())
     }
 
     pub(in crate::stream_engine) fn fx_trade_oracle() -> Self {
-        Self::new::<TestDI>(StreamColumns::fx_trade_oracle())
+        Self::new(StreamColumns::fx_trade_oracle())
     }
     pub(in crate::stream_engine) fn fx_trade_ibm() -> Self {
-        Self::new::<TestDI>(StreamColumns::fx_trade_ibm())
+        Self::new(StreamColumns::fx_trade_ibm())
     }
     pub(in crate::stream_engine) fn fx_trade_google() -> Self {
-        Self::new::<TestDI>(StreamColumns::fx_trade_google())
+        Self::new(StreamColumns::fx_trade_google())
     }
 
     pub(in crate::stream_engine) fn fx_no_promoted_rowtime() -> Self {
-        Self::new::<TestDI>(StreamColumns::fx_no_promoted_rowtime())
+        Self::new(StreamColumns::fx_no_promoted_rowtime())
     }
 }
 

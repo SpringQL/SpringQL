@@ -8,8 +8,6 @@ use crate::error::Result;
 use crate::pipeline::name::{SourceReaderName, StreamName};
 use crate::pipeline::source_reader_model::SourceReaderModel;
 use crate::stream_engine::autonomous_executor::row::Row;
-use crate::stream_engine::autonomous_executor::RowRepository;
-use crate::stream_engine::dependency_injection::DependencyInjection;
 
 use super::task_context::TaskContext;
 use super::task_id::TaskId;
@@ -35,17 +33,17 @@ impl SourceTask {
         &self.id
     }
 
-    pub(in crate::stream_engine::autonomous_executor) fn run<DI: DependencyInjection>(
+    pub(in crate::stream_engine::autonomous_executor) fn run(
         &self,
-        context: &TaskContext<DI>,
+        context: &TaskContext,
     ) -> Result<()> {
-        let row = self.collect_next::<DI>(context)?;
+        let row = self.collect_next(context)?;
         context
             .row_repository()
             .emit(row, &context.downstream_tasks())
     }
 
-    fn collect_next<DI: DependencyInjection>(&self, context: &TaskContext<DI>) -> Result<Row> {
+    fn collect_next(&self, context: &TaskContext) -> Result<Row> {
         let source_reader = context
             .source_reader_repository()
             .get_source_reader(&self.source_reader_name);
@@ -60,6 +58,6 @@ impl SourceTask {
             .expect("other worker threads sharing the same subtask must not get panic")
             .next_row()?;
 
-        source_row.into_row::<DI>(source_stream.shape())
+        source_row.into_row(source_stream.shape())
     }
 }

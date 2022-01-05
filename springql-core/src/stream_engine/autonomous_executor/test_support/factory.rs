@@ -17,7 +17,7 @@ use crate::{
         value::sql_value::{nn_sql_value::NnSqlValue, SqlValue},
         Row,
     },
-    stream_engine::{autonomous_executor::Timestamp, dependency_injection::test_di::TestDI},
+    stream_engine::autonomous_executor::Timestamp,
 };
 
 impl NetSourceReader {
@@ -114,7 +114,7 @@ impl Row {
         city: &str,
         temperature: i32,
     ) -> Self {
-        Self::new::<TestDI>(StreamColumns::factory_city_temperature(
+        Self::new(StreamColumns::factory_city_temperature(
             timestamp,
             city,
             temperature,
@@ -125,6 +125,6 @@ impl Row {
         ticker: &str,
         amount: i16,
     ) -> Self {
-        Self::new::<TestDI>(StreamColumns::factory_trade(timestamp, ticker, amount))
+        Self::new(StreamColumns::factory_trade(timestamp, ticker, amount))
     }
 }

@@ -5,7 +5,6 @@ mod pump_subtask;
 use super::{task_context::TaskContext, task_id::TaskId};
 use crate::error::Result;
 use crate::pipeline::pump_model::PumpModel;
-use crate::stream_engine::dependency_injection::DependencyInjection;
 use pump_subtask::insert_subtask::InsertSubtask;
 use pump_subtask::query_subtask::QuerySubtask;
 
@@ -34,9 +33,9 @@ impl PumpTask {
         &self.id
     }
 
-    pub(in crate::stream_engine::autonomous_executor) fn run<DI: DependencyInjection>(
+    pub(in crate::stream_engine::autonomous_executor) fn run(
         &self,
-        context: &TaskContext<DI>,
+        context: &TaskContext,
     ) -> Result<()> {
         let row = self.query_subtask.run(context)?;
         self.insert_subtask.run(row, context)

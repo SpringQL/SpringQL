@@ -6,11 +6,8 @@ use super::{task_context::TaskContext, task_id::TaskId};
 use crate::error::Result;
 use crate::pipeline::name::SinkWriterName;
 use crate::pipeline::sink_writer_model::SinkWriterModel;
+use crate::stream_engine::autonomous_executor::row::foreign_row::sink_row::SinkRow;
 use crate::stream_engine::autonomous_executor::row::Row;
-use crate::stream_engine::{
-    autonomous_executor::{row::foreign_row::sink_row::SinkRow, RowRepository},
-    dependency_injection::DependencyInjection,
-};
 
 #[derive(Debug)]
 pub(crate) struct SinkTask {
@@ -31,19 +28,19 @@ impl SinkTask {
         &self.id
     }
 
-    pub(in crate::stream_engine::autonomous_executor) fn run<DI: DependencyInjection>(
+    pub(in crate::stream_engine::autonomous_executor) fn run(
         &self,
-        context: &TaskContext<DI>,
+        context: &TaskContext,
     ) -> Result<()> {
         let row_repo = context.row_repository();
 
         let row = row_repo.collect_next(&context.task())?;
         let row = row.fixme_clone(); // Ahhhhhhhhhhhhhh
 
-        self.emit::<DI>(row, context)
+        self.emit(row, context)
     }
 
-    fn emit<DI: DependencyInjection>(&self, row: Row, context: &TaskContext<DI>) -> Result<()> {
+    fn emit(&self, row: Row, context: &TaskContext) -> Result<()> {
         let f_row = SinkRow::from(row);
 
         let sink_writer = context
