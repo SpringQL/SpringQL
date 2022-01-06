@@ -11,8 +11,8 @@ categories = ["embedded"]
 description = "SpringQL: Open-source stream processor for IoT devices and in-vehicle computers"
 documentation = "https://docs.rs/springql-core"
 keywords = ["springql", "stream-processing"] # up to 5 keywords, each keyword should have <= 20 chars
-repository = "https://github.com/SpringQL/SpringQL"
 readme = "../README.md"
+repository = "https://github.com/SpringQL/SpringQL"
 
 [dependencies]
 anyhow = "1.0"
@@ -35,6 +35,10 @@ petgraph = {version = "0.6", features = ["serde-1"]}
 pest = "2.1"
 pest_derive = "2.1"
 
+tokio = {version = "1", features = ["rt", "macros"]}
+
+reqwest = {version = "0.11", features = ["json"]}
+
 once_cell = "1.8"
 
 [dev-dependencies]
@@ -44,3 +48,5 @@ springql-test-logger = {path = "../test-logger"}
 pretty_assertions = "1.0"
 
 regex = "1.5"
+
+float-cmp = "0.9"

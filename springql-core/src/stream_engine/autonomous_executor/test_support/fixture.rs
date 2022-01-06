@@ -7,21 +7,29 @@ use serde_json::json;
 use crate::{
     pipeline::{
         name::{PumpName, StreamName},
-        pump_model::PumpModel,
+        pump_model::{PumpModel, pump_input_type::PumpInputType},
         sink_stream_model::SinkStreamModel,
         sink_writer_model::SinkWriterModel,
         source_reader_model::SourceReaderModel,
         source_stream_model::SourceStreamModel,
     },
     stream_engine::{
-        autonomous_executor::row::foreign_row::source_row::SourceRow, time::timestamp::Timestamp,
-        SinkRow,
+        autonomous_executor::{row::{
+            column::stream_column::StreamColumns, foreign_row::format::json::JsonObject, Row,
+        }, performance_metrics::metrics_update_command::metrics_update_command_by_task_execution::{TaskMetricsUpdateCommandByTaskExecution, InQueueMetricsUpdateCommandByTaskExecution, OutQueueMetricsUpdateCommandByTaskExecution}, task_graph::{task_id::TaskId, queue_id::{row_queue_id::RowQueueId, QueueId, window_queue_id::WindowQueueId}}},
+        command::alter_pipeline_command::AlterPipelineCommand, time::duration::wall_clock_duration::WallClockDuration,
     },
     stream_engine::{
-        autonomous_executor::row::{
-            column::stream_column::StreamColumns, foreign_row::format::json::JsonObject, Row,
+        autonomous_executor::{
+            performance_metrics::{
+                metrics_update_command::metrics_update_command_by_task_execution::MetricsUpdateCommandByTaskExecution,
+                PerformanceMetrics,
+            },
+            row::foreign_row::source_row::SourceRow,
+            task_graph::TaskGraph,
         },
-        command::alter_pipeline_command::AlterPipelineCommand,
+        time::timestamp::Timestamp,
+        SinkRow,
     },
 };
 
@@ -219,5 +227,351 @@ impl AlterPipelineCommand {
     ) -> Self {
         let pump = PumpModel::fx_trade(pump_name, upstream, downstream);
         Self::CreatePump(pump)
+    }
+}
+
+impl TaskGraph {
+    pub(in crate::stream_engine) fn fx_split_join() -> Self {
+        let mut g = TaskGraph::default();
+
+        g.add_task(TaskId::fx_split_join_t1());
+        g.add_task(TaskId::fx_split_join_t2());
+        g.add_task(TaskId::fx_split_join_t3());
+        g.add_task(TaskId::fx_split_join_t4());
+        g.add_task(TaskId::fx_split_join_t5());
+        g.add_task(TaskId::fx_split_join_t6());
+        g.add_task(TaskId::fx_split_join_t7());
+        g.add_task(TaskId::fx_split_join_t8());
+        g.add_task(TaskId::fx_split_join_t9());
+        g.add_task(TaskId::fx_split_join_t10());
+
+        g.add_queue(
+            QueueId::fx_split_join_q2(),
+            TaskId::fx_split_join_t1(),
+            TaskId::fx_split_join_t2(),
+        );
+        g.add_queue(
+            QueueId::fx_split_join_q3_1(),
+            TaskId::fx_split_join_t2(),
+            TaskId::fx_split_join_t3(),
+        );
+        g.add_queue(
+            QueueId::fx_split_join_q3_2(),
+            TaskId::fx_split_join_t7(),
+            TaskId::fx_split_join_t3(),
+        );
+        g.add_queue(
+            QueueId::fx_split_join_q4(),
+            TaskId::fx_split_join_t3(),
+            TaskId::fx_split_join_t4(),
+        );
+        g.add_queue(
+            QueueId::fx_split_join_q5(),
+            TaskId::fx_split_join_t4(),
+            TaskId::fx_split_join_t5(),
+        );
+        g.add_queue(
+            QueueId::fx_split_join_q7(),
+            TaskId::fx_split_join_t6(),
+            TaskId::fx_split_join_t7(),
+        );
+        g.add_queue(
+            QueueId::fx_split_join_q8(),
+            TaskId::fx_split_join_t7(),
+            TaskId::fx_split_join_t8(),
+        );
+        g.add_queue(
+            QueueId::fx_split_join_q9(),
+            TaskId::fx_split_join_t8(),
+            TaskId::fx_split_join_t9(),
+        );
+        g.add_queue(
+            QueueId::fx_split_join_q10(),
+            TaskId::fx_split_join_t9(),
+            TaskId::fx_split_join_t10(),
+        );
+
+        g
+    }
+}
+
+impl TaskId {
+    pub(in crate::stream_engine) fn fx_split_join_t1() -> Self {
+        TaskId::Source {
+            id: "source_task1".to_string(),
+        }
+    }
+    pub(in crate::stream_engine) fn fx_split_join_t2() -> Self {
+        TaskId::Pump {
+            id: "pump_task2".to_string(),
+            input_type: PumpInputType::Row,
+        }
+    }
+    pub(in crate::stream_engine) fn fx_split_join_t3() -> Self {
+        TaskId::Pump {
+            id: "pump_task3".to_string(),
+            input_type: PumpInputType::Window,
+        }
+    }
+    pub(in crate::stream_engine) fn fx_split_join_t4() -> Self {
+        TaskId::Pump {
+            id: "pump_task4".to_string(),
+            input_type: PumpInputType::Row,
+        }
+    }
+    pub(in crate::stream_engine) fn fx_split_join_t5() -> Self {
+        TaskId::Sink {
+            id: "sink_task5".to_string(),
+        }
+    }
+    pub(in crate::stream_engine) fn fx_split_join_t6() -> Self {
+        TaskId::Source {
+            id: "source_task6".to_string(),
+        }
+    }
+    pub(in crate::stream_engine) fn fx_split_join_t7() -> Self {
+        TaskId::Pump {
+            id: "pump_task7".to_string(),
+            input_type: PumpInputType::Row,
+        }
+    }
+    pub(in crate::stream_engine) fn fx_split_join_t8() -> Self {
+        TaskId::Pump {
+            id: "pump_task8".to_string(),
+            input_type: PumpInputType::Row,
+        }
+    }
+    pub(in crate::stream_engine) fn fx_split_join_t9() -> Self {
+        TaskId::Pump {
+            id: "pump_task9".to_string(),
+            input_type: PumpInputType::Row,
+        }
+    }
+    pub(in crate::stream_engine) fn fx_split_join_t10() -> Self {
+        TaskId::Sink {
+            id: "sink_task10".to_string(),
+        }
+    }
+}
+
+impl QueueId {
+    pub(in crate::stream_engine) fn fx_split_join_q2() -> Self {
+        Self::Row(RowQueueId::fx_q2())
+    }
+    pub(in crate::stream_engine) fn fx_split_join_q3_1() -> Self {
+        Self::Window(WindowQueueId::fx_q3_1())
+    }
+    pub(in crate::stream_engine) fn fx_split_join_q3_2() -> Self {
+        Self::Window(WindowQueueId::fx_q3_2())
+    }
+    pub(in crate::stream_engine) fn fx_split_join_q4() -> Self {
+        Self::Row(RowQueueId::fx_q4())
+    }
+    pub(in crate::stream_engine) fn fx_split_join_q5() -> Self {
+        Self::Row(RowQueueId::fx_q5())
+    }
+    pub(in crate::stream_engine) fn fx_split_join_q7() -> Self {
+        Self::Row(RowQueueId::fx_q7())
+    }
+    pub(in crate::stream_engine) fn fx_split_join_q8() -> Self {
+        Self::Row(RowQueueId::fx_q8())
+    }
+    pub(in crate::stream_engine) fn fx_split_join_q9() -> Self {
+        Self::Row(RowQueueId::fx_q9())
+    }
+    pub(in crate::stream_engine) fn fx_split_join_q10() -> Self {
+        Self::Row(RowQueueId::fx_q10())
+    }
+}
+impl RowQueueId {
+    pub(in crate::stream_engine) fn fx_q2() -> Self {
+        Self::new("q2".to_string())
+    }
+    pub(in crate::stream_engine) fn fx_q4() -> Self {
+        Self::new("q4".to_string())
+    }
+    pub(in crate::stream_engine) fn fx_q5() -> Self {
+        Self::new("q5".to_string())
+    }
+    pub(in crate::stream_engine) fn fx_q7() -> Self {
+        Self::new("q7".to_string())
+    }
+    pub(in crate::stream_engine) fn fx_q8() -> Self {
+        Self::new("q8".to_string())
+    }
+    pub(in crate::stream_engine) fn fx_q9() -> Self {
+        Self::new("q9".to_string())
+    }
+    pub(in crate::stream_engine) fn fx_q10() -> Self {
+        Self::new("q10".to_string())
+    }
+}
+impl WindowQueueId {
+    pub(in crate::stream_engine) fn fx_q3_1() -> Self {
+        Self::new("q3_1".to_string())
+    }
+    pub(in crate::stream_engine) fn fx_q3_2() -> Self {
+        Self::new("q3_2".to_string())
+    }
+}
+
+impl PerformanceMetrics {
+    pub(in crate::stream_engine) fn fx_empty() -> Self {
+        PerformanceMetrics::new(vec![], vec![], vec![])
+    }
+
+    pub(in crate::stream_engine) fn fx_split_join() -> Self {
+        let graph = TaskGraph::fx_split_join();
+        let metrics = PerformanceMetrics::from_task_graph(&graph);
+
+        for _ in 0..10 {
+            metrics
+                .update_by_task_execution(&MetricsUpdateCommandByTaskExecution::fx_split_join_t1());
+        }
+        for _ in 0..3 {
+            metrics
+                .update_by_task_execution(&MetricsUpdateCommandByTaskExecution::fx_split_join_t6());
+        }
+
+        for _ in 0..5 {
+            metrics
+                .update_by_task_execution(&MetricsUpdateCommandByTaskExecution::fx_split_join_t2());
+            metrics
+                .update_by_task_execution(&MetricsUpdateCommandByTaskExecution::fx_split_join_t3());
+        }
+        for _ in 0..1 {
+            metrics
+                .update_by_task_execution(&MetricsUpdateCommandByTaskExecution::fx_split_join_t7());
+            metrics
+                .update_by_task_execution(&MetricsUpdateCommandByTaskExecution::fx_split_join_t8());
+            metrics
+                .update_by_task_execution(&MetricsUpdateCommandByTaskExecution::fx_split_join_t9());
+            metrics
+                .update_by_task_execution(&MetricsUpdateCommandByTaskExecution::fx_split_join_t10());
+        }
+
+        metrics
+    }
+}
+
+impl MetricsUpdateCommandByTaskExecution {
+    pub(in crate::stream_engine) fn fx_split_join_t1() -> Self {
+        let task = TaskMetricsUpdateCommandByTaskExecution::new(
+            TaskId::fx_split_join_t1(),
+            WallClockDuration::from_micros(200),
+        );
+        let out_queues = vec![OutQueueMetricsUpdateCommandByTaskExecution::new(
+            QueueId::fx_split_join_q2(),
+            1,
+            100,
+        )];
+        Self::new(task, vec![], out_queues)
+    }
+    pub(in crate::stream_engine) fn fx_split_join_t2() -> Self {
+        let task = TaskMetricsUpdateCommandByTaskExecution::new(
+            TaskId::fx_split_join_t2(),
+            WallClockDuration::from_micros(50),
+        );
+        let in_queues = vec![InQueueMetricsUpdateCommandByTaskExecution::Row {
+            queue_id: RowQueueId::fx_q2(),
+            rows_used: 1,
+            bytes_used: 100,
+        }];
+        let out_queues = vec![OutQueueMetricsUpdateCommandByTaskExecution::new(
+            QueueId::fx_split_join_q3_1(),
+            1,
+            80,
+        )];
+        Self::new(task, in_queues, out_queues)
+    }
+    pub(in crate::stream_engine) fn fx_split_join_t3() -> Self {
+        let task = TaskMetricsUpdateCommandByTaskExecution::new(
+            TaskId::fx_split_join_t3(),
+            WallClockDuration::from_micros(90),
+        );
+        let in_queues = vec![InQueueMetricsUpdateCommandByTaskExecution::Window {
+            queue_id: WindowQueueId::fx_q3_1(),
+            waiting_bytes_dispatched: 80,
+            waiting_rows_dispatched: 1,
+            window_gain_bytes_rows: 80,
+            window_gain_bytes_states: 0,
+        }];
+        let out_queues = vec![];
+        Self::new(task, in_queues, out_queues)
+    }
+    pub(in crate::stream_engine) fn fx_split_join_t6() -> Self {
+        let task = TaskMetricsUpdateCommandByTaskExecution::new(
+            TaskId::fx_split_join_t6(),
+            WallClockDuration::from_micros(800),
+        );
+        let out_queues = vec![OutQueueMetricsUpdateCommandByTaskExecution::new(
+            QueueId::fx_split_join_q7(),
+            1,
+            800,
+        )];
+        Self::new(task, vec![], out_queues)
+    }
+    pub(in crate::stream_engine) fn fx_split_join_t7() -> Self {
+        let task = TaskMetricsUpdateCommandByTaskExecution::new(
+            TaskId::fx_split_join_t7(),
+            WallClockDuration::from_micros(50),
+        );
+        let in_queues = vec![InQueueMetricsUpdateCommandByTaskExecution::Row {
+            queue_id: RowQueueId::fx_q7(),
+            rows_used: 1,
+            bytes_used: 800,
+        }];
+        let out_queues = vec![
+            OutQueueMetricsUpdateCommandByTaskExecution::new(QueueId::fx_split_join_q3_2(), 1, 150),
+            OutQueueMetricsUpdateCommandByTaskExecution::new(QueueId::fx_split_join_q8(), 1, 150),
+        ];
+        Self::new(task, in_queues, out_queues)
+    }
+    pub(in crate::stream_engine) fn fx_split_join_t8() -> Self {
+        let task = TaskMetricsUpdateCommandByTaskExecution::new(
+            TaskId::fx_split_join_t8(),
+            WallClockDuration::from_micros(50),
+        );
+        let in_queues = vec![InQueueMetricsUpdateCommandByTaskExecution::Row {
+            queue_id: RowQueueId::fx_q8(),
+            rows_used: 1,
+            bytes_used: 150,
+        }];
+        let out_queues = vec![OutQueueMetricsUpdateCommandByTaskExecution::new(
+            QueueId::fx_split_join_q9(),
+            1,
+            120,
+        )];
+        Self::new(task, in_queues, out_queues)
+    }
+    pub(in crate::stream_engine) fn fx_split_join_t9() -> Self {
+        let task = TaskMetricsUpdateCommandByTaskExecution::new(
+            TaskId::fx_split_join_t9(),
+            WallClockDuration::from_micros(50),
+        );
+        let in_queues = vec![InQueueMetricsUpdateCommandByTaskExecution::Row {
+            queue_id: RowQueueId::fx_q9(),
+            rows_used: 1,
+            bytes_used: 120,
+        }];
+        let out_queues = vec![OutQueueMetricsUpdateCommandByTaskExecution::new(
+            QueueId::fx_split_join_q10(),
+            1,
+            70,
+        )];
+        Self::new(task, in_queues, out_queues)
+    }
+    pub(in crate::stream_engine) fn fx_split_join_t10() -> Self {
+        let task = TaskMetricsUpdateCommandByTaskExecution::new(
+            TaskId::fx_split_join_t10(),
+            WallClockDuration::from_micros(200),
+        );
+        let in_queues = vec![InQueueMetricsUpdateCommandByTaskExecution::Row {
+            queue_id: RowQueueId::fx_q10(),
+            rows_used: 1,
+            bytes_used: 70,
+        }];
+        let out_queues = vec![];
+        Self::new(task, in_queues, out_queues)
     }
 }
