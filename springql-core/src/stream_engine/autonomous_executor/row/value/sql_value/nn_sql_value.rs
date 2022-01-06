@@ -8,7 +8,7 @@ use crate::pipeline::relation::sql_type::{
     self, NumericComparableType, SqlType, StringComparableLoseType,
 };
 use crate::stream_engine::autonomous_executor::row::value::sql_convertible::SqlConvertible;
-use crate::stream_engine::autonomous_executor::Timestamp;
+use crate::stream_engine::time::timestamp::Timestamp;
 use anyhow::anyhow;
 use serde::{Deserialize, Serialize};
 

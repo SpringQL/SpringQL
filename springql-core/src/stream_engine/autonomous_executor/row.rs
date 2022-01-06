@@ -5,18 +5,17 @@ pub(crate) mod value;
 pub(in crate::stream_engine::autonomous_executor) mod column;
 pub(in crate::stream_engine::autonomous_executor) mod column_values;
 pub(in crate::stream_engine) mod foreign_row;
-pub(in crate::stream_engine::autonomous_executor) mod timestamp;
 
 pub(crate) use foreign_row::SinkRow;
-pub(crate) use timestamp::Timestamp;
 
 use std::vec;
 
-use self::timestamp::system_timestamp::SystemTimestamp;
 use self::{column::stream_column::StreamColumns, value::sql_value::SqlValue};
 use crate::error::Result;
 use crate::pipeline::name::ColumnName;
 use crate::stream_engine::autonomous_executor::row::value::sql_value::nn_sql_value::NnSqlValue;
+use crate::stream_engine::time::timestamp::system_timestamp::SystemTimestamp;
+use crate::stream_engine::time::timestamp::Timestamp;
 
 /// - Mandatory `rowtime()`, either from `cols` or `arrival_rowtime`.
 /// - PartialEq by all columns (NULL prevents Eq).

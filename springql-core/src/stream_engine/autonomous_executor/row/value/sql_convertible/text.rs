@@ -2,8 +2,9 @@
 
 use crate::{
     error::Result,
-    stream_engine::autonomous_executor::{
-        row::value::sql_value::nn_sql_value::NnSqlValue, Timestamp,
+    stream_engine::{
+        autonomous_executor::row::value::sql_value::nn_sql_value::NnSqlValue,
+        time::timestamp::Timestamp,
     },
 };
 

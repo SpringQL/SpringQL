@@ -13,11 +13,13 @@ use crate::{
         source_reader_model::SourceReaderModel,
         source_stream_model::SourceStreamModel,
     },
-    stream_engine::{autonomous_executor::row::foreign_row::source_row::SourceRow, SinkRow},
+    stream_engine::{
+        autonomous_executor::row::foreign_row::source_row::SourceRow, time::timestamp::Timestamp,
+        SinkRow,
+    },
     stream_engine::{
         autonomous_executor::row::{
-            column::stream_column::StreamColumns, foreign_row::format::json::JsonObject,
-            timestamp::Timestamp, Row,
+            column::stream_column::StreamColumns, foreign_row::format::json::JsonObject, Row,
         },
         command::alter_pipeline_command::AlterPipelineCommand,
     },
