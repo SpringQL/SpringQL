@@ -8,7 +8,7 @@ mod graph_eq;
 use petgraph::graph::DiGraph;
 use serde::{Deserialize, Serialize};
 
-use crate::pipeline::name::StreamName;
+use crate::pipeline::{name::StreamName, pump_model::pump_input_type::PumpInputType};
 
 use self::{child_direction::ChildDirection, query_plan_operation::QueryPlanOperation};
 
@@ -26,6 +26,11 @@ impl PartialEq for QueryPlan {
 impl Eq for QueryPlan {}
 
 impl QueryPlan {
+    pub(crate) fn input_type(&self) -> PumpInputType {
+        // TODO distinguish window input
+        PumpInputType::Row
+    }
+
     pub(crate) fn add_root(&mut self, op: QueryPlanOperation) {
         self.0.add_node(op);
     }

@@ -7,7 +7,7 @@ use anyhow::Context;
 
 use crate::error::{Result, SpringError};
 use crate::stream_engine::autonomous_executor::row::Row;
-use crate::stream_engine::autonomous_executor::task::task_id::TaskId;
+use crate::stream_engine::autonomous_executor::task_graph::task_id::TaskId;
 
 /// # Concept diagram
 ///

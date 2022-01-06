@@ -7,49 +7,50 @@ use crate::pipeline::{
     source_reader_model::SourceReaderModel,
 };
 
-use self::{row_task_id::RowTaskId, window_task_id::WindowTaskId};
 use serde::{Deserialize, Serialize};
 
-pub(in crate::stream_engine::autonomous_executor) mod row_task_id;
-pub(in crate::stream_engine::autonomous_executor) mod window_task_id;
-
-#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Serialize, Deserialize, new)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Serialize, Deserialize)]
 pub(in crate::stream_engine::autonomous_executor) enum TaskId {
-    /// Source and sink tasks are included in row task.
-    Row(RowTaskId),
-    Window(WindowTaskId),
+    Source {
+        id: String,
+    },
+    Pump {
+        id: String,
+        input_type: PumpInputType,
+    },
+    Sink {
+        id: String,
+    },
 }
+
+impl TaskId {}
 
 impl TaskId {
     pub(in crate::stream_engine::autonomous_executor) fn from_pump(pump: &PumpModel) -> Self {
-        let name = pump.name().to_string();
-        match pump.input_type() {
-            PumpInputType::Row => Self::Row(RowTaskId::new(name)),
-            PumpInputType::Window => Self::Window(WindowTaskId::new(name)),
+        let id = pump.name().to_string();
+        Self::Pump {
+            id,
+            input_type: pump.input_type(),
         }
     }
 
     pub(in crate::stream_engine::autonomous_executor) fn from_source(
         source: &SourceReaderModel,
     ) -> Self {
-        let name = source.name().to_string();
-        Self::Row(RowTaskId::new(name))
+        let id = source.name().to_string();
+        Self::Source { id }
     }
 
     pub(in crate::stream_engine::autonomous_executor) fn from_sink(sink: &SinkWriterModel) -> Self {
-        let name = sink.name().to_string();
-        Self::Row(RowTaskId::new(name))
+        let id = sink.name().to_string();
+        Self::Sink { id }
     }
-}
 
-impl From<RowTaskId> for TaskId {
-    fn from(row_task_id: RowTaskId) -> Self {
-        Self::Row(row_task_id)
-    }
-}
-impl From<WindowTaskId> for TaskId {
-    fn from(window_task_id: WindowTaskId) -> Self {
-        Self::Window(window_task_id)
+    pub(in crate::stream_engine::autonomous_executor) fn is_window_task(&self) -> bool {
+        match self {
+            TaskId::Pump { input_type, .. } => *input_type == PumpInputType::Window,
+            _ => false,
+        }
     }
 }
 
@@ -65,9 +66,11 @@ impl From<&Edge> for TaskId {
 
 impl Display for TaskId {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            TaskId::Row(t) => write!(f, "{}", t),
-            TaskId::Window(t) => write!(f, "{}", t),
-        }
+        let id = match self {
+            TaskId::Source { id } => id,
+            TaskId::Pump { id, .. } => id,
+            TaskId::Sink { id } => id,
+        };
+        write!(f, "{}", id)
     }
 }

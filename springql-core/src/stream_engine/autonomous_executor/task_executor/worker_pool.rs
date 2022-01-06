@@ -5,7 +5,7 @@ pub(super) mod worker;
 use std::{cell::RefCell, sync::Arc};
 
 use crate::stream_engine::autonomous_executor::{
-    current_pipeline::CurrentPipeline,
+    pipeline_derivatives::PipelineDerivatives,
     row::row_repository::RowRepository,
     task::{
         sink_task::sink_writer::sink_writer_repository::SinkWriterRepository,
@@ -31,7 +31,7 @@ impl WorkerPool {
     pub(super) fn new(
         n_worker_threads: usize,
         task_executor_lock: Arc<TaskExecutorLock>,
-        current_pipeline: Arc<CurrentPipeline>,
+        pipeline_derivatives: Arc<PipelineDerivatives>,
         row_repo: Arc<RowRepository>,
         source_reader_repo: Arc<SourceReaderRepository>,
         sink_writer_repo: Arc<SinkWriterRepository>,
@@ -41,7 +41,7 @@ impl WorkerPool {
                 Worker::new(
                     WorkerId::new(id as u16),
                     task_executor_lock.clone(),
-                    current_pipeline.clone(),
+                    pipeline_derivatives.clone(),
                     row_repo.clone(),
                     source_reader_repo.clone(),
                     sink_writer_repo.clone(),
@@ -54,9 +54,9 @@ impl WorkerPool {
     }
 
     /// Interruption from task executor to update worker's pipeline.
-    pub(super) fn interrupt_pipeline_update(&self, current_pipeline: Arc<CurrentPipeline>) {
+    pub(super) fn interrupt_pipeline_update(&self, pipeline_derivatives: Arc<PipelineDerivatives>) {
         for worker in self.workers.borrow_mut().iter_mut() {
-            worker.interrupt_pipeline_update(current_pipeline.clone());
+            worker.interrupt_pipeline_update(pipeline_derivatives.clone());
         }
     }
 }

@@ -4,15 +4,14 @@ pub(super) mod pump_task;
 pub(super) mod sink_task;
 pub(super) mod source_task;
 pub(super) mod task_context;
-pub(super) mod task_graph;
-pub(super) mod task_id;
 
-use crate::error::Result;
+use crate::{error::Result, pipeline::pipeline_graph::edge::Edge};
 
 use self::{
     pump_task::PumpTask, sink_task::SinkTask, source_task::SourceTask, task_context::TaskContext,
-    task_id::TaskId,
 };
+
+use super::task_graph::task_id::TaskId;
 
 #[derive(Debug)]
 pub(crate) enum Task {
@@ -45,3 +44,13 @@ impl PartialEq for Task {
     }
 }
 impl Eq for Task {}
+
+impl From<&Edge> for Task {
+    fn from(edge: &Edge) -> Self {
+        match edge {
+            Edge::Pump(p) => Self::Pump(PumpTask::from(p.as_ref())),
+            Edge::Source(s) => Self::Source(SourceTask::new(s)),
+            Edge::Sink(s) => Self::Sink(SinkTask::new(s)),
+        }
+    }
+}

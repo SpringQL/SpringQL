@@ -101,17 +101,10 @@
 
 use crate::{
     error::Result,
-    pipeline::{name::StreamName, pipeline_version::PipelineVersion},
+    pipeline::pipeline_version::PipelineVersion,
+    stream_engine::autonomous_executor::task_graph::{task_id::TaskId, TaskGraph},
 };
-use petgraph::{
-    graph::{DiGraph, NodeIndex},
-    visit::EdgeRef,
-};
-use std::{collections::HashSet, sync::Arc};
-
-use crate::stream_engine::autonomous_executor::task::{
-    task_graph::TaskGraph, task_id::TaskId, Task,
-};
+use std::collections::HashSet;
 
 use super::{Scheduler, WorkerState};
 
@@ -125,7 +118,7 @@ impl WorkerState for CurrentTaskIdx {}
 #[derive(Debug, Default)]
 pub(crate) struct FlowEfficientScheduler {
     pipeline_version: PipelineVersion,
-    seq_task_schedule: Vec<Arc<Task>>,
+    seq_task_schedule: Vec<TaskId>,
 }
 
 impl Scheduler for FlowEfficientScheduler {
@@ -135,7 +128,7 @@ impl Scheduler for FlowEfficientScheduler {
         self.pipeline_version = v;
     }
 
-    fn next_task(&self, worker_state: CurrentTaskIdx) -> Option<(Arc<Task>, CurrentTaskIdx)> {
+    fn next_task(&self, worker_state: CurrentTaskIdx) -> Option<(TaskId, CurrentTaskIdx)> {
         if self.seq_task_schedule.is_empty() {
             None
         } else if worker_state.pipeline_version != self.pipeline_version {
@@ -169,20 +162,14 @@ impl Scheduler for FlowEfficientScheduler {
     /// - [SpringError::ForeignIo](crate::error::SpringError::ForeignIo) when:
     ///   - failed to start a source reader.
     fn _notify_task_graph_update(&mut self, task_graph: &TaskGraph) -> Result<()> {
-        let graph = task_graph.as_petgraph();
+        let mut unvisited = task_graph.tasks().into_iter().collect::<HashSet<TaskId>>();
 
-        let mut unvisited = graph
-            .edge_weights()
-            .into_iter()
-            .map(|task| task.id())
-            .collect::<HashSet<TaskId>>();
+        let mut seq_task_schedule = Vec::<TaskId>::new();
 
-        let mut seq_task_schedule = Vec::<Arc<Task>>::new();
-
-        for leaf_node in Self::_leaf_nodes(graph) {
-            Self::_leaf_to_root_dfs_post_order(
-                leaf_node,
-                graph,
+        for sink_task in task_graph.sink_tasks() {
+            Self::_to_root_dfs_post_order(
+                &sink_task,
+                task_graph,
                 &mut seq_task_schedule,
                 &mut unvisited,
             )?;
@@ -194,7 +181,7 @@ impl Scheduler for FlowEfficientScheduler {
             "[FlowEfficientScheduler] new schedule [{}]; from task graph {:?}",
             self.seq_task_schedule
                 .iter()
-                .map(|task| task.id().to_string())
+                .map(|task| task.to_string())
                 .collect::<Vec<_>>()
                 .join(", "),
             task_graph
@@ -205,193 +192,182 @@ impl Scheduler for FlowEfficientScheduler {
 }
 
 impl FlowEfficientScheduler {
-    fn _leaf_nodes(graph: &DiGraph<StreamName, Arc<Task>>) -> Vec<NodeIndex> {
-        graph
-            .node_indices()
-            .filter(|idx| graph.neighbors(*idx).next().is_none())
-            .collect()
-    }
-
     /// Push tasks to seq_task_schedule in DFS post-order.
-    fn _leaf_to_root_dfs_post_order(
-        cur_node: NodeIndex,
-        graph: &DiGraph<StreamName, Arc<Task>>,
-        seq_task_schedule: &mut Vec<Arc<Task>>,
+    fn _to_root_dfs_post_order(
+        cur_task: &TaskId,
+        task_graph: &TaskGraph,
+        seq_task_schedule: &mut Vec<TaskId>,
         unvisited: &mut HashSet<TaskId>,
     ) -> Result<()> {
-        let incoming_edges = graph.edges_directed(cur_node, petgraph::Direction::Incoming);
-        for incoming_edge in incoming_edges {
-            let task = incoming_edge.weight();
-
-            if !unvisited.remove(&task.id()) {
-                // already visited
-                break;
-            } else {
-                let parent_node = incoming_edge.source();
-                Self::_leaf_to_root_dfs_post_order(
-                    parent_node,
-                    graph,
+        if !unvisited.remove(cur_task) {
+            // already visited
+            Ok(())
+        } else {
+            let upstream_tasks = task_graph.upstream_tasks(cur_task);
+            for parent_task in upstream_tasks {
+                Self::_to_root_dfs_post_order(
+                    &parent_task,
+                    task_graph,
                     seq_task_schedule,
                     unvisited,
                 )?;
-                seq_task_schedule.push(task.clone());
             }
+            seq_task_schedule.push(cur_task.clone());
+            Ok(())
         }
-
-        Ok(())
     }
 }
 
-#[cfg(test)]
-mod tests {
-    use std::collections::VecDeque;
+// #[cfg(test)]
+// mod tests {
+//     use std::collections::VecDeque;
 
-    use springql_foreign_service::{
-        sink::ForeignSink,
-        source::{source_input::ForeignSourceInput, ForeignSource},
-    };
+//     use springql_foreign_service::{
+//         sink::ForeignSink,
+//         source::{source_input::ForeignSourceInput, ForeignSource},
+//     };
 
-    use crate::{
-        pipeline::{name::PumpName, Pipeline},
-        stream_engine::autonomous_executor::{
-            current_pipeline::CurrentPipeline, task::task_id::TaskId,
-        },
-    };
+//     use crate::{
+//         pipeline::{name::PumpName, Pipeline, source_stream_model::SourceStreamModel},
+//         stream_engine::autonomous_executor::pipeline_derivatives::CurrentPipeline,
+//     };
 
-    use super::*;
+//     use super::*;
 
-    fn t(pipeline: Pipeline, expected: Vec<TaskId>) {
-        let mut expected = expected.into_iter().collect::<VecDeque<_>>();
+//     fn t(pipeline: Pipeline, expected: Vec<TaskId>) {
+//         let mut expected = expected.into_iter().collect::<VecDeque<_>>();
 
-        let mut cur_task_idx = CurrentTaskIdx::default();
+//         let mut cur_task_idx = CurrentTaskIdx::default();
 
-        let mut scheduler = FlowEfficientScheduler::default();
+//         let mut scheduler = FlowEfficientScheduler::default();
 
-        let current_pipeline = CurrentPipeline::new(pipeline);
-        scheduler.notify_pipeline_update(&current_pipeline).unwrap();
+//         let pipeline_derivatives = CurrentPipeline::new(pipeline);
+//         scheduler.notify_pipeline_update(&pipeline_derivatives).unwrap();
 
-        if let Some((first_task, next_task_idx)) = scheduler.next_task(cur_task_idx) {
-            assert_eq!(first_task.id(), expected.pop_front().unwrap());
-            cur_task_idx = next_task_idx;
+//         if let Some((first_task, next_task_idx)) = scheduler.next_task(cur_task_idx) {
+//             assert_eq!(first_task, expected.pop_front().unwrap());
+//             cur_task_idx = next_task_idx;
 
-            loop {
-                let (next_task, next_task_idx) = scheduler
-                    .next_task(cur_task_idx)
-                    .expect("task must be infinitely provided");
-                if next_task == first_task {
-                    return;
-                }
+//             loop {
+//                 let (next_task, next_task_idx) = scheduler
+//                     .next_task(cur_task_idx)
+//                     .expect("task must be infinitely provided");
+//                 if next_task == first_task {
+//                     return;
+//                 }
 
-                let expected_next = expected.pop_front().unwrap();
-                assert_eq!(next_task.id(), expected_next);
+//                 let expected_next = expected.pop_front().unwrap();
+//                 assert_eq!(next_task, expected_next);
 
-                cur_task_idx = next_task_idx;
-            }
-        } else {
-            assert!(expected.is_empty())
-        }
-    }
+//                 cur_task_idx = next_task_idx;
+//             }
+//         } else {
+//             assert!(expected.is_empty())
+//         }
+//     }
 
-    #[test]
-    fn test_source_only_pipeline() {
-        t(Pipeline::fx_source_only(), vec![])
-    }
+//     #[test]
+//     fn test_source_only_pipeline() {
+//         t(Pipeline::fx_source_only(), vec![])
+//     }
 
-    #[test]
-    fn test_linear_pipeline() {
-        let test_source = ForeignSource::start(ForeignSourceInput::new_fifo_batch(vec![])).unwrap();
-        let test_sink = ForeignSink::start().unwrap();
-        t(
-            Pipeline::fx_linear(
-                test_source.host_ip(),
-                test_source.port(),
-                test_sink.host_ip(),
-                test_sink.port(),
-            ),
-            vec![
-                TaskId::from_source_reader(StreamName::factory("st_1")),
-                TaskId::from_pump(PumpName::factory("pu_b")),
-                TaskId::from_sink_writer(StreamName::factory("st_2")),
-            ],
-        )
-    }
+//     #[test]
+//     fn test_linear_pipeline() {
+//         let test_source = ForeignSource::start(ForeignSourceInput::new_fifo_batch(vec![])).unwrap();
+//         let test_sink = ForeignSink::start().unwrap();
+//         t(
+//             Pipeline::fx_linear(
+//                 test_source.host_ip(),
+//                 test_source.port(),
+//                 test_sink.host_ip(),
+//                 test_sink.port(),
+//             ),
+//             vec![
+//                 TaskId::from_source(&SourceStreamModel::fx_trade_with_name(StreamName::factory(
+//                     "st_1",
+//                 ))),
+//                 TaskId::from_pump(PumpName::factory("pu_b")),
+//                 TaskId::from_sink_writer(StreamName::factory("st_2")),
+//             ],
+//         )
+//     }
 
-    #[test]
-    fn test_pipeline_with_split() {
-        let test_source = ForeignSource::start(ForeignSourceInput::new_fifo_batch(vec![])).unwrap();
-        let test_sink1 = ForeignSink::start().unwrap();
-        let test_sink2 = ForeignSink::start().unwrap();
+//     #[test]
+//     fn test_pipeline_with_split() {
+//         let test_source = ForeignSource::start(ForeignSourceInput::new_fifo_batch(vec![])).unwrap();
+//         let test_sink1 = ForeignSink::start().unwrap();
+//         let test_sink2 = ForeignSink::start().unwrap();
 
-        t(
-            Pipeline::fx_split(
-                test_source.host_ip(),
-                test_source.port(),
-                test_sink1.host_ip(),
-                test_sink1.port(),
-                test_sink2.host_ip(),
-                test_sink2.port(),
-            ),
-            vec![
-                TaskId::from_source_reader(StreamName::factory("st_1")),
-                TaskId::from_pump(PumpName::factory("pu_c")),
-                TaskId::from_sink_writer(StreamName::factory("st_3")),
-                TaskId::from_source_reader(StreamName::factory("st_2")),
-                TaskId::from_pump(PumpName::factory("pu_d")),
-                TaskId::from_sink_writer(StreamName::factory("st_4")),
-            ],
-        )
-    }
+//         t(
+//             Pipeline::fx_split(
+//                 test_source.host_ip(),
+//                 test_source.port(),
+//                 test_sink1.host_ip(),
+//                 test_sink1.port(),
+//                 test_sink2.host_ip(),
+//                 test_sink2.port(),
+//             ),
+//             vec![
+//                 TaskId::from_source_reader(StreamName::factory("st_1")),
+//                 TaskId::from_pump(PumpName::factory("pu_c")),
+//                 TaskId::from_sink_writer(StreamName::factory("st_3")),
+//                 TaskId::from_source_reader(StreamName::factory("st_2")),
+//                 TaskId::from_pump(PumpName::factory("pu_d")),
+//                 TaskId::from_sink_writer(StreamName::factory("st_4")),
+//             ],
+//         )
+//     }
 
-    #[test]
-    fn test_pipeline_with_merge() {
-        let test_source = ForeignSource::start(ForeignSourceInput::new_fifo_batch(vec![])).unwrap();
-        let test_sink = ForeignSink::start().unwrap();
-        t(
-            Pipeline::fx_split_merge(
-                test_source.host_ip(),
-                test_source.port(),
-                test_sink.host_ip(),
-                test_sink.port(),
-            ),
-            vec![
-                TaskId::from_source_reader(StreamName::factory("st_2")),
-                TaskId::from_pump(PumpName::factory("pu_d")),
-                TaskId::from_source_reader(StreamName::factory("st_1")),
-                TaskId::from_pump(PumpName::factory("pu_c")),
-                TaskId::from_sink_writer(StreamName::factory("st_3")),
-            ],
-        )
-    }
+//     #[test]
+//     fn test_pipeline_with_merge() {
+//         let test_source = ForeignSource::start(ForeignSourceInput::new_fifo_batch(vec![])).unwrap();
+//         let test_sink = ForeignSink::start().unwrap();
+//         t(
+//             Pipeline::fx_split_merge(
+//                 test_source.host_ip(),
+//                 test_source.port(),
+//                 test_sink.host_ip(),
+//                 test_sink.port(),
+//             ),
+//             vec![
+//                 TaskId::from_source_reader(StreamName::factory("st_2")),
+//                 TaskId::from_pump(PumpName::factory("pu_d")),
+//                 TaskId::from_source_reader(StreamName::factory("st_1")),
+//                 TaskId::from_pump(PumpName::factory("pu_c")),
+//                 TaskId::from_sink_writer(StreamName::factory("st_3")),
+//             ],
+//         )
+//     }
 
-    #[test]
-    fn test_complex_pipeline() {
-        let test_source = ForeignSource::start(ForeignSourceInput::new_fifo_batch(vec![])).unwrap();
-        let test_sink1 = ForeignSink::start().unwrap();
-        let test_sink2 = ForeignSink::start().unwrap();
-        t(
-            Pipeline::fx_complex(
-                test_source.host_ip(),
-                test_source.port(),
-                test_sink1.host_ip(),
-                test_sink1.port(),
-                test_sink2.host_ip(),
-                test_sink2.port(),
-            ),
-            vec![
-                TaskId::from_source_reader(StreamName::factory("st_1")),
-                TaskId::from_pump(PumpName::factory("pu_c")),
-                TaskId::from_pump(PumpName::factory("pu_f")),
-                TaskId::from_source_reader(StreamName::factory("st_2")),
-                TaskId::from_pump(PumpName::factory("pu_d")),
-                TaskId::from_pump(PumpName::factory("pu_g")),
-                TaskId::from_pump(PumpName::factory("pu_e")),
-                TaskId::from_pump(PumpName::factory("pu_h")),
-                TaskId::from_pump(PumpName::factory("pu_j")),
-                TaskId::from_sink_writer(StreamName::factory("st_8")),
-                TaskId::from_pump(PumpName::factory("pu_i")),
-                TaskId::from_pump(PumpName::factory("pu_k")),
-                TaskId::from_sink_writer(StreamName::factory("st_9")),
-            ],
-        )
-    }
-}
+//     #[test]
+//     fn test_complex_pipeline() {
+//         let test_source = ForeignSource::start(ForeignSourceInput::new_fifo_batch(vec![])).unwrap();
+//         let test_sink1 = ForeignSink::start().unwrap();
+//         let test_sink2 = ForeignSink::start().unwrap();
+//         t(
+//             Pipeline::fx_complex(
+//                 test_source.host_ip(),
+//                 test_source.port(),
+//                 test_sink1.host_ip(),
+//                 test_sink1.port(),
+//                 test_sink2.host_ip(),
+//                 test_sink2.port(),
+//             ),
+//             vec![
+//                 TaskId::from_source_reader(StreamName::factory("st_1")),
+//                 TaskId::from_pump(PumpName::factory("pu_c")),
+//                 TaskId::from_pump(PumpName::factory("pu_f")),
+//                 TaskId::from_source_reader(StreamName::factory("st_2")),
+//                 TaskId::from_pump(PumpName::factory("pu_d")),
+//                 TaskId::from_pump(PumpName::factory("pu_g")),
+//                 TaskId::from_pump(PumpName::factory("pu_e")),
+//                 TaskId::from_pump(PumpName::factory("pu_h")),
+//                 TaskId::from_pump(PumpName::factory("pu_j")),
+//                 TaskId::from_sink_writer(StreamName::factory("st_8")),
+//                 TaskId::from_pump(PumpName::factory("pu_i")),
+//                 TaskId::from_pump(PumpName::factory("pu_k")),
+//                 TaskId::from_sink_writer(StreamName::factory("st_9")),
+//             ],
+//         )
+//     }
+// }

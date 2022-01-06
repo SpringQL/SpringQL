@@ -1,8 +1,12 @@
 // Copyright (c) 2021 TOYOTA MOTOR CORPORATION. Licensed under MIT OR Apache-2.0.
 
+pub(crate) mod pump_input_type;
+
 use serde::{Deserialize, Serialize};
 
 use crate::stream_engine::command::{insert_plan::InsertPlan, query_plan::QueryPlan};
+
+use self::pump_input_type::PumpInputType;
 
 use super::name::{PumpName, StreamName};
 
@@ -16,6 +20,10 @@ pub(crate) struct PumpModel {
 impl PumpModel {
     pub(crate) fn name(&self) -> &PumpName {
         &self.name
+    }
+
+    pub(crate) fn input_type(&self) -> PumpInputType {
+        self.query_plan.input_type()
     }
 
     pub(crate) fn query_plan(&self) -> &QueryPlan {

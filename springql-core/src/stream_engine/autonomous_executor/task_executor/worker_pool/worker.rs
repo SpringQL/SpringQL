@@ -7,7 +7,7 @@ mod worker_thread;
 use std::sync::{mpsc, Arc};
 
 use crate::stream_engine::autonomous_executor::{
-    current_pipeline::CurrentPipeline,
+    pipeline_derivatives::PipelineDerivatives,
     row::row_repository::RowRepository,
     task::{
         sink_task::sink_writer::sink_writer_repository::SinkWriterRepository,
@@ -20,7 +20,7 @@ use self::{worker_id::WorkerId, worker_thread::WorkerThread};
 
 #[derive(Debug)]
 pub(super) struct Worker {
-    pipeline_update_signal: mpsc::SyncSender<Arc<CurrentPipeline>>,
+    pipeline_update_signal: mpsc::SyncSender<Arc<PipelineDerivatives>>,
     stop_button: mpsc::SyncSender<()>,
 }
 
@@ -28,7 +28,7 @@ impl Worker {
     pub(super) fn new(
         id: WorkerId,
         task_executor_lock: Arc<TaskExecutorLock>,
-        current_pipeline: Arc<CurrentPipeline>,
+        pipeline_derivatives: Arc<PipelineDerivatives>,
         row_repo: Arc<RowRepository>,
         source_reader_repo: Arc<SourceReaderRepository>,
         sink_writer_repo: Arc<SinkWriterRepository>,
@@ -39,7 +39,7 @@ impl Worker {
         let _ = WorkerThread::run(
             id,
             task_executor_lock,
-            current_pipeline,
+            pipeline_derivatives,
             row_repo,
             source_reader_repo,
             sink_writer_repo,
@@ -54,9 +54,12 @@ impl Worker {
     }
 
     /// Interruption from task executor to update worker's pipeline.
-    pub(super) fn interrupt_pipeline_update(&mut self, current_pipeline: Arc<CurrentPipeline>) {
+    pub(super) fn interrupt_pipeline_update(
+        &mut self,
+        pipeline_derivatives: Arc<PipelineDerivatives>,
+    ) {
         self.pipeline_update_signal
-            .send(current_pipeline)
+            .send(pipeline_derivatives)
             .expect("failed to send new pipeline to worker thread");
     }
 }

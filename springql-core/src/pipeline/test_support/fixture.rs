@@ -58,7 +58,7 @@ impl Pipeline {
         )));
 
         let source_a =
-            SourceReaderModel::fx_net(st_1.name().clone(), source_remote_host, source_remote_port);
+        SourceReaderModel::fx_net(st_1.name().clone(), source_remote_host, source_remote_port);
         let sink_c =
             SinkWriterModel::fx_net(st_2.name().clone(), sink_remote_host, sink_remote_port);
 
