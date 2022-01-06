@@ -8,8 +8,6 @@
 pub(super) mod queue_id;
 pub(super) mod task_id;
 
-pub(super) mod task_position;
-
 mod edge_ref;
 
 use std::collections::HashMap;
@@ -22,7 +20,6 @@ use self::{
     edge_ref::MyEdgeRef,
     queue_id::{row_queue_id::RowQueueId, window_queue_id::WindowQueueId, QueueId},
     task_id::TaskId,
-    task_position::TaskPosition,
 };
 
 #[derive(Debug, Default)]
@@ -33,27 +30,6 @@ pub(super) struct TaskGraph {
 }
 
 impl TaskGraph {
-    pub(super) fn task_position(&self, task_id: &TaskId) -> TaskPosition {
-        let node = self.find_node(task_id);
-        let has_incoming = self
-            .g
-            .neighbors_directed(node, petgraph::Direction::Incoming)
-            .next()
-            .is_some();
-        let has_outgoing = self
-            .g
-            .neighbors_directed(node, petgraph::Direction::Outgoing)
-            .next()
-            .is_some();
-
-        match (has_incoming, has_outgoing) {
-            (true, true) => TaskPosition::Intermediate,
-            (true, false) => TaskPosition::Sink,
-            (false, true) => TaskPosition::Source,
-            _ => unreachable!(),
-        }
-    }
-
     pub(super) fn upstream_task(&self, queue_id: &QueueId) -> TaskId {
         let edge = self.find_edge(queue_id);
         let source = edge.source();
@@ -112,7 +88,7 @@ impl TaskGraph {
     pub(super) fn source_tasks(&self) -> Vec<TaskId> {
         self.tasks()
             .iter()
-            .filter(|t| self.task_position(t) == TaskPosition::Source)
+            .filter(|t| matches!(t, TaskId::Source { .. }))
             .cloned()
             .collect()
     }
@@ -120,7 +96,7 @@ impl TaskGraph {
     fn pump_tasks(&self) -> Vec<TaskId> {
         self.tasks()
             .iter()
-            .filter(|t| self.task_position(t) == TaskPosition::Intermediate)
+            .filter(|t| matches!(t, TaskId::Pump { .. }))
             .cloned()
             .collect()
     }
@@ -128,7 +104,7 @@ impl TaskGraph {
     pub(super) fn sink_tasks(&self) -> Vec<TaskId> {
         self.tasks()
             .iter()
-            .filter(|t| self.task_position(t) == TaskPosition::Sink)
+            .filter(|t| matches!(t, TaskId::Sink { .. }))
             .cloned()
             .collect()
     }
@@ -136,7 +112,7 @@ impl TaskGraph {
     pub(super) fn window_tasks(&self) -> Vec<TaskId> {
         self.tasks()
             .iter()
-            .filter(|t| matches!(t, TaskId::Window(..)))
+            .filter(|t| t.is_window_task())
             .cloned()
             .collect()
     }
