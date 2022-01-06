@@ -48,6 +48,7 @@ pub(crate) mod command;
 mod autonomous_executor;
 mod in_memory_queue_repository;
 mod sql_executor;
+mod time;
 
 pub(crate) use autonomous_executor::{
     row::value::{sql_convertible::SqlConvertible, sql_value::SqlValue},
