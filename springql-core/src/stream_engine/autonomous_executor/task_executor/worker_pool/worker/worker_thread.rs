@@ -14,7 +14,7 @@ use crate::{
         task::{
             sink_task::sink_writer::sink_writer_repository::SinkWriterRepository,
             source_task::source_reader::source_reader_repository::SourceReaderRepository,
-            task_context::TaskContext, Task,
+            task_context::TaskContext,
         },
         task_executor::{
             scheduler::{flow_efficient_scheduler::FlowEfficientScheduler, Scheduler},

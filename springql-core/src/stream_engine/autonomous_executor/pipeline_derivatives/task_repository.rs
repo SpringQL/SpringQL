@@ -6,11 +6,8 @@ use anyhow::anyhow;
 
 use crate::{
     error::{Result, SpringError},
-    pipeline::pipeline_graph::{edge::Edge, PipelineGraph},
-    stream_engine::autonomous_executor::{
-        task::{pump_task::PumpTask, Task},
-        task_graph::task_id::TaskId,
-    },
+    pipeline::pipeline_graph::PipelineGraph,
+    stream_engine::autonomous_executor::{task::Task, task_graph::task_id::TaskId},
 };
 
 #[derive(Debug, Default)]
