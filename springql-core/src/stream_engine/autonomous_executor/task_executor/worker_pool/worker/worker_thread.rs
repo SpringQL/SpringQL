@@ -10,12 +10,8 @@ use crate::{
     error::SpringError,
     stream_engine::autonomous_executor::{
         pipeline_derivatives::PipelineDerivatives,
-        row::row_repository::RowRepository,
-        task::{
-            sink_task::sink_writer::sink_writer_repository::SinkWriterRepository,
-            source_task::source_reader::source_reader_repository::SourceReaderRepository,
-            task_context::TaskContext,
-        },
+        repositories::Repositories,
+        task::task_context::TaskContext,
         task_executor::{
             scheduler::{flow_efficient_scheduler::FlowEfficientScheduler, Scheduler},
             task_executor_lock::TaskExecutorLock,
@@ -33,14 +29,11 @@ const TASK_WAIT_MSEC: u64 = 100;
 pub(super) struct WorkerThread;
 
 impl WorkerThread {
-    #[allow(clippy::too_many_arguments)]
     pub(super) fn run(
         id: WorkerId,
         task_executor_lock: Arc<TaskExecutorLock>,
         pipeline_derivatives: Arc<PipelineDerivatives>,
-        row_repo: Arc<RowRepository>,
-        source_reader_repo: Arc<SourceReaderRepository>,
-        sink_writer_repo: Arc<SinkWriterRepository>,
+        repos: Arc<Repositories>,
         pipeline_update_receiver: mpsc::Receiver<Arc<PipelineDerivatives>>,
         stop_receiver: mpsc::Receiver<()>,
     ) {
@@ -49,23 +42,18 @@ impl WorkerThread {
                 id,
                 task_executor_lock.clone(),
                 pipeline_derivatives,
-                row_repo,
-                source_reader_repo,
-                sink_writer_repo,
+                repos,
                 pipeline_update_receiver,
                 stop_receiver,
             )
         });
     }
 
-    #[allow(clippy::too_many_arguments)]
     fn main_loop(
         id: WorkerId,
         task_executor_lock: Arc<TaskExecutorLock>,
         pipeline_derivatives: Arc<PipelineDerivatives>,
-        row_repo: Arc<RowRepository>,
-        source_reader_repo: Arc<SourceReaderRepository>,
-        sink_writer_repo: Arc<SinkWriterRepository>,
+        repos: Arc<Repositories>,
         pipeline_update_receiver: mpsc::Receiver<Arc<PipelineDerivatives>>,
         stop_receiver: mpsc::Receiver<()>,
     ) {
@@ -85,9 +73,7 @@ impl WorkerThread {
                     let context = TaskContext::new(
                         task_id.clone(),
                         pipeline_derivatives.clone(),
-                        row_repo.clone(),
-                        source_reader_repo.clone(),
-                        sink_writer_repo.clone(),
+                        repos.clone(),
                     );
 
                     let task = pipeline_derivatives
