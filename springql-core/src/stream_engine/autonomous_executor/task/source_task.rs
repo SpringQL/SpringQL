@@ -39,12 +39,14 @@ impl SourceTask {
     ) -> Result<()> {
         let row = self.collect_next(context)?;
         context
+            .repos()
             .row_repository()
             .emit(row, &context.downstream_tasks())
     }
 
     fn collect_next(&self, context: &TaskContext) -> Result<Row> {
         let source_reader = context
+            .repos()
             .source_reader_repository()
             .get_source_reader(&self.source_reader_name);
 

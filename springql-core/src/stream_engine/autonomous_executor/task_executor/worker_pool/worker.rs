@@ -7,12 +7,7 @@ mod worker_thread;
 use std::sync::{mpsc, Arc};
 
 use crate::stream_engine::autonomous_executor::{
-    pipeline_derivatives::PipelineDerivatives,
-    row::row_repository::RowRepository,
-    task::{
-        sink_task::sink_writer::sink_writer_repository::SinkWriterRepository,
-        source_task::source_reader::source_reader_repository::SourceReaderRepository,
-    },
+    pipeline_derivatives::PipelineDerivatives, repositories::Repositories,
     task_executor::task_executor_lock::TaskExecutorLock,
 };
 
@@ -29,9 +24,7 @@ impl Worker {
         id: WorkerId,
         task_executor_lock: Arc<TaskExecutorLock>,
         pipeline_derivatives: Arc<PipelineDerivatives>,
-        row_repo: Arc<RowRepository>,
-        source_reader_repo: Arc<SourceReaderRepository>,
-        sink_writer_repo: Arc<SinkWriterRepository>,
+        repos: Arc<Repositories>,
     ) -> Self {
         let (pipeline_update_signal, pipeline_update_receiver) = mpsc::sync_channel(0);
         let (stop_button, stop_receiver) = mpsc::sync_channel(0);
@@ -40,9 +33,7 @@ impl Worker {
             id,
             task_executor_lock,
             pipeline_derivatives,
-            row_repo,
-            source_reader_repo,
-            sink_writer_repo,
+            repos,
             pipeline_update_receiver,
             stop_receiver,
         );

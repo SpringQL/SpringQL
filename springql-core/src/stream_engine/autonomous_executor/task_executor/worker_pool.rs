@@ -5,12 +5,7 @@ pub(super) mod worker;
 use std::{cell::RefCell, sync::Arc};
 
 use crate::stream_engine::autonomous_executor::{
-    pipeline_derivatives::PipelineDerivatives,
-    row::row_repository::RowRepository,
-    task::{
-        sink_task::sink_writer::sink_writer_repository::SinkWriterRepository,
-        source_task::source_reader::source_reader_repository::SourceReaderRepository,
-    },
+    pipeline_derivatives::PipelineDerivatives, repositories::Repositories,
 };
 
 use self::worker::{worker_id::WorkerId, Worker};
@@ -32,9 +27,7 @@ impl WorkerPool {
         n_worker_threads: usize,
         task_executor_lock: Arc<TaskExecutorLock>,
         pipeline_derivatives: Arc<PipelineDerivatives>,
-        row_repo: Arc<RowRepository>,
-        source_reader_repo: Arc<SourceReaderRepository>,
-        sink_writer_repo: Arc<SinkWriterRepository>,
+        repos: Arc<Repositories>,
     ) -> Self {
         let workers = (0..n_worker_threads)
             .map(|id| {
@@ -42,9 +35,7 @@ impl WorkerPool {
                     WorkerId::new(id as u16),
                     task_executor_lock.clone(),
                     pipeline_derivatives.clone(),
-                    row_repo.clone(),
-                    source_reader_repo.clone(),
-                    sink_writer_repo.clone(),
+                    repos.clone(),
                 )
             })
             .collect();

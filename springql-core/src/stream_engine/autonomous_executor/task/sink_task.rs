@@ -33,7 +33,8 @@ impl SinkTask {
         &self,
         context: &TaskContext,
     ) -> Result<()> {
-        let row_repo = context.row_repository();
+        let repos = context.repos();
+        let row_repo = repos.row_repository();
 
         let row = row_repo.collect_next(&context.task())?;
         let row = row.fixme_clone(); // Ahhhhhhhhhhhhhh
@@ -45,6 +46,7 @@ impl SinkTask {
         let f_row = SinkRow::from(row);
 
         let sink_writer = context
+            .repos()
             .sink_writer_repository()
             .get_sink_writer(&self.sink_writer_name);
 
