@@ -12,13 +12,7 @@ use self::{
     worker_pool::WorkerPool,
 };
 use super::{
-    pipeline_derivatives::PipelineDerivatives,
-    row::row_repository::RowRepository,
-    task::{
-        sink_task::sink_writer::sink_writer_repository::SinkWriterRepository,
-        source_task::source_reader::source_reader_repository::SourceReaderRepository,
-    },
-    task_graph::TaskGraph,
+    pipeline_derivatives::PipelineDerivatives, repositories::Repositories, task_graph::TaskGraph,
 };
 
 /// Task executor executes task graph's dataflow by internal worker threads.
@@ -29,9 +23,7 @@ use super::{
 pub(in crate::stream_engine) struct TaskExecutor {
     task_executor_lock: Arc<TaskExecutorLock>,
 
-    row_repo: Arc<RowRepository>,
-    source_reader_repo: Arc<SourceReaderRepository>,
-    sink_writer_repo: Arc<SinkWriterRepository>,
+    repos: Arc<Repositories>,
 
     worker_pool: WorkerPool,
 }
@@ -42,10 +34,7 @@ impl TaskExecutor {
         pipeline_derivatives: Arc<PipelineDerivatives>,
     ) -> Self {
         let task_executor_lock = Arc::new(TaskExecutorLock::default());
-
-        let row_repo = Arc::new(RowRepository::default());
-        let source_reader_repo = Arc::new(SourceReaderRepository::default());
-        let sink_writer_repo = Arc::new(SinkWriterRepository::default());
+        let repos = Arc::new(Repositories::default());
 
         Self {
             task_executor_lock: task_executor_lock.clone(),
@@ -54,13 +43,9 @@ impl TaskExecutor {
                 n_worker_threads,
                 task_executor_lock,
                 pipeline_derivatives,
-                row_repo.clone(),
-                source_reader_repo.clone(),
-                sink_writer_repo.clone(),
+                repos.clone(),
             ),
-            row_repo,
-            source_reader_repo,
-            sink_writer_repo,
+            repos,
         }
     }
 
@@ -81,11 +66,17 @@ impl TaskExecutor {
         pipeline
             .all_sources()
             .into_iter()
-            .try_for_each(|source_reader| self.source_reader_repo.register(source_reader))?;
+            .try_for_each(|source_reader| {
+                self.repos
+                    .source_reader_repository()
+                    .register(source_reader)
+            })?;
         pipeline
             .all_sinks()
             .into_iter()
-            .try_for_each(|sink_writer| self.sink_writer_repo.register(sink_writer))?;
+            .try_for_each(|sink_writer| {
+                self.repos.sink_writer_repository().register(sink_writer)
+            })?;
 
         self.worker_pool
             .interrupt_pipeline_update(pipeline_derivatives);
@@ -101,6 +92,6 @@ impl TaskExecutor {
     ) {
         // TODO do not just remove rows in queues. Do the things in doc comment.
 
-        self.row_repo.reset(task_graph.tasks()); // TODO QueueIds instead
+        self.repos.row_repository().reset(task_graph.tasks()); // TODO QueueIds instead
     }
 }

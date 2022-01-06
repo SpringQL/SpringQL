@@ -28,7 +28,8 @@ impl InsertSubtask {
         row: Row,
         context: &TaskContext,
     ) -> Result<()> {
-        let row_repo = context.row_repository();
+        let repos = context.repos();
+        let row_repo = repos.row_repository();
 
         // TODO modify row if necessary
         row_repo.emit(row, &context.downstream_tasks())

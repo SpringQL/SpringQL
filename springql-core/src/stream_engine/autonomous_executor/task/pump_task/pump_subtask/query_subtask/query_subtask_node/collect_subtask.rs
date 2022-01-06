@@ -12,6 +12,9 @@ impl CollectSubtask {
         &self,
         context: &TaskContext,
     ) -> Result<Row> {
-        context.row_repository().collect_next(&context.task())
+        context
+            .repos()
+            .row_repository()
+            .collect_next(&context.task())
     }
 }
