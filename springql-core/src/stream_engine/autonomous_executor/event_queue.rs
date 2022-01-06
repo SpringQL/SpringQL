@@ -6,7 +6,7 @@ use std::{
 use super::pipeline_derivatives::PipelineDerivatives;
 
 /// Event queue (message broker) for Choreography-based Saga pattern.
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub(in crate::stream_engine::autonomous_executor) struct EventQueue {
     subscribers_by_tag: Mutex<HashMap<EventTag, Subscribers>>,
 }
@@ -103,13 +103,13 @@ pub(in crate::stream_engine::autonomous_executor) struct EventPoll {
 
 impl EventPoll {
     /// Non-blocking call
-    fn poll(&self) -> Option<Event> {
+    pub(in crate::stream_engine::autonomous_executor) fn poll(&self) -> Option<Event> {
         self.receiver.try_recv().ok()
     }
 }
 
 #[derive(Debug, new)]
-pub(in crate::stream_engine::autonomous_executor) struct EventPush {
+struct EventPush {
     receiver: mpsc::Sender<Event>,
 }
 
