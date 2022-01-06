@@ -6,8 +6,9 @@ use crate::{
     error::{Result, SpringError},
     pipeline::relation::column::column_definition::ColumnDefinition,
     pipeline::{name::ColumnName, stream_model::stream_shape::StreamShape},
-    stream_engine::autonomous_executor::row::{
-        column_values::ColumnValues, timestamp::Timestamp, value::sql_value::SqlValue,
+    stream_engine::{
+        autonomous_executor::row::{column_values::ColumnValues, value::sql_value::SqlValue},
+        time::timestamp::Timestamp,
     },
 };
 use std::{sync::Arc, vec};
@@ -176,7 +177,10 @@ impl IntoIterator for StreamColumns {
 
 #[cfg(test)]
 mod tests {
-    use crate::stream_engine::autonomous_executor::row::value::sql_value::nn_sql_value::NnSqlValue;
+    use crate::stream_engine::{
+        autonomous_executor::row::value::sql_value::nn_sql_value::NnSqlValue,
+        time::timestamp::Timestamp,
+    };
 
     use super::*;
 

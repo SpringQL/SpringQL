@@ -45,9 +45,9 @@ mod tests {
 
     use crate::{
         pipeline::name::ColumnName,
-        stream_engine::autonomous_executor::{
-            row::{timestamp::system_timestamp::SystemTimestamp, value::sql_value::SqlValue},
-            Timestamp,
+        stream_engine::{
+            autonomous_executor::row::value::sql_value::SqlValue,
+            time::timestamp::{system_timestamp::SystemTimestamp, Timestamp},
         },
     };
 

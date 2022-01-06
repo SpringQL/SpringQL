@@ -7,7 +7,7 @@ mod timestamp;
 
 use crate::{
     error::{Result, SpringError},
-    stream_engine::autonomous_executor::Timestamp,
+    stream_engine::time::timestamp::Timestamp,
 };
 use anyhow::anyhow;
 use std::any::type_name;

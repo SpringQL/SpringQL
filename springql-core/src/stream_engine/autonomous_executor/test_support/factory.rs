@@ -6,6 +6,7 @@ use springql_foreign_service::source::{source_input::ForeignSourceInput, Foreign
 
 use crate::stream_engine::autonomous_executor::task::source_task::source_reader::net::NetSourceReader;
 use crate::stream_engine::autonomous_executor::task::source_task::source_reader::SourceReader;
+use crate::stream_engine::time::timestamp::Timestamp;
 use crate::{
     pipeline::{
         name::ColumnName, option::options_builder::OptionsBuilder,
@@ -17,7 +18,6 @@ use crate::{
         value::sql_value::{nn_sql_value::NnSqlValue, SqlValue},
         Row,
     },
-    stream_engine::autonomous_executor::Timestamp,
 };
 
 impl NetSourceReader {
