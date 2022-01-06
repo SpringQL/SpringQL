@@ -40,7 +40,7 @@ impl AutonomousExecutor {
     }
 
     pub(in crate::stream_engine) fn notify_pipeline_update(
-        &mut self,
+        &self,
         pipeline: Pipeline,
     ) -> Result<()> {
         let task_executor = &self.task_executor;
