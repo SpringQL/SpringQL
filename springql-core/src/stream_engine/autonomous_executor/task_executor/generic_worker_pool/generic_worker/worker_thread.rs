@@ -10,7 +10,10 @@ use crate::{
     error::SpringError,
     pipeline::Pipeline,
     stream_engine::autonomous_executor::{
-        event_queue::{Event, EventPoll, EventQueue, EventTag},
+        event_queue::{
+            event::{Event, EventTag},
+            EventPoll, EventQueue,
+        },
         pipeline_derivatives::PipelineDerivatives,
         repositories::Repositories,
         task::task_context::TaskContext,

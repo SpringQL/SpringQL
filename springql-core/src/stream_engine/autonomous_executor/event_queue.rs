@@ -1,9 +1,15 @@
+//! This mod provides event queue mechanism.
+//!
+//! To add/del events, modify `self::event` module.
+
+pub(in crate::stream_engine::autonomous_executor) mod event;
+
 use std::{
     collections::{hash_map::Entry, HashMap},
-    sync::{mpsc, Arc, Mutex, MutexGuard},
+    sync::{mpsc, Mutex, MutexGuard},
 };
 
-use super::pipeline_derivatives::PipelineDerivatives;
+use self::event::{Event, EventTag};
 
 /// Event queue (message broker) for Choreography-based Saga pattern.
 #[derive(Debug, Default)]
@@ -72,26 +78,6 @@ impl Subscribers {
     fn push_all(&self, event: Event) {
         for event_push in self.event_push_list.iter() {
             event_push.push(event.clone());
-        }
-    }
-}
-
-#[derive(Clone, Debug)]
-pub(in crate::stream_engine::autonomous_executor) enum Event {
-    UpdatePipeline {
-        pipeline_derivatives: Arc<PipelineDerivatives>,
-    },
-}
-
-#[derive(Copy, Clone, Eq, PartialEq, Hash, Debug)]
-pub(in crate::stream_engine::autonomous_executor) enum EventTag {
-    UpdatePipeline,
-}
-
-impl From<&Event> for EventTag {
-    fn from(event: &Event) -> Self {
-        match event {
-            Event::UpdatePipeline { .. } => EventTag::UpdatePipeline,
         }
     }
 }

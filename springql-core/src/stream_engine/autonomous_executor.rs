@@ -18,7 +18,7 @@ use std::sync::Arc;
 pub(crate) use row::SinkRow;
 
 use self::{
-    event_queue::{Event, EventQueue},
+    event_queue::{event::Event, EventQueue},
     pipeline_derivatives::PipelineDerivatives,
     task_executor::TaskExecutor,
 };

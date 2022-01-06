@@ -5,7 +5,7 @@ pub(super) mod generic_worker;
 use std::{cell::RefCell, sync::Arc};
 
 use crate::stream_engine::autonomous_executor::{
-    event_queue::EventQueue, pipeline_derivatives::PipelineDerivatives, repositories::Repositories,
+    event_queue::EventQueue, repositories::Repositories,
 };
 
 use self::generic_worker::{generic_worker_id::GenericWorkerId, GenericWorker};
