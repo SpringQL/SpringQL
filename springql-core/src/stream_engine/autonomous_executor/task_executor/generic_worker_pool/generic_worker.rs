@@ -1,6 +1,6 @@
 // Copyright (c) 2021 TOYOTA MOTOR CORPORATION. Licensed under MIT OR Apache-2.0.
 
-pub(in crate::stream_engine::autonomous_executor) mod worker_id;
+pub(in crate::stream_engine::autonomous_executor) mod generic_worker_id;
 
 mod worker_thread;
 
@@ -11,17 +11,18 @@ use crate::stream_engine::autonomous_executor::{
     task_executor::task_executor_lock::TaskExecutorLock,
 };
 
-use self::{worker_id::WorkerId, worker_thread::WorkerThread};
+use self::{generic_worker_id::GenericWorkerId, worker_thread::GenericWorkerThread};
 
+/// Worker to execute pump and sink tasks.
 #[derive(Debug)]
-pub(super) struct Worker {
+pub(super) struct GenericWorker {
     pipeline_update_signal: mpsc::SyncSender<Arc<PipelineDerivatives>>,
     stop_button: mpsc::SyncSender<()>,
 }
 
-impl Worker {
+impl GenericWorker {
     pub(super) fn new(
-        id: WorkerId,
+        id: GenericWorkerId,
         task_executor_lock: Arc<TaskExecutorLock>,
         pipeline_derivatives: Arc<PipelineDerivatives>,
         repos: Arc<Repositories>,
@@ -29,7 +30,7 @@ impl Worker {
         let (pipeline_update_signal, pipeline_update_receiver) = mpsc::sync_channel(0);
         let (stop_button, stop_receiver) = mpsc::sync_channel(0);
 
-        let _ = WorkerThread::run(
+        let _ = GenericWorkerThread::run(
             id,
             task_executor_lock,
             pipeline_derivatives,
@@ -55,7 +56,7 @@ impl Worker {
     }
 }
 
-impl Drop for Worker {
+impl Drop for GenericWorker {
     fn drop(&mut self) {
         self.stop_button
             .send(())

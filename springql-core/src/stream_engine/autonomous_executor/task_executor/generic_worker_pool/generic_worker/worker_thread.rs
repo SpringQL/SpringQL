@@ -19,18 +19,18 @@ use crate::{
     },
 };
 
-use super::worker_id::WorkerId;
+use super::generic_worker_id::GenericWorkerId;
 
 // TODO config
 const TASK_WAIT_MSEC: u64 = 100;
 
 /// Runs a worker thread.
 #[derive(Debug)]
-pub(super) struct WorkerThread;
+pub(super) struct GenericWorkerThread;
 
-impl WorkerThread {
+impl GenericWorkerThread {
     pub(super) fn run(
-        id: WorkerId,
+        id: GenericWorkerId,
         task_executor_lock: Arc<TaskExecutorLock>,
         pipeline_derivatives: Arc<PipelineDerivatives>,
         repos: Arc<Repositories>,
@@ -50,7 +50,7 @@ impl WorkerThread {
     }
 
     fn main_loop(
-        id: WorkerId,
+        id: GenericWorkerId,
         task_executor_lock: Arc<TaskExecutorLock>,
         pipeline_derivatives: Arc<PipelineDerivatives>,
         repos: Arc<Repositories>,
@@ -61,12 +61,12 @@ impl WorkerThread {
         let mut scheduler = FlowEfficientScheduler::default();
         let mut cur_worker_state = <FlowEfficientScheduler as Scheduler>::W::default();
 
-        log::debug!("[Worker#{}] Started", id);
+        log::debug!("[GenericWorker#{}] Started", id);
 
         while stop_receiver.try_recv().is_err() {
             if let Ok(_lock) = task_executor_lock.try_task_execution() {
                 if let Some((task_id, next_worker_state)) = scheduler.next_task(cur_worker_state) {
-                    log::debug!("[Worker#{}] Scheduled task:{}", id, task_id);
+                    log::debug!("[GenericWorker#{}] Scheduled task:{}", id, task_id);
 
                     cur_worker_state = next_worker_state;
 
@@ -101,13 +101,13 @@ impl WorkerThread {
     ///
     /// Some on interruption.
     fn handle_interruption(
-        id: WorkerId,
+        id: GenericWorkerId,
         pipeline_update_receiver: &mpsc::Receiver<Arc<PipelineDerivatives>>,
         pipeline_derivatives: Arc<PipelineDerivatives>,
         scheduler: &mut FlowEfficientScheduler,
     ) -> Arc<PipelineDerivatives> {
         if let Ok(pipeline_derivatives) = pipeline_update_receiver.try_recv() {
-            log::debug!("[Worker#{}] got interruption", id);
+            log::debug!("[GenericWorker#{}] got interruption", id);
 
             scheduler
                 .notify_pipeline_update(pipeline_derivatives.as_ref())

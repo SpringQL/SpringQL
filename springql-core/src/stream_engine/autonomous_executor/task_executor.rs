@@ -1,15 +1,15 @@
 // Copyright (c) 2021 TOYOTA MOTOR CORPORATION. Licensed under MIT OR Apache-2.0.
 
+mod generic_worker_pool;
 mod scheduler;
 mod task_executor_lock;
-mod worker_pool;
 
 use crate::error::Result;
 use std::sync::Arc;
 
 use self::{
+    generic_worker_pool::GenericWorkerPool,
     task_executor_lock::{PipelineUpdateLockGuard, TaskExecutorLock},
-    worker_pool::WorkerPool,
 };
 use super::{
     pipeline_derivatives::PipelineDerivatives, repositories::Repositories, task_graph::TaskGraph,
@@ -25,7 +25,7 @@ pub(in crate::stream_engine) struct TaskExecutor {
 
     repos: Arc<Repositories>,
 
-    worker_pool: WorkerPool,
+    worker_pool: GenericWorkerPool,
 }
 
 impl TaskExecutor {
@@ -39,7 +39,7 @@ impl TaskExecutor {
         Self {
             task_executor_lock: task_executor_lock.clone(),
 
-            worker_pool: WorkerPool::new(
+            worker_pool: GenericWorkerPool::new(
                 n_worker_threads,
                 task_executor_lock,
                 pipeline_derivatives,
