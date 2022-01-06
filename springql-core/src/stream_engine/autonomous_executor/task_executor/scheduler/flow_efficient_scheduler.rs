@@ -211,8 +211,8 @@ impl FlowEfficientScheduler {
                     seq_task_schedule,
                     unvisited,
                 )?;
-                seq_task_schedule.push(parent_task);
             }
+            seq_task_schedule.push(cur_task.clone());
             Ok(())
         }
     }
