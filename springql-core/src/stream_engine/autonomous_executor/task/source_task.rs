@@ -8,6 +8,7 @@ use crate::error::Result;
 use crate::pipeline::name::{SourceReaderName, StreamName};
 use crate::pipeline::source_reader_model::SourceReaderModel;
 use crate::stream_engine::autonomous_executor::row::Row;
+use crate::stream_engine::autonomous_executor::task_graph::queue_id::QueueId;
 use crate::stream_engine::autonomous_executor::task_graph::task_id::TaskId;
 
 use super::task_context::TaskContext;
@@ -38,10 +39,22 @@ impl SourceTask {
         context: &TaskContext,
     ) -> Result<()> {
         let row = self.collect_next(context)?;
-        context
-            .repos()
-            .row_repository()
-            .emit(row, &context.downstream_tasks())
+        let repos = context.repos();
+
+        let out_qid = context
+            .output_queues()
+            .first()
+            .expect("source task must have 1 output queue")
+            .clone();
+        match out_qid {
+            QueueId::Row(qid) => {
+                let row_q_repo = repos.row_queue_repository();
+                let queue = row_q_repo.get(&qid);
+                queue.put(row);
+                Ok(())
+            }
+            QueueId::Window(_) => todo!(),
+        }
     }
 
     fn collect_next(&self, context: &TaskContext) -> Result<Row> {

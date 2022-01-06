@@ -1,8 +1,8 @@
 // Copyright (c) 2021 TOYOTA MOTOR CORPORATION. Licensed under MIT OR Apache-2.0.
 
-use crate::error::Result;
 use crate::stream_engine::autonomous_executor::row::Row;
 use crate::stream_engine::autonomous_executor::task::task_context::TaskContext;
+use crate::stream_engine::autonomous_executor::task_graph::queue_id::QueueId;
 use crate::stream_engine::command::insert_plan::InsertPlan;
 
 #[derive(Debug)]
@@ -19,19 +19,23 @@ impl From<&InsertPlan> for InsertSubtask {
 }
 
 impl InsertSubtask {
-    /// # Failure
-    ///
-    /// - [SpringError::InputTimeout](crate::error::SpringError::InputTimeout) when:
-    ///   - Input from a source stream is not available within timeout period.
     pub(in crate::stream_engine::autonomous_executor) fn run(
         &self,
         row: Row,
         context: &TaskContext,
-    ) -> Result<()> {
+    ) {
         let repos = context.repos();
-        let row_repo = repos.row_repository();
+        let row_q_repo = repos.row_queue_repository();
+
+        let output_queues = context.output_queues();
 
         // TODO modify row if necessary
-        row_repo.emit(row, &context.downstream_tasks())
+        output_queues.into_iter().for_each(|q| match q {
+            QueueId::Row(q) => {
+                let row_q = row_q_repo.get(&q);
+                row_q.put(row.fixme_clone()); // Ahhhhhhhhhhhhhhhhhhhhh
+            }
+            QueueId::Window(_) => todo!(),
+        });
     }
 }

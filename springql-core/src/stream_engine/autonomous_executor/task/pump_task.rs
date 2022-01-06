@@ -38,7 +38,9 @@ impl PumpTask {
         &self,
         context: &TaskContext,
     ) -> Result<()> {
-        let row = self.query_subtask.run(context)?;
-        self.insert_subtask.run(row, context)
+        if let Some(row) = self.query_subtask.run(context)? {
+            self.insert_subtask.run(row, context)
+        }
+        Ok(())
     }
 }

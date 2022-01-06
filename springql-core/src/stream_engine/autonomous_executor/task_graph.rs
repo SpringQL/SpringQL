@@ -57,7 +57,7 @@ impl TaskGraph {
             .cloned()
             .collect()
     }
-    fn output_queues(&self, task_id: &TaskId) -> Vec<QueueId> {
+    pub(super) fn output_queues(&self, task_id: &TaskId) -> Vec<QueueId> {
         let i = self.find_node(task_id);
         self.g
             .edges_directed(i, petgraph::EdgeDirection::Outgoing)
@@ -71,13 +71,6 @@ impl TaskGraph {
         self.input_queues(task_id)
             .iter()
             .map(|q| self.upstream_task(q))
-            .collect()
-    }
-
-    pub(super) fn downstream_tasks(&self, task_id: &TaskId) -> Vec<TaskId> {
-        self.output_queues(task_id)
-            .iter()
-            .map(|q| self.downstream_task(q))
             .collect()
     }
 

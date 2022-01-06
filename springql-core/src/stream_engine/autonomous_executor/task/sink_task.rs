@@ -8,6 +8,7 @@ use crate::pipeline::name::SinkWriterName;
 use crate::pipeline::sink_writer_model::SinkWriterModel;
 use crate::stream_engine::autonomous_executor::row::foreign_row::sink_row::SinkRow;
 use crate::stream_engine::autonomous_executor::row::Row;
+use crate::stream_engine::autonomous_executor::task_graph::queue_id::QueueId;
 use crate::stream_engine::autonomous_executor::task_graph::task_id::TaskId;
 
 #[derive(Debug)]
@@ -33,13 +34,22 @@ impl SinkTask {
         &self,
         context: &TaskContext,
     ) -> Result<()> {
-        let repos = context.repos();
-        let row_repo = repos.row_repository();
+        let opt_row = context
+            .input_queue()
+            .map(|queue_id| {
+                let repos = context.repos();
+                match queue_id {
+                    QueueId::Row(qid) => {
+                        let row_q_repo = repos.row_queue_repository();
+                        let queue = row_q_repo.get(&qid);
+                        queue.use_()
+                    }
+                    QueueId::Window(_) => unreachable!("sink task must have row input queue"),
+                }
+            })
+            .flatten();
 
-        let row = row_repo.collect_next(&context.task())?;
-        let row = row.fixme_clone(); // Ahhhhhhhhhhhhhh
-
-        self.emit(row, context)
+        opt_row.map_or_else(|| Ok(()), |row| self.emit(row, context))
     }
 
     fn emit(&self, row: Row, context: &TaskContext) -> Result<()> {

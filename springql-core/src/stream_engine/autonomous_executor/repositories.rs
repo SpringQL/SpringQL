@@ -1,5 +1,5 @@
 use super::{
-    row::row_repository::RowRepository,
+    queue::row_queue_repository::RowQueueRepository,
     task::{
         sink_task::sink_writer::sink_writer_repository::SinkWriterRepository,
         source_task::source_reader::source_reader_repository::SourceReaderRepository,
@@ -9,14 +9,16 @@ use super::{
 /// Collection of repository instances.
 #[derive(Debug, Default)]
 pub(in crate::stream_engine::autonomous_executor) struct Repositories {
-    row_repository: RowRepository,
+    row_queue_repository: RowQueueRepository,
     source_reader_repository: SourceReaderRepository,
     sink_writer_repository: SinkWriterRepository,
 }
 
 impl Repositories {
-    pub(in crate::stream_engine::autonomous_executor) fn row_repository(&self) -> &RowRepository {
-        &self.row_repository
+    pub(in crate::stream_engine::autonomous_executor) fn row_queue_repository(
+        &self,
+    ) -> &RowQueueRepository {
+        &self.row_queue_repository
     }
 
     pub(in crate::stream_engine::autonomous_executor) fn source_reader_repository(

@@ -5,6 +5,7 @@ pub(in crate::stream_engine) mod task;
 pub(crate) mod row;
 
 mod pipeline_derivatives;
+mod queue;
 mod repositories;
 mod task_executor;
 mod task_graph;
