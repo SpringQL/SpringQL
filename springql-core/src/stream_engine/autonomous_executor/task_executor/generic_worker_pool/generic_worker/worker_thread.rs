@@ -8,6 +8,7 @@ use std::{
 
 use crate::{
     error::SpringError,
+    pipeline::Pipeline,
     stream_engine::autonomous_executor::{
         event_queue::{Event, EventPoll, EventQueue, EventTag},
         pipeline_derivatives::PipelineDerivatives,
@@ -34,7 +35,6 @@ impl GenericWorkerThread {
         id: GenericWorkerId,
         task_executor_lock: Arc<TaskExecutorLock>,
         event_queue: Arc<EventQueue>,
-        pipeline_derivatives: Arc<PipelineDerivatives>,
         repos: Arc<Repositories>,
         stop_receiver: mpsc::Receiver<()>,
     ) {
@@ -45,7 +45,6 @@ impl GenericWorkerThread {
                 id,
                 task_executor_lock.clone(),
                 event_poll,
-                pipeline_derivatives,
                 repos,
                 stop_receiver,
             )
@@ -56,11 +55,10 @@ impl GenericWorkerThread {
         id: GenericWorkerId,
         task_executor_lock: Arc<TaskExecutorLock>,
         event_poll: EventPoll,
-        pipeline_derivatives: Arc<PipelineDerivatives>,
         repos: Arc<Repositories>,
         stop_receiver: mpsc::Receiver<()>,
     ) {
-        let mut pipeline_derivatives = pipeline_derivatives;
+        let mut pipeline_derivatives = Arc::new(PipelineDerivatives::new(Pipeline::default()));
         let mut scheduler = FlowEfficientScheduler::default();
         let mut cur_worker_state = <FlowEfficientScheduler as Scheduler>::W::default();
 

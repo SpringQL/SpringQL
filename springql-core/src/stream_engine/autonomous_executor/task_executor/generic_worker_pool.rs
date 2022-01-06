@@ -28,7 +28,6 @@ impl GenericWorkerPool {
         n_worker_threads: usize,
         task_executor_lock: Arc<TaskExecutorLock>,
         event_queue: Arc<EventQueue>,
-        pipeline_derivatives: Arc<PipelineDerivatives>,
         repos: Arc<Repositories>,
     ) -> Self {
         let workers = (0..n_worker_threads)
@@ -37,7 +36,6 @@ impl GenericWorkerPool {
                     GenericWorkerId::new(id as u16),
                     task_executor_lock.clone(),
                     event_queue.clone(),
-                    pipeline_derivatives.clone(),
                     repos.clone(),
                 )
             })

@@ -41,9 +41,7 @@ pub(in crate::stream_engine) struct AutonomousExecutor {
 impl AutonomousExecutor {
     pub(in crate::stream_engine) fn new(n_worker_threads: usize) -> Self {
         let event_queue = Arc::new(EventQueue::default());
-        let pipeline_derivatives = Arc::new(PipelineDerivatives::new(Pipeline::default()));
-        let task_executor =
-            TaskExecutor::new(n_worker_threads, event_queue.clone(), pipeline_derivatives);
+        let task_executor = TaskExecutor::new(n_worker_threads, event_queue.clone());
         Self {
             event_queue,
             task_executor,

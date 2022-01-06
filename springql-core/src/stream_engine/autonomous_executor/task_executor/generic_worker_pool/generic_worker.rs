@@ -24,19 +24,11 @@ impl GenericWorker {
         id: GenericWorkerId,
         task_executor_lock: Arc<TaskExecutorLock>,
         event_queue: Arc<EventQueue>,
-        pipeline_derivatives: Arc<PipelineDerivatives>,
         repos: Arc<Repositories>,
     ) -> Self {
         let (stop_button, stop_receiver) = mpsc::sync_channel(0);
 
-        let _ = GenericWorkerThread::run(
-            id,
-            task_executor_lock,
-            event_queue,
-            pipeline_derivatives,
-            repos,
-            stop_receiver,
-        );
+        let _ = GenericWorkerThread::run(id, task_executor_lock, event_queue, repos, stop_receiver);
 
         Self { stop_button }
     }

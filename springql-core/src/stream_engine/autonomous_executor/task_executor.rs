@@ -33,7 +33,6 @@ impl TaskExecutor {
     pub(in crate::stream_engine::autonomous_executor) fn new(
         n_worker_threads: usize,
         event_queue: Arc<EventQueue>,
-        pipeline_derivatives: Arc<PipelineDerivatives>, // TODO rm
     ) -> Self {
         let task_executor_lock = Arc::new(TaskExecutorLock::default());
         let repos = Arc::new(Repositories::default());
@@ -45,7 +44,6 @@ impl TaskExecutor {
                 n_worker_threads,
                 task_executor_lock,
                 event_queue,
-                pipeline_derivatives,
                 repos.clone(),
             ),
             repos,
