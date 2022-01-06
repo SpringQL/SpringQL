@@ -199,11 +199,11 @@ impl FlowEfficientScheduler {
         seq_task_schedule: &mut Vec<TaskId>,
         unvisited: &mut HashSet<TaskId>,
     ) -> Result<()> {
-        if !unvisited.remove(&cur_task) {
+        if !unvisited.remove(cur_task) {
             // already visited
             Ok(())
         } else {
-            let upstream_tasks = task_graph.upstream_tasks(&cur_task);
+            let upstream_tasks = task_graph.upstream_tasks(cur_task);
             for parent_task in upstream_tasks {
                 Self::_to_root_dfs_post_order(
                     &parent_task,
