@@ -36,23 +36,30 @@ impl From<&QueryPlan> for QuerySubtask {
 }
 
 impl QuerySubtask {
-    /// # Failure
+    /// # Returns
     ///
-    /// - [SpringError::InputTimeout](crate::error::SpringError::InputTimeout) when:
-    ///   - Input from a source stream is not available within timeout period.
+    /// None when input queue does not exist or is empty.
+    ///
+    /// # Failures
+    ///
+    /// TODO
     pub(in crate::stream_engine::autonomous_executor) fn run(
         &self,
         context: &TaskContext,
-    ) -> Result<Row> {
+    ) -> Result<Option<Row>> {
         let mut next_idx = self.leaf_node_idx();
-        let mut next_row = self.run_leaf(next_idx, context)?;
 
-        while let Some(parent_idx) = self.parent_node_idx(next_idx) {
-            next_idx = parent_idx;
-            next_row = self.run_non_leaf(next_idx, next_row)?;
+        match self.run_leaf(next_idx, context) {
+            None => Ok(None),
+            Some(leaf_row) => {
+                let mut next_row = leaf_row;
+                while let Some(parent_idx) = self.parent_node_idx(next_idx) {
+                    next_idx = parent_idx;
+                    next_row = self.run_non_leaf(next_idx, next_row)?;
+                }
+                Ok(Some(next_row))
+            }
         }
-
-        Ok(next_row)
     }
 
     fn run_non_leaf(&self, subtask_idx: NodeIndex, downstream_row: Row) -> Result<Row> {
@@ -65,7 +72,10 @@ impl QuerySubtask {
         }
     }
 
-    fn run_leaf(&self, subtask_idx: NodeIndex, context: &TaskContext) -> Result<Row> {
+    /// # Returns
+    ///
+    /// None when input queue does not exist or is empty.
+    fn run_leaf(&self, subtask_idx: NodeIndex, context: &TaskContext) -> Option<Row> {
         let subtask = self.tree.node_weight(subtask_idx).expect("must be found");
         match subtask {
             QuerySubtaskNode::Collect(collect_subtask) => collect_subtask.run(context),

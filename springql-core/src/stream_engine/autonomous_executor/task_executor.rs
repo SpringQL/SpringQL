@@ -92,6 +92,8 @@ impl TaskExecutor {
     ) {
         // TODO do not just remove rows in queues. Do the things in doc comment.
 
-        self.repos.row_repository().reset(task_graph.tasks()); // TODO QueueIds instead
+        self.repos
+            .row_queue_repository()
+            .reset(task_graph.row_queues().into_iter().collect());
     }
 }
