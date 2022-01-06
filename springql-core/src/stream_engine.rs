@@ -27,10 +27,10 @@
 //!       - GenericWorkerPool (M threads; runs pump and sink tasks with a dynamically-chosen scheduler)
 //!     - PerformanceMonitorWorker (1 thread)
 //!
-//! # `*Executor` interaction
-//! 
-//! Executors and workers interact via EventQueue (Choreography-based Saga pattern).
-//! 
+//! # `*Worker` interaction
+//!
+//! Workers in AutonomousExecutor interact via EventQueue (Choreography-based Saga pattern).
+//!
 //! TODO draw.io diagram
 
 pub(crate) mod command;
