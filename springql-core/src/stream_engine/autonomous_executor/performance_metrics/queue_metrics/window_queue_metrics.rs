@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 
 use crate::stream_engine::autonomous_executor::{
-    performance_metrics::metrics_update_command::metrics_update_command_by_task_execution::MetricsUpdateCommandByTaskExecution,
+    performance_metrics::metrics_update_command::metrics_update_by_task_execution::MetricsUpdateByTaskExecution,
     task_graph::queue_id::window_queue_id::WindowQueueId,
 };
 
@@ -16,7 +16,7 @@ impl WindowQueueMetrics {
     pub(in crate::stream_engine::autonomous_executor::performance_metrics) fn update_by_task_execution(
         &mut self,
         id: &WindowQueueId,
-        command: &MetricsUpdateCommandByTaskExecution,
+        command: &MetricsUpdateByTaskExecution,
     ) {
         self.rows_waiting =
             (self.rows_waiting as i64 + command.window_queue_waiting_gain_rows(id)) as u64;

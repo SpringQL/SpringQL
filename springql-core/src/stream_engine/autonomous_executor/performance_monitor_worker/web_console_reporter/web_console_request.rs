@@ -195,7 +195,7 @@ mod tests {
         }
 
         t(
-            PerformanceMetrics::fx_empty(),
+            PerformanceMetrics::default(),
             TaskGraph::default(),
             json!({
                 "tasks": [],

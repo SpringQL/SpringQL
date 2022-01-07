@@ -21,6 +21,7 @@ pub(crate) use row::SinkRow;
 
 use self::{
     event_queue::{event::Event, EventQueue},
+    performance_monitor_worker::PerformanceMonitorWorker,
     pipeline_derivatives::PipelineDerivatives,
     task_executor::TaskExecutor,
 };
@@ -38,15 +39,18 @@ pub(in crate::stream_engine) struct AutonomousExecutor {
     event_queue: Arc<EventQueue>,
 
     task_executor: TaskExecutor,
+    performance_monitor_worker: PerformanceMonitorWorker,
 }
 
 impl AutonomousExecutor {
     pub(in crate::stream_engine) fn new(n_worker_threads: usize) -> Self {
         let event_queue = Arc::new(EventQueue::default());
         let task_executor = TaskExecutor::new(n_worker_threads, event_queue.clone());
+        let performance_monitor_worker = PerformanceMonitorWorker::new(event_queue.clone());
         Self {
             event_queue,
             task_executor,
+            performance_monitor_worker,
         }
     }
 

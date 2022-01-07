@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::stream_engine::autonomous_executor::performance_metrics::calculation::next_avg;
 
-use super::metrics_update_command::metrics_update_command_by_task_execution::MetricsUpdateCommandByTaskExecution;
+use super::metrics_update_command::metrics_update_by_task_execution::MetricsUpdateByTaskExecution;
 
 /// Flow monitor of a task (including in-memory queue sink) execution.
 #[derive(Clone, PartialEq, Debug, Default, Serialize, Deserialize)]
@@ -14,7 +14,7 @@ pub(in crate::stream_engine::autonomous_executor) struct TaskMetrics {
 impl TaskMetrics {
     pub(in crate::stream_engine::autonomous_executor) fn update_by_task_execution(
         &mut self,
-        command: &MetricsUpdateCommandByTaskExecution,
+        command: &MetricsUpdateByTaskExecution,
     ) {
         let n = self.n_executions;
 

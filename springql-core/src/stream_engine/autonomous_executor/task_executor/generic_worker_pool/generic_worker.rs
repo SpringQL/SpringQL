@@ -2,7 +2,7 @@
 
 pub(in crate::stream_engine::autonomous_executor) mod generic_worker_id;
 
-mod worker_thread;
+mod generic_worker_thread;
 
 use std::sync::{mpsc, Arc};
 
@@ -11,7 +11,7 @@ use crate::stream_engine::autonomous_executor::{
     task_executor::task_executor_lock::TaskExecutorLock,
 };
 
-use self::{generic_worker_id::GenericWorkerId, worker_thread::GenericWorkerThread};
+use self::{generic_worker_id::GenericWorkerId, generic_worker_thread::GenericWorkerThread};
 
 /// Worker to execute pump and sink tasks.
 #[derive(Debug)]

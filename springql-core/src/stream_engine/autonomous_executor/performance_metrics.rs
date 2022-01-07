@@ -13,7 +13,7 @@ use std::{
 };
 
 use self::{
-    metrics_update_command::metrics_update_command_by_task_execution::MetricsUpdateCommandByTaskExecution,
+    metrics_update_command::metrics_update_by_task_execution::MetricsUpdateByTaskExecution,
     queue_metrics::{row_queue_metrics::RowQueueMetrics, window_queue_metrics::WindowQueueMetrics},
     task_metrics::TaskMetrics,
 };
@@ -23,7 +23,7 @@ use super::task_graph::{
     TaskGraph,
 };
 
-/// Performance metrics of task execution.
+/// Performance metrics of task execution. It has the same lifetime as a TaskGraph.
 ///
 /// It is monitored by [PerformanceMonitorWorker](crate::stream_processor::autonomous_executor::worker::performance_monitor_worker::PerformanceMonitoRworker),
 /// and it is updated by [TaskExecutor](crate::stream_processor::autonomous_executor::task_executor::TaskExecutor).
@@ -31,7 +31,7 @@ use super::task_graph::{
 /// `PerformanceMonitorWorker` does not frequently read from `RwLock<*Metrics>`, and schedulers in `TaskExecutor` are not expected to
 /// execute consequent tasks (sharing the same queue as input or output) by different workers at the same time.
 /// Therefore, not much contention for `RwLock<*Metrics>` occurs.
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub(super) struct PerformanceMetrics {
     tasks: HashMap<TaskId, RwLock<TaskMetrics>>,
 
@@ -40,36 +40,34 @@ pub(super) struct PerformanceMetrics {
 }
 
 impl PerformanceMetrics {
-    pub(super) fn new(
+    pub(super) fn reset(
+        &mut self,
         task_ids: Vec<TaskId>,
         row_queue_ids: Vec<RowQueueId>,
         window_queue_ids: Vec<WindowQueueId>,
-    ) -> Self {
-        let window_queues = window_queue_ids
-            .into_iter()
-            .map(|id| (id, RwLock::new(WindowQueueMetrics::default())))
-            .collect();
-        let row_queues = row_queue_ids
-            .into_iter()
-            .map(|id| (id, RwLock::new(RowQueueMetrics::default())))
-            .collect();
-        let tasks = task_ids
-            .into_iter()
-            .map(|id| (id, RwLock::new(TaskMetrics::default())))
-            .collect();
+    ) {
+        self.tasks.clear();
+        self.row_queues.clear();
+        self.window_queues.clear();
 
-        Self {
-            window_queues,
-            row_queues,
-            tasks,
-        }
+        task_ids.into_iter().for_each(|id| {
+            self.tasks.insert(id, RwLock::new(TaskMetrics::default()));
+        });
+        row_queue_ids.into_iter().for_each(|id| {
+            self.row_queues
+                .insert(id, RwLock::new(RowQueueMetrics::default()));
+        });
+        window_queue_ids.into_iter().for_each(|id| {
+            self.window_queues
+                .insert(id, RwLock::new(WindowQueueMetrics::default()));
+        });
     }
 
-    pub(super) fn from_task_graph(graph: &TaskGraph) -> Self {
-        Self::new(graph.tasks(), graph.row_queues(), graph.window_queues())
+    pub(super) fn reset_from_task_graph(&mut self, graph: &TaskGraph) {
+        self.reset(graph.tasks(), graph.row_queues(), graph.window_queues())
     }
 
-    pub(super) fn update_by_task_execution(&self, command: &MetricsUpdateCommandByTaskExecution) {
+    pub(super) fn update_by_task_execution(&self, command: &MetricsUpdateByTaskExecution) {
         let task_id = command.updated_task();
         let mut task_metrics = self.get_task_write(task_id);
         task_metrics.update_by_task_execution(command);
@@ -157,7 +155,7 @@ impl PerformanceMetrics {
     fn get_task_write(&self, id: &TaskId) -> RwLockWriteGuard<'_, TaskMetrics> {
         self.tasks
             .get(id)
-            .expect("queue_id not found")
+            .unwrap_or_else(|| panic!("task id {} not found", id))
             .write()
             .expect("poisoned")
     }

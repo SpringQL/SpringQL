@@ -99,7 +99,7 @@ impl GenericWorkerThread {
         }
     }
 
-    /// May re-create CurrentPipeline and update scheduler state.
+    /// May re-create PipelineDerivatives and update scheduler state.
     ///
     /// # Returns
     ///
