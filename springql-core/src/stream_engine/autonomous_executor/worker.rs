@@ -7,7 +7,15 @@ use std::{
     thread,
 };
 
-use super::event_queue::{event::EventTag, EventPoll, EventQueue};
+use crate::error::SpringError;
+
+use super::{
+    event_queue::{
+        event::{Event, EventTag},
+        EventPoll, EventQueue,
+    },
+    pipeline_derivatives::PipelineDerivatives,
+};
 
 pub(in crate::stream_engine::autonomous_executor) trait WorkerThread {
     /// Immutable argument to pass to `main_loop_cycle`.
@@ -30,8 +38,14 @@ pub(in crate::stream_engine::autonomous_executor) trait WorkerThread {
         thread_arg: &Self::ThreadArg,
     ) -> Self::LoopState;
 
+    fn ev_update_pipeline(
+        current_state: Self::LoopState,
+        pipeline_derivatives: Arc<PipelineDerivatives>,
+        thread_arg: &Self::ThreadArg,
+    ) -> Self::LoopState;
+
     /// Worker thread's entry point
-    fn run<T: Send + 'static>(
+    fn run(
         event_queue: Arc<EventQueue>,
         stop_receiver: mpsc::Receiver<()>,
         thread_arg: Self::ThreadArg,
@@ -52,6 +66,44 @@ pub(in crate::stream_engine::autonomous_executor) trait WorkerThread {
 
         while stop_receiver.try_recv().is_err() {
             state = Self::main_loop_cycle(state, &event_polls, &thread_arg);
+        }
+    }
+
+    fn handle_events(
+        current_state: Self::LoopState,
+        event_polls: &[EventPoll],
+        thread_arg: &Self::ThreadArg,
+    ) -> Self::LoopState {
+        let mut state = current_state;
+
+        for event_poll in event_polls {
+            #[allow(clippy::single_match)]
+            match event_poll.poll() {
+                Some(Event::UpdatePipeline {
+                    pipeline_derivatives,
+                }) => {
+                    state = Self::ev_update_pipeline(state, pipeline_derivatives, thread_arg);
+                }
+                None => {}
+            }
+        }
+        state
+    }
+
+    fn handle_error(e: SpringError) {
+        match e {
+            SpringError::ForeignSourceTimeout { .. } | SpringError::InputTimeout { .. } => {
+                log::trace!("{:?}", e)
+            }
+
+            SpringError::ForeignIo { .. }
+            | SpringError::SpringQlCoreIo(_)
+            | SpringError::Unavailable { .. } => log::warn!("{:?}", e),
+
+            SpringError::InvalidOption { .. }
+            | SpringError::InvalidFormat { .. }
+            | SpringError::Sql(_)
+            | SpringError::ThreadPoisoned(_) => log::error!("{:?}", e),
         }
     }
 }
