@@ -22,10 +22,7 @@ impl RowQueueMetrics {
         self.bytes = (self.bytes as i64 + command.row_queue_gain_bytes(id)) as u64;
     }
 
-    pub(in crate::stream_engine::autonomous_executor) fn update_by_purge(
-        &mut self,
-        id: &RowQueueId,
-    ) {
+    pub(in crate::stream_engine::autonomous_executor) fn update_by_purge(&mut self) {
         self.rows = 0;
         self.bytes = 0;
     }

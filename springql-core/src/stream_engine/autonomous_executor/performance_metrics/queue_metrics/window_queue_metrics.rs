@@ -25,7 +25,6 @@ impl WindowQueueMetrics {
 
     pub(in crate::stream_engine::autonomous_executor::performance_metrics) fn update_by_purge(
         &mut self,
-        id: &WindowQueueId,
     ) {
         self.rows_waiting = 0;
         self.bytes = 0;

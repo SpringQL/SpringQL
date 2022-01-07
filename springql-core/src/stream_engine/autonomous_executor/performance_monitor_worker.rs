@@ -7,7 +7,7 @@ use std::sync::{mpsc, Arc};
 
 use self::performance_monitor_worker_thread::PerformanceMonitorWorkerThread;
 
-use super::{event_queue::EventQueue, performance_metrics::PerformanceMetrics};
+use super::event_queue::EventQueue;
 
 /// Dedicated thread to:
 ///

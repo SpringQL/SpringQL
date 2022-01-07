@@ -26,7 +26,7 @@ impl WebConsoleRequest {
         let tasks = metrics
             .get_tasks()
             .iter()
-            .map(|(id, metrics)| TaskRequest::from_metrics(id, &*metrics, graph))
+            .map(|(id, metrics)| TaskRequest::from_metrics(id, &*metrics))
             .collect();
 
         let queues = metrics
@@ -64,7 +64,7 @@ struct TaskRequest {
 }
 
 impl TaskRequest {
-    fn from_metrics(id: &TaskId, metrics: &TaskMetrics, graph: &TaskGraph) -> Self {
+    fn from_metrics(id: &TaskId, metrics: &TaskMetrics) -> Self {
         Self {
             id: id.to_string(),
             type_: match id {
