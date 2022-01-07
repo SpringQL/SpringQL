@@ -1,3 +1,7 @@
+//! # Events diagram
+//!
+//! ![Communication between entities](https://raw.githubusercontent.com/SpringQL/SpringQL.github.io/main/static/img/stream-engine-architecture-communication.svg)
+
 use std::sync::Arc;
 
 use crate::stream_engine::autonomous_executor::pipeline_derivatives::PipelineDerivatives;
