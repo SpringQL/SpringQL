@@ -5,6 +5,8 @@ pub(in crate::stream_engine) mod task;
 
 pub(crate) mod row;
 
+pub(in crate::stream_engine::autonomous_executor) mod worker;
+
 mod performance_metrics;
 mod performance_monitor_worker;
 mod pipeline_derivatives;
