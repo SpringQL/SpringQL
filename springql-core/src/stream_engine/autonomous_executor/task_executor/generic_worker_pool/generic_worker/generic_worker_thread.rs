@@ -3,7 +3,7 @@
 use std::{sync::Arc, thread, time::Duration};
 
 use crate::stream_engine::autonomous_executor::{
-    event_queue::{event::EventTag, EventPoll},
+    event_queue::event::EventTag,
     pipeline_derivatives::PipelineDerivatives,
     repositories::Repositories,
     task::task_context::TaskContext,
@@ -48,7 +48,6 @@ impl WorkerThread for GenericWorkerThread {
 
     fn main_loop_cycle(
         current_state: Self::LoopState,
-        event_polls: &[EventPoll],
         thread_arg: &Self::ThreadArg,
     ) -> Self::LoopState {
         let id = thread_arg.id;
@@ -80,9 +79,8 @@ impl WorkerThread for GenericWorkerThread {
             } else {
                 thread::sleep(Duration::from_millis(TASK_WAIT_MSEC));
             }
-        } else {
-            state = Self::handle_events(state, event_polls, thread_arg);
         }
+
         state
     }
 

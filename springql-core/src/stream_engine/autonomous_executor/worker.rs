@@ -34,7 +34,6 @@ pub(in crate::stream_engine::autonomous_executor) trait WorkerThread {
     /// A cycle in `main_loop`
     fn main_loop_cycle(
         current_state: Self::LoopState,
-        event_polls: &[EventPoll],
         thread_arg: &Self::ThreadArg,
     ) -> Self::LoopState;
 
@@ -65,7 +64,8 @@ pub(in crate::stream_engine::autonomous_executor) trait WorkerThread {
         let mut state = Self::LoopState::default();
 
         while stop_receiver.try_recv().is_err() {
-            state = Self::main_loop_cycle(state, &event_polls, &thread_arg);
+            state = Self::main_loop_cycle(state, &thread_arg);
+            state = Self::handle_events(state, &event_polls, &thread_arg);
         }
     }
 
