@@ -16,22 +16,15 @@
 //!
 //! Both SQL executor and autonomous executor instance run at a main thread, while autonomous executor has workers which run at different worker threads.
 //!
-//! # `*Executor` structure
+//! # Entities inside Stream Engine
 //!
-//! - StreamEngine
-//!   - SqlExecutor (main thread; alters pipeline)
-//!   - AutonomousExecutor
-//!     - MemoryStateMachineWorker (1 thread)
-//!     - TaskExecutor
-//!       - SourceWorkerPool (N threads; runs source tasks with SourceScheduler)
-//!       - GenericWorkerPool (M threads; runs pump and sink tasks with a dynamically-chosen scheduler)
-//!     - PerformanceMonitorWorker (1 thread)
+//! ![Entities inside Stream Engine](https://raw.githubusercontent.com/SpringQL/SpringQL.github.io/main/static/img/stream-engine-architecture-entity.svg)
 //!
-//! # `*Worker` interaction
+//! # Communication between entities
 //!
 //! Workers in AutonomousExecutor interact via EventQueue (Choreography-based Saga pattern).
 //!
-//! TODO draw.io diagram
+//! ![Communication between entities](https://raw.githubusercontent.com/SpringQL/SpringQL.github.io/main/static/img/stream-engine-architecture-communication.svg)
 
 pub(crate) mod command;
 
