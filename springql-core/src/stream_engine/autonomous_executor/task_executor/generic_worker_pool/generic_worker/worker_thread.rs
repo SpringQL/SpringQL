@@ -8,7 +8,12 @@ use std::{
 
 use crate::{
     error::SpringError,
+    pipeline::Pipeline,
     stream_engine::autonomous_executor::{
+        event_queue::{
+            event::{Event, EventTag},
+            EventPoll, EventQueue,
+        },
         pipeline_derivatives::PipelineDerivatives,
         repositories::Repositories,
         task::task_context::TaskContext,
@@ -19,54 +24,53 @@ use crate::{
     },
 };
 
-use super::worker_id::WorkerId;
+use super::generic_worker_id::GenericWorkerId;
 
 // TODO config
 const TASK_WAIT_MSEC: u64 = 100;
 
 /// Runs a worker thread.
 #[derive(Debug)]
-pub(super) struct WorkerThread;
+pub(super) struct GenericWorkerThread;
 
-impl WorkerThread {
+impl GenericWorkerThread {
     pub(super) fn run(
-        id: WorkerId,
+        id: GenericWorkerId,
         task_executor_lock: Arc<TaskExecutorLock>,
-        pipeline_derivatives: Arc<PipelineDerivatives>,
+        event_queue: Arc<EventQueue>,
         repos: Arc<Repositories>,
-        pipeline_update_receiver: mpsc::Receiver<Arc<PipelineDerivatives>>,
         stop_receiver: mpsc::Receiver<()>,
     ) {
+        let event_poll = event_queue.subscribe(EventTag::UpdatePipeline);
+
         let _ = thread::spawn(move || {
             Self::main_loop(
                 id,
                 task_executor_lock.clone(),
-                pipeline_derivatives,
+                event_poll,
                 repos,
-                pipeline_update_receiver,
                 stop_receiver,
             )
         });
     }
 
     fn main_loop(
-        id: WorkerId,
+        id: GenericWorkerId,
         task_executor_lock: Arc<TaskExecutorLock>,
-        pipeline_derivatives: Arc<PipelineDerivatives>,
+        event_poll: EventPoll,
         repos: Arc<Repositories>,
-        pipeline_update_receiver: mpsc::Receiver<Arc<PipelineDerivatives>>,
         stop_receiver: mpsc::Receiver<()>,
     ) {
-        let mut pipeline_derivatives = pipeline_derivatives;
+        let mut pipeline_derivatives = Arc::new(PipelineDerivatives::new(Pipeline::default()));
         let mut scheduler = FlowEfficientScheduler::default();
         let mut cur_worker_state = <FlowEfficientScheduler as Scheduler>::W::default();
 
-        log::debug!("[Worker#{}] Started", id);
+        log::debug!("[GenericWorker#{}] Started", id);
 
         while stop_receiver.try_recv().is_err() {
             if let Ok(_lock) = task_executor_lock.try_task_execution() {
                 if let Some((task_id, next_worker_state)) = scheduler.next_task(cur_worker_state) {
-                    log::debug!("[Worker#{}] Scheduled task:{}", id, task_id);
+                    log::debug!("[GenericWorker#{}] Scheduled task:{}", id, task_id);
 
                     cur_worker_state = next_worker_state;
 
@@ -87,7 +91,7 @@ impl WorkerThread {
             } else {
                 pipeline_derivatives = Self::handle_interruption(
                     id,
-                    &pipeline_update_receiver,
+                    &event_poll,
                     pipeline_derivatives,
                     &mut scheduler,
                 );
@@ -101,13 +105,16 @@ impl WorkerThread {
     ///
     /// Some on interruption.
     fn handle_interruption(
-        id: WorkerId,
-        pipeline_update_receiver: &mpsc::Receiver<Arc<PipelineDerivatives>>,
+        id: GenericWorkerId,
+        event_poll: &EventPoll,
         pipeline_derivatives: Arc<PipelineDerivatives>,
         scheduler: &mut FlowEfficientScheduler,
     ) -> Arc<PipelineDerivatives> {
-        if let Ok(pipeline_derivatives) = pipeline_update_receiver.try_recv() {
-            log::debug!("[Worker#{}] got interruption", id);
+        if let Some(Event::UpdatePipeline {
+            pipeline_derivatives,
+        }) = event_poll.poll()
+        {
+            log::debug!("[GenericWorker#{}] got UpdatePipeline event", id);
 
             scheduler
                 .notify_pipeline_update(pipeline_derivatives.as_ref())

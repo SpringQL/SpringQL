@@ -4,6 +4,10 @@
 //! Tasks are mapped to TaskGraph's nodes. queues are mapped to its nodes.
 //!
 //! A TaskGraph is uniquely generated from a Pipeline.
+//!
+//! # Task graph concept diagram
+//!
+//! ![Task graph concept diagram](https://raw.githubusercontent.com/SpringQL/SpringQL.github.io/main/static/img/pipeline-and-task-graph.svg)
 
 pub(super) mod queue_id;
 pub(super) mod task_id;
