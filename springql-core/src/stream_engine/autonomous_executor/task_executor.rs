@@ -12,7 +12,8 @@ use self::{
     task_executor_lock::{PipelineUpdateLockGuard, TaskExecutorLock},
 };
 use super::{
-    pipeline_derivatives::PipelineDerivatives, repositories::Repositories, task_graph::TaskGraph,
+    event_queue::EventQueue, pipeline_derivatives::PipelineDerivatives, repositories::Repositories,
+    task_graph::TaskGraph,
 };
 
 /// Task executor executes task graph's dataflow by internal worker threads.
@@ -31,7 +32,7 @@ pub(in crate::stream_engine) struct TaskExecutor {
 impl TaskExecutor {
     pub(in crate::stream_engine::autonomous_executor) fn new(
         n_worker_threads: usize,
-        pipeline_derivatives: Arc<PipelineDerivatives>,
+        event_queue: Arc<EventQueue>,
     ) -> Self {
         let task_executor_lock = Arc::new(TaskExecutorLock::default());
         let repos = Arc::new(Repositories::default());
@@ -42,7 +43,7 @@ impl TaskExecutor {
             worker_pool: GenericWorkerPool::new(
                 n_worker_threads,
                 task_executor_lock,
-                pipeline_derivatives,
+                event_queue,
                 repos.clone(),
             ),
             repos,
@@ -77,9 +78,6 @@ impl TaskExecutor {
             .try_for_each(|sink_writer| {
                 self.repos.sink_writer_repository().register(sink_writer)
             })?;
-
-        self.worker_pool
-            .interrupt_pipeline_update(pipeline_derivatives);
 
         Ok(())
     }

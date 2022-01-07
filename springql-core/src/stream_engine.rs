@@ -9,39 +9,29 @@
 //! 1. SQL executor
 //! 2. Autonomous executor
 //!
-//! Reactive executor receives commands from user interface to quickly change some status of a pipeline.
-//! It also gets interruption from `PerformanceMonitorWorker` to change task execution policy.
+//! SQL executor receives commands from user interface to quickly change some status of a pipeline.
 //! It does not deal with stream data (Row, to be precise).
 //!
 //! Autonomous executor deals with stream data.
 //!
-//! Both reactive executor and autonomous executor instance run at a main thread, while autonomous executor has workers which run at different worker threads.
+//! Both SQL executor and autonomous executor instance run at a main thread, while autonomous executor has workers which run at different worker threads.
 //!
 //! # `*Executor` structure
 //!
 //! - StreamEngine
 //!   - SqlExecutor (main thread; alters pipeline)
 //!   - AutonomousExecutor
-//!     - MemoryStateMachine (1 thread)
+//!     - MemoryStateMachineWorker (1 thread)
 //!     - TaskExecutor
 //!       - SourceWorkerPool (N threads; runs source tasks with SourceScheduler)
 //!       - GenericWorkerPool (M threads; runs pump and sink tasks with a dynamically-chosen scheduler)
 //!     - PerformanceMonitorWorker (1 thread)
 //!
-//! # `*Executor` interaction
+//! # `*Worker` interaction
 //!
-//! ## SQL command flow
+//! Workers in AutonomousExecutor interact via EventQueue (Choreography-based Saga pattern).
 //!
-//! 1. SQL from user (via C API, for example) -> [api](crate::api) -> SqlExecutor.
-//! 2. SqlExecutor locks TaskExecutor, kicks Purger, and notifies pipeline update to TaskExecutor.
-//!
-//! ## Memory state transition
-//!
-//! 1. PerformanceMonitorWorker periodically reports performance metrics to MemoryStateMachine.
-//! 2. When MemoryStateMachine detect condition to transit memory state:
-//!   - [* -> Moderate] MemoryStateMachine notifies state transition to TaskExecutor and TaskExecutor sets task scheduler to FlowEfficientScheduler.
-//!   - [* -> Severe] MemoryStateMachine notifies state transition to TaskExecutor and TaskExecutor sets task scheduler to MemoryReducingScheduler.
-//!   - [* -> Critical] MemoryStateMachine notifies state transition to TaskExecutor; and TaskExecutor locks source workers and generic workers, kicks Purger, and waits for next performance metrics.
+//! TODO draw.io diagram
 
 pub(crate) mod command;
 
