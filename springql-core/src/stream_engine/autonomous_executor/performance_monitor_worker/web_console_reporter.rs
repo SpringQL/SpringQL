@@ -60,6 +60,7 @@ mod tests {
 
     use super::*;
 
+    #[ignore]
     #[tokio::test]
     async fn test_report() {
         setup_test_logger();
