@@ -1,21 +1,41 @@
 use std::{sync::Arc, thread, time::Duration};
 
-use crate::stream_engine::autonomous_executor::{
-    event_queue::event::EventTag, performance_metrics::PerformanceMetrics,
-    pipeline_derivatives::PipelineDerivatives, worker::worker_thread::WorkerThread,
+use crate::stream_engine::{
+    autonomous_executor::{
+        event_queue::event::EventTag, performance_metrics::PerformanceMetrics,
+        pipeline_derivatives::PipelineDerivatives, worker::worker_thread::WorkerThread,
+    },
+    time::duration::wall_clock_duration::WallClockDuration,
 };
 
-use super::{
-    web_console_reporter::WebConsoleReporter, CLOCK_MSEC, REPORT_INTERVAL_CLOCK_WEB_CONSOLE,
-};
+use super::web_console_reporter::WebConsoleReporter;
+
+// TODO config
+const CLOCK_MSEC: u64 = 100;
+const WEB_CONSOLE_REPORT_INTERVAL_CLOCK: u64 = 30;
+const WEB_CONSOLE_HOST: &str = "127.0.0.1";
+const WEB_CONSOLE_PORT: u16 = 8050;
+const WEB_CONSOLE_TIMEOUT: WallClockDuration =
+    WallClockDuration::from_millis(CLOCK_MSEC * WEB_CONSOLE_REPORT_INTERVAL_CLOCK);
 
 /// Runs a worker thread.
 #[derive(Debug)]
 pub(super) struct PerformanceMonitorWorkerThread;
 
-#[derive(Debug, new)]
-pub(super) struct PerformanceMonitorWorkerThreadArg {
+#[derive(Debug)]
+pub(in crate::stream_engine::autonomous_executor) struct PerformanceMonitorWorkerThreadArg {
     web_console_reporter: WebConsoleReporter,
+}
+
+impl Default for PerformanceMonitorWorkerThreadArg {
+    fn default() -> Self {
+        // TODO ::from_config()
+        let web_console_reporter =
+            WebConsoleReporter::new(WEB_CONSOLE_HOST, WEB_CONSOLE_PORT, WEB_CONSOLE_TIMEOUT);
+        Self {
+            web_console_reporter,
+        }
+    }
 }
 
 #[derive(Debug, Default)]
@@ -41,7 +61,7 @@ impl WorkerThread for PerformanceMonitorWorkerThread {
         let mut state = current_state;
 
         if state.clk_web_console == 0 {
-            state.clk_web_console = REPORT_INTERVAL_CLOCK_WEB_CONSOLE;
+            state.clk_web_console = WEB_CONSOLE_REPORT_INTERVAL_CLOCK;
             thread_arg
                 .web_console_reporter
                 .report(&state.metrics, state.pipeline_derivatives.task_graph());
