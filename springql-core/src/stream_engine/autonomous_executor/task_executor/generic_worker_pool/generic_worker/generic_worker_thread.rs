@@ -30,16 +30,12 @@ pub(in crate::stream_engine::autonomous_executor) struct GenericWorkerThreadArg 
     id: GenericWorkerId,
     task_executor_lock: Arc<TaskExecutorLock>,
     repos: Arc<Repositories>,
-
-    /// PerformanceMetrics is shared between generic workers, instead of owned by them as state.
-    /// This is because PerformanceMetrics is updated per task execution, which is too frequent
-    /// to broadcast to each generic worker.
-    metrics: Arc<PerformanceMetrics>,
 }
 
 #[derive(Debug, Default)]
 pub(super) struct GenericWorkerLoopState {
     pipeline_derivatives: Arc<PipelineDerivatives>,
+    metrics: Arc<PerformanceMetrics>,
     scheduler: FlowEfficientScheduler,
 }
 
@@ -61,7 +57,7 @@ impl WorkerThread for GenericWorkerThread {
         if let Ok(_lock) = task_executor_lock.try_task_execution() {
             let task_series = current_state.scheduler.next_task_series(
                 current_state.pipeline_derivatives.task_graph(),
-                thread_arg.metrics.as_ref(),
+                current_state.metrics.as_ref(),
             );
             if !task_series.is_empty() {
                 Self::execute_task_series(&task_series, &current_state, thread_arg);

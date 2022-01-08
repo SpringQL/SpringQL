@@ -24,19 +24,15 @@ pub(super) struct PerformanceMonitorWorkerThread;
 
 #[derive(Debug)]
 pub(in crate::stream_engine::autonomous_executor) struct PerformanceMonitorWorkerThreadArg {
-    metrics: Arc<PerformanceMetrics>,
     web_console_reporter: WebConsoleReporter,
 }
 
-impl PerformanceMonitorWorkerThreadArg {
-    pub(in crate::stream_engine::autonomous_executor) fn new(
-        metrics: Arc<PerformanceMetrics>,
-    ) -> Self {
+impl Default for PerformanceMonitorWorkerThreadArg {
+    fn default() -> Self {
         // TODO ::from_config()
         let web_console_reporter =
             WebConsoleReporter::new(WEB_CONSOLE_HOST, WEB_CONSOLE_PORT, WEB_CONSOLE_TIMEOUT);
         Self {
-            metrics,
             web_console_reporter,
         }
     }
@@ -44,6 +40,7 @@ impl PerformanceMonitorWorkerThreadArg {
 
 #[derive(Debug, Default)]
 pub(super) struct PerformanceMonitorWorkerLoopState {
+    metrics: PerformanceMetrics,
     pipeline_derivatives: Arc<PipelineDerivatives>,
     clk_web_console: u64,
 }
@@ -66,7 +63,7 @@ impl WorkerThread for PerformanceMonitorWorkerThread {
         if state.clk_web_console == 0 {
             state.clk_web_console = WEB_CONSOLE_REPORT_INTERVAL_CLOCK;
             thread_arg.web_console_reporter.report(
-                thread_arg.metrics.as_ref(),
+                &state.metrics,
                 state.pipeline_derivatives.task_graph(),
             );
         }
@@ -78,15 +75,13 @@ impl WorkerThread for PerformanceMonitorWorkerThread {
     fn ev_update_pipeline(
         current_state: Self::LoopState,
         pipeline_derivatives: Arc<PipelineDerivatives>,
-        thread_arg: &Self::ThreadArg,
+        _thread_arg: &Self::ThreadArg,
     ) -> Self::LoopState {
         let mut state = current_state;
 
-        // thread_arg.metrics has interior mutability... dirty code
-        thread_arg
+        state
             .metrics
             .reset_from_task_graph(pipeline_derivatives.task_graph());
-
         state.pipeline_derivatives = pipeline_derivatives;
 
         state

@@ -40,12 +40,8 @@ pub(super) struct PerformanceMetrics {
 }
 
 impl PerformanceMetrics {
-    /// This method does not call HashMap::clear() for HashMap fields
-    /// because it cannot take `&mut self` (PerformanceMetrics owner is in main thread, while the caller of this method is in PerformanceMonitorWorkerThread).
-    ///
-    /// Therefore, there may be stale keys in HashMap but we do not care about them.
     pub(super) fn reset(
-        &self,
+        &mut self,
         task_ids: Vec<TaskId>,
         row_queue_ids: Vec<RowQueueId>,
         window_queue_ids: Vec<WindowQueueId>,
@@ -64,7 +60,7 @@ impl PerformanceMetrics {
         });
     }
 
-    pub(super) fn reset_from_task_graph(&self, graph: &TaskGraph) {
+    pub(super) fn reset_from_task_graph(&mut self, graph: &TaskGraph) {
         self.reset(graph.tasks(), graph.row_queues(), graph.window_queues())
     }
 
