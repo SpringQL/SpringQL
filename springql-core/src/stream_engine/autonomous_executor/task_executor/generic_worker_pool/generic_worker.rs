@@ -8,7 +8,7 @@ use std::sync::{mpsc, Arc};
 
 use crate::stream_engine::autonomous_executor::{
     event_queue::EventQueue, repositories::Repositories,
-    task_executor::task_executor_lock::TaskExecutorLock, worker::WorkerThread,
+    task_executor::task_executor_lock::TaskExecutorLock, worker::worker_thread::WorkerThread,
 };
 
 use self::{

@@ -11,7 +11,7 @@ use crate::stream_engine::autonomous_executor::{
         scheduler::{flow_efficient_scheduler::FlowEfficientScheduler, Scheduler},
         task_executor_lock::TaskExecutorLock,
     },
-    worker::WorkerThread,
+    worker::worker_thread::WorkerThread,
 };
 
 use super::generic_worker_id::GenericWorkerId;

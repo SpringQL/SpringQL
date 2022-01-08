@@ -14,7 +14,7 @@ use self::{
     web_console_reporter::WebConsoleReporter,
 };
 
-use super::{event_queue::EventQueue, worker::WorkerThread};
+use super::{event_queue::EventQueue, worker::worker_thread::WorkerThread};
 
 // TODO config
 const CLOCK_MSEC: u64 = 100;

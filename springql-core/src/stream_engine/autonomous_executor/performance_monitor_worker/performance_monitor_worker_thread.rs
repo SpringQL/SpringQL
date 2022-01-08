@@ -2,7 +2,7 @@ use std::{sync::Arc, thread, time::Duration};
 
 use crate::stream_engine::autonomous_executor::{
     event_queue::event::EventTag, performance_metrics::PerformanceMetrics,
-    pipeline_derivatives::PipelineDerivatives, worker::WorkerThread,
+    pipeline_derivatives::PipelineDerivatives, worker::worker_thread::WorkerThread,
 };
 
 use super::{
