@@ -51,3 +51,9 @@ impl PipelineDerivatives {
         self.task_repo.get(task_id)
     }
 }
+
+impl Default for PipelineDerivatives {
+    fn default() -> Self {
+        Self::new(Pipeline::default())
+    }
+}

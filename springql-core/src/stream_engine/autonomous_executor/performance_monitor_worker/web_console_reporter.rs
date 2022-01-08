@@ -11,13 +11,13 @@ use self::web_console_request::WebConsoleRequest;
 #[derive(Debug)]
 pub(super) struct WebConsoleReporter {
     url: String,
-    client: reqwest::Client,
+    client: reqwest::blocking::Client,
 }
 
 impl WebConsoleReporter {
     pub(super) fn new(host: &str, port: u16, timeout: WallClockDuration) -> Self {
-        let client = reqwest::Client::builder()
-            .timeout(timeout.into())
+        let client = reqwest::blocking::Client::builder()
+            .timeout(Some(timeout.into()))
             .build()
             .expect("failed to build a reqwest client");
 
@@ -26,28 +26,23 @@ impl WebConsoleReporter {
         Self { url, client }
     }
 
-    pub(super) async fn report(&self, metrics: &PerformanceMetrics, graph: &TaskGraph) {
+    pub(super) fn report(&self, metrics: &PerformanceMetrics, graph: &TaskGraph) {
         let request = WebConsoleRequest::from_metrics(metrics, graph);
 
-        let res = self
-            .client
-            .post(&self.url)
-            .json(&request.to_json())
-            .send()
-            .await;
+        let res = self.client.post(&self.url).json(&request.to_json()).send();
 
         match res {
-            Ok(resp) => self.handle_response(resp).await,
+            Ok(resp) => self.handle_response(resp),
             Err(e) => log::error!("failed to POST metrics to web-console: {:?}", e),
         }
     }
 
-    async fn handle_response(&self, resp: reqwest::Response) {
+    fn handle_response(&self, resp: reqwest::blocking::Response) {
         let res_status = resp.error_for_status_ref();
         match res_status {
             Ok(_) => log::debug!("successfully POSTed metrics to web-console"),
             Err(e) => {
-                let body = resp.text().await.unwrap();
+                let body = resp.text().unwrap();
                 log::error!("error response from web-console: {:?} - {}", e, body);
             }
         }
@@ -61,17 +56,15 @@ mod tests {
     use super::*;
 
     #[ignore]
-    #[tokio::test]
-    async fn test_report() {
+    #[test]
+    fn test_report() {
         setup_test_logger();
 
         let reporter =
             WebConsoleReporter::new("localhost", 8050, WallClockDuration::from_millis(100));
-        reporter
-            .report(
-                &PerformanceMetrics::fx_split_join(),
-                &TaskGraph::fx_split_join(),
-            )
-            .await;
+        reporter.report(
+            &PerformanceMetrics::fx_split_join(),
+            &TaskGraph::fx_split_join(),
+        );
     }
 }

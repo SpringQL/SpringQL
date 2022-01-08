@@ -8,10 +8,13 @@ use std::sync::{mpsc, Arc};
 
 use crate::stream_engine::autonomous_executor::{
     event_queue::EventQueue, repositories::Repositories,
-    task_executor::task_executor_lock::TaskExecutorLock,
+    task_executor::task_executor_lock::TaskExecutorLock, worker::WorkerThread,
 };
 
-use self::{generic_worker_id::GenericWorkerId, generic_worker_thread::GenericWorkerThread};
+use self::{
+    generic_worker_id::GenericWorkerId,
+    generic_worker_thread::{GenericWorkerThread, GenericWorkerThreadArg},
+};
 
 /// Worker to execute pump and sink tasks.
 #[derive(Debug)]
@@ -28,7 +31,8 @@ impl GenericWorker {
     ) -> Self {
         let (stop_button, stop_receiver) = mpsc::sync_channel(0);
 
-        let _ = GenericWorkerThread::run(id, task_executor_lock, event_queue, repos, stop_receiver);
+        let arg = GenericWorkerThreadArg::new(id, task_executor_lock, repos);
+        let _ = GenericWorkerThread::run(event_queue, stop_receiver, arg);
 
         Self { stop_button }
     }
