@@ -2,8 +2,10 @@ use std::{sync::Arc, thread, time::Duration};
 
 use crate::stream_engine::{
     autonomous_executor::{
-        event_queue::event::EventTag, performance_metrics::PerformanceMetrics,
-        pipeline_derivatives::PipelineDerivatives, worker::worker_thread::WorkerThread,
+        event_queue::{event::EventTag, EventQueue},
+        performance_metrics::PerformanceMetrics,
+        pipeline_derivatives::PipelineDerivatives,
+        worker::worker_thread::WorkerThread,
     },
     time::duration::wall_clock_duration::WallClockDuration,
 };
@@ -75,6 +77,7 @@ impl WorkerThread for PerformanceMonitorWorkerThread {
         current_state: Self::LoopState,
         pipeline_derivatives: Arc<PipelineDerivatives>,
         _thread_arg: &Self::ThreadArg,
+        _event_queue: Arc<EventQueue>,
     ) -> Self::LoopState {
         let mut state = current_state;
 

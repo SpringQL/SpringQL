@@ -3,7 +3,7 @@
 use std::{sync::Arc, thread, time::Duration};
 
 use crate::stream_engine::autonomous_executor::{
-    event_queue::event::EventTag,
+    event_queue::{event::EventTag, EventQueue},
     pipeline_derivatives::PipelineDerivatives,
     repositories::Repositories,
     task::task_context::TaskContext,
@@ -88,6 +88,7 @@ impl WorkerThread for GenericWorkerThread {
         current_state: Self::LoopState,
         pipeline_derivatives: Arc<PipelineDerivatives>,
         thread_arg: &Self::ThreadArg,
+        _event_queue: Arc<EventQueue>,
     ) -> Self::LoopState {
         log::debug!("[GenericWorker#{}] got UpdatePipeline event", thread_arg.id);
 
