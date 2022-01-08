@@ -8,7 +8,10 @@ use crate::stream_engine::autonomous_executor::{
     event_queue::EventQueue, repositories::Repositories,
 };
 
-use self::generic_worker::{generic_worker_id::GenericWorkerId, GenericWorker};
+use self::generic_worker::{
+    generic_worker_id::GenericWorkerId, generic_worker_thread::GenericWorkerThreadArg,
+    GenericWorker,
+};
 
 use super::task_executor_lock::TaskExecutorLock;
 
@@ -32,12 +35,12 @@ impl GenericWorkerPool {
     ) -> Self {
         let workers = (0..n_worker_threads)
             .map(|id| {
-                GenericWorker::new(
+                let arg = GenericWorkerThreadArg::new(
                     GenericWorkerId::new(id as u16),
                     task_executor_lock.clone(),
-                    event_queue.clone(),
                     repos.clone(),
-                )
+                );
+                GenericWorker::new(event_queue.clone(), arg)
             })
             .collect();
         Self {

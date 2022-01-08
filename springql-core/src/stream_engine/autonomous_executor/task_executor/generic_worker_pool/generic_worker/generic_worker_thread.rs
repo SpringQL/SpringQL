@@ -11,7 +11,7 @@ use crate::stream_engine::autonomous_executor::{
         scheduler::{flow_efficient_scheduler::FlowEfficientScheduler, Scheduler},
         task_executor_lock::TaskExecutorLock,
     },
-    worker::WorkerThread,
+    worker::worker_thread::WorkerThread,
 };
 
 use super::generic_worker_id::GenericWorkerId;
@@ -24,7 +24,7 @@ const TASK_WAIT_MSEC: u64 = 100;
 pub(super) struct GenericWorkerThread;
 
 #[derive(Debug, new)]
-pub(super) struct GenericWorkerThreadArg {
+pub(in crate::stream_engine::autonomous_executor) struct GenericWorkerThreadArg {
     id: GenericWorkerId,
     task_executor_lock: Arc<TaskExecutorLock>,
     repos: Arc<Repositories>,
