@@ -4,24 +4,31 @@
 
 use std::sync::Arc;
 
-use crate::stream_engine::autonomous_executor::pipeline_derivatives::PipelineDerivatives;
+use crate::stream_engine::autonomous_executor::{
+    performance_metrics::PerformanceMetrics, pipeline_derivatives::PipelineDerivatives,
+};
 
 #[derive(Clone, Debug)]
 pub(in crate::stream_engine::autonomous_executor) enum Event {
     UpdatePipeline {
         pipeline_derivatives: Arc<PipelineDerivatives>,
     },
+    UpdatePerformanceMetrics {
+        metrics: Arc<PerformanceMetrics>,
+    },
 }
 
 #[derive(Copy, Clone, Eq, PartialEq, Hash, Debug)]
 pub(in crate::stream_engine::autonomous_executor) enum EventTag {
     UpdatePipeline,
+    UpdatePerformanceMetrics,
 }
 
 impl From<&Event> for EventTag {
     fn from(event: &Event) -> Self {
         match event {
-            Event::UpdatePipeline { .. } => EventTag::UpdatePipeline,
+            Event::UpdatePipeline { .. } => Self::UpdatePipeline,
+            Event::UpdatePerformanceMetrics { .. } => Self::UpdatePerformanceMetrics,
         }
     }
 }

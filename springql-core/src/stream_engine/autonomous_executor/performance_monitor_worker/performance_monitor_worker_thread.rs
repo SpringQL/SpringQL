@@ -2,7 +2,10 @@ use std::{sync::Arc, thread, time::Duration};
 
 use crate::stream_engine::{
     autonomous_executor::{
-        event_queue::{event::EventTag, EventQueue},
+        event_queue::{
+            event::{Event, EventTag},
+            EventQueue,
+        },
         performance_metrics::PerformanceMetrics,
         pipeline_derivatives::PipelineDerivatives,
         worker::worker_thread::WorkerThread,
@@ -77,17 +80,27 @@ impl WorkerThread for PerformanceMonitorWorkerThread {
         current_state: Self::LoopState,
         pipeline_derivatives: Arc<PipelineDerivatives>,
         _thread_arg: &Self::ThreadArg,
-        _event_queue: Arc<EventQueue>,
+        event_queue: Arc<EventQueue>,
     ) -> Self::LoopState {
         let mut state = current_state;
 
         let metrics = Arc::new(PerformanceMetrics::from_task_graph(
             pipeline_derivatives.task_graph(),
         ));
-        state.metrics = metrics;
+        state.metrics = metrics.clone();
+        event_queue.publish(Event::UpdatePerformanceMetrics { metrics });
 
         state.pipeline_derivatives = pipeline_derivatives;
 
         state
+    }
+
+    fn ev_update_performance_metrics(
+        _current_state: Self::LoopState,
+        _metrics: Arc<PerformanceMetrics>,
+        _thread_arg: &Self::ThreadArg,
+        _event_queue: Arc<EventQueue>,
+    ) -> Self::LoopState {
+        unreachable!()
     }
 }

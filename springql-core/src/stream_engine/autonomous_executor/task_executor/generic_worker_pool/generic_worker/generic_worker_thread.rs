@@ -45,7 +45,7 @@ impl WorkerThread for GenericWorkerThread {
     type LoopState = GenericWorkerLoopState;
 
     fn event_subscription() -> Vec<EventTag> {
-        vec![EventTag::UpdatePipeline]
+        vec![EventTag::UpdatePipeline, EventTag::UpdatePerformanceMetrics]
     }
 
     fn main_loop_cycle(
@@ -81,6 +81,17 @@ impl WorkerThread for GenericWorkerThread {
 
         state.pipeline_derivatives = pipeline_derivatives;
 
+        state
+    }
+
+    fn ev_update_performance_metrics(
+        current_state: Self::LoopState,
+        metrics: Arc<PerformanceMetrics>,
+        _thread_arg: &Self::ThreadArg,
+        _event_queue: Arc<EventQueue>,
+    ) -> Self::LoopState {
+        let mut state = current_state;
+        state.metrics = metrics;
         state
     }
 }

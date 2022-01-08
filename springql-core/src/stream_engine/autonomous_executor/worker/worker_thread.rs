@@ -3,7 +3,9 @@ use std::{
     thread,
 };
 
-use crate::error::SpringError;
+use crate::{
+    error::SpringError, stream_engine::autonomous_executor::performance_metrics::PerformanceMetrics,
+};
 
 use crate::stream_engine::autonomous_executor::{
     event_queue::{
@@ -36,6 +38,15 @@ pub(in crate::stream_engine::autonomous_executor) trait WorkerThread {
     fn ev_update_pipeline(
         current_state: Self::LoopState,
         pipeline_derivatives: Arc<PipelineDerivatives>,
+        thread_arg: &Self::ThreadArg,
+
+        // for cascading event
+        event_queue: Arc<EventQueue>,
+    ) -> Self::LoopState;
+
+    fn ev_update_performance_metrics(
+        current_state: Self::LoopState,
+        metrics: Arc<PerformanceMetrics>,
         thread_arg: &Self::ThreadArg,
 
         // for cascading event
@@ -88,6 +99,14 @@ pub(in crate::stream_engine::autonomous_executor) trait WorkerThread {
                     state = Self::ev_update_pipeline(
                         state,
                         pipeline_derivatives,
+                        thread_arg,
+                        event_queue.clone(),
+                    );
+                }
+                Some(Event::UpdatePerformanceMetrics { metrics }) => {
+                    state = Self::ev_update_performance_metrics(
+                        state,
+                        metrics,
                         thread_arg,
                         event_queue.clone(),
                     );
