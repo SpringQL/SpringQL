@@ -1,47 +1,25 @@
 // Copyright (c) 2021 TOYOTA MOTOR CORPORATION. Licensed under MIT OR Apache-2.0.
 
 pub(in crate::stream_engine::autonomous_executor) mod generic_worker_id;
+pub(in crate::stream_engine::autonomous_executor) mod generic_worker_thread;
 
-mod generic_worker_thread;
-
-use std::sync::{mpsc, Arc};
+use std::sync::Arc;
 
 use crate::stream_engine::autonomous_executor::{
-    event_queue::EventQueue, repositories::Repositories,
-    task_executor::task_executor_lock::TaskExecutorLock, worker::worker_thread::WorkerThread,
+    event_queue::EventQueue, worker::worker_handle::WorkerHandle,
 };
 
-use self::{
-    generic_worker_id::GenericWorkerId,
-    generic_worker_thread::{GenericWorkerThread, GenericWorkerThreadArg},
-};
+use self::generic_worker_thread::{GenericWorkerThread, GenericWorkerThreadArg};
 
 /// Worker to execute pump and sink tasks.
 #[derive(Debug)]
 pub(super) struct GenericWorker {
-    stop_button: mpsc::SyncSender<()>,
+    handle: WorkerHandle,
 }
 
 impl GenericWorker {
-    pub(super) fn new(
-        id: GenericWorkerId,
-        task_executor_lock: Arc<TaskExecutorLock>,
-        event_queue: Arc<EventQueue>,
-        repos: Arc<Repositories>,
-    ) -> Self {
-        let (stop_button, stop_receiver) = mpsc::sync_channel(0);
-
-        let arg = GenericWorkerThreadArg::new(id, task_executor_lock, repos);
-        let _ = GenericWorkerThread::run(event_queue, stop_receiver, arg);
-
-        Self { stop_button }
-    }
-}
-
-impl Drop for GenericWorker {
-    fn drop(&mut self) {
-        self.stop_button
-            .send(())
-            .expect("failed to wait for worker thread to finish its job");
+    pub(super) fn new(event_queue: Arc<EventQueue>, thread_arg: GenericWorkerThreadArg) -> Self {
+        let handle = WorkerHandle::new::<GenericWorkerThread>(event_queue, thread_arg);
+        Self { handle }
     }
 }

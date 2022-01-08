@@ -10,7 +10,7 @@ pub(in crate::stream_engine::autonomous_executor) struct WorkerHandle {
 }
 
 impl WorkerHandle {
-    pub(super) fn new<T: WorkerThread>(
+    pub(in crate::stream_engine::autonomous_executor) fn new<T: WorkerThread>(
         event_queue: Arc<EventQueue>,
         thread_arg: T::ThreadArg,
     ) -> Self {
