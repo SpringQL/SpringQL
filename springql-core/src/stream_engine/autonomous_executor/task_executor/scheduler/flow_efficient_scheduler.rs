@@ -1,373 +1,210 @@
-// Copyright (c) 2021 TOYOTA MOTOR CORPORATION. Licensed under MIT OR Apache-2.0.
-
 //! Flow-Efficient Scheduler, intended to minimize the size of working memory.
 //!
 //! # Basic idea
 //!
-//! 1. Collect a row from a source.
-//! 2. Repeatedly pass the row to downstream streams until sink without collecting another row from the source.
+//! 1. Collect a row from a "row generator" (source task or window task).
+//! 2. Repeatedly pass the row to downstream tasks until "flow stopper" (sink or window task).
 //! 3. Goto 1.
 //!
 //! # Deeper dive
-//!
-//! ## Scheduling model
-//!
-//! A pipeline is a DAG where nodes are (source, sink, or native) streams and edges are pumps, source readers, or sink writers.
-//!
-//! A node has 1 or more incoming edges and 1 or more outgoing edges.
-//!
-//! ```text
-//! (0)--a-->[1]--c-->[3]--f-->[4]--g-->[5]--h-->[6]--j-->[8]--l-->
-//!  |                          ^       ^ |
-//!  |                          |       | |
-//!  +---b-->[2]-------d--------+       | +--i-->[7]--k-->[9]--m-->
-//!           |                         |
-//!           +--------------e----------+
-//! ```
-//!
-//! This is a sample pipeline DAG.
-//!
-//! - `[1]` - `[9]`: A stream.
-//!   - `[1]` and `[2]` are source stream.
-//!   - `[8]` and `[9]` are sink stream.
-//!   - `[3]` - `[7]` are native stream.
-//! - `(0)`: A virtual root stream, which is introduced to make nodes traversal algorithm simpler.
-//! - `a` and `b`: Source readers.
-//! - `l` and `m`: Sink writers.
-//! - `c` - `k`: Pumps.
-//!
-//! A scheduler regards edges (`a` - `m`) as tasks and executes them in some order.
-//! Each task may have dependent tasks because a task need input row given from upstream. Single exception is source reader, which can generate row.
-//! The core concept of scheduling is to order all the tasks in a pipeline so that dependency is resolved.
-//! Since task dependency is mapped to node dependency in pipeline DAG, topological sort to pipeline produces a valid task schedule.
-//!
-//! ## Flow-Efficient Scheduler
 //!
 //! To minimize the number of alive rows in memory, Flow-Efficient Scheduler has the following rules.
 //!
 //! - **Rule1: one-by-one**
 //!
-//!   A worker does not make buffering. In other words, a worker hols 0 or 1 input row for a task (pump, source reader, or sink writer) at a time.
+//!   A task inputs only 1 row at a time without making "mini-batch" of rows. This rule
+//!   eliminates requisition to extra buffer and decrease latency between source to sink,
+//!   while it may badly affects throughput.
 //!
-//!   Example: A worker request only 1 row from `a`.
+//! - **Rule2: a collector to stoppers**
+//! 
+//!   ![Generators, collectors, and stoppers in Flow-Efficient Scheduler](https://raw.githubusercontent.com/SpringQL/SpringQL.github.io/main/static/img/flow-efficient-scheduler.svg)
 //!
-//! - **Rule2: complete sequence**
+//!   Flow-Efficient Scheduler produces series of tasks from collector (downstream task of a generator) to reachable flow stoppers.
+//!   If path from a collector to flow stoppers have split, tasks are traversed in DFS order.
+//!   A worker then executes the series consecutively in order not to remain intermediate rows.
 //!
-//!   A worker completes sequential task group (edges between a multi-out stream and multi-in stream) without jumping to another sequential task group.
+//! - **Rule3: fair**
 //!
-//!   Example: Sequential task groups: `acf`, `b(d|e)`, `g`, `hjl`, `lkm`. Worker must execute `f` after `c`.
+//! Each collector has fair chance to be scheduled. Fairness is defined as such here:
 //!
-//! - **Rule3: request other dependencies**
-//!
-//!   For a stream having multiple incoming edges, a task mapped to an incoming edge request other tasks mapped to the remaining incoming edges to complete first.
-//!
-//!   Example: Request `d` after `f` has finished.
-//!
-//! - **Rule4: flow joined immediately**
-//!
-//!   For a stream having multiple incoming edges, a worker executes a task mapped to one of outgoing edges of the stream soon after all tasks mapped to the incoming edges finished.
-//!
-//!   Example: Execute `g` after `d` if `f` is already finished.
-//!
-//!   Note that Rule4 includes Rule2.
-//!
-//! Therefore, Flow-Efficient Scheduler produces either of these schedules:
-//!
-//! 1. `acfbdgehjlikm`
-//!
-//!   (imm **`a`** or `b`) `[acf]` (req `d`) `[bd]` (imm `g`) [g] (req `e`) `[e]` (imm **`h`** or `i`) `[hjl][ikm]`
-//! 2. `acfbdgeikmhjl`
-//!
-//!   (imm **`a`** or `b`) `[acf]` (req `d`) `[bd]` (imm `g`) [g] (req `e`) `[e]` (imm `h` or **`i`**) `[ikm][hjl]`
-//! 3. `bdacfgehjlikm`
-//!
-//!   (imm `a` or **`b`**) `[b]` (imm **`d`** or `e`) [d] (req `f`) `[acf]` (imm `g`) `[g]` (req `e`) `[e]` (imm **`h`** or `i`) `[hjl][ikm]`
-//! 4. `bdacfgeikmhjl`
-//!
-//!   (imm `a` or **`b`**) `[b]` (imm **`d`** or `e`) [d] (req `f`) `[acf]` (imm `g`) `[g]` (req `e`) `[e]` (imm **`h`** or `i`) `[hjl][ikm]`
-//! 5. `beacfdghjlikm`
-//!   (imm `a` or **`b`**) `[b]` (imm `d` or **`e`**) [e] (req `g`) (req **`f`** and `d`) `[acf]` (req `d`) `[d]` (imm `g`) `[g]` (imm **`h`** or `i`) `[hjl][ikm]`
-//! 6. `beacfdgikmhjl`
-//!
-//!   (imm `a` or **`b`**) `[b]` (imm `d` or **`e`**) [e] (req `g`) (req **`f`** and `d`) `[acf]` (req `d`) `[d]` (imm `g`) `[g]` (imm `h` or **`i`**) `[ikm][hjl]`
-//! 7. `bedacfghjlikm`
-//!
-//!   (imm `a` or **`b`**) `[b]` (imm `d` or **`e`**) [e] (req `g`) (req `f` and **`d`**) `[d]` (req `f`) `[acf]` (imm `g`) `[g]` (imm **`h`** or `i`) `[hjl][ikm]`
-//! 8. `bedacfgikmhjl`
-//!
-//!   (imm `a` or **`b`**) `[b]` (imm `d` or **`e`**) [e] (req `g`) (req `f` and **`d`**) `[d]` (req `f`) `[acf]` (imm `g`) `[g]` (imm `h` or **`i`**) `[ikm][hjl]`
-//!
-//! Selecting 1 from these schedule intelligently should lead to more memory reduction but current implementation always select first one (eagerly select leftmost outgoing edge).
+//! Each row created by the generator waits, on average, the same number of times until it is collected by the collector.
 
-use crate::{
-    error::Result,
-    pipeline::pipeline_version::PipelineVersion,
-    stream_engine::autonomous_executor::task_graph::{task_id::TaskId, TaskGraph},
+use std::{cell::RefCell, collections::HashSet};
+
+use rand::{
+    distributions::{Uniform, WeightedIndex},
+    prelude::{Distribution, ThreadRng},
 };
-use std::collections::HashSet;
 
-use super::{Scheduler, WorkerState};
+use crate::stream_engine::autonomous_executor::{
+    performance_metrics::PerformanceMetrics,
+    task_graph::{task_id::TaskId, TaskGraph},
+};
 
-#[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Default)]
-pub(crate) struct CurrentTaskIdx {
-    pipeline_version: PipelineVersion,
-    idx: usize,
+use super::Scheduler;
+
+/// A generator task is one of:
+///
+/// - source tasks
+/// - window tasks
+///
+/// Source tasks and window tasks are not simple stream tasks but generator of rows.
+#[derive(Clone, Eq, PartialEq, Hash, Debug)]
+struct Generator {
+    task_id: TaskId,
 }
-impl WorkerState for CurrentTaskIdx {}
+
+/// Collector tasks are downstream tasks of a generator.
+///
+/// Rows' start flowing from collectors.
+#[derive(Clone, Eq, PartialEq, Hash, Debug)]
+struct Collector {
+    task_id: TaskId,
+}
+
+impl Generator {
+    fn collectors(&self, graph: &TaskGraph) -> HashSet<Collector> {
+        graph
+            .downstream_tasks(&self.task_id)
+            .into_iter()
+            .map(|collector_task_id| Collector {
+                task_id: collector_task_id,
+            })
+            .collect()
+    }
+}
+
+#[derive(Clone, Eq, PartialEq, Debug)]
+struct Stopper {
+    task_id: TaskId,
+}
 
 #[derive(Debug, Default)]
-pub(crate) struct FlowEfficientScheduler {
-    pipeline_version: PipelineVersion,
-    seq_task_schedule: Vec<TaskId>,
+pub(in crate::stream_engine::autonomous_executor) struct FlowEfficientScheduler {
+    rng: RefCell<ThreadRng>,
 }
 
 impl Scheduler for FlowEfficientScheduler {
-    type W = CurrentTaskIdx;
-
-    fn _notify_pipeline_version(&mut self, v: PipelineVersion) {
-        self.pipeline_version = v;
-    }
-
-    fn next_task(&self, worker_state: CurrentTaskIdx) -> Option<(TaskId, CurrentTaskIdx)> {
-        if self.seq_task_schedule.is_empty() {
-            None
-        } else if worker_state.pipeline_version != self.pipeline_version {
-            let current_task = self
-                .seq_task_schedule
-                .get(0)
-                .expect("index is managed in this function")
-                .clone();
-            let next_worker_state = CurrentTaskIdx {
-                pipeline_version: self.pipeline_version,
-                idx: 1 % self.seq_task_schedule.len(),
-            };
-            Some((current_task, next_worker_state))
-        } else {
-            let current_task_idx = worker_state.idx;
-            let current_task = self
-                .seq_task_schedule
-                .get(current_task_idx)
-                .expect("index is managed in this function")
-                .clone();
-            let next_worker_state = CurrentTaskIdx {
-                idx: (worker_state.idx + 1) % self.seq_task_schedule.len(),
-                ..worker_state
-            };
-            Some((current_task, next_worker_state))
-        }
-    }
-
-    /// # Failure
-    ///
-    /// - [SpringError::ForeignIo](crate::error::SpringError::ForeignIo) when:
-    ///   - failed to start a source reader.
-    fn _notify_task_graph_update(&mut self, task_graph: &TaskGraph) -> Result<()> {
-        let mut unvisited = task_graph.tasks().into_iter().collect::<HashSet<TaskId>>();
-
-        let mut seq_task_schedule = Vec::<TaskId>::new();
-
-        for sink_task in task_graph.sink_tasks() {
-            Self::_to_root_dfs_post_order(
-                &sink_task,
-                task_graph,
-                &mut seq_task_schedule,
-                &mut unvisited,
-            )?;
-        }
-
-        self.seq_task_schedule = seq_task_schedule;
-
-        log::debug!(
-            "[FlowEfficientScheduler] new schedule [{}]; from task graph {:?}",
-            self.seq_task_schedule
-                .iter()
-                .map(|task| task.to_string())
-                .collect::<Vec<_>>()
-                .join(", "),
-            task_graph
-        );
-
-        Ok(())
+    fn next_task_series(&self, graph: &TaskGraph, metrics: &PerformanceMetrics) -> Vec<TaskId> {
+        let collector = self.decide_collector(graph, metrics);
+        self.collector_to_stoppers_dfs(&collector, graph)
     }
 }
 
 impl FlowEfficientScheduler {
-    /// Push tasks to seq_task_schedule in DFS post-order.
-    fn _to_root_dfs_post_order(
-        cur_task: &TaskId,
-        task_graph: &TaskGraph,
-        seq_task_schedule: &mut Vec<TaskId>,
-        unvisited: &mut HashSet<TaskId>,
-    ) -> Result<()> {
-        if !unvisited.remove(cur_task) {
-            // already visited
-            Ok(())
+    /// A collector task is one of:
+    ///
+    /// - downstream tasks source tasks
+    /// - downstream tasks of window tasks
+    ///
+    /// Source tasks and window tasks are not simple stream tasks but generator of rows.
+    /// Rows' flow start from downstream of generator tasks.
+    ///
+    /// This function picks a collector probabilistically to meet the **Rule3: fair**.
+    fn decide_collector(&self, graph: &TaskGraph, metrics: &PerformanceMetrics) -> Collector {
+        let collectors = self.collectors(graph).into_iter().collect::<Vec<_>>();
+        let in_rows = collectors
+            .iter()
+            .map(|c| self.incoming_rows(c, graph, metrics))
+            .collect::<Vec<_>>();
+
+        let idx = if in_rows.iter().all(|nr| *nr == 0) {
+            // No collector has input row. Pick a collector randomly.
+            let distribution = Uniform::from(0..collectors.len());
+            distribution.sample(&mut *self.rng.borrow_mut())
         } else {
-            let upstream_tasks = task_graph.upstream_tasks(cur_task);
-            for parent_task in upstream_tasks {
-                Self::_to_root_dfs_post_order(
-                    &parent_task,
-                    task_graph,
-                    seq_task_schedule,
-                    unvisited,
-                )?;
+            let distribution = WeightedIndex::new(in_rows).expect("at least 1 collector");
+            distribution.sample(&mut *self.rng.borrow_mut())
+        };
+        let picked_collector = collectors.get(idx).expect("safe index");
+
+        log::error!(
+            "[FlowEfficientScheduler::decide_collector()] {}",
+            picked_collector.task_id,
+        );
+        picked_collector.clone()
+    }
+    fn incoming_rows(
+        &self,
+        collector: &Collector,
+        graph: &TaskGraph,
+        metrics: &PerformanceMetrics,
+    ) -> u64 {
+        graph
+            .input_queues(&collector.task_id)
+            .iter()
+            .map(|q| metrics.rows_for_task_input(q))
+            // FIXME: sum is not completely fair if the collector has multiple input queues
+            .sum()
+    }
+
+    fn collector_to_stoppers_dfs(&self, collector: &Collector, graph: &TaskGraph) -> Vec<TaskId> {
+        fn to_stoppers_dfs(current_task: &TaskId, graph: &TaskGraph) -> Vec<TaskId> {
+            if current_task.is_window_task() {
+                // window task is a stopper
+                vec![current_task.clone()]
+            } else {
+                let mut downstream_path = graph.downstream_tasks(current_task).iter().fold(
+                    vec![],
+                    |mut head, next_task| {
+                        let mut tail = to_stoppers_dfs(next_task, graph);
+                        head.append(&mut tail);
+                        head
+                    },
+                );
+
+                let mut me = vec![current_task.clone()];
+                me.append(&mut downstream_path);
+                me
             }
-            seq_task_schedule.push(cur_task.clone());
-            Ok(())
         }
+        to_stoppers_dfs(&collector.task_id, graph)
+    }
+
+    fn generators(&self, graph: &TaskGraph) -> HashSet<Generator> {
+        graph
+            .source_tasks()
+            .iter()
+            .cloned()
+            .chain(graph.window_tasks())
+            .map(|task_id| Generator {
+                task_id: task_id.clone(),
+            })
+            .collect()
+    }
+    fn collectors(&self, graph: &TaskGraph) -> HashSet<Collector> {
+        // TODO cache
+        self.generators(graph)
+            .iter()
+            .flat_map(|generator| generator.collectors(graph))
+            .collect()
     }
 }
 
-// #[cfg(test)]
-// mod tests {
-//     use std::collections::VecDeque;
+#[cfg(test)]
+mod tests {
+    use springql_test_logger::setup_test_logger;
 
-//     use springql_foreign_service::{
-//         sink::ForeignSink,
-//         source::{source_input::ForeignSourceInput, ForeignSource},
-//     };
+    use super::*;
 
-//     use crate::{
-//         pipeline::{name::PumpName, Pipeline, source_stream_model::SourceStreamModel},
-//         stream_engine::autonomous_executor::pipeline_derivatives::CurrentPipeline,
-//     };
+    #[ignore]
+    #[test]
+    fn test_flow_efficient_scheduler() {
+        setup_test_logger();
 
-//     use super::*;
-
-//     fn t(pipeline: Pipeline, expected: Vec<TaskId>) {
-//         let mut expected = expected.into_iter().collect::<VecDeque<_>>();
-
-//         let mut cur_task_idx = CurrentTaskIdx::default();
-
-//         let mut scheduler = FlowEfficientScheduler::default();
-
-//         let pipeline_derivatives = CurrentPipeline::new(pipeline);
-//         scheduler.notify_pipeline_update(&pipeline_derivatives).unwrap();
-
-//         if let Some((first_task, next_task_idx)) = scheduler.next_task(cur_task_idx) {
-//             assert_eq!(first_task, expected.pop_front().unwrap());
-//             cur_task_idx = next_task_idx;
-
-//             loop {
-//                 let (next_task, next_task_idx) = scheduler
-//                     .next_task(cur_task_idx)
-//                     .expect("task must be infinitely provided");
-//                 if next_task == first_task {
-//                     return;
-//                 }
-
-//                 let expected_next = expected.pop_front().unwrap();
-//                 assert_eq!(next_task, expected_next);
-
-//                 cur_task_idx = next_task_idx;
-//             }
-//         } else {
-//             assert!(expected.is_empty())
-//         }
-//     }
-
-//     #[test]
-//     fn test_source_only_pipeline() {
-//         t(Pipeline::fx_source_only(), vec![])
-//     }
-
-//     #[test]
-//     fn test_linear_pipeline() {
-//         let test_source = ForeignSource::start(ForeignSourceInput::new_fifo_batch(vec![])).unwrap();
-//         let test_sink = ForeignSink::start().unwrap();
-//         t(
-//             Pipeline::fx_linear(
-//                 test_source.host_ip(),
-//                 test_source.port(),
-//                 test_sink.host_ip(),
-//                 test_sink.port(),
-//             ),
-//             vec![
-//                 TaskId::from_source(&SourceStreamModel::fx_trade_with_name(StreamName::factory(
-//                     "st_1",
-//                 ))),
-//                 TaskId::from_pump(PumpName::factory("pu_b")),
-//                 TaskId::from_sink_writer(StreamName::factory("st_2")),
-//             ],
-//         )
-//     }
-
-//     #[test]
-//     fn test_pipeline_with_split() {
-//         let test_source = ForeignSource::start(ForeignSourceInput::new_fifo_batch(vec![])).unwrap();
-//         let test_sink1 = ForeignSink::start().unwrap();
-//         let test_sink2 = ForeignSink::start().unwrap();
-
-//         t(
-//             Pipeline::fx_split(
-//                 test_source.host_ip(),
-//                 test_source.port(),
-//                 test_sink1.host_ip(),
-//                 test_sink1.port(),
-//                 test_sink2.host_ip(),
-//                 test_sink2.port(),
-//             ),
-//             vec![
-//                 TaskId::from_source_reader(StreamName::factory("st_1")),
-//                 TaskId::from_pump(PumpName::factory("pu_c")),
-//                 TaskId::from_sink_writer(StreamName::factory("st_3")),
-//                 TaskId::from_source_reader(StreamName::factory("st_2")),
-//                 TaskId::from_pump(PumpName::factory("pu_d")),
-//                 TaskId::from_sink_writer(StreamName::factory("st_4")),
-//             ],
-//         )
-//     }
-
-//     #[test]
-//     fn test_pipeline_with_merge() {
-//         let test_source = ForeignSource::start(ForeignSourceInput::new_fifo_batch(vec![])).unwrap();
-//         let test_sink = ForeignSink::start().unwrap();
-//         t(
-//             Pipeline::fx_split_merge(
-//                 test_source.host_ip(),
-//                 test_source.port(),
-//                 test_sink.host_ip(),
-//                 test_sink.port(),
-//             ),
-//             vec![
-//                 TaskId::from_source_reader(StreamName::factory("st_2")),
-//                 TaskId::from_pump(PumpName::factory("pu_d")),
-//                 TaskId::from_source_reader(StreamName::factory("st_1")),
-//                 TaskId::from_pump(PumpName::factory("pu_c")),
-//                 TaskId::from_sink_writer(StreamName::factory("st_3")),
-//             ],
-//         )
-//     }
-
-//     #[test]
-//     fn test_complex_pipeline() {
-//         let test_source = ForeignSource::start(ForeignSourceInput::new_fifo_batch(vec![])).unwrap();
-//         let test_sink1 = ForeignSink::start().unwrap();
-//         let test_sink2 = ForeignSink::start().unwrap();
-//         t(
-//             Pipeline::fx_complex(
-//                 test_source.host_ip(),
-//                 test_source.port(),
-//                 test_sink1.host_ip(),
-//                 test_sink1.port(),
-//                 test_sink2.host_ip(),
-//                 test_sink2.port(),
-//             ),
-//             vec![
-//                 TaskId::from_source_reader(StreamName::factory("st_1")),
-//                 TaskId::from_pump(PumpName::factory("pu_c")),
-//                 TaskId::from_pump(PumpName::factory("pu_f")),
-//                 TaskId::from_source_reader(StreamName::factory("st_2")),
-//                 TaskId::from_pump(PumpName::factory("pu_d")),
-//                 TaskId::from_pump(PumpName::factory("pu_g")),
-//                 TaskId::from_pump(PumpName::factory("pu_e")),
-//                 TaskId::from_pump(PumpName::factory("pu_h")),
-//                 TaskId::from_pump(PumpName::factory("pu_j")),
-//                 TaskId::from_sink_writer(StreamName::factory("st_8")),
-//                 TaskId::from_pump(PumpName::factory("pu_i")),
-//                 TaskId::from_pump(PumpName::factory("pu_k")),
-//                 TaskId::from_sink_writer(StreamName::factory("st_9")),
-//             ],
-//         )
-//     }
-// }
+        let sched = FlowEfficientScheduler::default();
+        let series = sched.next_task_series(
+            &TaskGraph::fx_split_join(),
+            &PerformanceMetrics::fx_split_join(),
+        );
+        log::error!(
+            "[FlowEfficientScheduler] {}",
+            series
+                .iter()
+                .map(|task_id| format!("{}", task_id))
+                .collect::<Vec<_>>()
+                .join(", ")
+        );
+    }
+}
