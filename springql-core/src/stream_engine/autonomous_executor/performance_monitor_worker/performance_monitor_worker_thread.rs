@@ -40,7 +40,7 @@ impl Default for PerformanceMonitorWorkerThreadArg {
 
 #[derive(Debug, Default)]
 pub(super) struct PerformanceMonitorWorkerLoopState {
-    metrics: PerformanceMetrics,
+    metrics: Arc<PerformanceMetrics>,
     pipeline_derivatives: Arc<PipelineDerivatives>,
     clk_web_console: u64,
 }
@@ -62,10 +62,9 @@ impl WorkerThread for PerformanceMonitorWorkerThread {
 
         if state.clk_web_console == 0 {
             state.clk_web_console = WEB_CONSOLE_REPORT_INTERVAL_CLOCK;
-            thread_arg.web_console_reporter.report(
-                &state.metrics,
-                state.pipeline_derivatives.task_graph(),
-            );
+            thread_arg
+                .web_console_reporter
+                .report(&state.metrics, state.pipeline_derivatives.task_graph());
         }
         thread::sleep(Duration::from_millis(CLOCK_MSEC));
 
@@ -79,9 +78,11 @@ impl WorkerThread for PerformanceMonitorWorkerThread {
     ) -> Self::LoopState {
         let mut state = current_state;
 
-        state
-            .metrics
-            .reset_from_task_graph(pipeline_derivatives.task_graph());
+        let metrics = Arc::new(PerformanceMetrics::from_task_graph(
+            pipeline_derivatives.task_graph(),
+        ));
+        state.metrics = metrics;
+
         state.pipeline_derivatives = pipeline_derivatives;
 
         state

@@ -40,28 +40,35 @@ pub(super) struct PerformanceMetrics {
 }
 
 impl PerformanceMetrics {
-    pub(super) fn reset(
-        &mut self,
+    fn new(
         task_ids: Vec<TaskId>,
         row_queue_ids: Vec<RowQueueId>,
         window_queue_ids: Vec<WindowQueueId>,
-    ) {
-        task_ids.iter().for_each(|id| {
-            let mut task_metrics = self.get_task_write(id);
-            task_metrics.reset();
-        });
-        row_queue_ids.iter().for_each(|id| {
-            let mut row_queue_metrics = self.get_row_queue_write(id);
-            row_queue_metrics.reset();
-        });
-        window_queue_ids.iter().for_each(|id| {
-            let mut window_queue_metrics = self.get_window_queue_write(id);
-            window_queue_metrics.reset();
-        });
+    ) -> Self {
+        let tasks = task_ids
+            .into_iter()
+            .map(|id| (id, RwLock::new(TaskMetrics::default())))
+            .collect();
+
+        let row_queues = row_queue_ids
+            .into_iter()
+            .map(|id| (id, RwLock::new(RowQueueMetrics::default())))
+            .collect();
+
+        let window_queues = window_queue_ids
+            .into_iter()
+            .map(|id| (id, RwLock::new(WindowQueueMetrics::default())))
+            .collect();
+
+        Self {
+            tasks,
+            row_queues,
+            window_queues,
+        }
     }
 
-    pub(super) fn reset_from_task_graph(&mut self, graph: &TaskGraph) {
-        self.reset(graph.tasks(), graph.row_queues(), graph.window_queues())
+    pub(super) fn from_task_graph(graph: &TaskGraph) -> Self {
+        Self::new(graph.tasks(), graph.row_queues(), graph.window_queues())
     }
 
     pub(super) fn update_by_task_execution(&self, command: &MetricsUpdateByTaskExecution) {
