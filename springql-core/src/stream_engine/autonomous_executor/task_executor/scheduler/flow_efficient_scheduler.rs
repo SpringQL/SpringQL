@@ -87,8 +87,9 @@ pub(in crate::stream_engine::autonomous_executor) struct FlowEfficientScheduler 
 
 impl Scheduler for FlowEfficientScheduler {
     fn next_task_series(&self, graph: &TaskGraph, metrics: &PerformanceMetrics) -> Vec<TaskId> {
-        let collector = self.decide_collector(graph, metrics);
-        self.collector_to_stoppers_dfs(&collector, graph)
+        self.decide_collector(graph, metrics)
+            .map(|collector| self.collector_to_stoppers_dfs(&collector, graph))
+            .unwrap_or_else(Vec::new)
     }
 }
 
@@ -102,28 +103,40 @@ impl FlowEfficientScheduler {
     /// Rows' flow start from downstream of generator tasks.
     ///
     /// This function picks a collector probabilistically to meet the **Rule3: fair**.
-    fn decide_collector(&self, graph: &TaskGraph, metrics: &PerformanceMetrics) -> Collector {
+    ///
+    /// # Returns
+    ///
+    /// `None` if no collector task exists in `graph`.
+    fn decide_collector(
+        &self,
+        graph: &TaskGraph,
+        metrics: &PerformanceMetrics,
+    ) -> Option<Collector> {
         let collectors = self.collectors(graph).into_iter().collect::<Vec<_>>();
-        let in_rows = collectors
-            .iter()
-            .map(|c| self.incoming_rows(c, graph, metrics))
-            .collect::<Vec<_>>();
-
-        let idx = if in_rows.iter().all(|nr| *nr == 0) {
-            // No collector has input row. Pick a collector randomly.
-            let distribution = Uniform::from(0..collectors.len());
-            distribution.sample(&mut *self.rng.borrow_mut())
+        if collectors.is_empty() {
+            None
         } else {
-            let distribution = WeightedIndex::new(in_rows).expect("at least 1 collector");
-            distribution.sample(&mut *self.rng.borrow_mut())
-        };
-        let picked_collector = collectors.get(idx).expect("safe index");
+            let in_rows = collectors
+                .iter()
+                .map(|c| self.incoming_rows(c, graph, metrics))
+                .collect::<Vec<_>>();
 
-        log::error!(
-            "[FlowEfficientScheduler::decide_collector()] {}",
-            picked_collector.task_id,
-        );
-        picked_collector.clone()
+            let idx = if in_rows.iter().all(|nr| *nr == 0) {
+                // No collector has input row. Pick a collector randomly.
+                let distribution = Uniform::from(0..collectors.len());
+                distribution.sample(&mut *self.rng.borrow_mut())
+            } else {
+                let distribution = WeightedIndex::new(in_rows).expect("at least 1 collector");
+                distribution.sample(&mut *self.rng.borrow_mut())
+            };
+            let picked_collector = collectors.get(idx).expect("safe index");
+
+            log::error!(
+                "[FlowEfficientScheduler::decide_collector()] {}",
+                picked_collector.task_id,
+            );
+            Some(picked_collector.clone())
+        }
     }
     fn incoming_rows(
         &self,
