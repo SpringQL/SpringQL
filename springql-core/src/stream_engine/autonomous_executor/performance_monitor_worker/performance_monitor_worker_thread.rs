@@ -41,22 +41,15 @@ impl PerformanceMonitorWorkerThread {
             WebConsoleReporter::new(WEB_CONSOLE_HOST, WEB_CONSOLE_PORT, WEB_CONSOLE_TIMEOUT);
 
         let _ = thread::spawn(move || {
-            let rt = tokio::runtime::Builder::new_current_thread()
-                .enable_all()
-                .build()
-                .unwrap();
-            rt.block_on(async {
-                Self::main_loop(
-                    web_console_reporter,
-                    event_poll_update_pipeline,
-                    stop_receiver,
-                )
-                .await
-            });
+            Self::main_loop(
+                web_console_reporter,
+                event_poll_update_pipeline,
+                stop_receiver,
+            )
         });
     }
 
-    async fn main_loop(
+    fn main_loop(
         web_console_reporter: WebConsoleReporter,
         event_poll_update_pipeline: EventPoll,
         stop_receiver: mpsc::Receiver<()>,
@@ -76,9 +69,7 @@ impl PerformanceMonitorWorkerThread {
 
             if clk_wc == 0 {
                 clk_wc = REPORT_INTERVAL_CLOCK_WEB_CONSOLE;
-                web_console_reporter
-                    .report(&metrics, pipeline_derivatives.task_graph())
-                    .await;
+                web_console_reporter.report(&metrics, pipeline_derivatives.task_graph());
             }
 
             thread::sleep(Duration::from_millis(CLOCK_MSEC))
