@@ -17,7 +17,7 @@
 //!   while it may badly affects throughput.
 //!
 //! - **Rule2: a collector to stoppers**
-//! 
+//!
 //!   ![Generators, collectors, and stoppers in Flow-Efficient Scheduler](https://raw.githubusercontent.com/SpringQL/SpringQL.github.io/main/static/img/flow-efficient-scheduler.svg)
 //!
 //!   Flow-Efficient Scheduler produces series of tasks from collector (downstream task of a generator) to reachable flow stoppers.
