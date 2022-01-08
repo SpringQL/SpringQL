@@ -429,7 +429,7 @@ impl WindowQueueId {
 impl PerformanceMetrics {
     pub(in crate::stream_engine) fn fx_split_join() -> Self {
         let graph = TaskGraph::fx_split_join();
-        let mut metrics = PerformanceMetrics::default();
+        let metrics = PerformanceMetrics::default();
         metrics.reset_from_task_graph(&graph);
 
         for _ in 0..10 {

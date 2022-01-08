@@ -10,7 +10,10 @@ use self::performance_monitor_worker_thread::{
     PerformanceMonitorWorkerThread, PerformanceMonitorWorkerThreadArg,
 };
 
-use super::{event_queue::EventQueue, worker::worker_handle::WorkerHandle};
+use super::{
+    event_queue::EventQueue, performance_metrics::PerformanceMetrics,
+    worker::worker_handle::WorkerHandle,
+};
 
 /// Dedicated thread to:
 ///
@@ -18,15 +21,23 @@ use super::{event_queue::EventQueue, worker::worker_handle::WorkerHandle};
 /// 2. Report the performance to [AutonomousExecutor](crate::stream_processor::autonomous_executor::AutonomousExecutor) and web-console.
 #[derive(Debug)]
 pub(in crate::stream_engine::autonomous_executor) struct PerformanceMonitorWorker {
+    /// Owner of PerformanceMetrics
+    metrics: Arc<PerformanceMetrics>,
+
     handle: WorkerHandle,
 }
 
 impl PerformanceMonitorWorker {
     pub(in crate::stream_engine::autonomous_executor) fn new(event_queue: Arc<EventQueue>) -> Self {
+        let metrics = Arc::new(PerformanceMetrics::default());
         let handle = WorkerHandle::new::<PerformanceMonitorWorkerThread>(
             event_queue,
-            PerformanceMonitorWorkerThreadArg::default(),
+            PerformanceMonitorWorkerThreadArg::new(metrics.clone()),
         );
-        Self { handle }
+        Self { metrics, handle }
+    }
+
+    pub(in crate::stream_engine::autonomous_executor) fn metrics(&self) -> Arc<PerformanceMetrics> {
+        self.metrics.clone()
     }
 }

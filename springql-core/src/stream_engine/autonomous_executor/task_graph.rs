@@ -78,6 +78,13 @@ impl TaskGraph {
             .collect()
     }
 
+    pub(super) fn downstream_tasks(&self, task_id: &TaskId) -> Vec<TaskId> {
+        self.output_queues(task_id)
+            .iter()
+            .map(|q| self.downstream_task(q))
+            .collect()
+    }
+
     pub(super) fn tasks(&self) -> Vec<TaskId> {
         self.g.node_weights().cloned().collect()
     }

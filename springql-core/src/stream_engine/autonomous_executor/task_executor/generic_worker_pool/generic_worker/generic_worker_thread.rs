@@ -56,9 +56,7 @@ impl WorkerThread for GenericWorkerThread {
         current_state: Self::LoopState, // generic worker's loop cycle does not mutate state (while event handlers do)
         thread_arg: &Self::ThreadArg,
     ) -> Self::LoopState {
-        let id = thread_arg.id;
         let task_executor_lock = &thread_arg.task_executor_lock;
-        let repos = &thread_arg.repos;
 
         if let Ok(_lock) = task_executor_lock.try_task_execution() {
             let task_series = current_state.scheduler.next_task_series(
@@ -111,7 +109,7 @@ impl GenericWorkerThread {
 
             let task = current_state
                 .pipeline_derivatives
-                .get_task(&task_id)
+                .get_task(task_id)
                 .expect("task id got from scheduler");
 
             task.run(&context).unwrap_or_else(Self::handle_error);

@@ -40,30 +40,31 @@ pub(super) struct PerformanceMetrics {
 }
 
 impl PerformanceMetrics {
+    /// This method does not call HashMap::clear() for HashMap fields
+    /// because it cannot take `&mut self` (PerformanceMetrics owner is in main thread, while the caller of this method is in PerformanceMonitorWorkerThread).
+    ///
+    /// Therefore, there may be stale keys in HashMap but we do not care about them.
     pub(super) fn reset(
-        &mut self,
+        &self,
         task_ids: Vec<TaskId>,
         row_queue_ids: Vec<RowQueueId>,
         window_queue_ids: Vec<WindowQueueId>,
     ) {
-        self.tasks.clear();
-        self.row_queues.clear();
-        self.window_queues.clear();
-
-        task_ids.into_iter().for_each(|id| {
-            self.tasks.insert(id, RwLock::new(TaskMetrics::default()));
+        task_ids.iter().for_each(|id| {
+            let mut task_metrics = self.get_task_write(id);
+            task_metrics.reset();
         });
-        row_queue_ids.into_iter().for_each(|id| {
-            self.row_queues
-                .insert(id, RwLock::new(RowQueueMetrics::default()));
+        row_queue_ids.iter().for_each(|id| {
+            let mut row_queue_metrics = self.get_row_queue_write(id);
+            row_queue_metrics.reset();
         });
-        window_queue_ids.into_iter().for_each(|id| {
-            self.window_queues
-                .insert(id, RwLock::new(WindowQueueMetrics::default()));
+        window_queue_ids.iter().for_each(|id| {
+            let mut window_queue_metrics = self.get_window_queue_write(id);
+            window_queue_metrics.reset();
         });
     }
 
-    pub(super) fn reset_from_task_graph(&mut self, graph: &TaskGraph) {
+    pub(super) fn reset_from_task_graph(&self, graph: &TaskGraph) {
         self.reset(graph.tasks(), graph.row_queues(), graph.window_queues())
     }
 

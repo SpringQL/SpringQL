@@ -39,4 +39,10 @@ impl WindowQueueMetrics {
     pub(in crate::stream_engine::autonomous_executor) fn bytes(&self) -> u64 {
         self.bytes
     }
+
+    pub(in crate::stream_engine::autonomous_executor) fn reset(&mut self) {
+        let default = Self::default();
+        self.rows_waiting = default.rows_waiting;
+        self.bytes = default.bytes;
+    }
 }

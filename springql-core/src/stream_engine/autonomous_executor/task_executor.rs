@@ -12,8 +12,8 @@ use self::{
     task_executor_lock::{PipelineUpdateLockGuard, TaskExecutorLock},
 };
 use super::{
-    event_queue::EventQueue, pipeline_derivatives::PipelineDerivatives, repositories::Repositories,
-    task_graph::TaskGraph,
+    event_queue::EventQueue, performance_metrics::PerformanceMetrics,
+    pipeline_derivatives::PipelineDerivatives, repositories::Repositories, task_graph::TaskGraph,
 };
 
 /// Task executor executes task graph's dataflow by internal worker threads.
@@ -33,6 +33,7 @@ impl TaskExecutor {
     pub(in crate::stream_engine::autonomous_executor) fn new(
         n_worker_threads: usize,
         event_queue: Arc<EventQueue>,
+        metrics: Arc<PerformanceMetrics>,
     ) -> Self {
         let task_executor_lock = Arc::new(TaskExecutorLock::default());
         let repos = Arc::new(Repositories::default());
@@ -42,9 +43,10 @@ impl TaskExecutor {
 
             worker_pool: GenericWorkerPool::new(
                 n_worker_threads,
-                task_executor_lock,
                 event_queue,
+                task_executor_lock,
                 repos.clone(),
+                metrics,
             ),
             repos,
         }

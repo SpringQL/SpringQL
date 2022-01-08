@@ -36,4 +36,10 @@ impl RowQueueMetrics {
     pub(in crate::stream_engine::autonomous_executor) fn bytes(&self) -> u64 {
         self.bytes
     }
+
+    pub(in crate::stream_engine::autonomous_executor) fn reset(&mut self) {
+        let default = Self::default();
+        self.rows = default.rows;
+        self.bytes = default.bytes;
+    }
 }

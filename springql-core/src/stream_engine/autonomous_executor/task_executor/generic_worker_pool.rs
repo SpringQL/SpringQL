@@ -5,7 +5,7 @@ pub(super) mod generic_worker;
 use std::{cell::RefCell, sync::Arc};
 
 use crate::stream_engine::autonomous_executor::{
-    event_queue::EventQueue, repositories::Repositories,
+    event_queue::EventQueue, performance_metrics::PerformanceMetrics, repositories::Repositories,
 };
 
 use self::generic_worker::{
@@ -29,9 +29,10 @@ pub(super) struct GenericWorkerPool {
 impl GenericWorkerPool {
     pub(super) fn new(
         n_worker_threads: usize,
-        task_executor_lock: Arc<TaskExecutorLock>,
         event_queue: Arc<EventQueue>,
+        task_executor_lock: Arc<TaskExecutorLock>,
         repos: Arc<Repositories>,
+        metrics: Arc<PerformanceMetrics>,
     ) -> Self {
         let workers = (0..n_worker_threads)
             .map(|id| {
@@ -39,6 +40,7 @@ impl GenericWorkerPool {
                     GenericWorkerId::new(id as u16),
                     task_executor_lock.clone(),
                     repos.clone(),
+                    metrics.clone(),
                 );
                 GenericWorker::new(event_queue.clone(), arg)
             })

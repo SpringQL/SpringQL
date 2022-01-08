@@ -168,9 +168,7 @@ impl FlowEfficientScheduler {
             .iter()
             .cloned()
             .chain(graph.window_tasks())
-            .map(|task_id| Generator {
-                task_id: task_id.clone(),
-            })
+            .map(|task_id| Generator { task_id })
             .collect()
     }
     fn collectors(&self, graph: &TaskGraph) -> HashSet<Collector> {
