@@ -37,6 +37,9 @@ pub(in crate::stream_engine::autonomous_executor) trait WorkerThread {
         current_state: Self::LoopState,
         pipeline_derivatives: Arc<PipelineDerivatives>,
         thread_arg: &Self::ThreadArg,
+
+        // for cascading event
+        event_queue: Arc<EventQueue>,
     ) -> Self::LoopState;
 
     /// Worker thread's entry point
@@ -49,10 +52,13 @@ pub(in crate::stream_engine::autonomous_executor) trait WorkerThread {
             .into_iter()
             .map(|ev| event_queue.subscribe(ev))
             .collect();
-        let _ = thread::spawn(move || Self::main_loop(event_polls, stop_receiver, thread_arg));
+        let _ = thread::spawn(move || {
+            Self::main_loop(event_queue, event_polls, stop_receiver, thread_arg)
+        });
     }
 
     fn main_loop(
+        event_queue: Arc<EventQueue>,
         event_polls: Vec<EventPoll>,
         stop_receiver: mpsc::Receiver<()>,
         thread_arg: Self::ThreadArg,
@@ -61,7 +67,7 @@ pub(in crate::stream_engine::autonomous_executor) trait WorkerThread {
 
         while stop_receiver.try_recv().is_err() {
             state = Self::main_loop_cycle(state, &thread_arg);
-            state = Self::handle_events(state, &event_polls, &thread_arg);
+            state = Self::handle_events(state, &event_polls, &thread_arg, event_queue.clone());
         }
     }
 
@@ -69,6 +75,7 @@ pub(in crate::stream_engine::autonomous_executor) trait WorkerThread {
         current_state: Self::LoopState,
         event_polls: &[EventPoll],
         thread_arg: &Self::ThreadArg,
+        event_queue: Arc<EventQueue>,
     ) -> Self::LoopState {
         let mut state = current_state;
 
@@ -78,7 +85,12 @@ pub(in crate::stream_engine::autonomous_executor) trait WorkerThread {
                 Some(Event::UpdatePipeline {
                     pipeline_derivatives,
                 }) => {
-                    state = Self::ev_update_pipeline(state, pipeline_derivatives, thread_arg);
+                    state = Self::ev_update_pipeline(
+                        state,
+                        pipeline_derivatives,
+                        thread_arg,
+                        event_queue.clone(),
+                    );
                 }
                 None => {}
             }
