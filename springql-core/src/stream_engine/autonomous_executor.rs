@@ -15,7 +15,7 @@ mod repositories;
 mod task_executor;
 mod task_graph;
 
-use crate::error::Result;
+use crate::error::{Result, SpringError};
 use crate::pipeline::Pipeline;
 use std::sync::Arc;
 
@@ -74,5 +74,24 @@ impl AutonomousExecutor {
         self.event_queue.publish(event);
 
         Ok(())
+    }
+
+    /// Workers in autonomous executor may get SpringError but it must continue their work.
+    /// This method provides common way, like logging, to handle an error and then continue their work.
+    fn handle_error(e: SpringError) {
+        match e {
+            SpringError::ForeignSourceTimeout { .. } | SpringError::InputTimeout { .. } => {
+                log::trace!("{:?}", e)
+            }
+
+            SpringError::ForeignIo { .. }
+            | SpringError::SpringQlCoreIo(_)
+            | SpringError::Unavailable { .. } => log::warn!("{:?}", e),
+
+            SpringError::InvalidOption { .. }
+            | SpringError::InvalidFormat { .. }
+            | SpringError::Sql(_)
+            | SpringError::ThreadPoisoned(_) => log::error!("{:?}", e),
+        }
     }
 }
