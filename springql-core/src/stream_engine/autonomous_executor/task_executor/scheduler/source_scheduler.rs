@@ -2,10 +2,7 @@
 
 use std::{cell::RefCell, collections::HashSet};
 
-use rand::{
-    distributions::{Uniform, WeightedIndex},
-    prelude::{Distribution, ThreadRng},
-};
+use rand::prelude::ThreadRng;
 
 use crate::stream_engine::autonomous_executor::{
     performance_metrics::PerformanceMetrics,

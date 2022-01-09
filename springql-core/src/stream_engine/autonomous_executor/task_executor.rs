@@ -2,6 +2,7 @@
 
 mod generic_worker_pool;
 mod scheduler;
+mod source_worker_pool;
 mod task_executor_lock;
 
 use crate::error::Result;
@@ -9,6 +10,7 @@ use std::sync::Arc;
 
 use self::{
     generic_worker_pool::GenericWorkerPool,
+    source_worker_pool::SourceWorkerPool,
     task_executor_lock::{PipelineUpdateLockGuard, TaskExecutorLock},
 };
 use super::{
@@ -26,7 +28,8 @@ pub(in crate::stream_engine) struct TaskExecutor {
 
     repos: Arc<Repositories>,
 
-    worker_pool: GenericWorkerPool,
+    generic_worker_pool: GenericWorkerPool,
+    source_worker_pool: SourceWorkerPool,
 }
 
 impl TaskExecutor {
@@ -40,12 +43,19 @@ impl TaskExecutor {
         Self {
             task_executor_lock: task_executor_lock.clone(),
 
-            worker_pool: GenericWorkerPool::new(
+            generic_worker_pool: GenericWorkerPool::new(
+                n_worker_threads,
+                event_queue.clone(),
+                task_executor_lock.clone(),
+                repos.clone(),
+            ),
+            source_worker_pool: SourceWorkerPool::new(
                 n_worker_threads,
                 event_queue,
                 task_executor_lock,
                 repos.clone(),
             ),
+
             repos,
         }
     }
