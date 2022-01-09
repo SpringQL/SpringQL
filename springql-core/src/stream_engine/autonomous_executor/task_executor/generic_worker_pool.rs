@@ -13,7 +13,9 @@ use self::generic_worker::{
     GenericWorker,
 };
 
-use super::task_executor_lock::TaskExecutorLock;
+use super::{
+    task_executor_lock::TaskExecutorLock, task_worker_thread_handler::TaskWorkerThreadArg,
+};
 
 /// Workers to execute pump and sink tasks.
 #[derive(Debug)]
@@ -37,8 +39,7 @@ impl GenericWorkerPool {
             .map(|id| {
                 let arg = GenericWorkerThreadArg::new(
                     GenericWorkerId::new(id as u16),
-                    task_executor_lock.clone(),
-                    repos.clone(),
+                    TaskWorkerThreadArg::new(task_executor_lock.clone(), repos.clone()),
                 );
                 GenericWorker::new(event_queue.clone(), arg)
             })
