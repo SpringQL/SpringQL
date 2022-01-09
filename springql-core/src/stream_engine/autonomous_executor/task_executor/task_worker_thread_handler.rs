@@ -84,8 +84,7 @@ impl TaskWorkerThreadHandler {
                 .get_task(task_id)
                 .expect("task id got from scheduler");
 
-            let metrics_diff = task
-                .run(&context)
+            task.run(&context)
                 .map(|metrics_diff| {
                     event_queue.publish(Event::IncrementalUpdateMetrics {
                         metrics_update_by_task_execution: Arc::new(metrics_diff),

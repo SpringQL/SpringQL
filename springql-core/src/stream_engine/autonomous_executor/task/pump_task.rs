@@ -47,7 +47,7 @@ impl PumpTask {
         let task_metrics = TaskMetricsUpdateByTaskExecution::new(context.task(), execution_time);
         let metrics = MetricsUpdateByTaskExecution::new(
             task_metrics,
-            in_queue_metrics.map_or_else(|| Vec::new(), |m| vec![m]),
+            in_queue_metrics.map_or_else(Vec::new, |m| vec![m]),
             out_queues_metrics,
         );
 

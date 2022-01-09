@@ -4,7 +4,7 @@ use std::sync::Arc;
 
 use crate::stream_engine::autonomous_executor::{
     event_queue::{event::EventTag, EventQueue},
-    performance_metrics::PerformanceMetrics,
+    performance_metrics::{PerformanceMetrics, metrics_update_command::metrics_update_by_task_execution::MetricsUpdateByTaskExecution},
     pipeline_derivatives::PipelineDerivatives,
     task_executor::{
         scheduler::source_scheduler::SourceScheduler,
@@ -75,5 +75,13 @@ impl WorkerThread for SourceWorkerThread {
         let mut state = current_state;
         state.metrics = metrics;
         state
+    }
+    fn ev_incremental_update_metrics(
+        _current_state: Self::LoopState,
+        _metrics: Arc<MetricsUpdateByTaskExecution>,
+        _thread_arg: &Self::ThreadArg,
+        _event_queue: Arc<EventQueue>,
+    ) -> Self::LoopState {
+        unreachable!()
     }
 }

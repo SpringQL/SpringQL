@@ -3,14 +3,12 @@
 pub(in crate::stream_engine::autonomous_executor) mod source_reader;
 
 use std::fmt::Debug;
-use std::sync::Arc;
 
 use crate::error::Result;
 use crate::pipeline::name::{SourceReaderName, StreamName};
 use crate::pipeline::source_reader_model::SourceReaderModel;
 use crate::stream_engine::autonomous_executor::AutonomousExecutor;
 use crate::stream_engine::autonomous_executor::performance_metrics::metrics_update_command::metrics_update_by_task_execution::{MetricsUpdateByTaskExecution, OutQueueMetricsUpdateByTaskExecution, TaskMetricsUpdateByTaskExecution};
-use crate::stream_engine::autonomous_executor::repositories::Repositories;
 use crate::stream_engine::autonomous_executor::row::Row;
 use crate::stream_engine::autonomous_executor::task_graph::queue_id::QueueId;
 use crate::stream_engine::autonomous_executor::task_graph::task_id::TaskId;
@@ -58,7 +56,7 @@ impl SourceTask {
         Ok(MetricsUpdateByTaskExecution::new(
             task_metrics,
             vec![],
-            out_queue_metrics.map_or_else(|| vec![], |o| vec![o]),
+            out_queue_metrics.map_or_else(Vec::new, |o| vec![o]),
         ))
     }
 

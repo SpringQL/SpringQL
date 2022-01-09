@@ -3,7 +3,10 @@ use std::{
     thread,
 };
 
-use crate::stream_engine::autonomous_executor::performance_metrics::PerformanceMetrics;
+use crate::stream_engine::autonomous_executor::performance_metrics::{
+    metrics_update_command::metrics_update_by_task_execution::MetricsUpdateByTaskExecution,
+    PerformanceMetrics,
+};
 
 use crate::stream_engine::autonomous_executor::{
     event_queue::{
@@ -54,6 +57,15 @@ pub(in crate::stream_engine::autonomous_executor) trait WorkerThread {
         event_queue: Arc<EventQueue>,
     ) -> Self::LoopState;
 
+    fn ev_incremental_update_metrics(
+        current_state: Self::LoopState,
+        metrics: Arc<MetricsUpdateByTaskExecution>,
+        thread_arg: &Self::ThreadArg,
+
+        // for cascading event
+        event_queue: Arc<EventQueue>,
+    ) -> Self::LoopState;
+
     /// Worker thread's entry point
     fn run(
         event_queue: Arc<EventQueue>,
@@ -94,24 +106,36 @@ pub(in crate::stream_engine::autonomous_executor) trait WorkerThread {
         for event_poll in event_polls {
             #[allow(clippy::single_match)]
             match event_poll.poll() {
-                Some(Event::UpdatePipeline {
-                    pipeline_derivatives,
-                }) => {
-                    state = Self::ev_update_pipeline(
-                        state,
+                Some(ev) => match ev {
+                    Event::UpdatePipeline {
                         pipeline_derivatives,
-                        thread_arg,
-                        event_queue.clone(),
-                    );
-                }
-                Some(Event::UpdatePerformanceMetrics { metrics }) => {
-                    state = Self::ev_update_performance_metrics(
-                        state,
-                        metrics,
-                        thread_arg,
-                        event_queue.clone(),
-                    );
-                }
+                    } => {
+                        state = Self::ev_update_pipeline(
+                            state,
+                            pipeline_derivatives,
+                            thread_arg,
+                            event_queue.clone(),
+                        );
+                    }
+                    Event::UpdatePerformanceMetrics { metrics } => {
+                        state = Self::ev_update_performance_metrics(
+                            state,
+                            metrics,
+                            thread_arg,
+                            event_queue.clone(),
+                        );
+                    }
+                    Event::IncrementalUpdateMetrics {
+                        metrics_update_by_task_execution,
+                    } => {
+                        state = Self::ev_incremental_update_metrics(
+                            state,
+                            metrics_update_by_task_execution,
+                            thread_arg,
+                            event_queue.clone(),
+                        )
+                    }
+                },
                 None => {}
             }
         }

@@ -6,7 +6,10 @@ use crate::stream_engine::{
             event::{Event, EventTag},
             EventQueue,
         },
-        performance_metrics::PerformanceMetrics,
+        performance_metrics::{
+            metrics_update_command::metrics_update_by_task_execution::MetricsUpdateByTaskExecution,
+            PerformanceMetrics,
+        },
         pipeline_derivatives::PipelineDerivatives,
         worker::worker_thread::WorkerThread,
     },
@@ -56,13 +59,13 @@ impl WorkerThread for PerformanceMonitorWorkerThread {
     type LoopState = PerformanceMonitorWorkerLoopState;
 
     fn event_subscription() -> Vec<EventTag> {
-        vec![EventTag::UpdatePipeline]
+        vec![EventTag::UpdatePipeline, EventTag::IncrementalUpdateMetrics]
     }
 
     fn main_loop_cycle(
         current_state: Self::LoopState,
         thread_arg: &Self::ThreadArg,
-        event_queue: &EventQueue,
+        _event_queue: &EventQueue,
     ) -> Self::LoopState {
         let mut state = current_state;
 
@@ -103,5 +106,16 @@ impl WorkerThread for PerformanceMonitorWorkerThread {
         _event_queue: Arc<EventQueue>,
     ) -> Self::LoopState {
         unreachable!()
+    }
+
+    fn ev_incremental_update_metrics(
+        current_state: Self::LoopState,
+        metrics: Arc<MetricsUpdateByTaskExecution>,
+        _thread_arg: &Self::ThreadArg,
+        _event_queue: Arc<EventQueue>,
+    ) -> Self::LoopState {
+        let state = current_state;
+        state.metrics.update_by_task_execution(metrics.as_ref());
+        state
     }
 }
