@@ -41,7 +41,7 @@ impl WorkerThread for GenericWorkerThread {
         thread_arg: &Self::ThreadArg,
         event_queue: &EventQueue,
     ) -> Self::LoopState {
-        TaskWorkerThreadHandler::main_loop_cycle::<Self, FlowEfficientScheduler>(
+        TaskWorkerThreadHandler::main_loop_cycle::<FlowEfficientScheduler>(
             current_state,
             &thread_arg.task_worker_arg,
             event_queue,

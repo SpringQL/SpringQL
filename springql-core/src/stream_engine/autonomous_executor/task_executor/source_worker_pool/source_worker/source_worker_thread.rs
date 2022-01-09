@@ -41,7 +41,7 @@ impl WorkerThread for SourceWorkerThread {
         thread_arg: &Self::ThreadArg,
         event_queue: &EventQueue,
     ) -> Self::LoopState {
-        TaskWorkerThreadHandler::main_loop_cycle::<Self, SourceScheduler>(
+        TaskWorkerThreadHandler::main_loop_cycle::<SourceScheduler>(
             current_state,
             &thread_arg.task_worker_arg,
             event_queue,

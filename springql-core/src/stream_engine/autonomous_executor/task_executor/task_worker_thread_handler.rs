@@ -9,7 +9,7 @@ use crate::stream_engine::autonomous_executor::{
     repositories::Repositories,
     task::task_context::TaskContext,
     task_graph::task_id::TaskId,
-    worker::worker_thread::WorkerThread,
+    AutonomousExecutor,
 };
 
 use super::{scheduler::Scheduler, task_executor_lock::TaskExecutorLock};
@@ -34,13 +34,12 @@ pub(super) struct TaskWorkerLoopState<S: Scheduler> {
 }
 
 impl TaskWorkerThreadHandler {
-    pub(super) fn main_loop_cycle<T, S>(
+    pub(super) fn main_loop_cycle<S>(
         current_state: TaskWorkerLoopState<S>,
         thread_arg: &TaskWorkerThreadArg,
         event_queue: &EventQueue,
     ) -> TaskWorkerLoopState<S>
     where
-        T: WorkerThread,
         S: Scheduler,
     {
         let task_executor_lock = &thread_arg.task_executor_lock;
@@ -51,7 +50,7 @@ impl TaskWorkerThreadHandler {
                 current_state.metrics.as_ref(),
             );
             if !task_series.is_empty() {
-                Self::execute_task_series::<T, S>(
+                Self::execute_task_series::<S>(
                     &task_series,
                     &current_state,
                     thread_arg,
@@ -65,13 +64,12 @@ impl TaskWorkerThreadHandler {
         current_state
     }
 
-    fn execute_task_series<T, S>(
+    fn execute_task_series<S>(
         task_series: &[TaskId],
         current_state: &TaskWorkerLoopState<S>,
         thread_arg: &TaskWorkerThreadArg,
         event_queue: &EventQueue,
     ) where
-        T: WorkerThread,
         S: Scheduler,
     {
         for task_id in task_series {
@@ -93,7 +91,7 @@ impl TaskWorkerThreadHandler {
                         metrics_update_by_task_execution: Arc::new(metrics_diff),
                     })
                 })
-                .unwrap_or_else(T::handle_error);
+                .unwrap_or_else(AutonomousExecutor::handle_error);
         }
     }
 }

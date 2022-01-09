@@ -3,9 +3,7 @@ use std::{
     thread,
 };
 
-use crate::{
-    error::SpringError, stream_engine::autonomous_executor::performance_metrics::PerformanceMetrics,
-};
+use crate::stream_engine::autonomous_executor::performance_metrics::PerformanceMetrics;
 
 use crate::stream_engine::autonomous_executor::{
     event_queue::{
@@ -118,22 +116,5 @@ pub(in crate::stream_engine::autonomous_executor) trait WorkerThread {
             }
         }
         state
-    }
-
-    fn handle_error(e: SpringError) {
-        match e {
-            SpringError::ForeignSourceTimeout { .. } | SpringError::InputTimeout { .. } => {
-                log::trace!("{:?}", e)
-            }
-
-            SpringError::ForeignIo { .. }
-            | SpringError::SpringQlCoreIo(_)
-            | SpringError::Unavailable { .. } => log::warn!("{:?}", e),
-
-            SpringError::InvalidOption { .. }
-            | SpringError::InvalidFormat { .. }
-            | SpringError::Sql(_)
-            | SpringError::ThreadPoisoned(_) => log::error!("{:?}", e),
-        }
     }
 }
