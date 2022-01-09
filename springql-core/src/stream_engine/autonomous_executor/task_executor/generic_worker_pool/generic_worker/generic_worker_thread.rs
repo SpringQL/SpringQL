@@ -12,6 +12,7 @@ use crate::stream_engine::autonomous_executor::{
         task_executor_lock::TaskExecutorLock,
     },
     worker::worker_thread::WorkerThread,
+    AutonomousExecutor,
 };
 
 use super::generic_worker_id::GenericWorkerId;
@@ -75,7 +76,8 @@ impl WorkerThread for GenericWorkerThread {
                     .get_task(&task_id)
                     .expect("task id got from scheduler");
 
-                task.run(&context).unwrap_or_else(Self::handle_error);
+                task.run(&context)
+                    .unwrap_or_else(AutonomousExecutor::handle_error);
             } else {
                 thread::sleep(Duration::from_millis(TASK_WAIT_MSEC));
             }
