@@ -62,6 +62,7 @@ impl WorkerThread for PerformanceMonitorWorkerThread {
     fn main_loop_cycle(
         current_state: Self::LoopState,
         thread_arg: &Self::ThreadArg,
+        event_queue: &EventQueue,
     ) -> Self::LoopState {
         let mut state = current_state;
 

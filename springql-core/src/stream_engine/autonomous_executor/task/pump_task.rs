@@ -5,6 +5,7 @@ mod pump_subtask;
 use super::task_context::TaskContext;
 use crate::error::Result;
 use crate::pipeline::pump_model::PumpModel;
+use crate::stream_engine::autonomous_executor::performance_metrics::metrics_update_command::metrics_update_by_task_execution::MetricsUpdateByTaskExecution;
 use crate::stream_engine::autonomous_executor::task_graph::task_id::TaskId;
 use pump_subtask::insert_subtask::InsertSubtask;
 use pump_subtask::query_subtask::QuerySubtask;
@@ -37,7 +38,7 @@ impl PumpTask {
     pub(in crate::stream_engine::autonomous_executor) fn run(
         &self,
         context: &TaskContext,
-    ) -> Result<()> {
+    ) -> Result<MetricsUpdateByTaskExecution> {
         if let Some(row) = self.query_subtask.run(context)? {
             self.insert_subtask.run(row, context)
         }

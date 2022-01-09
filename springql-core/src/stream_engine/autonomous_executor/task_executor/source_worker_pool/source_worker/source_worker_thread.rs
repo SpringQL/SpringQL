@@ -39,10 +39,12 @@ impl WorkerThread for SourceWorkerThread {
     fn main_loop_cycle(
         current_state: Self::LoopState,
         thread_arg: &Self::ThreadArg,
+        event_queue: &EventQueue,
     ) -> Self::LoopState {
         TaskWorkerThreadHandler::main_loop_cycle::<Self, SourceScheduler>(
             current_state,
             &thread_arg.task_worker_arg,
+            event_queue,
         )
     }
 

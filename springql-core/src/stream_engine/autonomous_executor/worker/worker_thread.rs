@@ -33,6 +33,9 @@ pub(in crate::stream_engine::autonomous_executor) trait WorkerThread {
     fn main_loop_cycle(
         current_state: Self::LoopState,
         thread_arg: &Self::ThreadArg,
+
+        // for a cycle to push event
+        event_queue: &EventQueue,
     ) -> Self::LoopState;
 
     fn ev_update_pipeline(
@@ -77,7 +80,7 @@ pub(in crate::stream_engine::autonomous_executor) trait WorkerThread {
         let mut state = Self::LoopState::default();
 
         while stop_receiver.try_recv().is_err() {
-            state = Self::main_loop_cycle(state, &thread_arg);
+            state = Self::main_loop_cycle(state, &thread_arg, event_queue.as_ref());
             state = Self::handle_events(state, &event_polls, &thread_arg, event_queue.clone());
         }
     }

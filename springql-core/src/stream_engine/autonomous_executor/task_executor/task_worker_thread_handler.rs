@@ -3,8 +3,12 @@
 use std::{sync::Arc, thread, time::Duration};
 
 use crate::stream_engine::autonomous_executor::{
-    performance_metrics::PerformanceMetrics, pipeline_derivatives::PipelineDerivatives,
-    repositories::Repositories, task::task_context::TaskContext, task_graph::task_id::TaskId,
+    event_queue::{event::Event, EventQueue},
+    performance_metrics::PerformanceMetrics,
+    pipeline_derivatives::PipelineDerivatives,
+    repositories::Repositories,
+    task::task_context::TaskContext,
+    task_graph::task_id::TaskId,
     worker::worker_thread::WorkerThread,
 };
 
@@ -33,6 +37,7 @@ impl TaskWorkerThreadHandler {
     pub(super) fn main_loop_cycle<T, S>(
         current_state: TaskWorkerLoopState<S>,
         thread_arg: &TaskWorkerThreadArg,
+        event_queue: &EventQueue,
     ) -> TaskWorkerLoopState<S>
     where
         T: WorkerThread,
@@ -46,7 +51,12 @@ impl TaskWorkerThreadHandler {
                 current_state.metrics.as_ref(),
             );
             if !task_series.is_empty() {
-                Self::execute_task_series::<T, S>(&task_series, &current_state, thread_arg);
+                Self::execute_task_series::<T, S>(
+                    &task_series,
+                    &current_state,
+                    thread_arg,
+                    event_queue,
+                );
             } else {
                 thread::sleep(Duration::from_millis(TASK_WAIT_MSEC));
             }
@@ -59,6 +69,7 @@ impl TaskWorkerThreadHandler {
         task_series: &[TaskId],
         current_state: &TaskWorkerLoopState<S>,
         thread_arg: &TaskWorkerThreadArg,
+        event_queue: &EventQueue,
     ) where
         T: WorkerThread,
         S: Scheduler,
@@ -75,7 +86,14 @@ impl TaskWorkerThreadHandler {
                 .get_task(task_id)
                 .expect("task id got from scheduler");
 
-            task.run(&context).unwrap_or_else(T::handle_error);
+            let metrics_diff = task
+                .run(&context)
+                .map(|metrics_diff| {
+                    event_queue.publish(Event::IncrementalUpdateMetrics {
+                        metrics_update_by_task_execution: Arc::new(metrics_diff),
+                    })
+                })
+                .unwrap_or_else(T::handle_error);
         }
     }
 }

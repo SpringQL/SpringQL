@@ -5,7 +5,11 @@
 use std::sync::Arc;
 
 use crate::stream_engine::autonomous_executor::{
-    performance_metrics::PerformanceMetrics, pipeline_derivatives::PipelineDerivatives,
+    performance_metrics::{
+        metrics_update_command::metrics_update_by_task_execution::MetricsUpdateByTaskExecution,
+        PerformanceMetrics,
+    },
+    pipeline_derivatives::PipelineDerivatives,
 };
 
 #[derive(Clone, Debug)]
@@ -16,12 +20,16 @@ pub(in crate::stream_engine::autonomous_executor) enum Event {
     UpdatePerformanceMetrics {
         metrics: Arc<PerformanceMetrics>,
     },
+    IncrementalUpdateMetrics {
+        metrics_update_by_task_execution: Arc<MetricsUpdateByTaskExecution>,
+    },
 }
 
 #[derive(Copy, Clone, Eq, PartialEq, Hash, Debug)]
 pub(in crate::stream_engine::autonomous_executor) enum EventTag {
     UpdatePipeline,
     UpdatePerformanceMetrics,
+    IncrementalUpdateMetrics,
 }
 
 impl From<&Event> for EventTag {
@@ -29,6 +37,7 @@ impl From<&Event> for EventTag {
         match event {
             Event::UpdatePipeline { .. } => Self::UpdatePipeline,
             Event::UpdatePerformanceMetrics { .. } => Self::UpdatePerformanceMetrics,
+            Event::IncrementalUpdateMetrics { .. } => Self::IncrementalUpdateMetrics,
         }
     }
 }

@@ -7,6 +7,7 @@ use std::fmt::Debug;
 use crate::error::Result;
 use crate::pipeline::name::{SourceReaderName, StreamName};
 use crate::pipeline::source_reader_model::SourceReaderModel;
+use crate::stream_engine::autonomous_executor::performance_metrics::metrics_update_command::metrics_update_by_task_execution::MetricsUpdateByTaskExecution;
 use crate::stream_engine::autonomous_executor::row::Row;
 use crate::stream_engine::autonomous_executor::task_graph::queue_id::QueueId;
 use crate::stream_engine::autonomous_executor::task_graph::task_id::TaskId;
@@ -37,7 +38,7 @@ impl SourceTask {
     pub(in crate::stream_engine::autonomous_executor) fn run(
         &self,
         context: &TaskContext,
-    ) -> Result<()> {
+    ) -> Result<MetricsUpdateByTaskExecution> {
         let row = self.collect_next(context)?;
         let repos = context.repos();
 

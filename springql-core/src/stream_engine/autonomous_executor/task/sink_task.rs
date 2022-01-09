@@ -6,6 +6,7 @@ use super::task_context::TaskContext;
 use crate::error::Result;
 use crate::pipeline::name::SinkWriterName;
 use crate::pipeline::sink_writer_model::SinkWriterModel;
+use crate::stream_engine::autonomous_executor::performance_metrics::metrics_update_command::metrics_update_by_task_execution::MetricsUpdateByTaskExecution;
 use crate::stream_engine::autonomous_executor::row::foreign_row::sink_row::SinkRow;
 use crate::stream_engine::autonomous_executor::row::Row;
 use crate::stream_engine::autonomous_executor::task_graph::queue_id::QueueId;
@@ -33,7 +34,7 @@ impl SinkTask {
     pub(in crate::stream_engine::autonomous_executor) fn run(
         &self,
         context: &TaskContext,
-    ) -> Result<()> {
+    ) -> Result<MetricsUpdateByTaskExecution> {
         let opt_row = context
             .input_queue()
             .map(|queue_id| {

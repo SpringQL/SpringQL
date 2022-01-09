@@ -39,10 +39,12 @@ impl WorkerThread for GenericWorkerThread {
     fn main_loop_cycle(
         current_state: Self::LoopState, // generic worker's loop cycle does not mutate state (while event handlers do)
         thread_arg: &Self::ThreadArg,
+        event_queue: &EventQueue,
     ) -> Self::LoopState {
         TaskWorkerThreadHandler::main_loop_cycle::<Self, FlowEfficientScheduler>(
             current_state,
             &thread_arg.task_worker_arg,
+            event_queue,
         )
     }
 
