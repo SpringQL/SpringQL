@@ -7,6 +7,13 @@
 //! A scheduler generates series of TaskId which a GenericWorker executes at a time.
 
 pub(in crate::stream_engine::autonomous_executor) mod flow_efficient_scheduler;
+pub(in crate::stream_engine::autonomous_executor) mod source_scheduler;
+
+/// Max length of task series a scheduler calculates.
+/// FlowEfficientScheduler does not care this value to achieve _collector-to-stopper_ policy.
+///
+/// Too long series may badly affect on scheduler change (e.g. memory state change from severe to moderate).
+const MAX_TASK_SERIES: u16 = 20;
 
 use crate::stream_engine::autonomous_executor::performance_metrics::PerformanceMetrics;
 use crate::stream_engine::autonomous_executor::task_graph::task_id::TaskId;
