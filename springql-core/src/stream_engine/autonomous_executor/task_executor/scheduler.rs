@@ -18,10 +18,13 @@ const MAX_TASK_SERIES: u16 = 20;
 use crate::stream_engine::autonomous_executor::performance_metrics::PerformanceMetrics;
 use crate::stream_engine::autonomous_executor::task_graph::task_id::TaskId;
 use crate::stream_engine::autonomous_executor::task_graph::TaskGraph;
+use std::fmt::Debug;
 
 /// All scheduler implementation must be stateless because MemoryStateMachine replace scheduler implementation
 /// dynamically.
-pub(in crate::stream_engine::autonomous_executor) trait Scheduler {
+pub(in crate::stream_engine::autonomous_executor) trait Scheduler:
+    Debug + Default
+{
     /// Called from worker threads.
     fn next_task_series(&self, graph: &TaskGraph, metrics: &PerformanceMetrics) -> Vec<TaskId>;
 }

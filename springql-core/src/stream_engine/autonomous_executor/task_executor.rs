@@ -1,5 +1,7 @@
 // Copyright (c) 2021 TOYOTA MOTOR CORPORATION. Licensed under MIT OR Apache-2.0.
 
+pub(self) mod task_worker_thread_handler;
+
 mod generic_worker_pool;
 mod scheduler;
 mod source_worker_pool;

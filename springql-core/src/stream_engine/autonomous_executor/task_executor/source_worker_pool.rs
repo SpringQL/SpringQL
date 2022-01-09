@@ -12,7 +12,9 @@ use self::source_worker::{
     source_worker_id::SourceWorkerId, source_worker_thread::SourceWorkerThreadArg, SourceWorker,
 };
 
-use super::task_executor_lock::TaskExecutorLock;
+use super::{
+    task_executor_lock::TaskExecutorLock, task_worker_thread_handler::TaskWorkerThreadArg,
+};
 
 /// Workers to execute pump and sink tasks.
 #[derive(Debug)]
@@ -36,8 +38,7 @@ impl SourceWorkerPool {
             .map(|id| {
                 let arg = SourceWorkerThreadArg::new(
                     SourceWorkerId::new(id as u16),
-                    task_executor_lock.clone(),
-                    repos.clone(),
+                    TaskWorkerThreadArg::new(task_executor_lock.clone(), repos.clone()),
                 );
                 SourceWorker::new(event_queue.clone(), arg)
             })
