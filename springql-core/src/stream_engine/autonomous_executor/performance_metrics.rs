@@ -137,21 +137,21 @@ impl PerformanceMetrics {
     fn get_task_read(&self, id: &TaskId) -> RwLockReadGuard<'_, TaskMetrics> {
         self.tasks
             .get(id)
-            .expect("task_id not found")
+            .unwrap_or_else(|| panic!("task_id {} not found", id))
             .read()
             .expect("poisoned")
     }
     fn get_window_queue_read(&self, id: &WindowQueueId) -> RwLockReadGuard<'_, WindowQueueMetrics> {
         self.window_queues
             .get(id)
-            .expect("queue_id not found")
+            .unwrap_or_else(|| panic!("queue_id {} not found", id))
             .read()
             .expect("poisoned")
     }
     fn get_row_queue_read(&self, id: &RowQueueId) -> RwLockReadGuard<'_, RowQueueMetrics> {
         self.row_queues
             .get(id)
-            .expect("queue_id not found")
+            .unwrap_or_else(|| panic!("queue_id {} not found", id))
             .read()
             .expect("poisoned")
     }
