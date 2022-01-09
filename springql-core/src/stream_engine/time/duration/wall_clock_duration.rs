@@ -1,4 +1,4 @@
-mod wall_clock_stopwatch;
+pub(in crate::stream_engine) mod wall_clock_stopwatch;
 
 use std::{
     ops::{Add, Div, Mul, Sub},
