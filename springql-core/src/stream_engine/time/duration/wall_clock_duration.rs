@@ -1,3 +1,5 @@
+mod wall_clock_stopwatch;
+
 use std::{
     ops::{Add, Div, Mul, Sub},
     time::Duration,
@@ -30,6 +32,12 @@ impl WallClockDuration {
 impl From<WallClockDuration> for Duration {
     fn from(w: WallClockDuration) -> Self {
         w.0
+    }
+}
+
+impl From<Duration> for WallClockDuration {
+    fn from(d: Duration) -> Self {
+        Self(d)
     }
 }
 
