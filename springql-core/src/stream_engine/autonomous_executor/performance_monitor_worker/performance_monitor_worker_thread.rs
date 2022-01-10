@@ -85,6 +85,8 @@ impl WorkerThread for PerformanceMonitorWorkerThread {
                 thread_arg
                     .web_console_reporter
                     .report(metrics, pipeline_derivatives.task_graph());
+            } else {
+                state.clk_web_console -= 1;
             }
             thread::sleep(Duration::from_millis(CLOCK_MSEC));
 
