@@ -148,9 +148,9 @@ mod tests {
 
         let mut received = Vec::new();
         for _ in 0..source_inputs_len {
-            received.push(sink.receive().unwrap());
+            received.push(sink.receive());
         }
-        assert!(sink.receive().is_err());
+        assert!(sink.try_receive().is_none());
 
         received
     }
