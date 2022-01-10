@@ -5,8 +5,8 @@ mod task_repository;
 use std::sync::Arc;
 
 use self::task_repository::TaskRepository;
-use crate::error::Result;
 use crate::pipeline::Pipeline;
+use crate::{error::Result, pipeline::pipeline_version::PipelineVersion};
 
 use super::{
     task::Task,
@@ -34,6 +34,12 @@ impl PipelineDerivatives {
 
     pub(in crate::stream_engine::autonomous_executor) fn pipeline(&self) -> &Pipeline {
         &self.pipeline
+    }
+
+    pub(in crate::stream_engine::autonomous_executor) fn pipeline_version(
+        &self,
+    ) -> PipelineVersion {
+        self.pipeline.version()
     }
 
     pub(in crate::stream_engine::autonomous_executor) fn task_graph(&self) -> &TaskGraph {

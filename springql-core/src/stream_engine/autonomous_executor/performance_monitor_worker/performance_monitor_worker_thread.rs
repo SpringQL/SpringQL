@@ -55,8 +55,7 @@ pub(super) struct PerformanceMonitorWorkerLoopState {
 
 impl WorkerThreadLoopState for PerformanceMonitorWorkerLoopState {
     fn is_integral(&self) -> bool {
-        // TODO check pipeline versions between metrics and pipeline_derivatives
-        true
+        &self.pipeline_derivatives.pipeline_version() == self.metrics.pipeline_version()
     }
 }
 

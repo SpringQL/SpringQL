@@ -36,8 +36,7 @@ pub(super) struct TaskWorkerLoopState<S: Scheduler> {
 
 impl<S: Scheduler> WorkerThreadLoopState for TaskWorkerLoopState<S> {
     fn is_integral(&self) -> bool {
-        // TODO check pipeline versions between metrics and pipeline_derivatives
-        true
+        &self.pipeline_derivatives.pipeline_version() == self.metrics.pipeline_version()
     }
 }
 

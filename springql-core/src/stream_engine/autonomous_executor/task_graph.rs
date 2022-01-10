@@ -18,7 +18,10 @@ use std::collections::HashMap;
 
 use petgraph::graph::{DiGraph, NodeIndex};
 
-use crate::pipeline::pipeline_graph::{edge::Edge, PipelineGraph};
+use crate::pipeline::{
+    pipeline_graph::{edge::Edge, PipelineGraph},
+    pipeline_version::PipelineVersion,
+};
 
 use self::{
     edge_ref::MyEdgeRef,
@@ -28,12 +31,19 @@ use self::{
 
 #[derive(Debug, Default)]
 pub(super) struct TaskGraph {
+    /// From which version this graph constructed
+    pipeline_version: PipelineVersion,
+
     g: DiGraph<TaskId, QueueId>,
     task_id_node_map: HashMap<TaskId, NodeIndex>,
     queue_id_edge_map: HashMap<QueueId, MyEdgeRef>,
 }
 
 impl TaskGraph {
+    pub(super) fn pipeline_version(&self) -> &PipelineVersion {
+        &self.pipeline_version
+    }
+
     pub(super) fn upstream_task(&self, queue_id: &QueueId) -> TaskId {
         let edge = self.find_edge(queue_id);
         let source = edge.source();
