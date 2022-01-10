@@ -17,7 +17,7 @@ pub(in crate::stream_engine::autonomous_executor) enum Event {
     UpdatePipeline {
         pipeline_derivatives: Arc<PipelineDerivatives>,
     },
-    UpdatePerformanceMetrics {
+    ReplacePerformanceMetrics {
         metrics: Arc<PerformanceMetrics>,
     },
     IncrementalUpdateMetrics {
@@ -28,7 +28,7 @@ pub(in crate::stream_engine::autonomous_executor) enum Event {
 #[derive(Copy, Clone, Eq, PartialEq, Hash, Debug)]
 pub(in crate::stream_engine::autonomous_executor) enum EventTag {
     UpdatePipeline,
-    UpdatePerformanceMetrics,
+    ReplacePerformanceMetrics,
     IncrementalUpdateMetrics,
 }
 
@@ -36,7 +36,7 @@ impl From<&Event> for EventTag {
     fn from(event: &Event) -> Self {
         match event {
             Event::UpdatePipeline { .. } => Self::UpdatePipeline,
-            Event::UpdatePerformanceMetrics { .. } => Self::UpdatePerformanceMetrics,
+            Event::ReplacePerformanceMetrics { .. } => Self::ReplacePerformanceMetrics,
             Event::IncrementalUpdateMetrics { .. } => Self::IncrementalUpdateMetrics,
         }
     }

@@ -106,14 +106,14 @@ impl WorkerThread for PerformanceMonitorWorkerThread {
             pipeline_derivatives.task_graph(),
         ));
         state.metrics = Some(metrics.clone());
-        event_queue.publish(Event::UpdatePerformanceMetrics { metrics });
+        event_queue.publish(Event::ReplacePerformanceMetrics { metrics });
 
         state.pipeline_derivatives = Some(pipeline_derivatives);
 
         state
     }
 
-    fn ev_update_performance_metrics(
+    fn ev_replace_performance_metrics(
         _current_state: Self::LoopState,
         _metrics: Arc<PerformanceMetrics>,
         _thread_arg: &Self::ThreadArg,

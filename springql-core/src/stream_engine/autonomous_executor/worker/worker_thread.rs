@@ -57,7 +57,7 @@ pub(in crate::stream_engine::autonomous_executor) trait WorkerThread {
         event_queue: Arc<EventQueue>,
     ) -> Self::LoopState;
 
-    fn ev_update_performance_metrics(
+    fn ev_replace_performance_metrics(
         current_state: Self::LoopState,
         metrics: Arc<PerformanceMetrics>,
         thread_arg: &Self::ThreadArg,
@@ -128,8 +128,8 @@ pub(in crate::stream_engine::autonomous_executor) trait WorkerThread {
                             event_queue.clone(),
                         );
                     }
-                    Event::UpdatePerformanceMetrics { metrics } => {
-                        state = Self::ev_update_performance_metrics(
+                    Event::ReplacePerformanceMetrics { metrics } => {
+                        state = Self::ev_replace_performance_metrics(
                             state,
                             metrics,
                             thread_arg,

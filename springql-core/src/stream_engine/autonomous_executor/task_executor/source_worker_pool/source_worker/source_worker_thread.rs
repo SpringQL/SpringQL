@@ -36,7 +36,7 @@ impl WorkerThread for SourceWorkerThread {
     type LoopState = TaskWorkerLoopState<SourceScheduler>;
 
     fn event_subscription() -> Vec<EventTag> {
-        vec![EventTag::UpdatePipeline, EventTag::UpdatePerformanceMetrics]
+        vec![EventTag::UpdatePipeline, EventTag::ReplacePerformanceMetrics]
     }
 
     fn main_loop_cycle(
@@ -64,7 +64,7 @@ impl WorkerThread for SourceWorkerThread {
         state
     }
 
-    fn ev_update_performance_metrics(
+    fn ev_replace_performance_metrics(
         current_state: Self::LoopState,
         metrics: Arc<PerformanceMetrics>,
         thread_arg: &Self::ThreadArg,
