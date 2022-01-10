@@ -7,6 +7,7 @@
 //! A scheduler generates series of TaskId which a GenericWorker executes at a time.
 
 pub(in crate::stream_engine::autonomous_executor) mod flow_efficient_scheduler;
+pub(in crate::stream_engine::autonomous_executor) mod memory_reducing_scheduler;
 pub(in crate::stream_engine::autonomous_executor) mod source_scheduler;
 
 /// Max length of task series a scheduler calculates.

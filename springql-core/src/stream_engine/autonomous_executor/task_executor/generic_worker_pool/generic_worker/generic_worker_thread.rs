@@ -1,5 +1,7 @@
 // Copyright (c) 2021 TOYOTA MOTOR CORPORATION. Licensed under MIT OR Apache-2.0.
 
+mod generic_worker_scheduler;
+
 use std::sync::Arc;
 
 use crate::stream_engine::autonomous_executor::{
@@ -9,14 +11,13 @@ use crate::stream_engine::autonomous_executor::{
         PerformanceMetrics,
     },
     pipeline_derivatives::PipelineDerivatives,
-    task_executor::{
-        scheduler::flow_efficient_scheduler::FlowEfficientScheduler,
-        task_worker_thread_handler::{
-            TaskWorkerLoopState, TaskWorkerThreadArg, TaskWorkerThreadHandler,
-        },
+    task_executor::task_worker_thread_handler::{
+        TaskWorkerLoopState, TaskWorkerThreadArg, TaskWorkerThreadHandler,
     },
     worker::worker_thread::WorkerThread,
 };
+
+use self::generic_worker_scheduler::GenericWorkerScheduler;
 
 use super::generic_worker_id::GenericWorkerId;
 
@@ -33,10 +34,13 @@ pub(in crate::stream_engine::autonomous_executor) struct GenericWorkerThreadArg 
 impl WorkerThread for GenericWorkerThread {
     type ThreadArg = GenericWorkerThreadArg;
 
-    type LoopState = TaskWorkerLoopState<FlowEfficientScheduler>; // TODO make `enum SwitchScheduler`
+    type LoopState = TaskWorkerLoopState<GenericWorkerScheduler>;
 
     fn event_subscription() -> Vec<EventTag> {
-        vec![EventTag::UpdatePipeline, EventTag::ReplacePerformanceMetrics]
+        vec![
+            EventTag::UpdatePipeline,
+            EventTag::ReplacePerformanceMetrics,
+        ]
     }
 
     fn main_loop_cycle(
@@ -44,7 +48,7 @@ impl WorkerThread for GenericWorkerThread {
         thread_arg: &Self::ThreadArg,
         event_queue: &EventQueue,
     ) -> Self::LoopState {
-        TaskWorkerThreadHandler::main_loop_cycle::<FlowEfficientScheduler>(
+        TaskWorkerThreadHandler::main_loop_cycle::<GenericWorkerScheduler>(
             current_state,
             &thread_arg.task_worker_arg,
             event_queue,
