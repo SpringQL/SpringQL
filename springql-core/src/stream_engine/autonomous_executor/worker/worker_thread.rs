@@ -16,6 +16,15 @@ use crate::stream_engine::autonomous_executor::{
     pipeline_derivatives::PipelineDerivatives,
 };
 
+/// State updated by loop cycles and event handlers.
+pub(in crate::stream_engine::autonomous_executor) trait WorkerThreadLoopState:
+    Default
+{
+    /// State might become partially corrupt when, for example, an event is subscribed but another related event is not.
+    /// State itself must provide integrity check by this method.
+    fn is_integral(&self) -> bool;
+}
+
 pub(in crate::stream_engine::autonomous_executor) trait WorkerThread {
     /// Immutable argument to pass to `main_loop_cycle`.
     ///
@@ -25,7 +34,7 @@ pub(in crate::stream_engine::autonomous_executor) trait WorkerThread {
     /// State updated in each `main_loop_cycle`.
     ///
     /// Use `()` if no state needed.
-    type LoopState: Default;
+    type LoopState: WorkerThreadLoopState;
 
     /// Which events to subscribe
     fn event_subscription() -> Vec<EventTag>;
@@ -90,7 +99,9 @@ pub(in crate::stream_engine::autonomous_executor) trait WorkerThread {
         let mut state = Self::LoopState::default();
 
         while stop_receiver.try_recv().is_err() {
-            state = Self::main_loop_cycle(state, &thread_arg, event_queue.as_ref());
+            if state.is_integral() {
+                state = Self::main_loop_cycle(state, &thread_arg, event_queue.as_ref());
+            }
             state = Self::handle_events(state, &event_polls, &thread_arg, event_queue.clone());
         }
     }

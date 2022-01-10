@@ -9,6 +9,7 @@ use crate::stream_engine::autonomous_executor::{
     repositories::Repositories,
     task::task_context::TaskContext,
     task_graph::task_id::TaskId,
+    worker::worker_thread::WorkerThreadLoopState,
     AutonomousExecutor,
 };
 
@@ -31,6 +32,13 @@ pub(super) struct TaskWorkerLoopState<S: Scheduler> {
     pub(super) pipeline_derivatives: Arc<PipelineDerivatives>,
     pub(super) metrics: Arc<PerformanceMetrics>,
     pub(super) scheduler: S,
+}
+
+impl<S: Scheduler> WorkerThreadLoopState for TaskWorkerLoopState<S> {
+    fn is_integral(&self) -> bool {
+        // TODO check pipeline versions between metrics and pipeline_derivatives
+        true
+    }
 }
 
 impl TaskWorkerThreadHandler {

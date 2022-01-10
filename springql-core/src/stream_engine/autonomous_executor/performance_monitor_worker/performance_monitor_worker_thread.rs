@@ -11,7 +11,7 @@ use crate::stream_engine::{
             PerformanceMetrics,
         },
         pipeline_derivatives::PipelineDerivatives,
-        worker::worker_thread::WorkerThread,
+        worker::worker_thread::{WorkerThread, WorkerThreadLoopState},
     },
     time::duration::wall_clock_duration::WallClockDuration,
 };
@@ -51,6 +51,13 @@ pub(super) struct PerformanceMonitorWorkerLoopState {
     metrics: Arc<PerformanceMetrics>,
     pipeline_derivatives: Arc<PipelineDerivatives>,
     clk_web_console: u64,
+}
+
+impl WorkerThreadLoopState for PerformanceMonitorWorkerLoopState {
+    fn is_integral(&self) -> bool {
+        // TODO check pipeline versions between metrics and pipeline_derivatives
+        true
+    }
 }
 
 impl WorkerThread for PerformanceMonitorWorkerThread {
