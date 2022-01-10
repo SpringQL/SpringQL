@@ -84,6 +84,8 @@ impl StreamEngine {
 
 #[cfg(test)]
 mod tests {
+    use std::time::Duration;
+
     use springql_foreign_service::{
         sink::ForeignSink,
         source::{source_input::ForeignSourceInput, ForeignSource},
@@ -146,11 +148,16 @@ mod tests {
             ))
             .unwrap();
 
+        const TIMEOUT: Duration = Duration::from_secs(1);
+
         let mut received = Vec::new();
         for _ in 0..source_inputs_len {
-            received.push(sink.receive());
+            received.push(
+                sink.try_receive(TIMEOUT)
+                    .expect("ForeignSink has not received JSON text from pipeline"),
+            );
         }
-        assert!(sink.try_receive().is_none());
+        assert!(sink.try_receive(Duration::from_secs(1)).is_none());
 
         received
     }

@@ -114,18 +114,19 @@ mod tests {
             .send_row(SinkRow::fx_city_temperature_london())
             .unwrap();
 
+        const TIMEOUT: Duration = Duration::from_secs(1);
         assert_eq!(
-            JsonObject::new(sink.try_receive().unwrap()),
+            JsonObject::new(sink.try_receive(TIMEOUT).unwrap()),
             JsonObject::fx_city_temperature_tokyo()
         );
         assert_eq!(
-            JsonObject::new(sink.try_receive().unwrap()),
+            JsonObject::new(sink.try_receive(TIMEOUT).unwrap()),
             JsonObject::fx_city_temperature_osaka()
         );
         assert_eq!(
-            JsonObject::new(sink.try_receive().unwrap()),
+            JsonObject::new(sink.try_receive(TIMEOUT).unwrap()),
             JsonObject::fx_city_temperature_london()
         );
-        assert!(sink.try_receive().is_none());
+        assert!(sink.try_receive(TIMEOUT).is_none());
     }
 }

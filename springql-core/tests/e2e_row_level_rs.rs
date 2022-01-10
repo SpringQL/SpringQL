@@ -1,5 +1,7 @@
 // Copyright (c) 2021 TOYOTA MOTOR CORPORATION. Licensed under MIT OR Apache-2.0.
 
+use std::time::Duration;
+
 use serde_json::json;
 use springql_core::error::Result;
 use springql_core::low_level_rs::*;
@@ -18,7 +20,7 @@ fn apply_ddls(ddls: &[String]) -> SpringPipeline {
 
 fn drain_from_sink(sink: &ForeignSink) -> Vec<serde_json::Value> {
     let mut received = Vec::new();
-    while let Some(v) = sink.try_receive() {
+    while let Some(v) = sink.try_receive(Duration::from_secs(1)) {
         received.push(v);
     }
     received
