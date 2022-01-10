@@ -1,36 +1,30 @@
 // Copyright (c) 2021 TOYOTA MOTOR CORPORATION. Licensed under MIT OR Apache-2.0.
 
+//! A task graph is a DAG where nodes are `TaskId`s and edges are `QueueId`s.
+//!
+//! ![Task graph concept diagram](https://raw.githubusercontent.com/SpringQL/SpringQL.github.io/main/static/img/pipeline-and-task-graph.svg)
+//!
+//! A scheduler generates series of TaskId which a GenericWorker executes at a time.
+
 pub(in crate::stream_engine::autonomous_executor) mod flow_efficient_scheduler;
+pub(in crate::stream_engine::autonomous_executor) mod source_scheduler;
 
-use std::fmt::Debug;
+/// Max length of task series a scheduler calculates.
+/// FlowEfficientScheduler does not care this value to achieve _collector-to-stopper_ policy.
+///
+/// Too long series may badly affect on scheduler change (e.g. memory state change from severe to moderate).
+const MAX_TASK_SERIES: u16 = 20;
 
-use crate::error::Result;
-use crate::pipeline::pipeline_version::PipelineVersion;
-use crate::stream_engine::autonomous_executor::pipeline_derivatives::PipelineDerivatives;
+use crate::stream_engine::autonomous_executor::performance_metrics::PerformanceMetrics;
 use crate::stream_engine::autonomous_executor::task_graph::task_id::TaskId;
 use crate::stream_engine::autonomous_executor::task_graph::TaskGraph;
+use std::fmt::Debug;
 
-pub(crate) trait WorkerState {}
-
+/// All scheduler implementation must be stateless because MemoryStateMachine replace scheduler implementation
+/// dynamically.
 pub(in crate::stream_engine::autonomous_executor) trait Scheduler:
-    Debug + Default + Sync + Send + 'static
+    Debug + Default
 {
-    type W: WorkerState + Clone + Default;
-
-    /// Called from main thread.
-    fn notify_pipeline_update(&mut self, pipeline_derivatives: &PipelineDerivatives) -> Result<()> {
-        let pipeline = pipeline_derivatives.pipeline();
-        let task_graph = pipeline_derivatives.task_graph();
-        self._notify_pipeline_version(pipeline.version());
-        self._notify_task_graph_update(task_graph)
-    }
-
-    /// Called from main thread.
-    fn _notify_pipeline_version(&mut self, v: PipelineVersion);
-
-    /// Called from main thread.
-    fn _notify_task_graph_update(&mut self, task_graph: &TaskGraph) -> Result<()>;
-
     /// Called from worker threads.
-    fn next_task(&self, worker_state: Self::W) -> Option<(TaskId, Self::W)>;
+    fn next_task_series(&self, graph: &TaskGraph, metrics: &PerformanceMetrics) -> Vec<TaskId>;
 }

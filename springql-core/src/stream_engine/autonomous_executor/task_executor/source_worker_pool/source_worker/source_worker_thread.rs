@@ -10,7 +10,7 @@ use crate::stream_engine::autonomous_executor::{
     },
     pipeline_derivatives::PipelineDerivatives,
     task_executor::{
-        scheduler::flow_efficient_scheduler::FlowEfficientScheduler,
+        scheduler::source_scheduler::SourceScheduler,
         task_worker_thread_handler::{
             TaskWorkerLoopState, TaskWorkerThreadArg, TaskWorkerThreadHandler,
         },
@@ -18,33 +18,33 @@ use crate::stream_engine::autonomous_executor::{
     worker::worker_thread::WorkerThread,
 };
 
-use super::generic_worker_id::GenericWorkerId;
+use super::source_worker_id::SourceWorkerId;
 
 /// Runs a worker thread.
 #[derive(Debug)]
-pub(super) struct GenericWorkerThread;
+pub(super) struct SourceWorkerThread;
 
 #[derive(Debug, new)]
-pub(in crate::stream_engine::autonomous_executor) struct GenericWorkerThreadArg {
-    id: GenericWorkerId,
+pub(in crate::stream_engine::autonomous_executor) struct SourceWorkerThreadArg {
+    id: SourceWorkerId,
     task_worker_arg: TaskWorkerThreadArg,
 }
 
-impl WorkerThread for GenericWorkerThread {
-    type ThreadArg = GenericWorkerThreadArg;
+impl WorkerThread for SourceWorkerThread {
+    type ThreadArg = SourceWorkerThreadArg;
 
-    type LoopState = TaskWorkerLoopState<FlowEfficientScheduler>; // TODO make `enum SwitchScheduler`
+    type LoopState = TaskWorkerLoopState<SourceScheduler>;
 
     fn event_subscription() -> Vec<EventTag> {
         vec![EventTag::UpdatePipeline, EventTag::ReplacePerformanceMetrics]
     }
 
     fn main_loop_cycle(
-        current_state: Self::LoopState, // generic worker's loop cycle does not mutate state (while event handlers do)
+        current_state: Self::LoopState,
         thread_arg: &Self::ThreadArg,
         event_queue: &EventQueue,
     ) -> Self::LoopState {
-        TaskWorkerThreadHandler::main_loop_cycle::<FlowEfficientScheduler>(
+        TaskWorkerThreadHandler::main_loop_cycle::<SourceScheduler>(
             current_state,
             &thread_arg.task_worker_arg,
             event_queue,
@@ -57,7 +57,7 @@ impl WorkerThread for GenericWorkerThread {
         thread_arg: &Self::ThreadArg,
         _event_queue: Arc<EventQueue>,
     ) -> Self::LoopState {
-        log::debug!("[GenericWorker#{}] got UpdatePipeline event", thread_arg.id);
+        log::debug!("[SourceWorker#{}] got UpdatePipeline event", thread_arg.id);
 
         let mut state = current_state;
         state.pipeline_derivatives = Some(pipeline_derivatives);
@@ -71,7 +71,7 @@ impl WorkerThread for GenericWorkerThread {
         _event_queue: Arc<EventQueue>,
     ) -> Self::LoopState {
         log::debug!(
-            "[GenericWorker#{}] got UpdatePerformanceMetrics event",
+            "[SourceWorker#{}] got UpdatePerformanceMetrics event",
             thread_arg.id
         );
 
@@ -79,7 +79,6 @@ impl WorkerThread for GenericWorkerThread {
         state.metrics = Some(metrics);
         state
     }
-
     fn ev_incremental_update_metrics(
         _current_state: Self::LoopState,
         _metrics: Arc<MetricsUpdateByTaskExecution>,

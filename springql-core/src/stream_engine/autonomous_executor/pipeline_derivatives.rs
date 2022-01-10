@@ -5,8 +5,8 @@ mod task_repository;
 use std::sync::Arc;
 
 use self::task_repository::TaskRepository;
-use crate::error::Result;
 use crate::pipeline::Pipeline;
+use crate::{error::Result, pipeline::pipeline_version::PipelineVersion};
 
 use super::{
     task::Task,
@@ -23,7 +23,7 @@ pub(in crate::stream_engine::autonomous_executor) struct PipelineDerivatives {
 
 impl PipelineDerivatives {
     pub(in crate::stream_engine::autonomous_executor) fn new(pipeline: Pipeline) -> Self {
-        let task_graph = TaskGraph::from(pipeline.as_graph());
+        let task_graph = TaskGraph::from(&pipeline);
         let task_repo = TaskRepository::from(pipeline.as_graph());
         Self {
             pipeline,
@@ -34,6 +34,12 @@ impl PipelineDerivatives {
 
     pub(in crate::stream_engine::autonomous_executor) fn pipeline(&self) -> &Pipeline {
         &self.pipeline
+    }
+
+    pub(in crate::stream_engine::autonomous_executor) fn pipeline_version(
+        &self,
+    ) -> PipelineVersion {
+        self.pipeline.version()
     }
 
     pub(in crate::stream_engine::autonomous_executor) fn task_graph(&self) -> &TaskGraph {
@@ -49,11 +55,5 @@ impl PipelineDerivatives {
         task_id: &TaskId,
     ) -> Result<Arc<Task>> {
         self.task_repo.get(task_id)
-    }
-}
-
-impl Default for PipelineDerivatives {
-    fn default() -> Self {
-        Self::new(Pipeline::default())
     }
 }

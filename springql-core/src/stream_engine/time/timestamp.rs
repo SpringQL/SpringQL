@@ -56,6 +56,14 @@ impl Sub<Duration> for Timestamp {
     }
 }
 
+impl Sub<Timestamp> for Timestamp {
+    type Output = Duration;
+
+    fn sub(self, rhs: Timestamp) -> Self::Output {
+        self.0 - rhs.0
+    }
+}
+
 /// See: <https://serde.rs/custom-date-format.html>
 mod datetime_format {
     use super::FORMAT;

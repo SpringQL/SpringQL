@@ -2,10 +2,16 @@ use std::{sync::Arc, thread, time::Duration};
 
 use crate::stream_engine::{
     autonomous_executor::{
-        event_queue::{event::EventTag, EventQueue},
-        performance_metrics::PerformanceMetrics,
+        event_queue::{
+            event::{Event, EventTag},
+            EventQueue,
+        },
+        performance_metrics::{
+            metrics_update_command::metrics_update_by_task_execution::MetricsUpdateByTaskExecution,
+            PerformanceMetrics,
+        },
         pipeline_derivatives::PipelineDerivatives,
-        worker::worker_thread::WorkerThread,
+        worker::worker_thread::{WorkerThread, WorkerThreadLoopState},
     },
     time::duration::wall_clock_duration::WallClockDuration,
 };
@@ -42,9 +48,18 @@ impl Default for PerformanceMonitorWorkerThreadArg {
 
 #[derive(Debug, Default)]
 pub(super) struct PerformanceMonitorWorkerLoopState {
-    pipeline_derivatives: Arc<PipelineDerivatives>,
-    metrics: PerformanceMetrics,
+    pipeline_derivatives: Option<Arc<PipelineDerivatives>>,
+    metrics: Option<Arc<PerformanceMetrics>>,
     clk_web_console: u64,
+}
+
+impl WorkerThreadLoopState for PerformanceMonitorWorkerLoopState {
+    fn is_integral(&self) -> bool {
+        match (&self.pipeline_derivatives, &self.metrics) {
+            (Some(p), Some(m)) => p.pipeline_version() == *m.pipeline_version(),
+            _ => false,
+        }
+    }
 }
 
 impl WorkerThread for PerformanceMonitorWorkerThread {
@@ -53,39 +68,72 @@ impl WorkerThread for PerformanceMonitorWorkerThread {
     type LoopState = PerformanceMonitorWorkerLoopState;
 
     fn event_subscription() -> Vec<EventTag> {
-        vec![EventTag::UpdatePipeline]
+        vec![EventTag::UpdatePipeline, EventTag::IncrementalUpdateMetrics]
     }
 
     fn main_loop_cycle(
         current_state: Self::LoopState,
         thread_arg: &Self::ThreadArg,
+        _event_queue: &EventQueue,
     ) -> Self::LoopState {
         let mut state = current_state;
+        if let (Some(pipeline_derivatives), Some(metrics)) =
+            (&state.pipeline_derivatives, &state.metrics)
+        {
+            if state.clk_web_console == 0 {
+                state.clk_web_console = WEB_CONSOLE_REPORT_INTERVAL_CLOCK;
+                thread_arg
+                    .web_console_reporter
+                    .report(metrics, pipeline_derivatives.task_graph());
+            } else {
+                state.clk_web_console -= 1;
+            }
+            thread::sleep(Duration::from_millis(CLOCK_MSEC));
 
-        if state.clk_web_console == 0 {
-            state.clk_web_console = WEB_CONSOLE_REPORT_INTERVAL_CLOCK;
-            thread_arg
-                .web_console_reporter
-                .report(&state.metrics, state.pipeline_derivatives.task_graph());
+            state
+        } else {
+            unreachable!("by integrity check")
         }
-        thread::sleep(Duration::from_millis(CLOCK_MSEC));
-
-        state
     }
 
     fn ev_update_pipeline(
         current_state: Self::LoopState,
         pipeline_derivatives: Arc<PipelineDerivatives>,
         _thread_arg: &Self::ThreadArg,
-        _event_queue: Arc<EventQueue>,
+        event_queue: Arc<EventQueue>,
     ) -> Self::LoopState {
         let mut state = current_state;
 
-        state
-            .metrics
-            .reset_from_task_graph(pipeline_derivatives.task_graph());
-        state.pipeline_derivatives = pipeline_derivatives;
+        let metrics = Arc::new(PerformanceMetrics::from_task_graph(
+            pipeline_derivatives.task_graph(),
+        ));
+        state.metrics = Some(metrics.clone());
+        event_queue.publish(Event::ReplacePerformanceMetrics { metrics });
 
+        state.pipeline_derivatives = Some(pipeline_derivatives);
+
+        state
+    }
+
+    fn ev_replace_performance_metrics(
+        _current_state: Self::LoopState,
+        _metrics: Arc<PerformanceMetrics>,
+        _thread_arg: &Self::ThreadArg,
+        _event_queue: Arc<EventQueue>,
+    ) -> Self::LoopState {
+        unreachable!()
+    }
+
+    fn ev_incremental_update_metrics(
+        current_state: Self::LoopState,
+        metrics: Arc<MetricsUpdateByTaskExecution>,
+        _thread_arg: &Self::ThreadArg,
+        _event_queue: Arc<EventQueue>,
+    ) -> Self::LoopState {
+        let state = current_state;
+        if let Some(m) = state.metrics.as_ref() {
+            m.update_by_task_execution(metrics.as_ref())
+        }
         state
     }
 }

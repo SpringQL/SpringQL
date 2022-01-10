@@ -2,14 +2,19 @@
 
 pub(in crate::stream_engine::autonomous_executor) mod sink_writer;
 
+use std::sync::Arc;
+
 use super::task_context::TaskContext;
 use crate::error::Result;
 use crate::pipeline::name::SinkWriterName;
 use crate::pipeline::sink_writer_model::SinkWriterModel;
+use crate::stream_engine::autonomous_executor::performance_metrics::metrics_update_command::metrics_update_by_task_execution::{MetricsUpdateByTaskExecution, InQueueMetricsUpdateByTaskExecution, TaskMetricsUpdateByTaskExecution};
+use crate::stream_engine::autonomous_executor::repositories::Repositories;
 use crate::stream_engine::autonomous_executor::row::foreign_row::sink_row::SinkRow;
 use crate::stream_engine::autonomous_executor::row::Row;
 use crate::stream_engine::autonomous_executor::task_graph::queue_id::QueueId;
 use crate::stream_engine::autonomous_executor::task_graph::task_id::TaskId;
+use crate::stream_engine::time::duration::wall_clock_duration::wall_clock_stopwatch::WallClockStopwatch;
 
 #[derive(Debug)]
 pub(crate) struct SinkTask {
@@ -33,23 +38,56 @@ impl SinkTask {
     pub(in crate::stream_engine::autonomous_executor) fn run(
         &self,
         context: &TaskContext,
-    ) -> Result<()> {
-        let opt_row = context
+    ) -> Result<MetricsUpdateByTaskExecution> {
+        let stopwatch = WallClockStopwatch::start();
+
+        let in_queues_metrics = if let Some((row, in_queue_metrics)) = context
             .input_queue()
             .map(|queue_id| {
                 let repos = context.repos();
-                match queue_id {
-                    QueueId::Row(qid) => {
-                        let row_q_repo = repos.row_queue_repository();
-                        let queue = row_q_repo.get(&qid);
-                        queue.use_()
-                    }
-                    QueueId::Window(_) => unreachable!("sink task must have row input queue"),
-                }
+                self.use_row_from(queue_id, repos)
             })
-            .flatten();
+            .flatten()
+        {
+            self.emit(row, context)?;
+            vec![in_queue_metrics]
+        } else {
+            vec![]
+        };
 
-        opt_row.map_or_else(|| Ok(()), |row| self.emit(row, context))
+        let execution_time = stopwatch.stop();
+
+        let out_queues_metrics = vec![];
+        let task_metrics = TaskMetricsUpdateByTaskExecution::new(context.task(), execution_time);
+        Ok(MetricsUpdateByTaskExecution::new(
+            task_metrics,
+            in_queues_metrics,
+            out_queues_metrics,
+        ))
+    }
+
+    fn use_row_from(
+        &self,
+        queue_id: QueueId,
+        repos: Arc<Repositories>,
+    ) -> Option<(Row, InQueueMetricsUpdateByTaskExecution)> {
+        match queue_id {
+            QueueId::Row(queue_id) => {
+                let row_q_repo = repos.row_queue_repository();
+                let queue = row_q_repo.get(&queue_id);
+                queue.use_().map(|row| {
+                    (
+                        row,
+                        InQueueMetricsUpdateByTaskExecution::Row {
+                            queue_id,
+                            rows_used: 1,
+                            bytes_used: 100, // TODO calc row bytes
+                        },
+                    )
+                })
+            }
+            QueueId::Window(_) => unreachable!("sink task must have row input queue"),
+        }
     }
 
     fn emit(&self, row: Row, context: &TaskContext) -> Result<()> {

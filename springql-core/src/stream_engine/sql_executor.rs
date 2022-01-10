@@ -6,18 +6,26 @@ use super::command::alter_pipeline_command::AlterPipelineCommand;
 use crate::{
     error::Result,
     pipeline::{
-        pump_model::PumpModel, sink_stream_model::SinkStreamModel,
-        sink_writer_model::SinkWriterModel, source_reader_model::SourceReaderModel,
-        source_stream_model::SourceStreamModel, Pipeline,
+        pipeline_version::PipelineVersion, pump_model::PumpModel,
+        sink_stream_model::SinkStreamModel, sink_writer_model::SinkWriterModel,
+        source_reader_model::SourceReaderModel, source_stream_model::SourceStreamModel, Pipeline,
     },
 };
 
 /// Executor of SQL.
 ///
 /// All methods (recursive) are called from main thread.
-#[derive(Debug, Default)]
+#[derive(Debug)]
 pub(in crate::stream_engine) struct SqlExecutor {
     pipeline: Pipeline,
+}
+
+impl Default for SqlExecutor {
+    fn default() -> Self {
+        Self {
+            pipeline: Pipeline::new(PipelineVersion::new()),
+        }
+    }
 }
 
 impl SqlExecutor {

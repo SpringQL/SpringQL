@@ -12,6 +12,8 @@ use std::{
     sync::{RwLock, RwLockReadGuard, RwLockWriteGuard},
 };
 
+use crate::pipeline::pipeline_version::PipelineVersion;
+
 use self::{
     metrics_update_command::metrics_update_by_task_execution::MetricsUpdateByTaskExecution,
     queue_metrics::{row_queue_metrics::RowQueueMetrics, window_queue_metrics::WindowQueueMetrics},
@@ -23,7 +25,7 @@ use super::task_graph::{
     TaskGraph,
 };
 
-/// Performance metrics of task execution. It has the same lifetime as a TaskGraph.
+/// Performance metrics of task execution. It has the same lifetime as a TaskGraph (i.e. a Pipeline).
 ///
 /// It is monitored by [PerformanceMonitorWorker](crate::stream_processor::autonomous_executor::worker::performance_monitor_worker::PerformanceMonitoRworker),
 /// and it is updated by [TaskExecutor](crate::stream_processor::autonomous_executor::task_executor::TaskExecutor).
@@ -31,40 +33,57 @@ use super::task_graph::{
 /// `PerformanceMonitorWorker` does not frequently read from `RwLock<*Metrics>`, and schedulers in `TaskExecutor` are not expected to
 /// execute consequent tasks (sharing the same queue as input or output) by different workers at the same time.
 /// Therefore, not much contention for `RwLock<*Metrics>` occurs.
-#[derive(Debug, Default)]
+#[derive(Debug)]
 pub(super) struct PerformanceMetrics {
-    tasks: HashMap<TaskId, RwLock<TaskMetrics>>,
+    /// From which version this metrics constructed
+    pipeline_version: PipelineVersion,
 
+    tasks: HashMap<TaskId, RwLock<TaskMetrics>>,
     row_queues: HashMap<RowQueueId, RwLock<RowQueueMetrics>>,
     window_queues: HashMap<WindowQueueId, RwLock<WindowQueueMetrics>>,
 }
 
 impl PerformanceMetrics {
-    pub(super) fn reset(
-        &mut self,
+    fn new(
+        pipeline_version: PipelineVersion,
         task_ids: Vec<TaskId>,
         row_queue_ids: Vec<RowQueueId>,
         window_queue_ids: Vec<WindowQueueId>,
-    ) {
-        self.tasks.clear();
-        self.row_queues.clear();
-        self.window_queues.clear();
+    ) -> Self {
+        let tasks = task_ids
+            .into_iter()
+            .map(|id| (id, RwLock::new(TaskMetrics::default())))
+            .collect();
 
-        task_ids.into_iter().for_each(|id| {
-            self.tasks.insert(id, RwLock::new(TaskMetrics::default()));
-        });
-        row_queue_ids.into_iter().for_each(|id| {
-            self.row_queues
-                .insert(id, RwLock::new(RowQueueMetrics::default()));
-        });
-        window_queue_ids.into_iter().for_each(|id| {
-            self.window_queues
-                .insert(id, RwLock::new(WindowQueueMetrics::default()));
-        });
+        let row_queues = row_queue_ids
+            .into_iter()
+            .map(|id| (id, RwLock::new(RowQueueMetrics::default())))
+            .collect();
+
+        let window_queues = window_queue_ids
+            .into_iter()
+            .map(|id| (id, RwLock::new(WindowQueueMetrics::default())))
+            .collect();
+
+        Self {
+            pipeline_version,
+            tasks,
+            row_queues,
+            window_queues,
+        }
     }
 
-    pub(super) fn reset_from_task_graph(&mut self, graph: &TaskGraph) {
-        self.reset(graph.tasks(), graph.row_queues(), graph.window_queues())
+    pub(super) fn from_task_graph(graph: &TaskGraph) -> Self {
+        Self::new(
+            *graph.pipeline_version(),
+            graph.tasks(),
+            graph.row_queues(),
+            graph.window_queues(),
+        )
+    }
+
+    pub(super) fn pipeline_version(&self) -> &PipelineVersion {
+        &self.pipeline_version
     }
 
     pub(super) fn update_by_task_execution(&self, command: &MetricsUpdateByTaskExecution) {
@@ -133,21 +152,21 @@ impl PerformanceMetrics {
     fn get_task_read(&self, id: &TaskId) -> RwLockReadGuard<'_, TaskMetrics> {
         self.tasks
             .get(id)
-            .expect("task_id not found")
+            .unwrap_or_else(|| panic!("task_id {} not found", id))
             .read()
             .expect("poisoned")
     }
     fn get_window_queue_read(&self, id: &WindowQueueId) -> RwLockReadGuard<'_, WindowQueueMetrics> {
         self.window_queues
             .get(id)
-            .expect("queue_id not found")
+            .unwrap_or_else(|| panic!("queue_id {} not found", id))
             .read()
             .expect("poisoned")
     }
     fn get_row_queue_read(&self, id: &RowQueueId) -> RwLockReadGuard<'_, RowQueueMetrics> {
         self.row_queues
             .get(id)
-            .expect("queue_id not found")
+            .unwrap_or_else(|| panic!("queue_id {} not found", id))
             .read()
             .expect("poisoned")
     }

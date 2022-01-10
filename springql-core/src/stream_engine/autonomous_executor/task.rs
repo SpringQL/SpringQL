@@ -11,7 +11,10 @@ use self::{
     pump_task::PumpTask, sink_task::SinkTask, source_task::SourceTask, task_context::TaskContext,
 };
 
-use super::task_graph::task_id::TaskId;
+use super::{
+    performance_metrics::metrics_update_command::metrics_update_by_task_execution::MetricsUpdateByTaskExecution,
+    task_graph::task_id::TaskId,
+};
 
 #[derive(Debug)]
 pub(crate) enum Task {
@@ -29,7 +32,7 @@ impl Task {
         }
     }
 
-    pub(super) fn run(&self, context: &TaskContext) -> Result<()> {
+    pub(super) fn run(&self, context: &TaskContext) -> Result<MetricsUpdateByTaskExecution> {
         match self {
             Task::Pump(pump_task) => pump_task.run(context),
             Task::Source(source_task) => source_task.run(context),

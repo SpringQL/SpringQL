@@ -8,7 +8,10 @@ use petgraph::{
 use self::query_subtask_node::QuerySubtaskNode;
 use crate::{
     error::Result,
-    stream_engine::autonomous_executor::task::task_context::TaskContext,
+    stream_engine::autonomous_executor::{
+        performance_metrics::metrics_update_command::metrics_update_by_task_execution::InQueueMetricsUpdateByTaskExecution,
+        task::task_context::TaskContext,
+    },
     stream_engine::{
         autonomous_executor::row::Row,
         command::query_plan::{child_direction::ChildDirection, QueryPlan},
@@ -22,6 +25,13 @@ mod query_subtask_node;
 #[derive(Debug)]
 pub(in crate::stream_engine::autonomous_executor) struct QuerySubtask {
     tree: DiGraph<QuerySubtaskNode, ChildDirection>,
+}
+
+#[derive(Debug, new)]
+pub(in crate::stream_engine::autonomous_executor) struct QuerySubtaskOut {
+    pub(in crate::stream_engine::autonomous_executor) row: Row,
+    pub(in crate::stream_engine::autonomous_executor) in_queue_metrics_update:
+        InQueueMetricsUpdateByTaskExecution,
 }
 
 impl From<&QueryPlan> for QuerySubtask {
@@ -46,18 +56,22 @@ impl QuerySubtask {
     pub(in crate::stream_engine::autonomous_executor) fn run(
         &self,
         context: &TaskContext,
-    ) -> Result<Option<Row>> {
+    ) -> Result<Option<QuerySubtaskOut>> {
         let mut next_idx = self.leaf_node_idx();
 
         match self.run_leaf(next_idx, context) {
             None => Ok(None),
-            Some(leaf_row) => {
-                let mut next_row = leaf_row;
+            Some(leaf_query_subtask_out) => {
+                let mut next_row = leaf_query_subtask_out.row;
                 while let Some(parent_idx) = self.parent_node_idx(next_idx) {
                     next_idx = parent_idx;
                     next_row = self.run_non_leaf(next_idx, next_row)?;
                 }
-                Ok(Some(next_row))
+
+                Ok(Some(QuerySubtaskOut::new(
+                    next_row,
+                    leaf_query_subtask_out.in_queue_metrics_update, // leaf subtask decides in queue metrics change
+                )))
             }
         }
     }
@@ -75,7 +89,7 @@ impl QuerySubtask {
     /// # Returns
     ///
     /// None when input queue does not exist or is empty.
-    fn run_leaf(&self, subtask_idx: NodeIndex, context: &TaskContext) -> Option<Row> {
+    fn run_leaf(&self, subtask_idx: NodeIndex, context: &TaskContext) -> Option<QuerySubtaskOut> {
         let subtask = self.tree.node_weight(subtask_idx).expect("must be found");
         match subtask {
             QuerySubtaskNode::Collect(collect_subtask) => collect_subtask.run(context),
