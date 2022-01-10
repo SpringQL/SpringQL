@@ -1,12 +1,15 @@
 // Copyright (c) 2021 TOYOTA MOTOR CORPORATION. Licensed under MIT OR Apache-2.0.
 
-use anyhow::{Context, Result};
+use anyhow::Result;
 use std::io::{BufRead, BufReader};
 use std::net::{IpAddr, Shutdown, SocketAddr, TcpListener, TcpStream};
 use std::sync::mpsc;
 use std::thread;
 use std::time::Duration;
 
+const TIMEOUT: Duration = Duration::from_millis(500);
+
+/// TCP server to receive JSON text, and returns serialized one.
 pub struct ForeignSink {
     my_addr: SocketAddr,
 
@@ -41,21 +44,22 @@ impl ForeignSink {
 
     /// Non-blocking call.
     ///
-    /// # Failures
+    /// # Returns
     ///
-    /// when sink subtask has not sent new row yet.
-    pub fn receive(&self) -> Result<serde_json::Value> {
-        let timeout = Duration::from_millis(500);
-
-        let received = self
-            .rx
+    /// `None` when sink subtask has not sent new row yet.
+    pub fn try_receive(&self) -> Option<serde_json::Value> {
+        self.rx
             .try_recv()
             .or_else(|_| {
-                thread::sleep(timeout);
+                thread::sleep(TIMEOUT);
                 self.rx.try_recv()
             })
-            .context("sink subtask has not sent new row yet")?;
-        Ok(received)
+            .ok()
+    }
+
+    /// Blocking call.
+    pub fn receive(&self) -> serde_json::Value {
+        self.rx.recv().expect("failed to receive JSON text")
     }
 
     fn stream_handler(stream: TcpStream, tx: mpsc::Sender<serde_json::Value>) {
