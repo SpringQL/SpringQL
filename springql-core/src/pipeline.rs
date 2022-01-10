@@ -1,16 +1,16 @@
 // Copyright (c) 2021 TOYOTA MOTOR CORPORATION. Licensed under MIT OR Apache-2.0.
 
 //! # Pipeline concept diagram
-//! 
+//!
 //! Omit _Task Graph_ here. A pipeline has:
-//! 
+//!
 //!   - Stream
 //!     - (native) Stream
 //!     - Source/Sink Stream
 //!   - Source Reader
 //!   - Sink Writer
 //!   - Pump
-//! 
+//!
 //! ![Pipeline concept diagram](https://raw.githubusercontent.com/SpringQL/SpringQL.github.io/main/static/img/pipeline-and-task-graph.svg)
 
 pub(crate) mod name;
@@ -43,7 +43,7 @@ use self::{
 #[cfg(test)] // TODO remove
 use self::stream_model::StreamModel;
 
-#[derive(Clone, Debug, Default, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub(crate) struct Pipeline {
     version: PipelineVersion,
     object_names: HashSet<String>,
@@ -51,6 +51,14 @@ pub(crate) struct Pipeline {
 }
 
 impl Pipeline {
+    pub(super) fn new(version: PipelineVersion) -> Self {
+        Self {
+            version,
+            object_names: HashSet::default(),
+            graph: PipelineGraph::default(),
+        }
+    }
+
     pub(super) fn version(&self) -> PipelineVersion {
         self.version
     }

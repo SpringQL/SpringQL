@@ -18,10 +18,7 @@ use std::collections::HashMap;
 
 use petgraph::graph::{DiGraph, NodeIndex};
 
-use crate::pipeline::{
-    pipeline_graph::{edge::Edge, PipelineGraph},
-    pipeline_version::PipelineVersion,
-};
+use crate::pipeline::{pipeline_graph::edge::Edge, pipeline_version::PipelineVersion, Pipeline};
 
 use self::{
     edge_ref::MyEdgeRef,
@@ -29,7 +26,7 @@ use self::{
     task_id::TaskId,
 };
 
-#[derive(Debug, Default)]
+#[derive(Debug)]
 pub(super) struct TaskGraph {
     /// From which version this graph constructed
     pipeline_version: PipelineVersion,
@@ -40,6 +37,15 @@ pub(super) struct TaskGraph {
 }
 
 impl TaskGraph {
+    pub(super) fn new(pipeline_version: PipelineVersion) -> Self {
+        Self {
+            pipeline_version,
+            g: DiGraph::default(),
+            task_id_node_map: HashMap::default(),
+            queue_id_edge_map: HashMap::default(),
+        }
+    }
+
     pub(super) fn pipeline_version(&self) -> &PipelineVersion {
         &self.pipeline_version
     }
@@ -195,10 +201,11 @@ impl TaskGraph {
     }
 }
 
-impl From<&PipelineGraph> for TaskGraph {
-    fn from(pipeline_graph: &PipelineGraph) -> Self {
+impl From<&Pipeline> for TaskGraph {
+    fn from(pipeline: &Pipeline) -> Self {
+        let pipeline_graph = pipeline.as_graph();
         let pipeline_petgraph = pipeline_graph.as_petgraph();
-        let mut task_graph = TaskGraph::default();
+        let mut task_graph = TaskGraph::new(pipeline.version());
 
         // add all task ids
         pipeline_petgraph.edge_weights().for_each(|edge| {

@@ -4,7 +4,10 @@ use std::sync::Arc;
 
 use crate::stream_engine::autonomous_executor::{
     event_queue::{event::EventTag, EventQueue},
-    performance_metrics::{PerformanceMetrics, metrics_update_command::metrics_update_by_task_execution::MetricsUpdateByTaskExecution},
+    performance_metrics::{
+        metrics_update_command::metrics_update_by_task_execution::MetricsUpdateByTaskExecution,
+        PerformanceMetrics,
+    },
     pipeline_derivatives::PipelineDerivatives,
     task_executor::{
         scheduler::source_scheduler::SourceScheduler,
@@ -57,7 +60,7 @@ impl WorkerThread for SourceWorkerThread {
         log::debug!("[SourceWorker#{}] got UpdatePipeline event", thread_arg.id);
 
         let mut state = current_state;
-        state.pipeline_derivatives = pipeline_derivatives;
+        state.pipeline_derivatives = Some(pipeline_derivatives);
         state
     }
 
@@ -73,7 +76,7 @@ impl WorkerThread for SourceWorkerThread {
         );
 
         let mut state = current_state;
-        state.metrics = metrics;
+        state.metrics = Some(metrics);
         state
     }
     fn ev_incremental_update_metrics(

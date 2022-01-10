@@ -48,14 +48,17 @@ impl Default for PerformanceMonitorWorkerThreadArg {
 
 #[derive(Debug, Default)]
 pub(super) struct PerformanceMonitorWorkerLoopState {
-    metrics: Arc<PerformanceMetrics>,
-    pipeline_derivatives: Arc<PipelineDerivatives>,
+    pipeline_derivatives: Option<Arc<PipelineDerivatives>>,
+    metrics: Option<Arc<PerformanceMetrics>>,
     clk_web_console: u64,
 }
 
 impl WorkerThreadLoopState for PerformanceMonitorWorkerLoopState {
     fn is_integral(&self) -> bool {
-        &self.pipeline_derivatives.pipeline_version() == self.metrics.pipeline_version()
+        match (&self.pipeline_derivatives, &self.metrics) {
+            (Some(p), Some(m)) => p.pipeline_version() == *m.pipeline_version(),
+            _ => false,
+        }
     }
 }
 
@@ -74,16 +77,21 @@ impl WorkerThread for PerformanceMonitorWorkerThread {
         _event_queue: &EventQueue,
     ) -> Self::LoopState {
         let mut state = current_state;
+        if let (Some(pipeline_derivatives), Some(metrics)) =
+            (&state.pipeline_derivatives, &state.metrics)
+        {
+            if state.clk_web_console == 0 {
+                state.clk_web_console = WEB_CONSOLE_REPORT_INTERVAL_CLOCK;
+                thread_arg
+                    .web_console_reporter
+                    .report(metrics, pipeline_derivatives.task_graph());
+            }
+            thread::sleep(Duration::from_millis(CLOCK_MSEC));
 
-        if state.clk_web_console == 0 {
-            state.clk_web_console = WEB_CONSOLE_REPORT_INTERVAL_CLOCK;
-            thread_arg
-                .web_console_reporter
-                .report(&state.metrics, state.pipeline_derivatives.task_graph());
+            state
+        } else {
+            unreachable!("by integrity check")
         }
-        thread::sleep(Duration::from_millis(CLOCK_MSEC));
-
-        state
     }
 
     fn ev_update_pipeline(
@@ -97,10 +105,10 @@ impl WorkerThread for PerformanceMonitorWorkerThread {
         let metrics = Arc::new(PerformanceMetrics::from_task_graph(
             pipeline_derivatives.task_graph(),
         ));
-        state.metrics = metrics.clone();
+        state.metrics = Some(metrics.clone());
         event_queue.publish(Event::UpdatePerformanceMetrics { metrics });
 
-        state.pipeline_derivatives = pipeline_derivatives;
+        state.pipeline_derivatives = Some(pipeline_derivatives);
 
         state
     }
@@ -121,7 +129,9 @@ impl WorkerThread for PerformanceMonitorWorkerThread {
         _event_queue: Arc<EventQueue>,
     ) -> Self::LoopState {
         let state = current_state;
-        state.metrics.update_by_task_execution(metrics.as_ref());
+        if let Some(m) = state.metrics.as_ref() {
+            m.update_by_task_execution(metrics.as_ref())
+        }
         state
     }
 }

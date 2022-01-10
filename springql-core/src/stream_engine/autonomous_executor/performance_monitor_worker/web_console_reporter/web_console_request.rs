@@ -183,6 +183,8 @@ impl QueueInnerRequest {
 
 #[cfg(test)]
 mod tests {
+    use crate::pipeline::pipeline_version::PipelineVersion;
+
     use super::*;
     use pretty_assertions::assert_eq;
     use serde_json::json;
@@ -194,9 +196,11 @@ mod tests {
             assert_eq!(request.to_json(), expected);
         }
 
+        let task_graph = TaskGraph::new(PipelineVersion::new());
+
         t(
-            PerformanceMetrics::default(),
-            TaskGraph::default(),
+            PerformanceMetrics::from_task_graph(&task_graph),
+            task_graph,
             json!({
                 "tasks": [],
                 "queues": [],

@@ -29,14 +29,17 @@ pub(in crate::stream_engine::autonomous_executor) struct TaskWorkerThreadArg {
 
 #[derive(Debug, Default)]
 pub(super) struct TaskWorkerLoopState<S: Scheduler> {
-    pub(super) pipeline_derivatives: Arc<PipelineDerivatives>,
-    pub(super) metrics: Arc<PerformanceMetrics>,
+    pub(super) pipeline_derivatives: Option<Arc<PipelineDerivatives>>,
+    pub(super) metrics: Option<Arc<PerformanceMetrics>>,
     pub(super) scheduler: S,
 }
 
 impl<S: Scheduler> WorkerThreadLoopState for TaskWorkerLoopState<S> {
     fn is_integral(&self) -> bool {
-        &self.pipeline_derivatives.pipeline_version() == self.metrics.pipeline_version()
+        match (&self.pipeline_derivatives, &self.metrics) {
+            (Some(p), Some(m)) => p.pipeline_version() == *m.pipeline_version(),
+            _ => false,
+        }
     }
 }
 
@@ -49,31 +52,36 @@ impl TaskWorkerThreadHandler {
     where
         S: Scheduler,
     {
-        let task_executor_lock = &thread_arg.task_executor_lock;
+        if let (Some(pipeline_derivatives), Some(metrics)) =
+            (&current_state.pipeline_derivatives, &current_state.metrics)
+        {
+            let task_executor_lock = &thread_arg.task_executor_lock;
 
-        if let Ok(_lock) = task_executor_lock.try_task_execution() {
-            let task_series = current_state.scheduler.next_task_series(
-                current_state.pipeline_derivatives.task_graph(),
-                current_state.metrics.as_ref(),
-            );
-            if !task_series.is_empty() {
-                Self::execute_task_series::<S>(
-                    &task_series,
-                    &current_state,
-                    thread_arg,
-                    event_queue,
-                );
-            } else {
-                thread::sleep(Duration::from_millis(TASK_WAIT_MSEC));
+            if let Ok(_lock) = task_executor_lock.try_task_execution() {
+                let task_series = current_state
+                    .scheduler
+                    .next_task_series(pipeline_derivatives.task_graph(), metrics.as_ref());
+                if !task_series.is_empty() {
+                    Self::execute_task_series::<S>(
+                        &task_series,
+                        pipeline_derivatives.clone(),
+                        thread_arg,
+                        event_queue,
+                    );
+                } else {
+                    thread::sleep(Duration::from_millis(TASK_WAIT_MSEC));
+                }
             }
-        }
 
-        current_state
+            current_state
+        } else {
+            unreachable!("by integrity check")
+        }
     }
 
     fn execute_task_series<S>(
         task_series: &[TaskId],
-        current_state: &TaskWorkerLoopState<S>,
+        pipeline_derivatives: Arc<PipelineDerivatives>,
         thread_arg: &TaskWorkerThreadArg,
         event_queue: &EventQueue,
     ) where
@@ -82,12 +90,11 @@ impl TaskWorkerThreadHandler {
         for task_id in task_series {
             let context = TaskContext::new(
                 task_id.clone(),
-                current_state.pipeline_derivatives.clone(),
+                pipeline_derivatives.clone(),
                 thread_arg.repos.clone(),
             );
 
-            let task = current_state
-                .pipeline_derivatives
+            let task = pipeline_derivatives
                 .get_task(task_id)
                 .expect("task id got from scheduler");
 

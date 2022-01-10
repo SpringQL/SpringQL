@@ -33,7 +33,7 @@ use super::task_graph::{
 /// `PerformanceMonitorWorker` does not frequently read from `RwLock<*Metrics>`, and schedulers in `TaskExecutor` are not expected to
 /// execute consequent tasks (sharing the same queue as input or output) by different workers at the same time.
 /// Therefore, not much contention for `RwLock<*Metrics>` occurs.
-#[derive(Debug, Default)]
+#[derive(Debug)]
 pub(super) struct PerformanceMetrics {
     /// From which version this metrics constructed
     pipeline_version: PipelineVersion,

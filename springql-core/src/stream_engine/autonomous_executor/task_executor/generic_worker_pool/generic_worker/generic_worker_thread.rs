@@ -60,7 +60,7 @@ impl WorkerThread for GenericWorkerThread {
         log::debug!("[GenericWorker#{}] got UpdatePipeline event", thread_arg.id);
 
         let mut state = current_state;
-        state.pipeline_derivatives = pipeline_derivatives;
+        state.pipeline_derivatives = Some(pipeline_derivatives);
         state
     }
 
@@ -76,7 +76,7 @@ impl WorkerThread for GenericWorkerThread {
         );
 
         let mut state = current_state;
-        state.metrics = metrics;
+        state.metrics = Some(metrics);
         state
     }
 

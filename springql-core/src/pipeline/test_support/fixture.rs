@@ -6,6 +6,7 @@ use crate::{
     pipeline::{
         name::{ColumnName, PumpName, SinkWriterName, SourceReaderName, StreamName},
         option::{options_builder::OptionsBuilder, Options},
+        pipeline_version::PipelineVersion,
         pump_model::PumpModel,
         relation::{
             column::{
@@ -36,7 +37,7 @@ impl Pipeline {
             "st_1",
         )));
 
-        let mut pipeline = Pipeline::default();
+        let mut pipeline = Pipeline::new(PipelineVersion::new());
         pipeline.add_source_stream(st_1).unwrap();
         pipeline
     }
@@ -58,7 +59,7 @@ impl Pipeline {
         )));
 
         let source_a =
-        SourceReaderModel::fx_net(st_1.name().clone(), source_remote_host, source_remote_port);
+            SourceReaderModel::fx_net(st_1.name().clone(), source_remote_host, source_remote_port);
         let sink_c =
             SinkWriterModel::fx_net(st_2.name().clone(), sink_remote_host, sink_remote_port);
 
@@ -68,7 +69,7 @@ impl Pipeline {
             st_2.name().clone(),
         );
 
-        let mut pipeline = Pipeline::default();
+        let mut pipeline = Pipeline::new(PipelineVersion::new());
 
         pipeline.add_source_stream(st_1).unwrap();
         pipeline.add_sink_stream(st_2).unwrap();
@@ -129,7 +130,7 @@ impl Pipeline {
             st_4.name().clone(),
         );
 
-        let mut pipeline = Pipeline::default();
+        let mut pipeline = Pipeline::new(PipelineVersion::new());
 
         pipeline.add_source_stream(st_1).unwrap();
         pipeline.add_source_stream(st_2).unwrap();
@@ -191,7 +192,7 @@ impl Pipeline {
             st_3.name().clone(),
         );
 
-        let mut pipeline = Pipeline::default();
+        let mut pipeline = Pipeline::new(PipelineVersion::new());
 
         pipeline.add_source_stream(st_1).unwrap();
         pipeline.add_source_stream(st_2).unwrap();
@@ -299,7 +300,7 @@ impl Pipeline {
             st_9.name().clone(),
         );
 
-        let mut pipeline = Pipeline::default();
+        let mut pipeline = Pipeline::new(PipelineVersion::new());
 
         pipeline.add_source_stream(st_1).unwrap();
         pipeline.add_source_stream(st_2).unwrap();

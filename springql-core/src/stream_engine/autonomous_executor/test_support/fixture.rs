@@ -7,6 +7,7 @@ use serde_json::json;
 use crate::{
     pipeline::{
         name::{PumpName, StreamName},
+        pipeline_version::PipelineVersion,
         pump_model::{pump_input_type::PumpInputType, PumpModel},
         sink_stream_model::SinkStreamModel,
         sink_writer_model::SinkWriterModel,
@@ -243,7 +244,7 @@ impl AlterPipelineCommand {
 
 impl TaskGraph {
     pub(in crate::stream_engine) fn fx_split_join() -> Self {
-        let mut g = TaskGraph::default();
+        let mut g = TaskGraph::new(PipelineVersion::new());
 
         g.add_task(TaskId::fx_split_join_t1());
         g.add_task(TaskId::fx_split_join_t2());
