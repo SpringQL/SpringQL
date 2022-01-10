@@ -33,7 +33,7 @@ impl WebConsoleReporter {
 
         match res {
             Ok(resp) => self.handle_response(resp),
-            Err(e) => log::error!("failed to POST metrics to web-console: {:?}", e),
+            Err(e) => log::warn!("failed to POST metrics to web-console: {:?}", e),
         }
     }
 
@@ -43,7 +43,7 @@ impl WebConsoleReporter {
             Ok(_) => log::debug!("successfully POSTed metrics to web-console"),
             Err(e) => {
                 let body = resp.text().unwrap();
-                log::error!("error response from web-console: {:?} - {}", e, body);
+                log::warn!("error response from web-console: {:?} - {}", e, body);
             }
         }
     }
