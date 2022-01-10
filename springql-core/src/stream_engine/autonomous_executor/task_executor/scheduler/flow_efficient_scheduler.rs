@@ -131,7 +131,7 @@ impl FlowEfficientScheduler {
             };
             let picked_collector = collectors.get(idx).expect("safe index");
 
-            log::debug!(
+            log::trace!(
                 "[FlowEfficientScheduler::decide_collector()] {}",
                 picked_collector.task_id,
             );
