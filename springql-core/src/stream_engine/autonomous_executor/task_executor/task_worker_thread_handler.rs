@@ -1,6 +1,6 @@
 //! Task execution logics commonly used by GenericWorkerThread and SourceWorkerThread.
 
-use std::{sync::Arc, thread, time::Duration};
+use std::{fmt::Display, sync::Arc, thread, time::Duration};
 
 use crate::stream_engine::autonomous_executor::{
     event_queue::{event::Event, EventQueue},
@@ -21,13 +21,22 @@ const TASK_WAIT_MSEC: u64 = 100;
 #[derive(Debug)]
 pub(super) struct TaskWorkerThreadHandler;
 
+#[derive(Copy, Clone, Eq, PartialEq, Debug, new)]
+pub(in crate::stream_engine::autonomous_executor) struct TaskWorkerId(u16);
+impl Display for TaskWorkerId {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.0)
+    }
+}
+
 #[derive(Debug, new)]
 pub(in crate::stream_engine::autonomous_executor) struct TaskWorkerThreadArg {
+    pub(super) worker_id: TaskWorkerId,
     task_executor_lock: Arc<TaskExecutorLock>,
     repos: Arc<Repositories>,
 }
 
-#[derive(Debug, Default)]
+#[derive(Debug)]
 pub(super) struct TaskWorkerLoopState<S: Scheduler> {
     pub(super) pipeline_derivatives: Option<Arc<PipelineDerivatives>>,
     pub(super) metrics: Option<Arc<PerformanceMetrics>>,
@@ -35,6 +44,19 @@ pub(super) struct TaskWorkerLoopState<S: Scheduler> {
 }
 
 impl<S: Scheduler> WorkerThreadLoopState for TaskWorkerLoopState<S> {
+    type ThreadArg = TaskWorkerThreadArg;
+
+    fn new(thread_arg: &Self::ThreadArg) -> Self
+    where
+        Self: Sized,
+    {
+        Self {
+            pipeline_derivatives: None,
+            metrics: None,
+            scheduler: S::default(),
+        }
+    }
+
     fn is_integral(&self) -> bool {
         match (&self.pipeline_derivatives, &self.metrics) {
             (Some(p), Some(m)) => p.pipeline_version() == *m.pipeline_version(),
