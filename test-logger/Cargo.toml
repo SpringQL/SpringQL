@@ -16,3 +16,5 @@ repository = "https://github.com/SpringQL/SpringQL"
 [dependencies]
 env_logger = "0.9"
 log = "0.4"
+
+log-panics = "2.0"
