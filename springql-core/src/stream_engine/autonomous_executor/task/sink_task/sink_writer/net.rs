@@ -115,17 +115,17 @@ mod tests {
             .unwrap();
 
         assert_eq!(
-            JsonObject::new(sink.receive().unwrap()),
+            JsonObject::new(sink.try_receive().unwrap()),
             JsonObject::fx_city_temperature_tokyo()
         );
         assert_eq!(
-            JsonObject::new(sink.receive().unwrap()),
+            JsonObject::new(sink.try_receive().unwrap()),
             JsonObject::fx_city_temperature_osaka()
         );
         assert_eq!(
-            JsonObject::new(sink.receive().unwrap()),
+            JsonObject::new(sink.try_receive().unwrap()),
             JsonObject::fx_city_temperature_london()
         );
-        assert!(sink.receive().is_err());
+        assert!(sink.try_receive().is_none());
     }
 }

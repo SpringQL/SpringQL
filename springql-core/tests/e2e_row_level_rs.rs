@@ -18,7 +18,7 @@ fn apply_ddls(ddls: &[String]) -> SpringPipeline {
 
 fn drain_from_sink(sink: &ForeignSink) -> Vec<serde_json::Value> {
     let mut received = Vec::new();
-    while let Ok(v) = sink.receive() {
+    while let Some(v) = sink.try_receive() {
         received.push(v);
     }
     received
