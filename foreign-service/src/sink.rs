@@ -7,8 +7,6 @@ use std::sync::mpsc;
 use std::thread;
 use std::time::Duration;
 
-const TIMEOUT: Duration = Duration::from_millis(500);
-
 /// TCP server to receive JSON text, and returns serialized one.
 pub struct ForeignSink {
     my_addr: SocketAddr,
@@ -47,11 +45,11 @@ impl ForeignSink {
     /// # Returns
     ///
     /// `None` when sink subtask has not sent new row yet.
-    pub fn try_receive(&self) -> Option<serde_json::Value> {
+    pub fn try_receive(&self, timeout: Duration) -> Option<serde_json::Value> {
         self.rx
             .try_recv()
             .or_else(|_| {
-                thread::sleep(TIMEOUT);
+                thread::sleep(timeout);
                 self.rx.try_recv()
             })
             .ok()
