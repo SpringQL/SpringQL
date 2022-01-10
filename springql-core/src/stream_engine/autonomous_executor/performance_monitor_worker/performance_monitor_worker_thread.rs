@@ -63,7 +63,7 @@ impl WorkerThreadLoopState for PerformanceMonitorWorkerLoopState {
         Self {
             pipeline_derivatives: None,
             metrics: None,
-            clk_web_console: 0,
+            clk_web_console: WEB_CONSOLE_REPORT_INTERVAL_CLOCK,
         }
     }
 
