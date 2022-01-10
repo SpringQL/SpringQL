@@ -22,7 +22,7 @@ pub(in crate::stream_engine::autonomous_executor) struct MemoryStateMachineWorke
     threshold: MemoryStateMachineThreshold,
 }
 
-#[derive(Debug, Default)]
+#[derive(Debug)]
 pub(super) struct MemoryStateMachineWorkerLoopState {
     memory_state: MemoryState,
 }

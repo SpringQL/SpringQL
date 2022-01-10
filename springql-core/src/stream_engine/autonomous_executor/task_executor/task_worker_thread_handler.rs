@@ -36,7 +36,7 @@ pub(in crate::stream_engine::autonomous_executor) struct TaskWorkerThreadArg {
     repos: Arc<Repositories>,
 }
 
-#[derive(Debug, Default)]
+#[derive(Debug)]
 pub(super) struct TaskWorkerLoopState<S: Scheduler> {
     pub(super) pipeline_derivatives: Option<Arc<PipelineDerivatives>>,
     pub(super) metrics: Option<Arc<PerformanceMetrics>>,
