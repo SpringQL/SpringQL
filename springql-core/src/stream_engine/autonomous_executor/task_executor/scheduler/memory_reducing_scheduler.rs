@@ -117,6 +117,7 @@ mod tests {
 
     use super::*;
 
+    #[ignore]
     #[test]
     fn test_memory_reducing_scheduler() {
         setup_test_logger();
@@ -126,7 +127,7 @@ mod tests {
             &TaskGraph::fx_split_join(),
             &PerformanceMetrics::fx_split_join(),
         );
-        log::error!(
+        log::debug!(
             "[MemoryReducingScheduler] {}",
             series
                 .iter()
