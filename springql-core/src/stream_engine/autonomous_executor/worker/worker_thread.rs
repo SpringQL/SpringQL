@@ -17,9 +17,17 @@ use crate::stream_engine::autonomous_executor::{
 };
 
 /// State updated by loop cycles and event handlers.
-pub(in crate::stream_engine::autonomous_executor) trait WorkerThreadLoopState:
-    Default
-{
+pub(in crate::stream_engine::autonomous_executor) trait WorkerThreadLoopState {
+    /// Supposed to be same type as `WorkerThread::ThreadArg`.
+    ///
+    /// Use `()` if no arg needed.
+    type ThreadArg: Send + 'static;
+
+    /// Initial state.
+    fn new(thread_arg: &Self::ThreadArg) -> Self
+    where
+        Self: Sized;
+
     /// State might become partially corrupt when, for example, an event is subscribed but another related event is not.
     /// State itself must provide integrity check by this method.
     fn is_integral(&self) -> bool;
@@ -34,7 +42,7 @@ pub(in crate::stream_engine::autonomous_executor) trait WorkerThread {
     /// State updated in each `main_loop_cycle`.
     ///
     /// Use `()` if no state needed.
-    type LoopState: WorkerThreadLoopState;
+    type LoopState: WorkerThreadLoopState<ThreadArg = Self::ThreadArg>;
 
     /// Which events to subscribe
     fn event_subscription() -> Vec<EventTag>;
@@ -96,7 +104,7 @@ pub(in crate::stream_engine::autonomous_executor) trait WorkerThread {
         stop_receiver: mpsc::Receiver<()>,
         thread_arg: Self::ThreadArg,
     ) {
-        let mut state = Self::LoopState::default();
+        let mut state = Self::LoopState::new(&thread_arg);
 
         while stop_receiver.try_recv().is_err() {
             if state.is_integral() {

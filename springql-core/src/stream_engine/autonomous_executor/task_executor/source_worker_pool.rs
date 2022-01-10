@@ -8,12 +8,11 @@ use crate::stream_engine::autonomous_executor::{
     event_queue::EventQueue, repositories::Repositories,
 };
 
-use self::source_worker::{
-    source_worker_id::SourceWorkerId, source_worker_thread::SourceWorkerThreadArg, SourceWorker,
-};
+use self::source_worker::SourceWorker;
 
 use super::{
-    task_executor_lock::TaskExecutorLock, task_worker_thread_handler::TaskWorkerThreadArg,
+    task_executor_lock::TaskExecutorLock,
+    task_worker_thread_handler::{TaskWorkerId, TaskWorkerThreadArg},
 };
 
 /// Workers to execute pump and sink tasks.
@@ -36,9 +35,10 @@ impl SourceWorkerPool {
     ) -> Self {
         let workers = (0..n_worker_threads)
             .map(|id| {
-                let arg = SourceWorkerThreadArg::new(
-                    SourceWorkerId::new(id as u16),
-                    TaskWorkerThreadArg::new(task_executor_lock.clone(), repos.clone()),
+                let arg = TaskWorkerThreadArg::new(
+                    TaskWorkerId::new(id as u16),
+                    task_executor_lock.clone(),
+                    repos.clone(),
                 );
                 SourceWorker::new(event_queue.clone(), arg)
             })

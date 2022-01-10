@@ -46,7 +46,7 @@ impl Default for PerformanceMonitorWorkerThreadArg {
     }
 }
 
-#[derive(Debug, Default)]
+#[derive(Debug)]
 pub(super) struct PerformanceMonitorWorkerLoopState {
     pipeline_derivatives: Option<Arc<PipelineDerivatives>>,
     metrics: Option<Arc<PerformanceMetrics>>,
@@ -54,6 +54,19 @@ pub(super) struct PerformanceMonitorWorkerLoopState {
 }
 
 impl WorkerThreadLoopState for PerformanceMonitorWorkerLoopState {
+    type ThreadArg = PerformanceMonitorWorkerThreadArg;
+
+    fn new(thread_arg: &Self::ThreadArg) -> Self
+    where
+        Self: Sized,
+    {
+        Self {
+            pipeline_derivatives: None,
+            metrics: None,
+            clk_web_console: 0,
+        }
+    }
+
     fn is_integral(&self) -> bool {
         match (&self.pipeline_derivatives, &self.metrics) {
             (Some(p), Some(m)) => p.pipeline_version() == *m.pipeline_version(),
