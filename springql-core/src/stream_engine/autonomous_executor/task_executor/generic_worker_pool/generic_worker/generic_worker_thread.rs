@@ -11,14 +11,8 @@ use crate::stream_engine::autonomous_executor::{
         PerformanceMetrics,
     },
     pipeline_derivatives::PipelineDerivatives,
-    task_executor::{
-        scheduler::{
-            flow_efficient_scheduler::FlowEfficientScheduler,
-            memory_reducing_scheduler::MemoryReducingScheduler,
-        },
-        task_worker_thread_handler::{
-            TaskWorkerLoopState, TaskWorkerThreadArg, TaskWorkerThreadHandler,
-        },
+    task_executor::task_worker_thread_handler::{
+        TaskWorkerLoopState, TaskWorkerThreadArg, TaskWorkerThreadHandler,
     },
     worker::worker_thread::WorkerThread,
 };
