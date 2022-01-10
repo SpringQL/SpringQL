@@ -131,7 +131,7 @@ impl FlowEfficientScheduler {
             };
             let picked_collector = collectors.get(idx).expect("safe index");
 
-            log::error!(
+            log::debug!(
                 "[FlowEfficientScheduler::decide_collector()] {}",
                 picked_collector.task_id,
             );
@@ -209,7 +209,7 @@ mod tests {
             &TaskGraph::fx_split_join(),
             &PerformanceMetrics::fx_split_join(),
         );
-        log::error!(
+        log::info!(
             "[FlowEfficientScheduler] {}",
             series
                 .iter()
