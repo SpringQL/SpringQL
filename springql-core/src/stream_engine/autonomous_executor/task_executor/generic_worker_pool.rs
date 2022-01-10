@@ -8,13 +8,11 @@ use crate::stream_engine::autonomous_executor::{
     event_queue::EventQueue, repositories::Repositories,
 };
 
-use self::generic_worker::{
-    generic_worker_id::GenericWorkerId, generic_worker_thread::GenericWorkerThreadArg,
-    GenericWorker,
-};
+use self::generic_worker::GenericWorker;
 
 use super::{
-    task_executor_lock::TaskExecutorLock, task_worker_thread_handler::TaskWorkerThreadArg,
+    task_executor_lock::TaskExecutorLock,
+    task_worker_thread_handler::{TaskWorkerId, TaskWorkerThreadArg},
 };
 
 /// Workers to execute pump and sink tasks.
@@ -37,9 +35,10 @@ impl GenericWorkerPool {
     ) -> Self {
         let workers = (0..n_worker_threads)
             .map(|id| {
-                let arg = GenericWorkerThreadArg::new(
-                    GenericWorkerId::new(id as u16),
-                    TaskWorkerThreadArg::new(task_executor_lock.clone(), repos.clone()),
+                let arg = TaskWorkerThreadArg::new(
+                    TaskWorkerId::new(id as u16),
+                    task_executor_lock.clone(),
+                    repos.clone(),
                 );
                 GenericWorker::new(event_queue.clone(), arg)
             })
