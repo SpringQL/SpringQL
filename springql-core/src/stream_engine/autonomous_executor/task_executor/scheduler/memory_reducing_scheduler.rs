@@ -27,7 +27,7 @@
 //! Unlike Flow-Efficient Scheduler, Memory-Reducing Scheduler does not have fairness.
 //! Some rows may get large delay until they get to sink, or even lose chance to participate in time-based window.
 
-use std::{cmp::min, iter};
+use std::{cmp::min, collections::HashSet, iter};
 
 use crate::stream_engine::autonomous_executor::{
     performance_metrics::PerformanceMetrics,
@@ -74,9 +74,11 @@ impl MemoryReducingScheduler {
         graph: &TaskGraph,
         metrics: &PerformanceMetrics,
     ) -> Vec<TaskProfile> {
-        let tasks = graph.tasks();
+        let tasks = graph.tasks().into_iter().collect::<HashSet<_>>();
+        let source_tasks = graph.source_tasks().into_iter().collect();
+        let tasks = tasks.difference(&source_tasks); // source tasks are scheduled by SourceScheduler
+
         let mut profiles = tasks
-            .iter()
             .map(|task| self.task_profile(task, graph, metrics))
             .collect::<Vec<_>>();
         profiles.sort_by(|a, b| a.loss.partial_cmp(&b.loss).expect("loss cannot be NaN"));
@@ -127,7 +129,7 @@ mod tests {
             &TaskGraph::fx_split_join(),
             &PerformanceMetrics::fx_split_join(),
         );
-        log::debug!(
+        log::error!(
             "[MemoryReducingScheduler] {}",
             series
                 .iter()
