@@ -13,7 +13,6 @@ use super::PerformanceMetrics;
 #[derive(Clone, Eq, PartialEq, Debug, Serialize, Deserialize)]
 pub(in crate::stream_engine::autonomous_executor) struct PerformanceMetricsSummary {
     pub(in crate::stream_engine::autonomous_executor) queue_total_bytes: u64,
-    // TODO memory_reducing_tasks (for Memory-Reducing Scheduler)
 }
 
 impl From<&PerformanceMetrics> for PerformanceMetricsSummary {
