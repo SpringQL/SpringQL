@@ -1,10 +1,16 @@
 use std::{sync::Arc, thread, time::Duration};
 
 use crate::stream_engine::autonomous_executor::{
-    event_queue::{event::EventTag, EventQueue},
+    event_queue::{
+        event::{Event, EventTag},
+        EventQueue,
+    },
+    memory_state_machine::{
+        MemoryStateMachine, MemoryStateMachineThreshold, MemoryStateTransition,
+    },
     performance_metrics::{
         metrics_update_command::metrics_update_by_task_execution::MetricsUpdateByTaskExecution,
-        PerformanceMetrics,
+        performance_metrics_summary::PerformanceMetricsSummary, PerformanceMetrics,
     },
     pipeline_derivatives::PipelineDerivatives,
     worker::worker_thread::{WorkerThread, WorkerThreadLoopState},
@@ -17,17 +23,29 @@ const CLOCK_MSEC: u64 = 100;
 #[derive(Debug)]
 pub(super) struct MemoryStateMachineWorkerThread;
 
-#[derive(Debug)]
+#[derive(Debug, new)]
 pub(in crate::stream_engine::autonomous_executor) struct MemoryStateMachineWorkerThreadArg {
     threshold: MemoryStateMachineThreshold,
 }
 
-#[derive(Debug, Default)]
+#[derive(Debug)]
 pub(super) struct MemoryStateMachineWorkerLoopState {
-    memory_state: MemoryState,
+    memory_state_machine: MemoryStateMachine,
 }
 
 impl WorkerThreadLoopState for MemoryStateMachineWorkerLoopState {
+    type ThreadArg = MemoryStateMachineWorkerThreadArg;
+
+    fn new(thread_arg: &Self::ThreadArg) -> Self
+    where
+        Self: Sized,
+    {
+        let memory_state_machine = MemoryStateMachine::new(thread_arg.threshold);
+        Self {
+            memory_state_machine,
+        }
+    }
+
     fn is_integral(&self) -> bool {
         true
     }
@@ -75,6 +93,33 @@ impl WorkerThread for MemoryStateMachineWorkerThread {
         _metrics: Arc<MetricsUpdateByTaskExecution>,
         _thread_arg: &Self::ThreadArg,
         _event_queue: Arc<EventQueue>,
+    ) -> Self::LoopState {
+        unreachable!()
+    }
+
+    fn ev_report_metrics_summary(
+        current_state: Self::LoopState,
+        metrics_summary: Arc<PerformanceMetricsSummary>,
+        thread_arg: &Self::ThreadArg,
+        event_queue: Arc<EventQueue>,
+    ) -> Self::LoopState {
+        let mut state = current_state;
+
+        let bytes = metrics_summary.queue_total_bytes;
+        if let Some(transition) = state.memory_state_machine.update_memory_usage(bytes) {
+            event_queue.publish(Event::TransitMemoryState {
+                memory_state_transition: Arc::new(transition),
+            })
+        }
+
+        state
+    }
+
+    fn ev_transit_memory_state(
+        current_state: Self::LoopState,
+        memory_state_transition: Arc<MemoryStateTransition>,
+        thread_arg: &Self::ThreadArg,
+        event_queue: Arc<EventQueue>,
     ) -> Self::LoopState {
         unreachable!()
     }

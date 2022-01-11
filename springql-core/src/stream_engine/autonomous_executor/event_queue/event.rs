@@ -5,9 +5,10 @@
 use std::sync::Arc;
 
 use crate::stream_engine::autonomous_executor::{
+    memory_state_machine::MemoryStateTransition,
     performance_metrics::{
         metrics_update_command::metrics_update_by_task_execution::MetricsUpdateByTaskExecution,
-        PerformanceMetrics,
+        performance_metrics_summary::PerformanceMetricsSummary, PerformanceMetrics,
     },
     pipeline_derivatives::PipelineDerivatives,
 };
@@ -23,6 +24,12 @@ pub(in crate::stream_engine::autonomous_executor) enum Event {
     IncrementalUpdateMetrics {
         metrics_update_by_task_execution: Arc<MetricsUpdateByTaskExecution>,
     },
+    ReportMetricsSummary {
+        metrics_summary: Arc<PerformanceMetricsSummary>,
+    },
+    TransitMemoryState {
+        memory_state_transition: Arc<MemoryStateTransition>,
+    },
 }
 
 #[derive(Copy, Clone, Eq, PartialEq, Hash, Debug)]
@@ -30,6 +37,8 @@ pub(in crate::stream_engine::autonomous_executor) enum EventTag {
     UpdatePipeline,
     ReplacePerformanceMetrics,
     IncrementalUpdateMetrics,
+    ReportMetricsSummary,
+    TransitMemoryState,
 }
 
 impl From<&Event> for EventTag {
@@ -38,6 +47,8 @@ impl From<&Event> for EventTag {
             Event::UpdatePipeline { .. } => Self::UpdatePipeline,
             Event::ReplacePerformanceMetrics { .. } => Self::ReplacePerformanceMetrics,
             Event::IncrementalUpdateMetrics { .. } => Self::IncrementalUpdateMetrics,
+            Event::ReportMetricsSummary { .. } => Self::ReportMetricsSummary,
+            Event::TransitMemoryState { .. } => Self::TransitMemoryState,
         }
     }
 }

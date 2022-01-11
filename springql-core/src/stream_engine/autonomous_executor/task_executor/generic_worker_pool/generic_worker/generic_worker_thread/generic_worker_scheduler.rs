@@ -19,6 +19,15 @@ impl Default for GenericWorkerScheduler {
     }
 }
 
+impl GenericWorkerScheduler {
+    pub(in crate::stream_engine::autonomous_executor) fn flow_efficient_scheduler() -> Self {
+        Self::FlowEfficient(FlowEfficientScheduler::default())
+    }
+    pub(in crate::stream_engine::autonomous_executor) fn memory_reducing_scheduler() -> Self {
+        Self::MemoryReducing(MemoryReducingScheduler::default())
+    }
+}
+
 impl Scheduler for GenericWorkerScheduler {
     fn next_task_series(&self, graph: &TaskGraph, metrics: &PerformanceMetrics) -> Vec<TaskId> {
         match self {

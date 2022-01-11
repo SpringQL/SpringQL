@@ -7,6 +7,7 @@ pub(crate) mod row;
 
 pub(in crate::stream_engine::autonomous_executor) mod worker;
 
+mod memory_state_machine;
 mod memory_state_machine_worker;
 mod performance_metrics;
 mod performance_monitor_worker;

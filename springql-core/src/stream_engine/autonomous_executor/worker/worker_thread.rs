@@ -3,9 +3,12 @@ use std::{
     thread,
 };
 
-use crate::stream_engine::autonomous_executor::performance_metrics::{
-    metrics_update_command::metrics_update_by_task_execution::MetricsUpdateByTaskExecution,
-    PerformanceMetrics,
+use crate::stream_engine::autonomous_executor::{
+    memory_state_machine::MemoryStateTransition,
+    performance_metrics::{
+        metrics_update_command::metrics_update_by_task_execution::MetricsUpdateByTaskExecution,
+        performance_metrics_summary::PerformanceMetricsSummary, PerformanceMetrics,
+    },
 };
 
 use crate::stream_engine::autonomous_executor::{
@@ -83,6 +86,24 @@ pub(in crate::stream_engine::autonomous_executor) trait WorkerThread {
         event_queue: Arc<EventQueue>,
     ) -> Self::LoopState;
 
+    fn ev_report_metrics_summary(
+        current_state: Self::LoopState,
+        metrics_summary: Arc<PerformanceMetricsSummary>,
+        thread_arg: &Self::ThreadArg,
+
+        // for cascading event
+        event_queue: Arc<EventQueue>,
+    ) -> Self::LoopState;
+
+    fn ev_transit_memory_state(
+        current_state: Self::LoopState,
+        memory_state_transition: Arc<MemoryStateTransition>,
+        thread_arg: &Self::ThreadArg,
+
+        // for cascading event
+        event_queue: Arc<EventQueue>,
+    ) -> Self::LoopState;
+
     /// Worker thread's entry point
     fn run(
         event_queue: Arc<EventQueue>,
@@ -150,6 +171,24 @@ pub(in crate::stream_engine::autonomous_executor) trait WorkerThread {
                         state = Self::ev_incremental_update_metrics(
                             state,
                             metrics_update_by_task_execution,
+                            thread_arg,
+                            event_queue.clone(),
+                        )
+                    }
+                    Event::ReportMetricsSummary { metrics_summary } => {
+                        state = Self::ev_report_metrics_summary(
+                            state,
+                            metrics_summary,
+                            thread_arg,
+                            event_queue.clone(),
+                        )
+                    }
+                    Event::TransitMemoryState {
+                        memory_state_transition,
+                    } => {
+                        state = Self::ev_transit_memory_state(
+                            state,
+                            memory_state_transition,
                             thread_arg,
                             event_queue.clone(),
                         )

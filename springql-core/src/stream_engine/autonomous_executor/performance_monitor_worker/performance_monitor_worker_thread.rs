@@ -6,9 +6,10 @@ use crate::stream_engine::{
             event::{Event, EventTag},
             EventQueue,
         },
+        memory_state_machine::MemoryStateTransition,
         performance_metrics::{
             metrics_update_command::metrics_update_by_task_execution::MetricsUpdateByTaskExecution,
-            PerformanceMetrics,
+            performance_metrics_summary::PerformanceMetricsSummary, PerformanceMetrics,
         },
         pipeline_derivatives::PipelineDerivatives,
         worker::worker_thread::{WorkerThread, WorkerThreadLoopState},
@@ -148,5 +149,23 @@ impl WorkerThread for PerformanceMonitorWorkerThread {
             m.update_by_task_execution(metrics.as_ref())
         }
         state
+    }
+
+    fn ev_report_metrics_summary(
+        _current_state: Self::LoopState,
+        _metrics_summary: Arc<PerformanceMetricsSummary>,
+        _thread_arg: &Self::ThreadArg,
+        _event_queue: Arc<EventQueue>,
+    ) -> Self::LoopState {
+        unreachable!()
+    }
+
+    fn ev_transit_memory_state(
+        _current_state: Self::LoopState,
+        _memory_state_transition: Arc<MemoryStateTransition>,
+        _thread_arg: &Self::ThreadArg,
+        _event_queue: Arc<EventQueue>,
+    ) -> Self::LoopState {
+        unreachable!()
     }
 }
