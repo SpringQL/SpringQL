@@ -11,7 +11,7 @@ use springql_foreign_service::source::ForeignSource;
 use springql_test_logger::setup_test_logger;
 
 fn apply_ddls(ddls: &[String]) -> SpringPipeline {
-    let pipeline = spring_open().unwrap();
+    let pipeline = spring_open("").unwrap();
     for ddl in ddls {
         spring_command(&pipeline, ddl).unwrap();
     }

@@ -98,6 +98,8 @@ impl AutonomousExecutor {
             | SpringError::InvalidFormat { .. }
             | SpringError::Sql(_)
             | SpringError::ThreadPoisoned(_) => log::error!("{:?}", e),
+
+            SpringError::InvalidConfig { .. } => unreachable!("must be handled on startup"),
         }
     }
 }

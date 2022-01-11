@@ -4,6 +4,7 @@
 //!
 //! C API and high-level Rust API are provided separately.
 
+mod config;
 mod engine_mutex;
 
 use std::sync::Once;
@@ -15,7 +16,7 @@ use crate::{
     stream_engine::{command::Command, SinkRow, SqlConvertible, SqlValue},
 };
 
-use self::engine_mutex::EngineMutex;
+use self::{config::SpringConfig, engine_mutex::EngineMutex};
 
 // TODO config
 const N_WORKER_THREADS: usize = 2;
@@ -53,7 +54,20 @@ impl From<SinkRow> for SpringRow {
 }
 
 /// Creates and open an in-process stream pipeline.
-pub fn spring_open() -> Result<SpringPipeline> {
+///
+/// # Parameters
+///
+/// - `overwrite_config_toml`: TOML format configuration to overwrite default. See `SPRING_CONFIG_DEFAULT` in [config.rs](https://github.com/SpringQL/SpringQL/tree/main/springql-core/src/api/low_level_rs/config.rs) for full-set default configuration.
+///
+/// # Failures
+///
+/// - [SpringError::InvalidConfig](crate::error::SpringError::InvalidConfig) when:
+///   - `overwrite_config_toml` includes invalid key and/or value.
+/// - [SpringError::InvalidFormat](crate::error::SpringError::InvalidFormat) when:
+///   - `overwrite_config_toml` is not valid as TOML.
+pub fn spring_open(overwrite_config_toml: &str) -> Result<SpringPipeline> {
+    let config = SpringConfig::new(overwrite_config_toml)?;
+
     setup_logger();
 
     let engine = EngineMutex::new(N_WORKER_THREADS);
