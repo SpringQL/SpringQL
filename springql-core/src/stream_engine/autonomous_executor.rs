@@ -7,6 +7,8 @@ pub(crate) mod row;
 
 pub(in crate::stream_engine::autonomous_executor) mod worker;
 
+mod memory_state_machine;
+mod memory_state_machine_worker;
 mod performance_metrics;
 mod performance_monitor_worker;
 mod pipeline_derivatives;
@@ -21,6 +23,7 @@ use std::sync::Arc;
 
 pub(crate) use row::SinkRow;
 
+use self::memory_state_machine_worker::MemoryStateMachineWorker;
 use self::{
     event_queue::{event::Event, EventQueue},
     performance_monitor_worker::PerformanceMonitorWorker,
@@ -41,6 +44,7 @@ pub(in crate::stream_engine) struct AutonomousExecutor {
     event_queue: Arc<EventQueue>,
 
     task_executor: TaskExecutor,
+    memory_state_machine_worker: MemoryStateMachineWorker,
     performance_monitor_worker: PerformanceMonitorWorker,
 }
 
@@ -48,10 +52,12 @@ impl AutonomousExecutor {
     pub(in crate::stream_engine) fn new(n_worker_threads: usize) -> Self {
         let event_queue = Arc::new(EventQueue::default());
         let task_executor = TaskExecutor::new(n_worker_threads, event_queue.clone());
+        let memory_state_machine_worker = MemoryStateMachineWorker::new(event_queue.clone());
         let performance_monitor_worker = PerformanceMonitorWorker::new(event_queue.clone());
         Self {
             event_queue,
             task_executor,
+            memory_state_machine_worker,
             performance_monitor_worker,
         }
     }
