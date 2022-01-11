@@ -131,7 +131,7 @@ impl MemoryStateMachineThreshold {
         assert!(upper_limit_bytes > severe_to_critical_bytes);
         assert!(severe_to_critical_bytes > critical_to_severe_bytes);
         assert!(critical_to_severe_bytes > moderate_to_severe_bytes);
-        assert!(moderate_to_severe_bytes > severe_to_critical_bytes);
+        assert!(moderate_to_severe_bytes > severe_to_moderate_bytes);
 
         Self {
             upper_limit_bytes,
