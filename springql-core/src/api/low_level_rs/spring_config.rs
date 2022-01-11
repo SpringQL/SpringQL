@@ -6,6 +6,14 @@ use crate::error::{Result, SpringError};
 ///
 /// Default key-values are overwritten by `overwrite_config` parameter in `spring_open()`.
 const SPRING_CONFIG_DEFAULT: &str = r#"
+[worker]
+# Number of generic worker threads. Generic worker threads deal with internal and sink tasks.
+n_generic_worker_threads = 2
+
+# Number of source worker threads. Source worker threads collect rows from foreign source.
+# Too many number may may cause row fraud in runtime.
+n_source_worker_threads = 2
+
 [memory]
 # How much memory is allowed to be used in SpringQL streaming runtime.
 upper_limit_bytes = 10_000_000
@@ -22,8 +30,9 @@ critical_to_severe_percent = 80
 severe_to_moderate_percent = 40
 "#;
 
-#[derive(Eq, PartialEq, Debug, Deserialize)]
+#[derive(Copy, Clone, Eq, PartialEq, Debug, Deserialize)]
 pub(crate) struct SpringConfig {
+    pub(crate) worker: Worker,
     pub(crate) memory: Memory,
 }
 
@@ -57,13 +66,25 @@ impl SpringConfig {
     }
 }
 
-#[derive(Eq, PartialEq, Debug, Deserialize)]
+impl Default for SpringConfig {
+    fn default() -> Self {
+        Self::new("").expect("default configuration must be Ok")
+    }
+}
+
+#[derive(Copy, Clone, Eq, PartialEq, Debug, Deserialize)]
+pub(crate) struct Worker {
+    pub(crate) n_generic_worker_threads: u16,
+    pub(crate) n_source_worker_threads: u16,
+}
+
+#[derive(Copy, Clone, Eq, PartialEq, Debug, Deserialize)]
 pub(crate) struct Memory {
     pub(crate) upper_limit_bytes: u64,
 
-    pub(crate) moderate_to_severe_bytes: u64,
-    pub(crate) severe_to_critical_bytes: u64,
+    pub(crate) moderate_to_severe_percent: u8,
+    pub(crate) severe_to_critical_percent: u8,
 
-    pub(crate) critical_to_severe_bytes: u64,
-    pub(crate) severe_to_moderate_bytes: u64,
+    pub(crate) critical_to_severe_percent: u8,
+    pub(crate) severe_to_moderate_percent: u8,
 }

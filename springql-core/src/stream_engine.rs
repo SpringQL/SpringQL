@@ -38,7 +38,7 @@ pub(crate) use autonomous_executor::{
     SinkRow,
 };
 
-use crate::{error::Result, pipeline::name::QueueName};
+use crate::{error::Result, low_level_rs::spring_config::SpringConfig, pipeline::name::QueueName};
 
 use self::{
     autonomous_executor::AutonomousExecutor, command::alter_pipeline_command::AlterPipelineCommand,
@@ -56,10 +56,10 @@ pub(crate) struct StreamEngine {
 }
 
 impl StreamEngine {
-    pub(crate) fn new(n_worker_threads: usize) -> Self {
+    pub(crate) fn new(config: &SpringConfig) -> Self {
         Self {
             reactive_executor: SqlExecutor::default(),
-            autonomous_executor: AutonomousExecutor::new(n_worker_threads),
+            autonomous_executor: AutonomousExecutor::new(config),
         }
     }
 
@@ -101,7 +101,7 @@ mod tests {
     /// Returns sink output in reached order
     fn t_stream_engine_source_sink(
         source_input: Vec<serde_json::Value>,
-        n_worker_threads: usize,
+        n_worker_threads: u16,
     ) -> Vec<serde_json::Value> {
         setup_test_logger();
 
@@ -115,7 +115,11 @@ mod tests {
         let st_trade_sink = StreamName::factory("st_trade_sink");
         let pu_trade_source_p1 = PumpName::factory("pu_trade_source_p1");
 
-        let mut engine = StreamEngine::new(n_worker_threads);
+        let mut config = SpringConfig::default();
+        config.worker.n_generic_worker_threads = n_worker_threads;
+        config.worker.n_source_worker_threads = n_worker_threads;
+
+        let mut engine = StreamEngine::new(&config);
         engine
             .alter_pipeline(AlterPipelineCommand::fx_create_source_stream_trade(
                 st_trade_source.clone(),

@@ -6,12 +6,14 @@ use crate::error::Result;
 use crate::{error::SpringError, stream_engine::StreamEngine};
 use anyhow::anyhow;
 
+use super::spring_config::SpringConfig;
+
 #[derive(Clone, Debug)]
 pub(super) struct EngineMutex(Arc<Mutex<StreamEngine>>);
 
 impl EngineMutex {
-    pub(super) fn new(n_worker_threads: usize) -> Self {
-        let engine = StreamEngine::new(n_worker_threads);
+    pub(super) fn new(config: &SpringConfig) -> Self {
+        let engine = StreamEngine::new(config);
         Self(Arc::new(Mutex::new(engine)))
     }
 

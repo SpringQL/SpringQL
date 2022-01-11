@@ -18,6 +18,7 @@ mod task_executor;
 mod task_graph;
 
 use crate::error::{Result, SpringError};
+use crate::low_level_rs::spring_config::SpringConfig;
 use crate::pipeline::Pipeline;
 use std::sync::Arc;
 
@@ -49,9 +50,9 @@ pub(in crate::stream_engine) struct AutonomousExecutor {
 }
 
 impl AutonomousExecutor {
-    pub(in crate::stream_engine) fn new(n_worker_threads: usize) -> Self {
+    pub(in crate::stream_engine) fn new(config: &SpringConfig) -> Self {
         let event_queue = Arc::new(EventQueue::default());
-        let task_executor = TaskExecutor::new(n_worker_threads, event_queue.clone());
+        let task_executor = TaskExecutor::new(&config.worker, event_queue.clone());
         let memory_state_machine_worker = MemoryStateMachineWorker::new(event_queue.clone());
         let performance_monitor_worker = PerformanceMonitorWorker::new(event_queue.clone());
         Self {
