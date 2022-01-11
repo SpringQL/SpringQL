@@ -100,7 +100,7 @@ impl WorkerThread for MemoryStateMachineWorkerThread {
     fn ev_report_metrics_summary(
         current_state: Self::LoopState,
         metrics_summary: Arc<PerformanceMetricsSummary>,
-        thread_arg: &Self::ThreadArg,
+        _thread_arg: &Self::ThreadArg,
         event_queue: Arc<EventQueue>,
     ) -> Self::LoopState {
         let mut state = current_state;
@@ -116,10 +116,10 @@ impl WorkerThread for MemoryStateMachineWorkerThread {
     }
 
     fn ev_transit_memory_state(
-        current_state: Self::LoopState,
-        memory_state_transition: Arc<MemoryStateTransition>,
-        thread_arg: &Self::ThreadArg,
-        event_queue: Arc<EventQueue>,
+        _current_state: Self::LoopState,
+        _memory_state_transition: Arc<MemoryStateTransition>,
+        _thread_arg: &Self::ThreadArg,
+        _event_queue: Arc<EventQueue>,
     ) -> Self::LoopState {
         unreachable!()
     }

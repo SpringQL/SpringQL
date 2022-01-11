@@ -43,7 +43,7 @@ impl WorkerThread for GenericWorkerThread {
     ) -> Self::LoopState {
         TaskWorkerThreadHandler::main_loop_cycle::<GenericWorkerScheduler>(
             current_state,
-            &thread_arg,
+            thread_arg,
             event_queue,
         )
     }

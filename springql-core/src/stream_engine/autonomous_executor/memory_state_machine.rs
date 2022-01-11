@@ -96,10 +96,7 @@ impl MemoryStateTransition {
         }
     }
 
-    pub(in crate::stream_engine::autonomous_executor) fn from_state(&self) -> MemoryState {
-        self.from_state
-    }
-
+    #[allow(clippy::wrong_self_convention)]
     pub(in crate::stream_engine::autonomous_executor) fn to_state(&self) -> MemoryState {
         self.to_state
     }

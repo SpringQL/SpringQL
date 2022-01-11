@@ -46,7 +46,7 @@ pub(super) struct TaskWorkerLoopState<S: Scheduler> {
 impl<S: Scheduler> WorkerThreadLoopState for TaskWorkerLoopState<S> {
     type ThreadArg = TaskWorkerThreadArg;
 
-    fn new(thread_arg: &Self::ThreadArg) -> Self
+    fn new(_thread_arg: &Self::ThreadArg) -> Self
     where
         Self: Sized,
     {

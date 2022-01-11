@@ -57,7 +57,7 @@ pub(super) struct PerformanceMonitorWorkerLoopState {
 impl WorkerThreadLoopState for PerformanceMonitorWorkerLoopState {
     type ThreadArg = PerformanceMonitorWorkerThreadArg;
 
-    fn new(thread_arg: &Self::ThreadArg) -> Self
+    fn new(_thread_arg: &Self::ThreadArg) -> Self
     where
         Self: Sized,
     {
