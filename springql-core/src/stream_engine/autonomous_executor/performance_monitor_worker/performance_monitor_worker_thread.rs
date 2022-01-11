@@ -21,6 +21,7 @@ use super::web_console_reporter::WebConsoleReporter;
 
 // TODO config
 const CLOCK_MSEC: u64 = 100;
+const METRICS_SUMMARY_REPORT_INTERVAL_CLOCK: u64 = 10;
 const WEB_CONSOLE_REPORT_INTERVAL_CLOCK: u64 = 30;
 const WEB_CONSOLE_HOST: &str = "127.0.0.1";
 const WEB_CONSOLE_PORT: u16 = 8050;
@@ -51,6 +52,7 @@ impl Default for PerformanceMonitorWorkerThreadArg {
 pub(super) struct PerformanceMonitorWorkerLoopState {
     pipeline_derivatives: Option<Arc<PipelineDerivatives>>,
     metrics: Option<Arc<PerformanceMetrics>>,
+    clk_metrics_summary: u64,
     clk_web_console: u64,
 }
 
@@ -64,6 +66,7 @@ impl WorkerThreadLoopState for PerformanceMonitorWorkerLoopState {
         Self {
             pipeline_derivatives: None,
             metrics: None,
+            clk_metrics_summary: METRICS_SUMMARY_REPORT_INTERVAL_CLOCK,
             clk_web_console: WEB_CONSOLE_REPORT_INTERVAL_CLOCK,
         }
     }
@@ -88,12 +91,20 @@ impl WorkerThread for PerformanceMonitorWorkerThread {
     fn main_loop_cycle(
         current_state: Self::LoopState,
         thread_arg: &Self::ThreadArg,
-        _event_queue: &EventQueue,
+        event_queue: &EventQueue,
     ) -> Self::LoopState {
         let mut state = current_state;
         if let (Some(pipeline_derivatives), Some(metrics)) =
             (&state.pipeline_derivatives, &state.metrics)
         {
+            if state.clk_metrics_summary == 0 {
+                state.clk_metrics_summary = METRICS_SUMMARY_REPORT_INTERVAL_CLOCK;
+                let metrics_summary = Arc::new(PerformanceMetricsSummary::from(metrics.as_ref()));
+                event_queue.publish(Event::ReportMetricsSummary { metrics_summary })
+            } else {
+                state.clk_metrics_summary -= 1;
+            }
+
             if state.clk_web_console == 0 {
                 state.clk_web_console = WEB_CONSOLE_REPORT_INTERVAL_CLOCK;
                 thread_arg
@@ -102,6 +113,7 @@ impl WorkerThread for PerformanceMonitorWorkerThread {
             } else {
                 state.clk_web_console -= 1;
             }
+
             thread::sleep(Duration::from_millis(CLOCK_MSEC));
 
             state
