@@ -38,6 +38,9 @@ use super::task_graph::{
 ///
 /// 1. Memory consumption (bytes) is calculated from estimation value. Rust does not provide ways to calculate `struct`'s exact memory size. See: <https://stackoverflow.com/a/68255583>
 /// 2. Rows are `put` and `used` from different tasks, and possibly from different threads. These thread publish `IncrementalUpdateMetrics` events to change the queue's size and number of rows but the event might be out-of-order.
+///
+/// Number of rows and bytes are stock value and they might be negative value temporarily.
+/// In such cases, stock getters in PerformanceMetrics return 0.
 #[derive(Debug)]
 pub(super) struct PerformanceMetrics {
     /// From which version this metrics constructed
@@ -111,7 +114,7 @@ impl PerformanceMetrics {
             })
     }
 
-    pub(super) fn rows_for_task_input(&self, queue_id: &QueueId) -> i64 {
+    pub(super) fn rows_for_task_input(&self, queue_id: &QueueId) -> u64 {
         match queue_id {
             QueueId::Row(id) => {
                 let q = self.get_row_queue_read(id);

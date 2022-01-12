@@ -1,10 +1,20 @@
-use std::ops::{Add, Mul, Sub};
+use std::{
+    cmp::max,
+    ops::{Add, Mul, Sub},
+};
 
 pub(super) fn next_avg<T>(current_avg: T, current_n: u64, next_val: T) -> T
 where
     T: Add<T, Output = T> + Sub<T, Output = T> + Mul<f32, Output = T> + Copy,
 {
     current_avg + (next_val - current_avg) * (1.0 / ((current_n + 1) as f32))
+}
+
+pub(super) fn floor0<T>(v: T) -> u64
+where
+    T: Into<i64>,
+{
+    max(v.into(), 0i64) as u64
 }
 
 #[cfg(test)]

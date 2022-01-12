@@ -23,9 +23,9 @@ impl MemoryStateMachine {
     /// `Some` if `memory_usage_bytes` exceeds a threshold and internal state has been changed.
     pub(in crate::stream_engine::autonomous_executor) fn update_memory_usage(
         &mut self,
-        memory_usage_bytes: i64,
+        memory_usage_bytes: u64,
     ) -> Option<MemoryStateTransition> {
-        if memory_usage_bytes >= self.threshold.upper_limit_bytes as i64 {
+        if memory_usage_bytes >= self.threshold.upper_limit_bytes {
             panic!(
                 "Memory usage ({}) exceeds upper limit ({})",
                 memory_usage_bytes, self.threshold.upper_limit_bytes
@@ -33,35 +33,30 @@ impl MemoryStateMachine {
             // TODO no panic option in configuration
         } else {
             match self.state {
-                MemoryState::Moderate => (memory_usage_bytes
-                    > self.threshold.moderate_to_severe_bytes as i64)
-                    .then(|| {
+                MemoryState::Moderate => {
+                    (memory_usage_bytes > self.threshold.moderate_to_severe_bytes).then(|| {
                         self.state = MemoryState::Severe;
                         MemoryStateTransition::new(MemoryState::Moderate, MemoryState::Severe)
-                    }),
-                MemoryState::Severe => {
-                    (memory_usage_bytes > self.threshold.severe_to_critical_bytes as i64)
-                        .then(|| {
-                            self.state = MemoryState::Critical;
-                            MemoryStateTransition::new(MemoryState::Severe, MemoryState::Critical)
-                        })
-                        .or_else(|| {
-                            (memory_usage_bytes < self.threshold.severe_to_moderate_bytes as i64)
-                                .then(|| {
-                                    self.state = MemoryState::Moderate;
-                                    MemoryStateTransition::new(
-                                        MemoryState::Severe,
-                                        MemoryState::Moderate,
-                                    )
-                                })
-                        })
+                    })
                 }
-                MemoryState::Critical => (memory_usage_bytes
-                    < self.threshold.critical_to_severe_bytes as i64)
+                MemoryState::Severe => (memory_usage_bytes
+                    > self.threshold.severe_to_critical_bytes)
                     .then(|| {
+                        self.state = MemoryState::Critical;
+                        MemoryStateTransition::new(MemoryState::Severe, MemoryState::Critical)
+                    })
+                    .or_else(|| {
+                        (memory_usage_bytes < self.threshold.severe_to_moderate_bytes).then(|| {
+                            self.state = MemoryState::Moderate;
+                            MemoryStateTransition::new(MemoryState::Severe, MemoryState::Moderate)
+                        })
+                    }),
+                MemoryState::Critical => {
+                    (memory_usage_bytes < self.threshold.critical_to_severe_bytes).then(|| {
                         self.state = MemoryState::Severe;
                         MemoryStateTransition::new(MemoryState::Critical, MemoryState::Severe)
-                    }),
+                    })
+                }
             }
         }
     }
