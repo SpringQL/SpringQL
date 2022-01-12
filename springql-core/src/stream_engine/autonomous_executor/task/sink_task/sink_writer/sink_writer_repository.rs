@@ -5,18 +5,32 @@ use std::{
     sync::{Arc, Mutex, RwLock},
 };
 
-use crate::{pipeline::sink_writer_model::SinkWriterModel, stream_engine::autonomous_executor::task::sink_task::sink_writer::sink_writer_factory::SinkWriterFactory};
 use crate::{error::Result, pipeline::name::SinkWriterName};
+use crate::{
+    low_level_rs::SpringSinkWriterConfig, pipeline::sink_writer_model::SinkWriterModel,
+    stream_engine::autonomous_executor::task::sink_task::sink_writer::sink_writer_factory::SinkWriterFactory,
+};
 
 use super::SinkWriter;
 
 #[allow(clippy::type_complexity)]
-#[derive(Debug, Default)]
+#[derive(Debug)]
 pub(in crate::stream_engine) struct SinkWriterRepository {
+    config: SpringSinkWriterConfig,
+
     sinks: RwLock<HashMap<SinkWriterName, Arc<Mutex<Box<dyn SinkWriter>>>>>,
 }
 
 impl SinkWriterRepository {
+    pub(in crate::stream_engine::autonomous_executor) fn new(
+        config: SpringSinkWriterConfig,
+    ) -> Self {
+        Self {
+            config,
+            sinks: RwLock::default(),
+        }
+    }
+
     /// Do nothing if a sink writer with the same name already exists.
     ///
     /// # Failures
@@ -35,8 +49,11 @@ impl SinkWriterRepository {
         if sinks.get(sink_writer.name()).is_some() {
             Ok(())
         } else {
-            let subtask =
-                SinkWriterFactory::sink(sink_writer.sink_writer_type(), sink_writer.options())?;
+            let subtask = SinkWriterFactory::sink(
+                sink_writer.sink_writer_type(),
+                sink_writer.options(),
+                &self.config,
+            )?;
             let subtask = Arc::new(Mutex::new(subtask as Box<dyn SinkWriter>));
             let _ = sinks.insert(sink_writer.name().clone(), subtask);
             log::debug!(

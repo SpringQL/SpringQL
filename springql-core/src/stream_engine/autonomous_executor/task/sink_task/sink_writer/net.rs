@@ -11,15 +11,12 @@ use anyhow::Context;
 use super::SinkWriter;
 use crate::{
     error::{foreign_info::ForeignInfo, Result, SpringError},
+    low_level_rs::SpringSinkWriterConfig,
     pipeline::option::{net_options::NetOptions, Options},
     stream_engine::autonomous_executor::row::foreign_row::{
         format::json::JsonObject, sink_row::SinkRow,
     },
 };
-
-// TODO config
-const CONNECT_TIMEOUT_SECS: u64 = 1;
-const WRITE_TIMEOUT_MSECS: u64 = 100;
 
 #[derive(Debug)]
 pub(in crate::stream_engine) struct NetSinkWriter {
@@ -28,19 +25,23 @@ pub(in crate::stream_engine) struct NetSinkWriter {
 }
 
 impl SinkWriter for NetSinkWriter {
-    fn start(options: &Options) -> Result<Self> {
+    fn start(options: &Options, config: &SpringSinkWriterConfig) -> Result<Self> {
         let options = NetOptions::try_from(options)?;
         let sock_addr = SocketAddr::new(options.remote_host, options.remote_port);
 
-        let tcp_stream =
-            TcpStream::connect_timeout(&sock_addr, Duration::from_secs(CONNECT_TIMEOUT_SECS))
-                .context("failed to connect to remote host")
-                .map_err(|e| SpringError::ForeignIo {
-                    source: e,
-                    foreign_info: ForeignInfo::GenericTcp(sock_addr),
-                })?;
+        let tcp_stream = TcpStream::connect_timeout(
+            &sock_addr,
+            Duration::from_millis(config.net_connect_timeout_msec as u64),
+        )
+        .context("failed to connect to remote host")
+        .map_err(|e| SpringError::ForeignIo {
+            source: e,
+            foreign_info: ForeignInfo::GenericTcp(sock_addr),
+        })?;
         tcp_stream
-            .set_write_timeout(Some(Duration::from_millis(WRITE_TIMEOUT_MSECS)))
+            .set_write_timeout(Some(Duration::from_millis(
+                config.net_write_timeout_msec as u64,
+            )))
             .context("failed to set timeout to remote host")
             .map_err(|e| SpringError::ForeignIo {
                 source: e,
@@ -102,7 +103,8 @@ mod tests {
             .add("REMOTE_PORT", sink.port().to_string())
             .build();
 
-        let mut sink_writer = NetSinkWriter::start(&options).unwrap();
+        let mut sink_writer =
+            NetSinkWriter::start(&options, &SpringSinkWriterConfig::fx_default()).unwrap();
 
         sink_writer
             .send_row(SinkRow::fx_city_temperature_tokyo())

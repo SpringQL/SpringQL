@@ -1,6 +1,7 @@
 // Copyright (c) 2021 TOYOTA MOTOR CORPORATION. Licensed under MIT OR Apache-2.0.
 
 use crate::error::Result;
+use crate::low_level_rs::SpringSinkWriterConfig;
 use crate::pipeline::name::QueueName;
 use crate::pipeline::option::in_memory_queue_options::InMemoryQueueOptions;
 use crate::stream_engine::in_memory_queue_repository::InMemoryQueueRepository;
@@ -15,7 +16,7 @@ use super::SinkWriter;
 pub(in crate::stream_engine) struct InMemoryQueueSinkWriter(QueueName);
 
 impl SinkWriter for InMemoryQueueSinkWriter {
-    fn start(options: &Options) -> Result<Self>
+    fn start(options: &Options, _config: &SpringSinkWriterConfig) -> Result<Self>
     where
         Self: Sized,
     {

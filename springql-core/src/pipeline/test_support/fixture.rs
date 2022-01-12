@@ -3,7 +3,7 @@
 use std::{net::IpAddr, sync::Arc};
 
 use crate::{
-    low_level_rs::SpringConfig,
+    low_level_rs::{SpringConfig, SpringSinkWriterConfig},
     pipeline::{
         name::{ColumnName, PumpName, SinkWriterName, SourceReaderName, StreamName},
         option::{options_builder::OptionsBuilder, Options},
@@ -32,6 +32,13 @@ use crate::{
 impl SpringConfig {
     pub(crate) fn fx_default() -> Self {
         Self::new("").unwrap()
+    }
+}
+
+impl SpringSinkWriterConfig {
+    pub(crate) fn fx_default() -> Self {
+        let c = SpringConfig::fx_default();
+        c.sink_writer
     }
 }
 

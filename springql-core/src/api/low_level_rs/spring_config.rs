@@ -45,6 +45,10 @@ host = "127.0.0.1"
 port = 8050
 
 timeout_msec = 3_000
+
+[sink_writer]
+net_connect_timeout_msec = 1_000
+net_write_timeout_msec = 100
 "#;
 
 /// Returns default configuration.
@@ -75,6 +79,7 @@ pub struct SpringConfig {
     pub worker: SpringWorkerConfig,
     pub memory: SpringMemoryConfig,
     pub web_console: SpringWebConsoleConfig,
+    pub sink_writer: SpringSinkWriterConfig,
 }
 
 impl SpringConfig {
@@ -143,4 +148,12 @@ pub struct SpringWebConsoleConfig {
     pub port: u16,
 
     pub timeout_msec: u32,
+}
+
+/// Config related to sink writer.
+#[allow(missing_docs)]
+#[derive(Copy, Clone, Eq, PartialEq, Debug, Deserialize)]
+pub struct SpringSinkWriterConfig {
+    pub net_connect_timeout_msec: u32,
+    pub net_write_timeout_msec: u32,
 }

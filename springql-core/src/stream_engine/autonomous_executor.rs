@@ -52,7 +52,7 @@ pub(in crate::stream_engine) struct AutonomousExecutor {
 impl AutonomousExecutor {
     pub(in crate::stream_engine) fn new(config: &SpringConfig) -> Self {
         let event_queue = Arc::new(EventQueue::default());
-        let task_executor = TaskExecutor::new(&config.worker, event_queue.clone());
+        let task_executor = TaskExecutor::new(config, event_queue.clone());
         let memory_state_machine_worker =
             MemoryStateMachineWorker::new(&config.memory, event_queue.clone());
         let performance_monitor_worker = PerformanceMonitorWorker::new(config, event_queue.clone());

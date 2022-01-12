@@ -1,6 +1,7 @@
 // Copyright (c) 2021 TOYOTA MOTOR CORPORATION. Licensed under MIT OR Apache-2.0.
 
 use crate::error::Result;
+use crate::low_level_rs::SpringSinkWriterConfig;
 use crate::pipeline::option::Options;
 use crate::stream_engine::autonomous_executor::row::foreign_row::sink_row::SinkRow;
 use std::fmt::Debug;
@@ -17,7 +18,7 @@ pub(in crate::stream_engine) trait SinkWriter:
     Debug + Sync + Send + 'static
 {
     /// Blocks until the sink subtask is ready to send SinkRow to foreign sink.
-    fn start(options: &Options) -> Result<Self>
+    fn start(options: &Options, config: &SpringSinkWriterConfig) -> Result<Self>
     where
         Self: Sized;
 
