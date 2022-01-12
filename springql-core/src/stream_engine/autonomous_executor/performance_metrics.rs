@@ -111,7 +111,7 @@ impl PerformanceMetrics {
             })
     }
 
-    pub(super) fn rows_for_task_input(&self, queue_id: &QueueId) -> u64 {
+    pub(super) fn rows_for_task_input(&self, queue_id: &QueueId) -> i64 {
         match queue_id {
             QueueId::Row(id) => {
                 let q = self.get_row_queue_read(id);

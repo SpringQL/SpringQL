@@ -40,7 +40,8 @@ use super::{Scheduler, MAX_TASK_SERIES};
 struct TaskProfile {
     task_id: TaskId,
     loss: f32,
-    input_rows: u64,
+    /// might be negative value if `used` event is subscribed earlier than `put` event.
+    input_rows: i64,
 }
 
 #[derive(Debug, Default)]
@@ -52,12 +53,13 @@ impl Scheduler for MemoryReducingScheduler {
 
         let mut series = vec![];
         for profile in profiles {
-            if profile.input_rows == 0 {
+            if profile.input_rows <= 0 {
+                // Regard as `input_rows == 0`.
                 // profile.loss must be infinite and remaining profiles must also have no input rows
                 break;
             } else {
                 let rest_len = MAX_TASK_SERIES - series.len() as u16;
-                let n_tasks = min(profile.input_rows, rest_len as u64);
+                let n_tasks = min(profile.input_rows, rest_len as i64);
                 let mut tail = iter::repeat(profile.task_id)
                     .take(n_tasks as usize)
                     .collect::<Vec<_>>();
@@ -104,7 +106,7 @@ impl MemoryReducingScheduler {
         }
     }
 
-    fn incoming_rows(&self, task: &TaskId, graph: &TaskGraph, metrics: &PerformanceMetrics) -> u64 {
+    fn incoming_rows(&self, task: &TaskId, graph: &TaskGraph, metrics: &PerformanceMetrics) -> i64 {
         graph
             .input_queues(task)
             .iter()

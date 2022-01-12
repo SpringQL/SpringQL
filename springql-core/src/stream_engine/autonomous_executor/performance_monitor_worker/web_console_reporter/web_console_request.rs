@@ -149,12 +149,12 @@ impl QueueRequest {
 #[derive(Clone, PartialEq, Debug)]
 enum QueueInnerRequest {
     Row {
-        num_rows: u64,
-        total_bytes: u64,
+        num_rows: i64,
+        total_bytes: i64,
     },
     Window {
-        num_rows_waiting: u64,
-        total_bytes: u64,
+        num_rows_waiting: i64,
+        total_bytes: i64,
     },
 }
 

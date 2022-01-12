@@ -12,7 +12,8 @@ use super::PerformanceMetrics;
 /// - launches purger
 #[derive(Clone, Eq, PartialEq, Debug, Serialize, Deserialize)]
 pub(in crate::stream_engine::autonomous_executor) struct PerformanceMetricsSummary {
-    pub(in crate::stream_engine::autonomous_executor) queue_total_bytes: u64,
+    /// might be negative value if `used` event is subscribed earlier than `put` event.
+    pub(in crate::stream_engine::autonomous_executor) queue_total_bytes: i64,
 }
 
 impl From<&PerformanceMetrics> for PerformanceMetricsSummary {
@@ -29,7 +30,7 @@ impl Display for PerformanceMetricsSummary {
 }
 
 impl PerformanceMetricsSummary {
-    fn queue_total_bytes(pm: &PerformanceMetrics) -> u64 {
+    fn queue_total_bytes(pm: &PerformanceMetrics) -> i64 {
         let window = pm
             .get_window_queues()
             .iter()
