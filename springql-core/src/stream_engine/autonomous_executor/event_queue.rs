@@ -101,8 +101,9 @@ struct EventPush {
 
 impl EventPush {
     fn push(&self, event: Event) {
+        let event_tag = EventTag::from(&event);
         self.sender
             .send(event)
-            .expect("failed to send event to subscriber");
+            .unwrap_or_else(|_| panic!("failed to send event to subscriber: {:?}", event_tag));
     }
 }

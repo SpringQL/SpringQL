@@ -6,6 +6,7 @@ use std::{cell::RefCell, sync::Arc};
 
 use crate::stream_engine::autonomous_executor::{
     event_queue::EventQueue, repositories::Repositories,
+    worker::worker_handle::WorkerStopCoordinate,
 };
 
 use self::source_worker::SourceWorker;
@@ -30,6 +31,7 @@ impl SourceWorkerPool {
     pub(super) fn new(
         n_worker_threads: u16,
         event_queue: Arc<EventQueue>,
+        worker_stop_coordinate: Arc<WorkerStopCoordinate>,
         task_executor_lock: Arc<TaskExecutorLock>,
         repos: Arc<Repositories>,
     ) -> Self {
@@ -40,7 +42,7 @@ impl SourceWorkerPool {
                     task_executor_lock.clone(),
                     repos.clone(),
                 );
-                SourceWorker::new(event_queue.clone(), arg)
+                SourceWorker::new(event_queue.clone(), worker_stop_coordinate.clone(), arg)
             })
             .collect();
         Self {

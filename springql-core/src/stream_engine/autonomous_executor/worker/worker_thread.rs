@@ -19,6 +19,8 @@ use crate::stream_engine::autonomous_executor::{
     pipeline_derivatives::PipelineDerivatives,
 };
 
+use super::worker_handle::WorkerStopCoordinate;
+
 /// State updated by loop cycles and event handlers.
 pub(in crate::stream_engine::autonomous_executor) trait WorkerThreadLoopState {
     /// Supposed to be same type as `WorkerThread::ThreadArg`.
@@ -110,6 +112,7 @@ pub(in crate::stream_engine::autonomous_executor) trait WorkerThread {
     fn run(
         event_queue: Arc<EventQueue>,
         stop_receiver: mpsc::Receiver<()>,
+        worker_stop_coordinate: Arc<WorkerStopCoordinate>,
         thread_arg: Self::ThreadArg,
     ) {
         let event_polls = Self::event_subscription()
@@ -118,15 +121,26 @@ pub(in crate::stream_engine::autonomous_executor) trait WorkerThread {
             .collect();
         let _ = thread::Builder::new()
             .name(Self::THREAD_NAME.into())
-            .spawn(move || Self::main_loop(event_queue, event_polls, stop_receiver, thread_arg));
+            .spawn(move || {
+                Self::main_loop(
+                    event_queue,
+                    event_polls,
+                    stop_receiver,
+                    worker_stop_coordinate,
+                    thread_arg,
+                )
+            });
     }
 
     fn main_loop(
         event_queue: Arc<EventQueue>,
         event_polls: Vec<EventPoll>,
         stop_receiver: mpsc::Receiver<()>,
+        worker_stop_coordinate: Arc<WorkerStopCoordinate>,
         thread_arg: Self::ThreadArg,
     ) {
+        log::info!("[{}] main loop started", Self::THREAD_NAME);
+
         let mut state = Self::LoopState::new(&thread_arg);
 
         while stop_receiver.try_recv().is_err() {
@@ -135,6 +149,12 @@ pub(in crate::stream_engine::autonomous_executor) trait WorkerThread {
             }
             state = Self::handle_events(state, &event_polls, &thread_arg, event_queue.clone());
         }
+
+        log::info!(
+            "[{}] main loop finished. Synchronize other threads to finish...",
+            Self::THREAD_NAME
+        );
+        worker_stop_coordinate.sync_wait_all_workers();
     }
 
     fn handle_events(
