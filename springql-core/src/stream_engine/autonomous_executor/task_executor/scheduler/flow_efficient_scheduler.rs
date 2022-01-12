@@ -143,7 +143,7 @@ impl FlowEfficientScheduler {
         collector: &Collector,
         graph: &TaskGraph,
         metrics: &PerformanceMetrics,
-    ) -> u64 {
+    ) -> i64 {
         graph
             .input_queues(&collector.task_id)
             .iter()

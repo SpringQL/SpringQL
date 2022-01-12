@@ -33,6 +33,11 @@ use super::task_graph::{
 /// `PerformanceMonitorWorker` does not frequently read from `RwLock<*Metrics>`, and schedulers in `TaskExecutor` are not expected to
 /// execute consequent tasks (sharing the same queue as input or output) by different workers at the same time.
 /// Therefore, not much contention for `RwLock<*Metrics>` occurs.
+///
+/// Note that `PerformanceMetrics` does not hold precise value in 2 means:
+///
+/// 1. Memory consumption (bytes) is calculated from estimation value. Rust does not provide ways to calculate `struct`'s exact memory size. See: <https://stackoverflow.com/a/68255583>
+/// 2. Rows are `put` and `used` from different tasks, and possibly from different threads. These thread publish `IncrementalUpdateMetrics` events to change the queue's size and number of rows but the event might be out-of-order.
 #[derive(Debug)]
 pub(super) struct PerformanceMetrics {
     /// From which version this metrics constructed
@@ -106,7 +111,7 @@ impl PerformanceMetrics {
             })
     }
 
-    pub(super) fn rows_for_task_input(&self, queue_id: &QueueId) -> u64 {
+    pub(super) fn rows_for_task_input(&self, queue_id: &QueueId) -> i64 {
         match queue_id {
             QueueId::Row(id) => {
                 let q = self.get_row_queue_read(id);
