@@ -33,6 +33,7 @@ impl WorkerThread for GenericWorkerThread {
         vec![
             EventTag::UpdatePipeline,
             EventTag::ReplacePerformanceMetrics,
+            EventTag::TransitMemoryState,
         ]
     }
 
@@ -80,24 +81,6 @@ impl WorkerThread for GenericWorkerThread {
         state
     }
 
-    fn ev_incremental_update_metrics(
-        _current_state: Self::LoopState,
-        _metrics: Arc<MetricsUpdateByTaskExecution>,
-        _thread_arg: &Self::ThreadArg,
-        _event_queue: Arc<EventQueue>,
-    ) -> Self::LoopState {
-        unreachable!()
-    }
-
-    fn ev_report_metrics_summary(
-        _current_state: Self::LoopState,
-        _metrics_summary: Arc<PerformanceMetricsSummary>,
-        _thread_arg: &Self::ThreadArg,
-        _event_queue: Arc<EventQueue>,
-    ) -> Self::LoopState {
-        unreachable!()
-    }
-
     fn ev_transit_memory_state(
         current_state: Self::LoopState,
         memory_state_transition: Arc<MemoryStateTransition>,
@@ -117,5 +100,23 @@ impl WorkerThread for GenericWorkerThread {
         }
 
         state
+    }
+
+    fn ev_incremental_update_metrics(
+        _current_state: Self::LoopState,
+        _metrics: Arc<MetricsUpdateByTaskExecution>,
+        _thread_arg: &Self::ThreadArg,
+        _event_queue: Arc<EventQueue>,
+    ) -> Self::LoopState {
+        unreachable!()
+    }
+
+    fn ev_report_metrics_summary(
+        _current_state: Self::LoopState,
+        _metrics_summary: Arc<PerformanceMetricsSummary>,
+        _thread_arg: &Self::ThreadArg,
+        _event_queue: Arc<EventQueue>,
+    ) -> Self::LoopState {
+        unreachable!()
     }
 }
