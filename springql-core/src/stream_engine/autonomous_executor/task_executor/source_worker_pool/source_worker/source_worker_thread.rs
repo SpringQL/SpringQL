@@ -24,6 +24,8 @@ use crate::stream_engine::autonomous_executor::{
 pub(super) struct SourceWorkerThread;
 
 impl WorkerThread for SourceWorkerThread {
+    const THREAD_NAME: &'static str = "SourceWorker";
+
     type ThreadArg = TaskWorkerThreadArg;
 
     type LoopState = TaskWorkerLoopState<SourceScheduler>;

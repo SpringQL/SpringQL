@@ -21,13 +21,15 @@ impl ForeignSink {
 
         let (tx, rx) = mpsc::channel();
 
-        let _ = thread::spawn(move || {
-            for stream in listener.incoming() {
-                let stream = stream.unwrap();
-                stream.shutdown(Shutdown::Write).unwrap();
-                Self::stream_handler(stream, tx.clone());
-            }
-        });
+        let _ = thread::Builder::new()
+            .name("ForeignSink".into())
+            .spawn(move || {
+                for stream in listener.incoming() {
+                    let stream = stream.unwrap();
+                    stream.shutdown(Shutdown::Write).unwrap();
+                    Self::stream_handler(stream, tx.clone());
+                }
+            });
 
         Ok(Self { my_addr, rx })
     }

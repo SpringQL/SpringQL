@@ -20,11 +20,13 @@ impl ForeignSource {
         let listener = TcpListener::bind("127.0.0.1:0").unwrap();
         let my_addr = listener.local_addr().unwrap();
 
-        let _ = thread::spawn(move || {
-            let (stream, _sock) = listener.accept().unwrap();
-            stream.shutdown(Shutdown::Read).unwrap();
-            Self::stream_handler(stream, input).unwrap();
-        });
+        let _ = thread::Builder::new()
+            .name("ForeignSource".into())
+            .spawn(move || {
+                let (stream, _sock) = listener.accept().unwrap();
+                stream.shutdown(Shutdown::Read).unwrap();
+                Self::stream_handler(stream, input).unwrap();
+            });
 
         Ok(Self { my_addr })
     }

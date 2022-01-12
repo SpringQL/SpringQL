@@ -84,6 +84,8 @@ impl WorkerThreadLoopState for PerformanceMonitorWorkerLoopState {
 }
 
 impl WorkerThread for PerformanceMonitorWorkerThread {
+    const THREAD_NAME: &'static str = "PerformanceMonitorWorker";
+
     type ThreadArg = PerformanceMonitorWorkerThreadArg;
 
     type LoopState = PerformanceMonitorWorkerLoopState;
