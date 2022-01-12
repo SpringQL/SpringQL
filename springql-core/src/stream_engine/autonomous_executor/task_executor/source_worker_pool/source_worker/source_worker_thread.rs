@@ -70,7 +70,7 @@ impl WorkerThread for SourceWorkerThread {
         _event_queue: Arc<EventQueue>,
     ) -> Self::LoopState {
         log::debug!(
-            "[SourceWorker#{}] got UpdatePerformanceMetrics event",
+            "[SourceWorker#{}] got ReplacePerformanceMetrics event",
             thread_arg.worker_id
         );
 

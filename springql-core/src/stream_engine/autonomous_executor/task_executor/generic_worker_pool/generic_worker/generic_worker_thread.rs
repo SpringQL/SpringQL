@@ -71,7 +71,7 @@ impl WorkerThread for GenericWorkerThread {
         _event_queue: Arc<EventQueue>,
     ) -> Self::LoopState {
         log::debug!(
-            "[GenericWorker#{}] got UpdatePerformanceMetrics event",
+            "[GenericWorker#{}] got ReplacePerformanceMetrics event",
             thread_arg.worker_id
         );
 
