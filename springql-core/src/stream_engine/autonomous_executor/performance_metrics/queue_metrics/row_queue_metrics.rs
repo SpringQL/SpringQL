@@ -1,7 +1,10 @@
 use serde::{Deserialize, Serialize};
 
 use crate::stream_engine::autonomous_executor::{
-    performance_metrics::metrics_update_command::metrics_update_by_task_execution::MetricsUpdateByTaskExecution,
+    performance_metrics::{
+        calculation::floor0,
+        metrics_update_command::metrics_update_by_task_execution::MetricsUpdateByTaskExecution,
+    },
     task_graph::queue_id::row_queue_id::RowQueueId,
 };
 
@@ -30,13 +33,13 @@ impl RowQueueMetrics {
     }
 
     /// Current number of rows in the queue.
-    pub(in crate::stream_engine::autonomous_executor) fn rows(&self) -> i64 {
-        self.rows
+    pub(in crate::stream_engine::autonomous_executor) fn rows(&self) -> u64 {
+        floor0(self.rows)
     }
 
     /// Current bytes consumed in the queue.
-    pub(in crate::stream_engine::autonomous_executor) fn bytes(&self) -> i64 {
-        self.bytes
+    pub(in crate::stream_engine::autonomous_executor) fn bytes(&self) -> u64 {
+        floor0(self.bytes)
     }
 
     pub(in crate::stream_engine::autonomous_executor) fn reset(&mut self) {
