@@ -18,7 +18,7 @@ mod task_executor;
 mod task_graph;
 
 use crate::error::{Result, SpringError};
-use crate::low_level_rs::spring_config::SpringConfig;
+use crate::low_level_rs::SpringConfig;
 use crate::pipeline::Pipeline;
 use std::sync::Arc;
 

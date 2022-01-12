@@ -30,10 +30,33 @@ critical_to_severe_percent = 80
 severe_to_moderate_percent = 40
 "#;
 
+/// Returns default configuration.
+pub fn spring_config_default() -> SpringConfig {
+    SpringConfig::new("").expect("default configuration must be valid")
+}
+
+/// Configuration by TOML format string.
+///
+/// # Parameters
+///
+/// - `overwrite_config_toml`: TOML format configuration to overwrite default. See `SPRING_CONFIG_DEFAULT` in [spring_config.rs](https://github.com/SpringQL/SpringQL/tree/main/springql-core/src/api/low_level_rs/spring_config.rs) for full-set default configuration.
+///
+/// # Failures
+///
+/// - [SpringError::InvalidConfig](crate::error::SpringError::InvalidConfig) when:
+///   - `overwrite_config_toml` includes invalid key and/or value.
+/// - [SpringError::InvalidFormat](crate::error::SpringError::InvalidFormat) when:
+///   - `overwrite_config_toml` is not valid as TOML.
+pub fn spring_config_toml(overwrite_config_toml: &str) -> Result<SpringConfig> {
+    SpringConfig::new(overwrite_config_toml)
+}
+
+/// Top-level config.
+#[allow(missing_docs)]
 #[derive(Copy, Clone, Eq, PartialEq, Debug, Deserialize)]
-pub(crate) struct SpringConfig {
-    pub(crate) worker: Worker,
-    pub(crate) memory: Memory,
+pub struct SpringConfig {
+    pub worker: SpringWorkerConfig,
+    pub memory: SpringMemoryConfig,
 }
 
 impl SpringConfig {
@@ -66,25 +89,23 @@ impl SpringConfig {
     }
 }
 
-impl Default for SpringConfig {
-    fn default() -> Self {
-        Self::new("").expect("default configuration must be Ok")
-    }
+/// Config related to worker threads.
+#[allow(missing_docs)]
+#[derive(Copy, Clone, Eq, PartialEq, Debug, Deserialize)]
+pub struct SpringWorkerConfig {
+    pub n_generic_worker_threads: u16,
+    pub n_source_worker_threads: u16,
 }
 
+/// Config related to memory management.
+#[allow(missing_docs)]
 #[derive(Copy, Clone, Eq, PartialEq, Debug, Deserialize)]
-pub(crate) struct Worker {
-    pub(crate) n_generic_worker_threads: u16,
-    pub(crate) n_source_worker_threads: u16,
-}
+pub struct SpringMemoryConfig {
+    pub upper_limit_bytes: u64,
 
-#[derive(Copy, Clone, Eq, PartialEq, Debug, Deserialize)]
-pub(crate) struct Memory {
-    pub(crate) upper_limit_bytes: u64,
+    pub moderate_to_severe_percent: u8,
+    pub severe_to_critical_percent: u8,
 
-    pub(crate) moderate_to_severe_percent: u8,
-    pub(crate) severe_to_critical_percent: u8,
-
-    pub(crate) critical_to_severe_percent: u8,
-    pub(crate) severe_to_moderate_percent: u8,
+    pub critical_to_severe_percent: u8,
+    pub severe_to_moderate_percent: u8,
 }

@@ -38,7 +38,7 @@ pub(crate) use autonomous_executor::{
     SinkRow,
 };
 
-use crate::{error::Result, low_level_rs::spring_config::SpringConfig, pipeline::name::QueueName};
+use crate::{error::Result, low_level_rs::SpringConfig, pipeline::name::QueueName};
 
 use self::{
     autonomous_executor::AutonomousExecutor, command::alter_pipeline_command::AlterPipelineCommand,
@@ -115,7 +115,7 @@ mod tests {
         let st_trade_sink = StreamName::factory("st_trade_sink");
         let pu_trade_source_p1 = PumpName::factory("pu_trade_source_p1");
 
-        let mut config = SpringConfig::default();
+        let mut config = SpringConfig::fx_default();
         config.worker.n_generic_worker_threads = n_worker_threads;
         config.worker.n_source_worker_threads = n_worker_threads;
 

@@ -10,8 +10,8 @@ use springql_foreign_service::source::source_input::ForeignSourceInput;
 use springql_foreign_service::source::ForeignSource;
 use springql_test_logger::setup_test_logger;
 
-fn apply_ddls(ddls: &[String]) -> SpringPipeline {
-    let pipeline = spring_open("").unwrap();
+fn apply_ddls(ddls: &[String], config: SpringConfig) -> SpringPipeline {
+    let pipeline = spring_open(config).unwrap();
     for ddl in ddls {
         spring_command(&pipeline, ddl).unwrap();
     }
@@ -100,7 +100,7 @@ fn test_e2e_source_sink() -> Result<()> {
         ),
     ];
 
-    let _pipeline = apply_ddls(&ddls);
+    let _pipeline = apply_ddls(&ddls, spring_config_default());
     let sink_received = drain_from_sink(&test_sink);
 
     // because worker takes source input in multi-thread, order may be changed
@@ -173,7 +173,7 @@ fn test_e2e_projection() -> Result<()> {
         ),
     ];
 
-    let _pipeline = apply_ddls(&ddls);
+    let _pipeline = apply_ddls(&ddls, spring_config_default());
     let sink_received = drain_from_sink(&test_sink);
 
     assert_eq!(
@@ -256,7 +256,7 @@ fn test_e2e_pop_from_in_memory_queue() {
         ),
     ];
 
-    let pipeline = apply_ddls(&ddls);
+    let pipeline = apply_ddls(&ddls, spring_config_default());
 
     for _ in 0..trade_times {
         let row = spring_pop(&pipeline, queue_name).unwrap();

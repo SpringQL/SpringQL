@@ -1,6 +1,6 @@
 //! ![Memory state machine](https://raw.githubusercontent.com/SpringQL/SpringQL.github.io/main/static/img/memory-state-machine-and-effect.svg)
 
-use crate::low_level_rs::spring_config;
+use crate::low_level_rs::SpringMemoryConfig;
 
 #[derive(Debug)]
 pub(in crate::stream_engine::autonomous_executor) struct MemoryStateMachine {
@@ -115,8 +115,8 @@ pub(in crate::stream_engine::autonomous_executor) struct MemoryStateMachineThres
     severe_to_moderate_bytes: u64,
 }
 
-impl From<&spring_config::Memory> for MemoryStateMachineThreshold {
-    fn from(c: &spring_config::Memory) -> Self {
+impl From<&SpringMemoryConfig> for MemoryStateMachineThreshold {
+    fn from(c: &SpringMemoryConfig) -> Self {
         Self::new(
             c.upper_limit_bytes,
             Self::bytes_from_percent(c.upper_limit_bytes, c.moderate_to_severe_percent),

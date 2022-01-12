@@ -7,7 +7,7 @@ mod scheduler;
 mod source_worker_pool;
 mod task_executor_lock;
 
-use crate::{error::Result, low_level_rs::spring_config};
+use crate::{error::Result, low_level_rs::SpringWorkerConfig};
 use std::sync::Arc;
 
 use self::{
@@ -36,7 +36,7 @@ pub(in crate::stream_engine) struct TaskExecutor {
 
 impl TaskExecutor {
     pub(in crate::stream_engine::autonomous_executor) fn new(
-        worker_config: &spring_config::Worker,
+        worker_config: &SpringWorkerConfig,
         event_queue: Arc<EventQueue>,
     ) -> Self {
         let task_executor_lock = Arc::new(TaskExecutorLock::default());
