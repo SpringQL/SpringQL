@@ -50,6 +50,8 @@ impl WorkerThreadLoopState for MemoryStateMachineWorkerLoopState {
 }
 
 impl WorkerThread for MemoryStateMachineWorkerThread {
+    const THREAD_NAME: &'static str = "MemoryStateMachineWorker";
+
     type ThreadArg = MemoryStateMachineWorkerThreadArg;
 
     type LoopState = MemoryStateMachineWorkerLoopState;

@@ -25,6 +25,8 @@ use self::generic_worker_scheduler::GenericWorkerScheduler;
 pub(super) struct GenericWorkerThread;
 
 impl WorkerThread for GenericWorkerThread {
+    const THREAD_NAME: &'static str = "GenericWorker";
+    
     type ThreadArg = TaskWorkerThreadArg;
 
     type LoopState = TaskWorkerLoopState<GenericWorkerScheduler>;

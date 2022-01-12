@@ -37,6 +37,8 @@ pub(in crate::stream_engine::autonomous_executor) trait WorkerThreadLoopState {
 }
 
 pub(in crate::stream_engine::autonomous_executor) trait WorkerThread {
+    const THREAD_NAME: &'static str;
+
     /// Immutable argument to pass to `main_loop_cycle`.
     ///
     /// Use `()` if no arg needed.
@@ -114,9 +116,9 @@ pub(in crate::stream_engine::autonomous_executor) trait WorkerThread {
             .into_iter()
             .map(|ev| event_queue.subscribe(ev))
             .collect();
-        let _ = thread::spawn(move || {
-            Self::main_loop(event_queue, event_polls, stop_receiver, thread_arg)
-        });
+        let _ = thread::Builder::new()
+            .name(Self::THREAD_NAME.into())
+            .spawn(move || Self::main_loop(event_queue, event_polls, stop_receiver, thread_arg));
     }
 
     fn main_loop(
