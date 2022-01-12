@@ -1,7 +1,7 @@
 use std::{sync::Arc, thread, time::Duration};
 
 use crate::{
-    low_level_rs::{SpringConfig, SpringMemoryConfig},
+    low_level_rs::SpringConfig,
     stream_engine::{
         autonomous_executor::{
             event_queue::{
@@ -23,11 +23,6 @@ use crate::{
 use super::web_console_reporter::WebConsoleReporter;
 
 const CLOCK_MSEC: u64 = 100;
-const WEB_CONSOLE_REPORT_INTERVAL_CLOCK: u64 = 30;
-const WEB_CONSOLE_HOST: &str = "127.0.0.1";
-const WEB_CONSOLE_PORT: u16 = 8050;
-const WEB_CONSOLE_TIMEOUT: WallClockDuration =
-    WallClockDuration::from_millis(CLOCK_MSEC * WEB_CONSOLE_REPORT_INTERVAL_CLOCK);
 
 /// Runs a worker thread.
 #[derive(Debug)]
@@ -35,17 +30,19 @@ pub(super) struct PerformanceMonitorWorkerThread;
 
 #[derive(Debug)]
 pub(in crate::stream_engine::autonomous_executor) struct PerformanceMonitorWorkerThreadArg {
-    memory_config: SpringMemoryConfig,
+    config: SpringConfig,
     web_console_reporter: WebConsoleReporter,
 }
 
 impl From<&SpringConfig> for PerformanceMonitorWorkerThreadArg {
     fn from(config: &SpringConfig) -> Self {
-        // TODO ::from_config()
-        let web_console_reporter =
-            WebConsoleReporter::new(WEB_CONSOLE_HOST, WEB_CONSOLE_PORT, WEB_CONSOLE_TIMEOUT);
+        let web_console_reporter = WebConsoleReporter::new(
+            &config.web_console.host,
+            config.web_console.port,
+            WallClockDuration::from_millis(config.web_console.timeout_msec as u64),
+        );
         Self {
-            memory_config: config.memory,
+            config: config.clone(),
             web_console_reporter,
         }
     }
@@ -56,7 +53,7 @@ pub(super) struct PerformanceMonitorWorkerLoopState {
     pipeline_derivatives: Option<Arc<PipelineDerivatives>>,
     metrics: Option<Arc<PerformanceMetrics>>,
     countdown_metrics_summary_msec: i32,
-    clk_web_console: u64,
+    countdown_web_console_msec: i32,
 }
 
 impl WorkerThreadLoopState for PerformanceMonitorWorkerLoopState {
@@ -70,10 +67,11 @@ impl WorkerThreadLoopState for PerformanceMonitorWorkerLoopState {
             pipeline_derivatives: None,
             metrics: None,
             countdown_metrics_summary_msec: thread_arg
-                .memory_config
+                .config
+                .memory
                 .performance_metrics_summary_report_interval_msec
                 as i32,
-            clk_web_console: WEB_CONSOLE_REPORT_INTERVAL_CLOCK,
+            countdown_web_console_msec: thread_arg.config.web_console.report_interval_msec as i32,
         }
     }
 
@@ -99,30 +97,30 @@ impl WorkerThread for PerformanceMonitorWorkerThread {
         thread_arg: &Self::ThreadArg,
         event_queue: &EventQueue,
     ) -> Self::LoopState {
-        let mut state = current_state;
-        if let (Some(pipeline_derivatives), Some(metrics)) =
-            (&state.pipeline_derivatives, &state.metrics)
-        {
-            if state.countdown_metrics_summary_msec <= 0 {
-                // reset count
-                state.countdown_metrics_summary_msec = thread_arg
-                    .memory_config
-                    .performance_metrics_summary_report_interval_msec
-                    as i32;
+        if let (Some(pipeline_derivatives), Some(metrics)) = (
+            current_state.pipeline_derivatives.clone(),
+            current_state.metrics.clone(),
+        ) {
+            let mut state = current_state;
 
-                let metrics_summary = Arc::new(PerformanceMetricsSummary::from(metrics.as_ref()));
-                event_queue.publish(Event::ReportMetricsSummary { metrics_summary })
-            } else {
-                state.countdown_metrics_summary_msec -= CLOCK_MSEC as i32;
-            }
-
-            if state.clk_web_console == 0 {
-                state.clk_web_console = WEB_CONSOLE_REPORT_INTERVAL_CLOCK;
+            state = Self::report_metrics_summary(
+                state,
+                metrics.as_ref(),
+                event_queue,
                 thread_arg
-                    .web_console_reporter
-                    .report(metrics, pipeline_derivatives.task_graph());
-            } else {
-                state.clk_web_console -= 1;
+                    .config
+                    .memory
+                    .performance_metrics_summary_report_interval_msec as i32,
+            );
+
+            if thread_arg.config.web_console.enable_report_post {
+                state = Self::post_web_console(
+                    state,
+                    pipeline_derivatives.as_ref(),
+                    metrics.as_ref(),
+                    &thread_arg.web_console_reporter,
+                    thread_arg.config.web_console.report_interval_msec as i32,
+                );
             }
 
             thread::sleep(Duration::from_millis(CLOCK_MSEC));
@@ -190,5 +188,47 @@ impl WorkerThread for PerformanceMonitorWorkerThread {
         _event_queue: Arc<EventQueue>,
     ) -> Self::LoopState {
         unreachable!()
+    }
+}
+
+impl PerformanceMonitorWorkerThread {
+    fn report_metrics_summary(
+        state: PerformanceMonitorWorkerLoopState,
+        metrics: &PerformanceMetrics,
+        event_queue: &EventQueue,
+        report_interval_msec: i32,
+    ) -> PerformanceMonitorWorkerLoopState {
+        let mut state = state;
+
+        if state.countdown_metrics_summary_msec <= 0 {
+            state.countdown_metrics_summary_msec = report_interval_msec;
+
+            let metrics_summary = Arc::new(PerformanceMetricsSummary::from(metrics));
+            event_queue.publish(Event::ReportMetricsSummary { metrics_summary })
+        } else {
+            state.countdown_metrics_summary_msec -= CLOCK_MSEC as i32;
+        }
+
+        state
+    }
+
+    fn post_web_console(
+        state: PerformanceMonitorWorkerLoopState,
+        pipeline_derivatives: &PipelineDerivatives,
+        metrics: &PerformanceMetrics,
+        web_console_reporter: &WebConsoleReporter,
+        report_interval_msec: i32,
+    ) -> PerformanceMonitorWorkerLoopState {
+        let mut state = state;
+
+        if state.countdown_web_console_msec <= 0 {
+            state.countdown_web_console_msec = report_interval_msec as i32;
+
+            web_console_reporter.report(metrics, pipeline_derivatives.task_graph());
+        } else {
+            state.countdown_web_console_msec -= CLOCK_MSEC as i32;
+        }
+
+        state
     }
 }

@@ -34,6 +34,17 @@ memory_state_transition_interval_msec = 100
 
 # Interval for PerformanceMonitorWorker to publish ReportMetricsSummary event.
 performance_metrics_summary_report_interval_msec = 1_000
+
+[web_console]
+# Whether to enable POST API request to web console.
+enable_report_post = false
+
+report_interval_msec = 3_000
+
+host = "127.0.0.1"
+port = 8050
+
+timeout_msec = 3_000
 "#;
 
 /// Returns default configuration.
@@ -59,10 +70,11 @@ pub fn spring_config_toml(overwrite_config_toml: &str) -> Result<SpringConfig> {
 
 /// Top-level config.
 #[allow(missing_docs)]
-#[derive(Copy, Clone, Eq, PartialEq, Debug, Deserialize)]
+#[derive(Clone, Eq, PartialEq, Debug, Deserialize)]
 pub struct SpringConfig {
     pub worker: SpringWorkerConfig,
     pub memory: SpringMemoryConfig,
+    pub web_console: SpringWebConsoleConfig,
 }
 
 impl SpringConfig {
@@ -117,4 +129,18 @@ pub struct SpringMemoryConfig {
 
     pub memory_state_transition_interval_msec: u32,
     pub performance_metrics_summary_report_interval_msec: u32,
+}
+
+/// Config related to web console.
+#[allow(missing_docs)]
+#[derive(Clone, Eq, PartialEq, Debug, Deserialize)]
+pub struct SpringWebConsoleConfig {
+    pub enable_report_post: bool,
+
+    pub report_interval_msec: u32,
+
+    pub host: String,
+    pub port: u16,
+
+    pub timeout_msec: u32,
 }
