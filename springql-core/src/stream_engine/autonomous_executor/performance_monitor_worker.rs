@@ -6,6 +6,8 @@ mod web_console_reporter;
 
 use std::sync::Arc;
 
+use crate::low_level_rs::SpringConfig;
+
 use self::performance_monitor_worker_thread::{
     PerformanceMonitorWorkerThread, PerformanceMonitorWorkerThreadArg,
 };
@@ -22,12 +24,14 @@ pub(in crate::stream_engine::autonomous_executor) struct PerformanceMonitorWorke
 }
 
 impl PerformanceMonitorWorker {
-    pub(in crate::stream_engine::autonomous_executor) fn new(event_queue: Arc<EventQueue>) -> Self {
+    pub(in crate::stream_engine::autonomous_executor) fn new(
+        config: &SpringConfig,
+        event_queue: Arc<EventQueue>,
+    ) -> Self {
         let handle = WorkerHandle::new::<PerformanceMonitorWorkerThread>(
             event_queue,
-            PerformanceMonitorWorkerThreadArg::default(),
+            PerformanceMonitorWorkerThreadArg::from(config),
         );
         Self { handle }
     }
 }
-

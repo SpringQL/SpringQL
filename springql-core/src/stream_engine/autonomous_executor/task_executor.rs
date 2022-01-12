@@ -7,7 +7,7 @@ mod scheduler;
 mod source_worker_pool;
 mod task_executor_lock;
 
-use crate::error::Result;
+use crate::{error::Result, low_level_rs::SpringConfig};
 use std::sync::Arc;
 
 use self::{
@@ -36,23 +36,23 @@ pub(in crate::stream_engine) struct TaskExecutor {
 
 impl TaskExecutor {
     pub(in crate::stream_engine::autonomous_executor) fn new(
-        n_worker_threads: usize,
+        config: &SpringConfig,
         event_queue: Arc<EventQueue>,
     ) -> Self {
         let task_executor_lock = Arc::new(TaskExecutorLock::default());
-        let repos = Arc::new(Repositories::default());
+        let repos = Arc::new(Repositories::new(config));
 
         Self {
             task_executor_lock: task_executor_lock.clone(),
 
             generic_worker_pool: GenericWorkerPool::new(
-                n_worker_threads,
+                config.worker.n_generic_worker_threads,
                 event_queue.clone(),
                 task_executor_lock.clone(),
                 repos.clone(),
             ),
             source_worker_pool: SourceWorkerPool::new(
-                n_worker_threads,
+                config.worker.n_source_worker_threads,
                 event_queue,
                 task_executor_lock,
                 repos.clone(),

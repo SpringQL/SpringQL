@@ -1,3 +1,5 @@
+use crate::low_level_rs::SpringConfig;
+
 use super::{
     queue::row_queue_repository::RowQueueRepository,
     task::{
@@ -7,7 +9,7 @@ use super::{
 };
 
 /// Collection of repository instances.
-#[derive(Debug, Default)]
+#[derive(Debug)]
 pub(in crate::stream_engine::autonomous_executor) struct Repositories {
     row_queue_repository: RowQueueRepository,
     source_reader_repository: SourceReaderRepository,
@@ -15,6 +17,14 @@ pub(in crate::stream_engine::autonomous_executor) struct Repositories {
 }
 
 impl Repositories {
+    pub(in crate::stream_engine::autonomous_executor) fn new(config: &SpringConfig) -> Self {
+        Self {
+            row_queue_repository: RowQueueRepository::default(),
+            source_reader_repository: SourceReaderRepository::new(config.source_reader),
+            sink_writer_repository: SinkWriterRepository::new(config.sink_writer),
+        }
+    }
+
     pub(in crate::stream_engine::autonomous_executor) fn row_queue_repository(
         &self,
     ) -> &RowQueueRepository {

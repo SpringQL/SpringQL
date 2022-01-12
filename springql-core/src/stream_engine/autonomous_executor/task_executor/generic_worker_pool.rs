@@ -28,7 +28,7 @@ pub(super) struct GenericWorkerPool {
 
 impl GenericWorkerPool {
     pub(super) fn new(
-        n_worker_threads: usize,
+        n_worker_threads: u16,
         event_queue: Arc<EventQueue>,
         task_executor_lock: Arc<TaskExecutorLock>,
         repos: Arc<Repositories>,

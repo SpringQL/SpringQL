@@ -1,5 +1,7 @@
 //! ![Memory state machine](https://raw.githubusercontent.com/SpringQL/SpringQL.github.io/main/static/img/memory-state-machine-and-effect.svg)
 
+use crate::low_level_rs::SpringMemoryConfig;
+
 #[derive(Debug)]
 pub(in crate::stream_engine::autonomous_executor) struct MemoryStateMachine {
     threshold: MemoryStateMachineThreshold,
@@ -113,6 +115,18 @@ pub(in crate::stream_engine::autonomous_executor) struct MemoryStateMachineThres
     severe_to_moderate_bytes: u64,
 }
 
+impl From<&SpringMemoryConfig> for MemoryStateMachineThreshold {
+    fn from(c: &SpringMemoryConfig) -> Self {
+        Self::new(
+            c.upper_limit_bytes,
+            Self::bytes_from_percent(c.upper_limit_bytes, c.moderate_to_severe_percent),
+            Self::bytes_from_percent(c.upper_limit_bytes, c.severe_to_critical_percent),
+            Self::bytes_from_percent(c.upper_limit_bytes, c.critical_to_severe_percent),
+            Self::bytes_from_percent(c.upper_limit_bytes, c.severe_to_moderate_percent),
+        )
+    }
+}
+
 impl MemoryStateMachineThreshold {
     /// # Panics
     ///
@@ -121,7 +135,7 @@ impl MemoryStateMachineThreshold {
     /// ```text
     /// upper_limit_bytes > severe_to_critical_bytes > critical_to_severe_bytes > moderate_to_severe_bytes > severe_to_moderate_bytes
     /// ```
-    pub(in crate::stream_engine::autonomous_executor) fn new(
+    fn new(
         upper_limit_bytes: u64,
         moderate_to_severe_bytes: u64,
         severe_to_critical_bytes: u64,
@@ -140,5 +154,9 @@ impl MemoryStateMachineThreshold {
             critical_to_severe_bytes,
             severe_to_moderate_bytes,
         }
+    }
+
+    fn bytes_from_percent(base_bytes: u64, percent: u8) -> u64 {
+        (base_bytes as f32 * percent as f32 * 0.01) as u64
     }
 }

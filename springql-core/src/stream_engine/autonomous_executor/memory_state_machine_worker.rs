@@ -12,6 +12,8 @@ pub(in crate::stream_engine::autonomous_executor) mod memory_state_machine_worke
 
 use std::sync::Arc;
 
+use crate::low_level_rs::SpringMemoryConfig;
+
 use self::memory_state_machine_worker_thread::{
     MemoryStateMachineWorkerThread, MemoryStateMachineWorkerThreadArg,
 };
@@ -27,13 +29,18 @@ pub(in crate::stream_engine::autonomous_executor) struct MemoryStateMachineWorke
 }
 
 impl MemoryStateMachineWorker {
-    pub(in crate::stream_engine::autonomous_executor) fn new(event_queue: Arc<EventQueue>) -> Self {
-        // TODO from config
-        let threshold = MemoryStateMachineThreshold::new(10_000, 6_000, 9_500, 8_000, 4_000);
+    pub(in crate::stream_engine::autonomous_executor) fn new(
+        memory_config: &SpringMemoryConfig,
+        event_queue: Arc<EventQueue>,
+    ) -> Self {
+        let threshold = MemoryStateMachineThreshold::from(memory_config);
 
         let handle = WorkerHandle::new::<MemoryStateMachineWorkerThread>(
             event_queue,
-            MemoryStateMachineWorkerThreadArg::new(threshold),
+            MemoryStateMachineWorkerThreadArg::new(
+                threshold,
+                memory_config.memory_state_transition_interval_msec,
+            ),
         );
         Self { handle }
     }

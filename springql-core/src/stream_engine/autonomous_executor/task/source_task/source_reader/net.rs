@@ -10,6 +10,7 @@ use anyhow::Context;
 
 use crate::{
     error::{foreign_info::ForeignInfo, Result, SpringError},
+    low_level_rs::SpringSourceReaderConfig,
     pipeline::option::{net_options::NetOptions, Options},
     stream_engine::autonomous_executor::row::foreign_row::{
         format::json::JsonObject, source_row::SourceRow,
@@ -17,10 +18,6 @@ use crate::{
 };
 
 use super::SourceReader;
-
-// TODO config
-const CONNECT_TIMEOUT_SECS: u64 = 1;
-const READ_TIMEOUT_MSECS: u64 = 100;
 
 #[derive(Debug)]
 pub(in crate::stream_engine) struct NetSourceReader {
@@ -33,19 +30,23 @@ impl SourceReader for NetSourceReader {
     ///
     /// - [SpringError::ForeignIo](crate::error::SpringError::ForeignIo)
     /// - [SpringError::InvalidOption](crate::error::SpringError::InvalidOption)
-    fn start(options: &Options) -> Result<Self> {
+    fn start(options: &Options, config: &SpringSourceReaderConfig) -> Result<Self> {
         let options = NetOptions::try_from(options)?;
         let sock_addr = SocketAddr::new(options.remote_host, options.remote_port);
 
-        let tcp_stream =
-            TcpStream::connect_timeout(&sock_addr, Duration::from_secs(CONNECT_TIMEOUT_SECS))
-                .context("failed to connect to remote host")
-                .map_err(|e| SpringError::ForeignIo {
-                    source: e,
-                    foreign_info: ForeignInfo::GenericTcp(sock_addr),
-                })?;
+        let tcp_stream = TcpStream::connect_timeout(
+            &sock_addr,
+            Duration::from_millis(config.net_connect_timeout_msec as u64),
+        )
+        .context("failed to connect to remote host")
+        .map_err(|e| SpringError::ForeignIo {
+            source: e,
+            foreign_info: ForeignInfo::GenericTcp(sock_addr),
+        })?;
         tcp_stream
-            .set_read_timeout(Some(Duration::from_millis(READ_TIMEOUT_MSECS)))
+            .set_read_timeout(Some(Duration::from_millis(
+                config.net_read_timeout_msec as u64,
+            )))
             .context("failed to set timeout to remote host")
             .map_err(|e| SpringError::ForeignIo {
                 source: e,
@@ -135,7 +136,8 @@ mod tests {
             .add("REMOTE_PORT", source.port().to_string())
             .build();
 
-        let mut subtask = NetSourceReader::start(&options)?;
+        let mut subtask =
+            NetSourceReader::start(&options, &SpringSourceReaderConfig::fx_default())?;
 
         assert_eq!(subtask.next_row()?, SourceRow::from_json(j2));
         assert_eq!(subtask.next_row()?, SourceRow::from_json(j3));

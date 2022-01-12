@@ -15,7 +15,6 @@ use crate::stream_engine::autonomous_executor::{
 
 use super::{scheduler::Scheduler, task_executor_lock::TaskExecutorLock};
 
-// TODO config
 const TASK_WAIT_MSEC: u64 = 100;
 
 #[derive(Debug)]

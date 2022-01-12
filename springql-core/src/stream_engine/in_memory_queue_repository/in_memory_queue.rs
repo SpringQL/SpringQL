@@ -9,7 +9,6 @@ use std::{
 
 use crate::stream_engine::autonomous_executor::row::foreign_row::sink_row::SinkRow;
 
-/// TODO config
 const SLEEP_MSECS: u64 = 10;
 
 #[derive(Debug, Default)]

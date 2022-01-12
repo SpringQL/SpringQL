@@ -5,6 +5,9 @@
 //! C API and high-level Rust API are provided separately.
 
 mod engine_mutex;
+mod spring_config;
+
+pub use spring_config::*;
 
 use std::sync::Once;
 
@@ -16,9 +19,6 @@ use crate::{
 };
 
 use self::engine_mutex::EngineMutex;
-
-// TODO config
-const N_WORKER_THREADS: usize = 2;
 
 fn setup_logger() {
     static INIT: Once = Once::new();
@@ -53,10 +53,15 @@ impl From<SinkRow> for SpringRow {
 }
 
 /// Creates and open an in-process stream pipeline.
-pub fn spring_open() -> Result<SpringPipeline> {
+///
+/// # Parameters
+///
+/// - `overwrite_config_toml`: TOML format configuration to overwrite default. See `SPRING_CONFIG_DEFAULT` in [spring_config.rs](https://github.com/SpringQL/SpringQL/tree/main/springql-core/src/api/low_level_rs/spring_config.rs) for full-set default configuration.
+///
+pub fn spring_open(config: SpringConfig) -> Result<SpringPipeline> {
     setup_logger();
 
-    let engine = EngineMutex::new(N_WORKER_THREADS);
+    let engine = EngineMutex::new(&config);
     let sql_processor = SqlProcessor::default();
 
     Ok(SpringPipeline {

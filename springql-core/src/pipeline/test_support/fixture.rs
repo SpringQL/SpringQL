@@ -3,6 +3,7 @@
 use std::{net::IpAddr, sync::Arc};
 
 use crate::{
+    low_level_rs::{SpringConfig, SpringSinkWriterConfig, SpringSourceReaderConfig},
     pipeline::{
         name::{ColumnName, PumpName, SinkWriterName, SourceReaderName, StreamName},
         option::{options_builder::OptionsBuilder, Options},
@@ -27,6 +28,26 @@ use crate::{
         query_plan::{query_plan_operation::QueryPlanOperation, QueryPlan},
     },
 };
+
+impl SpringConfig {
+    pub(crate) fn fx_default() -> Self {
+        Self::new("").unwrap()
+    }
+}
+
+impl SpringSourceReaderConfig {
+    pub(crate) fn fx_default() -> Self {
+        let c = SpringConfig::fx_default();
+        c.source_reader
+    }
+}
+
+impl SpringSinkWriterConfig {
+    pub(crate) fn fx_default() -> Self {
+        let c = SpringConfig::fx_default();
+        c.sink_writer
+    }
+}
 
 impl Pipeline {
     /// ```text

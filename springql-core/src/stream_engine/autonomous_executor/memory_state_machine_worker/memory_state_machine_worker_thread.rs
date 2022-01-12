@@ -16,9 +16,6 @@ use crate::stream_engine::autonomous_executor::{
     worker::worker_thread::{WorkerThread, WorkerThreadLoopState},
 };
 
-// TODO config
-const CLOCK_MSEC: u64 = 100;
-
 /// Runs a worker thread.
 #[derive(Debug)]
 pub(super) struct MemoryStateMachineWorkerThread;
@@ -26,6 +23,7 @@ pub(super) struct MemoryStateMachineWorkerThread;
 #[derive(Debug, new)]
 pub(in crate::stream_engine::autonomous_executor) struct MemoryStateMachineWorkerThreadArg {
     threshold: MemoryStateMachineThreshold,
+    memory_state_transition_interval_msec: u32,
 }
 
 #[derive(Debug)]
@@ -62,11 +60,13 @@ impl WorkerThread for MemoryStateMachineWorkerThread {
 
     fn main_loop_cycle(
         current_state: Self::LoopState,
-        _thread_arg: &Self::ThreadArg,
+        thread_arg: &Self::ThreadArg,
         _event_queue: &EventQueue,
     ) -> Self::LoopState {
         // Do nothing in loop. Only curious about ReportMetricsSummary event.
-        thread::sleep(Duration::from_millis(CLOCK_MSEC));
+        thread::sleep(Duration::from_millis(
+            thread_arg.memory_state_transition_interval_msec as u64,
+        ));
         current_state
     }
 
