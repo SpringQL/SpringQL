@@ -96,12 +96,12 @@ impl EventPoll {
 
 #[derive(Debug, new)]
 struct EventPush {
-    receiver: mpsc::Sender<Event>,
+    sender: mpsc::Sender<Event>,
 }
 
 impl EventPush {
     fn push(&self, event: Event) {
-        self.receiver
+        self.sender
             .send(event)
             .expect("failed to send event to subscriber");
     }

@@ -20,7 +20,7 @@ impl Repositories {
     pub(in crate::stream_engine::autonomous_executor) fn new(config: &SpringConfig) -> Self {
         Self {
             row_queue_repository: RowQueueRepository::default(),
-            source_reader_repository: SourceReaderRepository::default(),
+            source_reader_repository: SourceReaderRepository::new(config.source_reader),
             sink_writer_repository: SinkWriterRepository::new(config.sink_writer),
         }
     }

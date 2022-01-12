@@ -7,6 +7,7 @@ use std::{
 
 use crate::{
     error::Result,
+    low_level_rs::SpringSourceReaderConfig,
     pipeline::{name::SourceReaderName, source_reader_model::SourceReaderModel},
     stream_engine::autonomous_executor::task::source_task::source_reader::source_reader_factory::SourceReaderFactory,
 };
@@ -14,12 +15,23 @@ use crate::{
 use super::SourceReader;
 
 #[allow(clippy::type_complexity)]
-#[derive(Debug, Default)]
+#[derive(Debug)]
 pub(in crate::stream_engine) struct SourceReaderRepository {
+    config: SpringSourceReaderConfig,
+
     sources: RwLock<HashMap<SourceReaderName, Arc<Mutex<Box<dyn SourceReader>>>>>,
 }
 
 impl SourceReaderRepository {
+    pub(in crate::stream_engine::autonomous_executor) fn new(
+        config: SpringSourceReaderConfig,
+    ) -> Self {
+        Self {
+            config,
+            sources: RwLock::default(),
+        }
+    }
+
     /// Do nothing if a source reader with the same name already exists.
     ///
     /// # Failures
@@ -41,6 +53,7 @@ impl SourceReaderRepository {
             let subtask = SourceReaderFactory::source(
                 source_reader.source_reader_type(),
                 source_reader.options(),
+                &self.config,
             )?;
             let subtask = Arc::new(Mutex::new(subtask as Box<dyn SourceReader>));
             let _ = sources.insert(source_reader.name().clone(), subtask);

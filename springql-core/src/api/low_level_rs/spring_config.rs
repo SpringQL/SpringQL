@@ -46,6 +46,10 @@ port = 8050
 
 timeout_msec = 3_000
 
+[source_reader]
+net_connect_timeout_msec = 1_000
+net_read_timeout_msec = 100
+
 [sink_writer]
 net_connect_timeout_msec = 1_000
 net_write_timeout_msec = 100
@@ -79,6 +83,7 @@ pub struct SpringConfig {
     pub worker: SpringWorkerConfig,
     pub memory: SpringMemoryConfig,
     pub web_console: SpringWebConsoleConfig,
+    pub source_reader: SpringSourceReaderConfig,
     pub sink_writer: SpringSinkWriterConfig,
 }
 
@@ -148,6 +153,14 @@ pub struct SpringWebConsoleConfig {
     pub port: u16,
 
     pub timeout_msec: u32,
+}
+
+/// Config related to source reader
+#[allow(missing_docs)]
+#[derive(Copy, Clone, Eq, PartialEq, Debug, Deserialize)]
+pub struct SpringSourceReaderConfig {
+    pub net_connect_timeout_msec: u32,
+    pub net_read_timeout_msec: u32,
 }
 
 /// Config related to sink writer.

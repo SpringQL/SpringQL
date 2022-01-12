@@ -1,7 +1,7 @@
 // Copyright (c) 2021 TOYOTA MOTOR CORPORATION. Licensed under MIT OR Apache-2.0.
 
 use crate::{
-    error::Result, pipeline::option::Options,
+    error::Result, low_level_rs::SpringSourceReaderConfig, pipeline::option::Options,
     stream_engine::autonomous_executor::row::foreign_row::source_row::SourceRow,
 };
 use std::fmt::Debug;
@@ -17,7 +17,7 @@ pub(in crate::stream_engine::autonomous_executor) trait SourceReader:
     Debug + Sync + Send + 'static
 {
     /// Blocks until the source subtask is ready to provide SourceRow.
-    fn start(options: &Options) -> Result<Self>
+    fn start(options: &Options, config: &SpringSourceReaderConfig) -> Result<Self>
     where
         Self: Sized;
 
