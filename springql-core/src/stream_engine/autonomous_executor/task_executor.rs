@@ -17,7 +17,7 @@ use self::{
 };
 use super::{
     event_queue::EventQueue, pipeline_derivatives::PipelineDerivatives, repositories::Repositories,
-    task_graph::TaskGraph,
+    task_graph::TaskGraph, worker::worker_handle::WorkerStopCoordinate,
 };
 
 /// Task executor executes task graph's dataflow by internal worker threads.
@@ -38,6 +38,7 @@ impl TaskExecutor {
     pub(in crate::stream_engine::autonomous_executor) fn new(
         config: &SpringConfig,
         event_queue: Arc<EventQueue>,
+        worker_stop_coordinate: Arc<WorkerStopCoordinate>,
     ) -> Self {
         let task_executor_lock = Arc::new(TaskExecutorLock::default());
         let repos = Arc::new(Repositories::new(config));
@@ -48,12 +49,14 @@ impl TaskExecutor {
             generic_worker_pool: GenericWorkerPool::new(
                 config.worker.n_generic_worker_threads,
                 event_queue.clone(),
+                worker_stop_coordinate.clone(),
                 task_executor_lock.clone(),
                 repos.clone(),
             ),
             source_worker_pool: SourceWorkerPool::new(
                 config.worker.n_source_worker_threads,
                 event_queue,
+                worker_stop_coordinate,
                 task_executor_lock,
                 repos.clone(),
             ),
