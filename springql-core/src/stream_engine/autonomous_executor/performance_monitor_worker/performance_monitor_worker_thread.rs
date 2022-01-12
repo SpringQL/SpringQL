@@ -1,27 +1,28 @@
 use std::{sync::Arc, thread, time::Duration};
 
-use crate::stream_engine::{
-    autonomous_executor::{
-        event_queue::{
-            event::{Event, EventTag},
-            EventQueue,
+use crate::{
+    low_level_rs::{SpringConfig, SpringMemoryConfig},
+    stream_engine::{
+        autonomous_executor::{
+            event_queue::{
+                event::{Event, EventTag},
+                EventQueue,
+            },
+            memory_state_machine::MemoryStateTransition,
+            performance_metrics::{
+                metrics_update_command::metrics_update_by_task_execution::MetricsUpdateByTaskExecution,
+                performance_metrics_summary::PerformanceMetricsSummary, PerformanceMetrics,
+            },
+            pipeline_derivatives::PipelineDerivatives,
+            worker::worker_thread::{WorkerThread, WorkerThreadLoopState},
         },
-        memory_state_machine::MemoryStateTransition,
-        performance_metrics::{
-            metrics_update_command::metrics_update_by_task_execution::MetricsUpdateByTaskExecution,
-            performance_metrics_summary::PerformanceMetricsSummary, PerformanceMetrics,
-        },
-        pipeline_derivatives::PipelineDerivatives,
-        worker::worker_thread::{WorkerThread, WorkerThreadLoopState},
+        time::duration::wall_clock_duration::WallClockDuration,
     },
-    time::duration::wall_clock_duration::WallClockDuration,
 };
 
 use super::web_console_reporter::WebConsoleReporter;
 
-// TODO config
 const CLOCK_MSEC: u64 = 100;
-const METRICS_SUMMARY_REPORT_INTERVAL_CLOCK: u64 = 10;
 const WEB_CONSOLE_REPORT_INTERVAL_CLOCK: u64 = 30;
 const WEB_CONSOLE_HOST: &str = "127.0.0.1";
 const WEB_CONSOLE_PORT: u16 = 8050;
@@ -34,15 +35,17 @@ pub(super) struct PerformanceMonitorWorkerThread;
 
 #[derive(Debug)]
 pub(in crate::stream_engine::autonomous_executor) struct PerformanceMonitorWorkerThreadArg {
+    memory_config: SpringMemoryConfig,
     web_console_reporter: WebConsoleReporter,
 }
 
-impl Default for PerformanceMonitorWorkerThreadArg {
-    fn default() -> Self {
+impl From<&SpringConfig> for PerformanceMonitorWorkerThreadArg {
+    fn from(config: &SpringConfig) -> Self {
         // TODO ::from_config()
         let web_console_reporter =
             WebConsoleReporter::new(WEB_CONSOLE_HOST, WEB_CONSOLE_PORT, WEB_CONSOLE_TIMEOUT);
         Self {
+            memory_config: config.memory,
             web_console_reporter,
         }
     }
@@ -52,21 +55,24 @@ impl Default for PerformanceMonitorWorkerThreadArg {
 pub(super) struct PerformanceMonitorWorkerLoopState {
     pipeline_derivatives: Option<Arc<PipelineDerivatives>>,
     metrics: Option<Arc<PerformanceMetrics>>,
-    clk_metrics_summary: u64,
+    countdown_metrics_summary_msec: i32,
     clk_web_console: u64,
 }
 
 impl WorkerThreadLoopState for PerformanceMonitorWorkerLoopState {
     type ThreadArg = PerformanceMonitorWorkerThreadArg;
 
-    fn new(_thread_arg: &Self::ThreadArg) -> Self
+    fn new(thread_arg: &Self::ThreadArg) -> Self
     where
         Self: Sized,
     {
         Self {
             pipeline_derivatives: None,
             metrics: None,
-            clk_metrics_summary: METRICS_SUMMARY_REPORT_INTERVAL_CLOCK,
+            countdown_metrics_summary_msec: thread_arg
+                .memory_config
+                .performance_metrics_summary_report_interval_msec
+                as i32,
             clk_web_console: WEB_CONSOLE_REPORT_INTERVAL_CLOCK,
         }
     }
@@ -97,12 +103,17 @@ impl WorkerThread for PerformanceMonitorWorkerThread {
         if let (Some(pipeline_derivatives), Some(metrics)) =
             (&state.pipeline_derivatives, &state.metrics)
         {
-            if state.clk_metrics_summary == 0 {
-                state.clk_metrics_summary = METRICS_SUMMARY_REPORT_INTERVAL_CLOCK;
+            if state.countdown_metrics_summary_msec <= 0 {
+                // reset count
+                state.countdown_metrics_summary_msec = thread_arg
+                    .memory_config
+                    .performance_metrics_summary_report_interval_msec
+                    as i32;
+
                 let metrics_summary = Arc::new(PerformanceMetricsSummary::from(metrics.as_ref()));
                 event_queue.publish(Event::ReportMetricsSummary { metrics_summary })
             } else {
-                state.clk_metrics_summary -= 1;
+                state.countdown_metrics_summary_msec -= CLOCK_MSEC as i32;
             }
 
             if state.clk_web_console == 0 {

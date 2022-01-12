@@ -55,7 +55,7 @@ impl AutonomousExecutor {
         let task_executor = TaskExecutor::new(&config.worker, event_queue.clone());
         let memory_state_machine_worker =
             MemoryStateMachineWorker::new(&config.memory, event_queue.clone());
-        let performance_monitor_worker = PerformanceMonitorWorker::new(event_queue.clone());
+        let performance_monitor_worker = PerformanceMonitorWorker::new(config, event_queue.clone());
         Self {
             event_queue,
             task_executor,
