@@ -101,16 +101,18 @@ impl WorkerThread for GenericWorkerThread {
     fn ev_transit_memory_state(
         current_state: Self::LoopState,
         memory_state_transition: Arc<MemoryStateTransition>,
-        _thread_arg: &Self::ThreadArg,
+        thread_arg: &Self::ThreadArg,
         _event_queue: Arc<EventQueue>,
     ) -> Self::LoopState {
         let mut state = current_state;
 
         match memory_state_transition.to_state() {
             MemoryState::Moderate => {
+                log::info!("[GenericWorker#{}] Switched to FlowEfficientScheduler", thread_arg.worker_id);
                 state.scheduler = GenericWorkerScheduler::flow_efficient_scheduler();
             }
             MemoryState::Severe => {
+                log::info!("[GenericWorker#{}] Switched to MemoryReducingScheduler", thread_arg.worker_id);
                 state.scheduler = GenericWorkerScheduler::memory_reducing_scheduler();
             }
             MemoryState::Critical => todo!("pause (purger will reduce memory and this method will be called again as `memory_state_transition.to_state() == Severe`"),
