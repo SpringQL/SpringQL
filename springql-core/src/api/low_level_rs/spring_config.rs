@@ -28,6 +28,9 @@ severe_to_critical_percent = 95
 
 critical_to_severe_percent = 80
 severe_to_moderate_percent = 40
+
+# Interval for MemoryStateMachine to publish TransitPerformanceMetricsSummary event.
+memory_state_transition_interval_msec = 100
 "#;
 
 /// Returns default configuration.
@@ -108,4 +111,6 @@ pub struct SpringMemoryConfig {
 
     pub critical_to_severe_percent: u8,
     pub severe_to_moderate_percent: u8,
+
+    pub memory_state_transition_interval_msec: u32,
 }

@@ -37,7 +37,10 @@ impl MemoryStateMachineWorker {
 
         let handle = WorkerHandle::new::<MemoryStateMachineWorkerThread>(
             event_queue,
-            MemoryStateMachineWorkerThreadArg::new(threshold),
+            MemoryStateMachineWorkerThreadArg::new(
+                threshold,
+                memory_config.memory_state_transition_interval_msec,
+            ),
         );
         Self { handle }
     }
