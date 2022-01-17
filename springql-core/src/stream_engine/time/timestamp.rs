@@ -12,13 +12,22 @@ use std::{
     str::FromStr,
 };
 
-use crate::error::SpringError;
+use crate::{
+    error::SpringError,
+    mem_size::{chrono_naive_date_time_overhead_size, MemSize},
+};
 
 const FORMAT: &str = "%Y-%m-%d %H:%M:%S%.9f";
 
 /// Timestamp in UTC. Serializable.
 #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Serialize, Deserialize, new)]
 pub(crate) struct Timestamp(#[serde(with = "datetime_format")] NaiveDateTime);
+
+impl MemSize for Timestamp {
+    fn mem_size(&self) -> usize {
+        chrono_naive_date_time_overhead_size()
+    }
+}
 
 impl FromStr for Timestamp {
     type Err = SpringError;

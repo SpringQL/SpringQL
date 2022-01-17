@@ -1,9 +1,11 @@
 // Copyright (c) 2021 TOYOTA MOTOR CORPORATION. Licensed under MIT OR Apache-2.0.
 
+use std::mem::size_of;
 use std::{fmt::Display, hash::Hash};
 
 use super::sql_compare_result::SqlCompareResult;
 use crate::error::{Result, SpringError};
+use crate::mem_size::MemSize;
 use crate::pipeline::relation::sql_type::{
     self, NumericComparableType, SqlType, StringComparableLoseType,
 };
@@ -30,6 +32,22 @@ pub(crate) enum NnSqlValue {
 
     /// TIMESTAMP
     Timestamp(Timestamp),
+}
+
+impl MemSize for NnSqlValue {
+    fn mem_size(&self) -> usize {
+        match self {
+            NnSqlValue::SmallInt(_) => size_of::<i16>(),
+            NnSqlValue::Integer(_) => size_of::<i32>(),
+            NnSqlValue::BigInt(_) => size_of::<i64>(),
+
+            NnSqlValue::Text(s) => s.capacity(),
+
+            NnSqlValue::Boolean(_) => size_of::<bool>(),
+
+            NnSqlValue::Timestamp(ts) => ts.mem_size(),
+        }
+    }
 }
 
 /// Although function is better to use,

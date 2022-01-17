@@ -5,6 +5,7 @@ pub(in crate::stream_engine::autonomous_executor) mod source_reader;
 use std::fmt::Debug;
 
 use crate::error::Result;
+use crate::mem_size::MemSize;
 use crate::pipeline::name::{SourceReaderName, StreamName};
 use crate::pipeline::source_reader_model::SourceReaderModel;
 use crate::stream_engine::autonomous_executor::AutonomousExecutor;
@@ -72,12 +73,10 @@ impl SourceTask {
             QueueId::Row(queue_id) => {
                 let row_q_repo = repos.row_queue_repository();
                 let queue = row_q_repo.get(&queue_id);
+                let bytes_put = row.mem_size();
+
                 queue.put(row);
-                OutQueueMetricsUpdateByTaskExecution::new(
-                    queue_id.into(),
-                    1,
-                    100, // TODO calc row size
-                )
+                OutQueueMetricsUpdateByTaskExecution::new(queue_id.into(), 1, bytes_put as u64)
             }
             QueueId::Window(_) => todo!(),
         };

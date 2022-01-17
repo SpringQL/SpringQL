@@ -5,7 +5,10 @@ pub(in crate::stream_engine::autonomous_executor) mod sql_compare_result;
 pub(in crate::stream_engine::autonomous_executor) mod sql_value_hash_key;
 
 use self::{nn_sql_value::NnSqlValue, sql_compare_result::SqlCompareResult};
-use crate::error::{Result, SpringError};
+use crate::{
+    error::{Result, SpringError},
+    mem_size::MemSize,
+};
 use anyhow::{anyhow, Context};
 use serde::{Deserialize, Serialize};
 use std::{fmt::Display, hash::Hash};
@@ -54,6 +57,15 @@ pub(crate) enum SqlValue {
     Null,
     /// NOT NULL value.
     NotNull(NnSqlValue),
+}
+
+impl MemSize for SqlValue {
+    fn mem_size(&self) -> usize {
+        match self {
+            SqlValue::Null => 0,
+            SqlValue::NotNull(v) => v.mem_size(),
+        }
+    }
 }
 
 impl PartialEq for SqlValue {
