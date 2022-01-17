@@ -1,7 +1,7 @@
 // Copyright (c) 2021 TOYOTA MOTOR CORPORATION. Licensed under MIT OR Apache-2.0.
 
+use crate::mem_size::MemSize;
 use crate::stream_engine::autonomous_executor::performance_metrics::metrics_update_command::metrics_update_by_task_execution::OutQueueMetricsUpdateByTaskExecution;
-use crate::stream_engine::autonomous_executor::queue::mem_size::MemSize;
 use crate::stream_engine::autonomous_executor::row::Row;
 use crate::stream_engine::autonomous_executor::task::task_context::TaskContext;
 use crate::stream_engine::autonomous_executor::task_graph::queue_id::QueueId;

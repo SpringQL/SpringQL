@@ -12,6 +12,7 @@ use std::vec;
 
 use self::{column::stream_column::StreamColumns, value::sql_value::SqlValue};
 use crate::error::Result;
+use crate::mem_size::MemSize;
 use crate::pipeline::name::ColumnName;
 use crate::stream_engine::autonomous_executor::row::value::sql_value::nn_sql_value::NnSqlValue;
 use crate::stream_engine::time::timestamp::system_timestamp::SystemTimestamp;
@@ -110,6 +111,14 @@ impl IntoIterator for Row {
         } else {
             into_iter
         }
+    }
+}
+
+impl MemSize for Row {
+    fn mem_size(&self) -> usize {
+        let arrival_rowtime_size = self.arrival_rowtime.map_or_else(|| 0, |ts| ts.mem_size());
+        let cols_size = self.cols.mem_size();
+        arrival_rowtime_size + cols_size
     }
 }
 

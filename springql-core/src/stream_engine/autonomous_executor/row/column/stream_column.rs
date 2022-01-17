@@ -4,6 +4,7 @@ use anyhow::{anyhow, Context};
 
 use crate::{
     error::{Result, SpringError},
+    mem_size::{arc_overhead_size, MemSize},
     pipeline::relation::column::column_definition::ColumnDefinition,
     pipeline::{name::ColumnName, stream_model::stream_shape::StreamShape},
     stream_engine::{
@@ -22,6 +23,14 @@ pub(in crate::stream_engine::autonomous_executor) struct StreamColumns {
 
     /// sorted to the same order as `stream_shape.columns()`.
     values: Vec<SqlValue>,
+}
+
+impl MemSize for StreamColumns {
+    fn mem_size(&self) -> usize {
+        let stream_shape_size = arc_overhead_size();
+        let values_size: usize = self.values.iter().map(|v| v.mem_size()).sum();
+        stream_shape_size + values_size
+    }
 }
 
 impl StreamColumns {

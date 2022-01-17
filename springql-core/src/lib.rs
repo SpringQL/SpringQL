@@ -14,6 +14,7 @@ extern crate derive_new;
 pub(crate) mod pipeline;
 pub(crate) mod sql_processor;
 pub(crate) mod stream_engine;
+pub(crate) mod mem_size;
 
 mod api;
 
