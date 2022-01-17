@@ -9,6 +9,7 @@ use crate::pipeline::name::{SourceReaderName, StreamName};
 use crate::pipeline::source_reader_model::SourceReaderModel;
 use crate::stream_engine::autonomous_executor::AutonomousExecutor;
 use crate::stream_engine::autonomous_executor::performance_metrics::metrics_update_command::metrics_update_by_task_execution::{MetricsUpdateByTaskExecution, OutQueueMetricsUpdateByTaskExecution, TaskMetricsUpdateByTaskExecution};
+use crate::stream_engine::autonomous_executor::queue::mem_size::MemSize;
 use crate::stream_engine::autonomous_executor::row::Row;
 use crate::stream_engine::autonomous_executor::task_graph::queue_id::QueueId;
 use crate::stream_engine::autonomous_executor::task_graph::task_id::TaskId;
@@ -72,12 +73,10 @@ impl SourceTask {
             QueueId::Row(queue_id) => {
                 let row_q_repo = repos.row_queue_repository();
                 let queue = row_q_repo.get(&queue_id);
+                let bytes_put = row.mem_size();
+
                 queue.put(row);
-                OutQueueMetricsUpdateByTaskExecution::new(
-                    queue_id.into(),
-                    1,
-                    100, // TODO calc row size
-                )
+                OutQueueMetricsUpdateByTaskExecution::new(queue_id.into(), 1, bytes_put as u64)
             }
             QueueId::Window(_) => todo!(),
         };
