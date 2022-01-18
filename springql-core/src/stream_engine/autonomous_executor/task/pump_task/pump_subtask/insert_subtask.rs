@@ -45,7 +45,7 @@ impl InsertSubtask {
                     let row_q = row_q_repo.get(&queue_id);
                     let bytes_put = row.mem_size();
 
-                    row_q.put(row.fixme_clone()); // Ahhhhhhhhhhhhhhhhhhhhh
+                    row_q.put(row.clone());
                     OutQueueMetricsUpdateByTaskExecution::new(queue_id.into(), 1, bytes_put as u64)
                 }
                 QueueId::Window(_) => todo!(),
