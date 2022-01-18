@@ -79,13 +79,6 @@ impl Row {
     ) -> Result<&SqlValue> {
         self.cols.get_by_index(i_col)
     }
-
-    pub(in crate::stream_engine::autonomous_executor) fn fixme_clone(&self) -> Self {
-        Self {
-            arrival_rowtime: self.arrival_rowtime,
-            cols: self.cols.clone(),
-        }
-    }
 }
 
 impl PartialOrd for Row {
