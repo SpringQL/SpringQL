@@ -5,6 +5,8 @@ use crate::stream_engine::autonomous_executor::row::Row;
 /// Input queue of row tasks.
 ///
 /// Just a FIFO buffer.
+/// 
+/// ![Row queue](https://raw.githubusercontent.com/SpringQL/SpringQL.github.io/main/static/img/row-queue.svg)
 #[derive(Debug, Default)]
 pub(in crate::stream_engine::autonomous_executor) struct RowQueue {
     q: Mutex<VecDeque<Row>>,
