@@ -77,6 +77,7 @@ pub fn spring_open(config: SpringConfig) -> Result<SpringPipeline> {
 /// - [SpringError::Sql](crate::error::SpringError::Sql) when:
 ///   - Invalid SQL syntax.
 ///   - Refers to undefined objects (streams, pumps, etc)
+///   - Other semantic errors.
 /// - [SpringError::InvalidOption](crate::error::SpringError::Sql) when:
 ///   - `OPTIONS` in `CREATE` statement includes invalid key or value.
 pub fn spring_command(pipeline: &SpringPipeline, sql: &str) -> Result<()> {
