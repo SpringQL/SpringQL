@@ -8,6 +8,7 @@ use crate::{
     pipeline::{
         name::{ColumnName, StreamName},
         pump_model::PumpModel,
+        Pipeline,
     },
     sql_processor::sql_parser::parse_success::ParseSuccess,
     stream_engine::command::{
@@ -24,14 +25,14 @@ impl SqlProcessor {
     /// # Failures
     ///
     /// - [SpringError::Sql](crate::error::SpringError::Sql) on syntax and semantics error.
-    pub(crate) fn compile<S: Into<String>>(&self, sql: S) -> Result<Command> {
+    pub(crate) fn compile<S: Into<String>>(&self, sql: S, pipeline: &Pipeline) -> Result<Command> {
         let command = match self.0.parse(sql)? {
             ParseSuccess::CreatePump {
                 pump_name,
                 select_stream_syntax,
                 insert_plan,
             } => {
-                let query_plan = self.compile_select_stream(select_stream_syntax);
+                let query_plan = self.compile_select_stream(select_stream_syntax, pipeline)?;
                 let pump = PumpModel::new(pump_name, query_plan, insert_plan);
                 Command::AlterPipeline(AlterPipelineCommand::CreatePump(pump))
             }
@@ -40,7 +41,11 @@ impl SqlProcessor {
         Ok(command)
     }
 
-    fn compile_select_stream(&self, select_stream_syntax: SelectStreamSyntax) -> QueryPlan {
+    fn compile_select_stream(
+        &self,
+        select_stream_syntax: SelectStreamSyntax,
+        pipeline: &Pipeline,
+    ) -> Result<QueryPlan> {
         let mut plan = QueryPlan::default();
 
         let from_op = self.compile_from(select_stream_syntax.from_stream);
@@ -48,7 +53,7 @@ impl SqlProcessor {
 
         plan.add_root(projection_op.clone());
         plan.add_left(&projection_op, from_op);
-        plan
+        Ok(plan)
     }
 
     fn compile_from(&self, from_stream: StreamName) -> QueryPlanOperation {
@@ -69,6 +74,7 @@ mod tests {
         pipeline::{
             name::{PumpName, SinkWriterName, SourceReaderName, StreamName},
             option::options_builder::OptionsBuilder,
+            pipeline_version::PipelineVersion,
             pump_model::PumpModel,
             sink_stream_model::SinkStreamModel,
             sink_writer_model::{sink_writer_type::SinkWriterType, SinkWriterModel},
@@ -87,6 +93,7 @@ mod tests {
     #[test]
     fn test_create_source_stream() {
         let processor = SqlProcessor::default();
+        let pipeline = Pipeline::new(PipelineVersion::new());
 
         let sql = "
             CREATE SOURCE STREAM source_trade (
@@ -95,7 +102,7 @@ mod tests {
               amount INTEGER NOT NULL
             );
             ";
-        let command = processor.compile(sql).unwrap();
+        let command = processor.compile(sql, &pipeline).unwrap();
 
         let expected_shape = StreamShape::fx_trade();
         let expected_stream = SourceStreamModel::new(StreamModel::new(
@@ -112,21 +119,22 @@ mod tests {
     #[test]
     fn test_create_source_reader() {
         let processor = SqlProcessor::default();
+        let pipeline = Pipeline::fx_source_only();
 
         let sql = "
-            CREATE SOURCE READER tcp_source FOR source_trade
+            CREATE SOURCE READER tcp_source FOR st_1
               TYPE NET_SERVER OPTIONS (
                 REMOTE_PORT '17890'
               );
             ";
-        let command = processor.compile(sql).unwrap();
+        let command = processor.compile(sql, &pipeline).unwrap();
 
         let expected_name = SourceReaderName::new("tcp_source".to_string());
 
         let expected_options = OptionsBuilder::default()
             .add("REMOTE_PORT", "17890")
             .build();
-        let expected_dest_source_stream = StreamName::new("source_trade".to_string());
+        let expected_dest_source_stream = StreamName::new("st_1".to_string());
         let expected_source = SourceReaderModel::new(
             expected_name,
             SourceReaderType::Net,
@@ -143,6 +151,7 @@ mod tests {
     #[test]
     fn test_create_sink_stream() {
         let processor = SqlProcessor::default();
+        let pipeline = Pipeline::new(PipelineVersion::new());
 
         let sql = "
             CREATE SINK STREAM sink_trade (
@@ -151,7 +160,7 @@ mod tests {
               amount INTEGER NOT NULL
             );
             ";
-        let command = processor.compile(sql).unwrap();
+        let command = processor.compile(sql, &pipeline).unwrap();
 
         let expected_shape = StreamShape::fx_trade();
         let expected_stream = SinkStreamModel::new(StreamModel::new(
@@ -168,14 +177,15 @@ mod tests {
     #[test]
     fn test_create_sink_writer() {
         let processor = SqlProcessor::default();
+        let pipeline = Pipeline::fx_sink_only();
 
         let sql = "
-            CREATE SINK WRITER tcp_sink_trade FOR sink_trade
+            CREATE SINK WRITER tcp_sink_trade FOR sink_1
               TYPE NET_SERVER OPTIONS (
                 REMOTE_PORT '17890'
               );
             ";
-        let command = processor.compile(sql).unwrap();
+        let command = processor.compile(sql, &pipeline).unwrap();
 
         let expected_options = OptionsBuilder::default()
             .add("REMOTE_PORT", "17890")
@@ -183,7 +193,7 @@ mod tests {
         let expected_sink = SinkWriterModel::new(
             SinkWriterName::new("tcp_sink_trade".to_string()),
             SinkWriterType::Net,
-            StreamName::new("sink_trade".to_string()),
+            StreamName::new("sink_1".to_string()),
             expected_options,
         );
 
@@ -196,25 +206,26 @@ mod tests {
     #[test]
     fn test_create_pump() {
         let processor = SqlProcessor::default();
+        let pipeline = Pipeline::fx_source_sink_no_pump();
 
         let sql = "
             CREATE PUMP pu_passthrough AS
-              INSERT INTO sink_trade (ts, ticker, amount)
-              SELECT STREAM ts, ticker, amount FROM source_trade;
+              INSERT INTO st_2 (ts, ticker, amount)
+              SELECT STREAM ts, ticker, amount FROM st_1;
             ";
-        let command = processor.compile(sql).unwrap();
+        let command = processor.compile(sql, &pipeline).unwrap();
 
         let expected_pump = PumpModel::new(
             PumpName::new("pu_passthrough".to_string()),
             QueryPlan::fx_collect_projection(
-                StreamName::new("source_trade".to_string()),
+                StreamName::new("st_1".to_string()),
                 vec![
                     ColumnName::fx_timestamp(),
                     ColumnName::fx_ticker(),
                     ColumnName::fx_amount(),
                 ],
             ),
-            InsertPlan::fx_trade(StreamName::new("sink_trade".to_string())),
+            InsertPlan::fx_trade(StreamName::new("st_2".to_string())),
         );
 
         assert_eq!(

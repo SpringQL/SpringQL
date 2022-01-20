@@ -81,8 +81,11 @@ pub fn spring_open(config: SpringConfig) -> Result<SpringPipeline> {
 /// - [SpringError::InvalidOption](crate::error::SpringError::Sql) when:
 ///   - `OPTIONS` in `CREATE` statement includes invalid key or value.
 pub fn spring_command(pipeline: &SpringPipeline, sql: &str) -> Result<()> {
-    let command = pipeline.sql_processor.compile(sql)?;
     let mut engine = pipeline.engine.get()?;
+
+    let command = pipeline
+        .sql_processor
+        .compile(sql, engine.current_pipeline())?;
 
     match command {
         Command::AlterPipeline(c) => engine.alter_pipeline(c),

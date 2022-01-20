@@ -38,7 +38,11 @@ pub(crate) use autonomous_executor::{
     SinkRow,
 };
 
-use crate::{error::Result, low_level_rs::SpringConfig, pipeline::name::QueueName};
+use crate::{
+    error::Result,
+    low_level_rs::SpringConfig,
+    pipeline::{name::QueueName, Pipeline},
+};
 
 use self::{
     autonomous_executor::AutonomousExecutor, command::alter_pipeline_command::AlterPipelineCommand,
@@ -61,6 +65,10 @@ impl StreamEngine {
             reactive_executor: SqlExecutor::default(),
             autonomous_executor: AutonomousExecutor::new(config),
         }
+    }
+
+    pub(crate) fn current_pipeline(&self) -> &Pipeline {
+        self.reactive_executor.current_pipeline()
     }
 
     pub(crate) fn alter_pipeline(&mut self, command: AlterPipelineCommand) -> Result<()> {

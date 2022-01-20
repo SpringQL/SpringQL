@@ -29,6 +29,10 @@ impl Default for SqlExecutor {
 }
 
 impl SqlExecutor {
+    pub(crate) fn current_pipeline(&self) -> &Pipeline {
+        &self.pipeline
+    }
+
     pub(in crate::stream_engine) fn alter_pipeline(
         &mut self,
         command: AlterPipelineCommand,
