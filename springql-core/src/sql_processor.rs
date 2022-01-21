@@ -6,13 +6,18 @@ use self::sql_parser::{syntax::SelectStreamSyntax, SqlParser};
 use crate::{
     error::Result,
     pipeline::{
-        name::{ColumnName, StreamName},
+        name::{ColumnName, PumpName, StreamName},
         pump_model::PumpModel,
+        sink_stream_model::SinkStreamModel,
+        sink_writer_model::SinkWriterModel,
+        source_reader_model::SourceReaderModel,
+        source_stream_model::SourceStreamModel,
         Pipeline,
     },
     sql_processor::sql_parser::parse_success::ParseSuccess,
     stream_engine::command::{
         alter_pipeline_command::AlterPipelineCommand,
+        insert_plan::InsertPlan,
         query_plan::{query_plan_operation::QueryPlanOperation, QueryPlan},
         Command,
     },
@@ -27,18 +32,85 @@ impl SqlProcessor {
     /// - [SpringError::Sql](crate::error::SpringError::Sql) on syntax and semantics error.
     pub(crate) fn compile<S: Into<String>>(&self, sql: S, pipeline: &Pipeline) -> Result<Command> {
         let command = match self.0.parse(sql)? {
+            ParseSuccess::CreateSourceStream(source_stream_model) => {
+                self.compile_create_source_stream(source_stream_model, pipeline)?
+            }
+            ParseSuccess::CreateSourceReader(source_reader_model) => {
+                self.compile_create_source_reader(source_reader_model, pipeline)?
+            }
+            ParseSuccess::CreateSinkStream(sink_stream_model) => {
+                self.compile_create_sink_stream(sink_stream_model, pipeline)?
+            }
+            ParseSuccess::CreateSinkWriter(sink_writer_model) => {
+                self.compile_create_sink_writer(sink_writer_model, pipeline)?
+            }
             ParseSuccess::CreatePump {
                 pump_name,
                 select_stream_syntax,
                 insert_plan,
             } => {
-                let query_plan = self.compile_select_stream(select_stream_syntax, pipeline)?;
-                let pump = PumpModel::new(pump_name, query_plan, insert_plan);
-                Command::AlterPipeline(AlterPipelineCommand::CreatePump(pump))
+                self.compile_create_pump(pump_name, select_stream_syntax, insert_plan, pipeline)?
             }
-            ParseSuccess::CommandWithoutQuery(command) => command,
         };
         Ok(command)
+    }
+
+    fn compile_create_source_stream(
+        &self,
+        source_stream_model: SourceStreamModel,
+        pipeline: &Pipeline,
+    ) -> Result<Command> {
+        // TODO semantic check
+        Ok(Command::AlterPipeline(
+            AlterPipelineCommand::CreateSourceStream(source_stream_model),
+        ))
+    }
+
+    fn compile_create_source_reader(
+        &self,
+        source_reader_model: SourceReaderModel,
+        pipeline: &Pipeline,
+    ) -> Result<Command> {
+        // TODO semantic check
+        Ok(Command::AlterPipeline(
+            AlterPipelineCommand::CreateSourceReader(source_reader_model),
+        ))
+    }
+
+    fn compile_create_sink_stream(
+        &self,
+        sink_stream_model: SinkStreamModel,
+        pipeline: &Pipeline,
+    ) -> Result<Command> {
+        // TODO semantic check
+        Ok(Command::AlterPipeline(
+            AlterPipelineCommand::CreateSinkStream(sink_stream_model),
+        ))
+    }
+
+    fn compile_create_sink_writer(
+        &self,
+        sink_writer_model: SinkWriterModel,
+        pipeline: &Pipeline,
+    ) -> Result<Command> {
+        // TODO semantic check
+        Ok(Command::AlterPipeline(
+            AlterPipelineCommand::CreateSinkWriter(sink_writer_model),
+        ))
+    }
+
+    fn compile_create_pump(
+        &self,
+        pump_name: PumpName,
+        select_stream_syntax: SelectStreamSyntax,
+        insert_plan: InsertPlan,
+        pipeline: &Pipeline,
+    ) -> Result<Command> {
+        let query_plan = self.compile_select_stream(select_stream_syntax, pipeline)?;
+        let pump = PumpModel::new(pump_name, query_plan, insert_plan);
+        Ok(Command::AlterPipeline(AlterPipelineCommand::CreatePump(
+            pump,
+        )))
     }
 
     fn compile_select_stream(
@@ -71,6 +143,7 @@ impl SqlProcessor {
 mod tests {
     use super::*;
     use crate::{
+        error::SpringError,
         pipeline::{
             name::{PumpName, SinkWriterName, SourceReaderName, StreamName},
             option::options_builder::OptionsBuilder,
@@ -146,6 +219,22 @@ mod tests {
             command,
             Command::AlterPipeline(AlterPipelineCommand::CreateSourceReader(expected_source))
         );
+    }
+    #[test]
+    fn test_create_source_reader_for_invalid_stream() {
+        let processor = SqlProcessor::default();
+        let pipeline = Pipeline::new(PipelineVersion::new());
+
+        let sql = "
+            CREATE SOURCE READER tcp_source FOR st_404
+              TYPE NET_SERVER OPTIONS (
+                REMOTE_PORT '17890'
+              );
+            ";
+        assert!(matches!(
+            processor.compile(sql, &pipeline).unwrap_err(),
+            SpringError::Sql(_)
+        ));
     }
 
     #[test]
