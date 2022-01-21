@@ -58,7 +58,7 @@ impl SqlProcessor {
     fn compile_create_source_stream(
         &self,
         source_stream_model: SourceStreamModel,
-        pipeline: &Pipeline,
+        _pipeline: &Pipeline,
     ) -> Result<Command> {
         // TODO semantic check
         Ok(Command::AlterPipeline(
@@ -69,7 +69,7 @@ impl SqlProcessor {
     fn compile_create_source_reader(
         &self,
         source_reader_model: SourceReaderModel,
-        pipeline: &Pipeline,
+        _pipeline: &Pipeline,
     ) -> Result<Command> {
         // TODO semantic check
         Ok(Command::AlterPipeline(
@@ -80,7 +80,7 @@ impl SqlProcessor {
     fn compile_create_sink_stream(
         &self,
         sink_stream_model: SinkStreamModel,
-        pipeline: &Pipeline,
+        _pipeline: &Pipeline,
     ) -> Result<Command> {
         // TODO semantic check
         Ok(Command::AlterPipeline(
@@ -91,7 +91,7 @@ impl SqlProcessor {
     fn compile_create_sink_writer(
         &self,
         sink_writer_model: SinkWriterModel,
-        pipeline: &Pipeline,
+        _pipeline: &Pipeline,
     ) -> Result<Command> {
         // TODO semantic check
         Ok(Command::AlterPipeline(
@@ -116,8 +116,9 @@ impl SqlProcessor {
     fn compile_select_stream(
         &self,
         select_stream_syntax: SelectStreamSyntax,
-        pipeline: &Pipeline,
+        _pipeline: &Pipeline,
     ) -> Result<QueryPlan> {
+        // TODO semantic check
         let mut plan = QueryPlan::default();
 
         let from_op = self.compile_from(select_stream_syntax.from_stream);
