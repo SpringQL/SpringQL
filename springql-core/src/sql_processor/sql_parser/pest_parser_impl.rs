@@ -21,9 +21,7 @@ use crate::pipeline::stream_model::StreamModel;
 use crate::sql_processor::sql_parser::syntax::{
     ColumnConstraintSyntax, OptionSyntax, SelectStreamSyntax,
 };
-use crate::stream_engine::command::alter_pipeline_command::AlterPipelineCommand;
 use crate::stream_engine::command::insert_plan::InsertPlan;
-use crate::stream_engine::command::Command;
 use anyhow::{anyhow, Context};
 use generated_parser::{GeneratedParser, Rule};
 use helper::{parse_child, parse_child_seq, self_as_str, try_parse_child, FnParseParams};
@@ -148,9 +146,7 @@ impl PestParserImpl {
         let source_stream =
             SourceStreamModel::new(StreamModel::new(source_stream_name, Arc::new(stream_shape)));
 
-        Ok(ParseSuccess::CommandWithoutQuery(Command::AlterPipeline(
-            AlterPipelineCommand::CreateSourceStream(source_stream),
-        )))
+        Ok(ParseSuccess::CreateSourceStream(source_stream))
     }
 
     /*
@@ -200,9 +196,7 @@ impl PestParserImpl {
             options,
         );
 
-        Ok(ParseSuccess::CommandWithoutQuery(Command::AlterPipeline(
-            AlterPipelineCommand::CreateSourceReader(source_reader),
-        )))
+        Ok(ParseSuccess::CreateSourceReader(source_reader))
     }
 
     /*
@@ -229,9 +223,7 @@ impl PestParserImpl {
         let sink_stream =
             SinkStreamModel::new(StreamModel::new(sink_stream_name, Arc::new(stream_shape)));
 
-        Ok(ParseSuccess::CommandWithoutQuery(Command::AlterPipeline(
-            AlterPipelineCommand::CreateSinkStream(sink_stream),
-        )))
+        Ok(ParseSuccess::CreateSinkStream(sink_stream))
     }
 
     /*
@@ -281,9 +273,7 @@ impl PestParserImpl {
             options,
         );
 
-        Ok(ParseSuccess::CommandWithoutQuery(Command::AlterPipeline(
-            AlterPipelineCommand::CreateSinkWriter(sink_writer),
-        )))
+        Ok(ParseSuccess::CreateSinkWriter(sink_writer))
     }
 
     /*

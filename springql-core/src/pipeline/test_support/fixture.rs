@@ -63,6 +63,35 @@ impl Pipeline {
         pipeline
     }
 
+    pub(crate) fn fx_sink_only() -> Self {
+        let sink_1 = Arc::new(SinkStreamModel::fx_trade_with_name(StreamName::factory(
+            "sink_1",
+        )));
+
+        let mut pipeline = Pipeline::new(PipelineVersion::new());
+        pipeline.add_sink_stream(sink_1).unwrap();
+        pipeline
+    }
+
+    /// ```text
+    /// (0)--a-->[1]   [2]--c-->
+    /// ```
+    pub(crate) fn fx_source_sink_no_pump() -> Self {
+        let st_1 = Arc::new(SourceStreamModel::fx_trade_with_name(StreamName::factory(
+            "st_1",
+        )));
+        let st_2 = Arc::new(SinkStreamModel::fx_trade_with_name(StreamName::factory(
+            "st_2",
+        )));
+
+        let mut pipeline = Pipeline::new(PipelineVersion::new());
+
+        pipeline.add_source_stream(st_1).unwrap();
+        pipeline.add_sink_stream(st_2).unwrap();
+
+        pipeline
+    }
+
     /// ```text
     /// (0)--a-->[1]--b-->[2]--c-->
     /// ```
