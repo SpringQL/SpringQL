@@ -220,22 +220,6 @@ mod tests {
             Command::AlterPipeline(AlterPipelineCommand::CreateSourceReader(expected_source))
         );
     }
-    #[test]
-    fn test_create_source_reader_for_invalid_stream() {
-        let processor = SqlProcessor::default();
-        let pipeline = Pipeline::new(PipelineVersion::new());
-
-        let sql = "
-            CREATE SOURCE READER tcp_source FOR st_404
-              TYPE NET_SERVER OPTIONS (
-                REMOTE_PORT '17890'
-              );
-            ";
-        assert!(matches!(
-            processor.compile(sql, &pipeline).unwrap_err(),
-            SpringError::Sql(_)
-        ));
-    }
 
     #[test]
     fn test_create_sink_stream() {
