@@ -144,7 +144,6 @@ impl SqlProcessor {
 mod tests {
     use super::*;
     use crate::{
-        error::SpringError,
         pipeline::{
             name::{PumpName, SinkWriterName, SourceReaderName, StreamName},
             option::options_builder::OptionsBuilder,
