@@ -29,10 +29,4 @@ impl TaskMetrics {
     pub(in crate::stream_engine::autonomous_executor) fn avg_gain_bytes_per_sec(&self) -> f32 {
         self.avg_gain_bytes_per_sec
     }
-
-    pub(in crate::stream_engine::autonomous_executor) fn reset(&mut self) {
-        let default = Self::default();
-        self.avg_gain_bytes_per_sec = default.avg_gain_bytes_per_sec;
-        self.n_executions = default.n_executions;
-    }
 }
