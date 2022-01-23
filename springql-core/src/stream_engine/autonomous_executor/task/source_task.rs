@@ -100,7 +100,7 @@ impl SourceTask {
             .expect("other worker threads sharing the same subtask must not get panic");
         source_reader
             .next_row()
-            .and_then(|source_row| source_row.into_row(source_stream.shape()))
+            .and_then(|source_row| source_row.into_row(source_stream))
             .map_or_else(
                 |e| {
                     AutonomousExecutor::handle_error(e);
