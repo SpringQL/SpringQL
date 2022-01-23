@@ -409,19 +409,19 @@ impl StreamShape {
 
 impl StreamModel {
     pub(crate) fn fx_trade_with_name(name: StreamName) -> Self {
-        Self::new(name, Arc::new(StreamShape::fx_trade()))
+        Self::new(name, StreamShape::fx_trade())
     }
 }
 
 impl SourceStreamModel {
     pub(crate) fn fx_trade_with_name(name: StreamName) -> Self {
-        Self::new(StreamModel::new(name, Arc::new(StreamShape::fx_trade())))
+        Self::new(StreamModel::new(name, StreamShape::fx_trade()))
     }
 }
 
 impl SinkStreamModel {
     pub(crate) fn fx_trade_with_name(name: StreamName) -> Self {
-        Self::new(StreamModel::new(name, Arc::new(StreamShape::fx_trade())))
+        Self::new(StreamModel::new(name, StreamShape::fx_trade()))
     }
 }
 

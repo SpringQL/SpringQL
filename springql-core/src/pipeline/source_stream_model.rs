@@ -5,7 +5,6 @@ use super::{
     stream_model::{stream_shape::StreamShape, StreamModel},
 };
 use serde::{Deserialize, Serialize};
-use std::sync::Arc;
 
 #[derive(Clone, Eq, PartialEq, Debug, Serialize, Deserialize, new)]
 pub(crate) struct SourceStreamModel(StreamModel);
@@ -15,7 +14,7 @@ impl SourceStreamModel {
         self.0.name()
     }
 
-    pub(crate) fn shape(&self) -> Arc<StreamShape> {
+    pub(crate) fn shape(&self) -> &StreamShape {
         self.0.shape()
     }
 }

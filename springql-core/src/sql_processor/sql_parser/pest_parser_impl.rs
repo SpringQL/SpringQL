@@ -27,7 +27,6 @@ use generated_parser::{GeneratedParser, Rule};
 use helper::{parse_child, parse_child_seq, self_as_str, try_parse_child, FnParseParams};
 use pest::{iterators::Pairs, Parser};
 use std::convert::identity;
-use std::sync::Arc;
 
 use super::parse_success::ParseSuccess;
 
@@ -144,7 +143,7 @@ impl PestParserImpl {
 
         let stream_shape = StreamShape::new(column_definitions)?;
         let source_stream =
-            SourceStreamModel::new(StreamModel::new(source_stream_name, Arc::new(stream_shape)));
+            SourceStreamModel::new(StreamModel::new(source_stream_name, stream_shape));
 
         Ok(ParseSuccess::CreateSourceStream(source_stream))
     }
@@ -220,8 +219,7 @@ impl PestParserImpl {
         )?;
 
         let stream_shape = StreamShape::new(column_definitions)?;
-        let sink_stream =
-            SinkStreamModel::new(StreamModel::new(sink_stream_name, Arc::new(stream_shape)));
+        let sink_stream = SinkStreamModel::new(StreamModel::new(sink_stream_name, stream_shape));
 
         Ok(ParseSuccess::CreateSinkStream(sink_stream))
     }

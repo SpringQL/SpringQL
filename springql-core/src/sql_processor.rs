@@ -161,7 +161,7 @@ mod tests {
         },
     };
     use pretty_assertions::assert_eq;
-    use std::sync::Arc;
+    
 
     #[test]
     fn test_create_source_stream() {
@@ -180,7 +180,7 @@ mod tests {
         let expected_shape = StreamShape::fx_trade();
         let expected_stream = SourceStreamModel::new(StreamModel::new(
             StreamName::new("source_trade".to_string()),
-            Arc::new(expected_shape),
+            expected_shape,
         ));
 
         assert_eq!(
@@ -238,7 +238,7 @@ mod tests {
         let expected_shape = StreamShape::fx_trade();
         let expected_stream = SinkStreamModel::new(StreamModel::new(
             StreamName::new("sink_trade".to_string()),
-            Arc::new(expected_shape),
+            expected_shape,
         ));
 
         assert_eq!(
