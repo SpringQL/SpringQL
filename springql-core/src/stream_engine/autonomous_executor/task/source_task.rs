@@ -92,7 +92,7 @@ impl SourceTask {
         let source_stream = context
             .pipeline_derivatives()
             .pipeline()
-            .get_source_stream(&self.source_stream_name)
+            .get_stream(&self.source_stream_name)
             .expect("cannot do anything if source stream name is wrong here");
 
         let mut source_reader = source_reader
@@ -100,7 +100,7 @@ impl SourceTask {
             .expect("other worker threads sharing the same subtask must not get panic");
         source_reader
             .next_row()
-            .and_then(|source_row| source_row.into_row(source_stream.shape()))
+            .and_then(|source_row| source_row.into_row(source_stream))
             .map_or_else(
                 |e| {
                     AutonomousExecutor::handle_error(e);

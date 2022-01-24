@@ -8,10 +8,9 @@ use crate::{
     pipeline::{
         name::{ColumnName, PumpName, StreamName},
         pump_model::PumpModel,
-        sink_stream_model::SinkStreamModel,
         sink_writer_model::SinkWriterModel,
         source_reader_model::SourceReaderModel,
-        source_stream_model::SourceStreamModel,
+        stream_model::StreamModel,
         Pipeline,
     },
     sql_processor::sql_parser::parse_success::ParseSuccess,
@@ -57,7 +56,7 @@ impl SqlProcessor {
 
     fn compile_create_source_stream(
         &self,
-        source_stream_model: SourceStreamModel,
+        source_stream_model: StreamModel,
         _pipeline: &Pipeline,
     ) -> Result<Command> {
         // TODO semantic check
@@ -79,7 +78,7 @@ impl SqlProcessor {
 
     fn compile_create_sink_stream(
         &self,
-        sink_stream_model: SinkStreamModel,
+        sink_stream_model: StreamModel,
         _pipeline: &Pipeline,
     ) -> Result<Command> {
         // TODO semantic check
@@ -149,10 +148,8 @@ mod tests {
             option::options_builder::OptionsBuilder,
             pipeline_version::PipelineVersion,
             pump_model::PumpModel,
-            sink_stream_model::SinkStreamModel,
             sink_writer_model::{sink_writer_type::SinkWriterType, SinkWriterModel},
             source_reader_model::{source_reader_type::SourceReaderType, SourceReaderModel},
-            source_stream_model::SourceStreamModel,
             stream_model::{stream_shape::StreamShape, StreamModel},
         },
         stream_engine::command::{
@@ -161,7 +158,6 @@ mod tests {
         },
     };
     use pretty_assertions::assert_eq;
-    use std::sync::Arc;
 
     #[test]
     fn test_create_source_stream() {
@@ -178,10 +174,8 @@ mod tests {
         let command = processor.compile(sql, &pipeline).unwrap();
 
         let expected_shape = StreamShape::fx_trade();
-        let expected_stream = SourceStreamModel::new(StreamModel::new(
-            StreamName::new("source_trade".to_string()),
-            Arc::new(expected_shape),
-        ));
+        let expected_stream =
+            StreamModel::new(StreamName::new("source_trade".to_string()), expected_shape);
 
         assert_eq!(
             command,
@@ -236,10 +230,8 @@ mod tests {
         let command = processor.compile(sql, &pipeline).unwrap();
 
         let expected_shape = StreamShape::fx_trade();
-        let expected_stream = SinkStreamModel::new(StreamModel::new(
-            StreamName::new("sink_trade".to_string()),
-            Arc::new(expected_shape),
-        ));
+        let expected_stream =
+            StreamModel::new(StreamName::new("sink_trade".to_string()), expected_shape);
 
         assert_eq!(
             command,

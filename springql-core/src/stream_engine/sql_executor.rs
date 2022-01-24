@@ -7,8 +7,8 @@ use crate::{
     error::Result,
     pipeline::{
         pipeline_version::PipelineVersion, pump_model::PumpModel,
-        sink_stream_model::SinkStreamModel, sink_writer_model::SinkWriterModel,
-        source_reader_model::SourceReaderModel, source_stream_model::SourceStreamModel, Pipeline,
+        sink_writer_model::SinkWriterModel, source_reader_model::SourceReaderModel,
+        stream_model::StreamModel, Pipeline,
     },
 };
 
@@ -62,9 +62,9 @@ impl SqlExecutor {
 
     fn create_source_stream(
         mut pipeline: Pipeline,
-        source_stream: SourceStreamModel,
+        source_stream: StreamModel,
     ) -> Result<Pipeline> {
-        pipeline.add_source_stream(Arc::new(source_stream))?;
+        pipeline.add_stream(Arc::new(source_stream))?;
         Ok(pipeline)
     }
     fn create_source_reader(
@@ -75,11 +75,8 @@ impl SqlExecutor {
         Ok(pipeline)
     }
 
-    fn create_sink_stream(
-        mut pipeline: Pipeline,
-        sink_stream: SinkStreamModel,
-    ) -> Result<Pipeline> {
-        pipeline.add_sink_stream(Arc::new(sink_stream))?;
+    fn create_sink_stream(mut pipeline: Pipeline, sink_stream: StreamModel) -> Result<Pipeline> {
+        pipeline.add_stream(Arc::new(sink_stream))?;
         Ok(pipeline)
     }
     fn create_sink_writer(

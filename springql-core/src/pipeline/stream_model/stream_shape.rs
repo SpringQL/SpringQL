@@ -11,7 +11,7 @@ use crate::{
 
 use crate::pipeline::relation::column::column_definition::ColumnDefinition;
 
-#[derive(Eq, PartialEq, Debug, Serialize, Deserialize)]
+#[derive(Clone, Eq, PartialEq, Debug, Serialize, Deserialize)]
 pub(crate) struct StreamShape {
     cols: Vec<ColumnDefinition>,
     promoted_rowtime: Option<ColumnName>,

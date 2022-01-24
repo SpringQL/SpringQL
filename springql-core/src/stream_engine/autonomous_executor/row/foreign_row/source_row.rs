@@ -4,7 +4,7 @@ use std::sync::Arc;
 
 use crate::{
     error::Result,
-    pipeline::stream_model::stream_shape::StreamShape,
+    pipeline::stream_model::StreamModel,
     stream_engine::autonomous_executor::row::{column::stream_column::StreamColumns, Row},
 };
 
@@ -27,12 +27,12 @@ impl SourceRow {
     ///   - This input row cannot be converted into row.
     pub(in crate::stream_engine::autonomous_executor) fn into_row(
         self,
-        stream_shape: Arc<StreamShape>,
+        stream_model: Arc<StreamModel>,
     ) -> Result<Row> {
         // SourceRow -> JsonObject -> HashMap<ColumnName, SqlValue> -> StreamColumns -> Row
 
         let column_values = self.0.into_column_values()?;
-        let stream_columns = StreamColumns::new(stream_shape, column_values)?;
+        let stream_columns = StreamColumns::new(stream_model, column_values)?;
         Ok(Row::new(stream_columns))
     }
 }
@@ -44,7 +44,7 @@ mod tests {
 
     #[test]
     fn test_json_into_row() {
-        let stream = Arc::new(StreamShape::fx_city_temperature());
+        let stream = Arc::new(StreamModel::fx_city_temperature());
 
         let fr = SourceRow::fx_city_temperature_tokyo();
         let r = Row::fx_city_temperature_tokyo();

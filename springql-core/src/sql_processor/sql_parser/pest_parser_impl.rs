@@ -10,12 +10,10 @@ use crate::pipeline::relation::column::column_constraint::ColumnConstraint;
 use crate::pipeline::relation::column::column_data_type::ColumnDataType;
 use crate::pipeline::relation::column::column_definition::ColumnDefinition;
 use crate::pipeline::relation::sql_type::SqlType;
-use crate::pipeline::sink_stream_model::SinkStreamModel;
 use crate::pipeline::sink_writer_model::sink_writer_type::SinkWriterType;
 use crate::pipeline::sink_writer_model::SinkWriterModel;
 use crate::pipeline::source_reader_model::source_reader_type::SourceReaderType;
 use crate::pipeline::source_reader_model::SourceReaderModel;
-use crate::pipeline::source_stream_model::SourceStreamModel;
 use crate::pipeline::stream_model::stream_shape::StreamShape;
 use crate::pipeline::stream_model::StreamModel;
 use crate::sql_processor::sql_parser::syntax::{
@@ -27,7 +25,6 @@ use generated_parser::{GeneratedParser, Rule};
 use helper::{parse_child, parse_child_seq, self_as_str, try_parse_child, FnParseParams};
 use pest::{iterators::Pairs, Parser};
 use std::convert::identity;
-use std::sync::Arc;
 
 use super::parse_success::ParseSuccess;
 
@@ -143,8 +140,7 @@ impl PestParserImpl {
         )?;
 
         let stream_shape = StreamShape::new(column_definitions)?;
-        let source_stream =
-            SourceStreamModel::new(StreamModel::new(source_stream_name, Arc::new(stream_shape)));
+        let source_stream = StreamModel::new(source_stream_name, stream_shape);
 
         Ok(ParseSuccess::CreateSourceStream(source_stream))
     }
@@ -220,8 +216,7 @@ impl PestParserImpl {
         )?;
 
         let stream_shape = StreamShape::new(column_definitions)?;
-        let sink_stream =
-            SinkStreamModel::new(StreamModel::new(sink_stream_name, Arc::new(stream_shape)));
+        let sink_stream = StreamModel::new(sink_stream_name, stream_shape);
 
         Ok(ParseSuccess::CreateSinkStream(sink_stream))
     }
