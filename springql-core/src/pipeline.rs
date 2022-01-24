@@ -34,12 +34,9 @@ use serde::{Deserialize, Serialize};
 
 use self::{
     name::StreamName, pipeline_graph::PipelineGraph, pipeline_version::PipelineVersion,
-    pump_model::PumpModel, sink_stream_model::SinkStreamModel, sink_writer_model::SinkWriterModel,
-    source_reader_model::SourceReaderModel, source_stream_model::SourceStreamModel,
+    pump_model::PumpModel, sink_writer_model::SinkWriterModel,
+    source_reader_model::SourceReaderModel, stream_model::StreamModel,
 };
-
-#[cfg(test)] // TODO remove
-use self::stream_model::StreamModel;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub(crate) struct Pipeline {
@@ -69,8 +66,8 @@ impl Pipeline {
     ///
     /// - [SpringError::Sql](crate::error::SpringError::Sql) when:
     ///   - Stream is not registered in pipeline
-    pub(super) fn get_source_stream(&self, stream: &StreamName) -> Result<Arc<SourceStreamModel>> {
-        self.graph.get_source_stream(stream)
+    pub(super) fn get_stream(&self, stream: &StreamName) -> Result<Arc<StreamModel>> {
+        self.graph.get_stream(stream)
     }
 
     /// # Failure
@@ -88,31 +85,7 @@ impl Pipeline {
     /// # Failure
     ///
     /// - [SpringError::Sql](crate::error::SpringError::Sql) when:
-    ///   - Name of source stream is already used in the same pipeline
-    pub(super) fn add_source_stream(
-        &mut self,
-        source_stream: Arc<SourceStreamModel>,
-    ) -> Result<()> {
-        self.update_version();
-        self.register_name(source_stream.name().as_ref())?;
-        self.graph.add_source_stream(source_stream)
-    }
-
-    /// # Failure
-    ///
-    /// - [SpringError::Sql](crate::error::SpringError::Sql) when:
-    ///   - Name of sink stream is already used in the same pipeline
-    pub(super) fn add_sink_stream(&mut self, sink_stream: Arc<SinkStreamModel>) -> Result<()> {
-        self.update_version();
-        self.register_name(sink_stream.name().as_ref())?;
-        self.graph.add_sink_stream(sink_stream)
-    }
-
-    /// # Failure
-    ///
-    /// - [SpringError::Sql](crate::error::SpringError::Sql) when:
     ///   - Name of stream is already used in the same pipeline
-    #[cfg(test)] // TODO remove
     pub(super) fn add_stream(&mut self, stream: Arc<StreamModel>) -> Result<()> {
         self.update_version();
         self.register_name(stream.name().as_ref())?;

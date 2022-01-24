@@ -24,16 +24,12 @@ use self::{edge::Edge, stream_node::StreamNode};
 use super::{
     name::{PumpName, StreamName},
     pump_model::PumpModel,
-    sink_stream_model::SinkStreamModel,
     sink_writer_model::SinkWriterModel,
     source_reader_model::SourceReaderModel,
-    source_stream_model::SourceStreamModel,
+    stream_model::StreamModel,
 };
 use crate::error::{Result, SpringError};
 use anyhow::anyhow;
-
-#[cfg(test)] // TODO remove
-use super::stream_model::StreamModel;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub(crate) struct PipelineGraph {
@@ -57,35 +53,17 @@ impl Default for PipelineGraph {
 }
 
 impl PipelineGraph {
-    #[cfg(test)] // TODO remove
     pub(super) fn add_stream(&mut self, stream: Arc<StreamModel>) -> Result<()> {
         let st_name = stream.name().clone();
-        let st_node = self.graph.add_node(StreamNode::Native(stream));
+        let st_node = self.graph.add_node(StreamNode::Stream(stream));
         let _ = self.stream_nodes.insert(st_name, st_node);
         Ok(())
     }
 
-    pub(super) fn add_source_stream(
-        &mut self,
-        source_stream: Arc<SourceStreamModel>,
-    ) -> Result<()> {
-        let stream_name = source_stream.name().clone();
-        let node = self.graph.add_node(StreamNode::Source(source_stream));
-        let _ = self.stream_nodes.insert(stream_name, node);
-        Ok(())
-    }
-
-    pub(super) fn add_sink_stream(&mut self, sink_stream: Arc<SinkStreamModel>) -> Result<()> {
-        let stream_name = sink_stream.name().clone();
-        let node = self.graph.add_node(StreamNode::Sink(sink_stream));
-        let _ = self.stream_nodes.insert(stream_name, node);
-        Ok(())
-    }
-
-    pub(super) fn get_source_stream(&self, name: &StreamName) -> Result<Arc<SourceStreamModel>> {
+    pub(super) fn get_stream(&self, name: &StreamName) -> Result<Arc<StreamModel>> {
         let node = self._find_stream(name)?;
         let stream_node = self.graph.node_weight(node).expect("index found");
-        if let StreamNode::Source(source_stream) = stream_node {
+        if let StreamNode::Stream(source_stream) = stream_node {
             Ok(source_stream.clone())
         } else {
             Err(SpringError::Sql(anyhow!(

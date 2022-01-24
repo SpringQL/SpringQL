@@ -5,7 +5,7 @@ use anyhow::{anyhow, Context};
 use crate::{
     error::{Result, SpringError},
     mem_size::{arc_overhead_size, MemSize},
-    pipeline::{name::ColumnName, stream_model::stream_shape::StreamShape},
+    pipeline::name::ColumnName,
     pipeline::{relation::column::column_definition::ColumnDefinition, stream_model::StreamModel},
     stream_engine::{
         autonomous_executor::row::{column_values::ColumnValues, value::sql_value::SqlValue},
@@ -220,7 +220,7 @@ mod tests {
             )
             .unwrap();
 
-        let _ = StreamColumns::new(Arc::new(StreamShape::fx_city_temperature()), column_values)
+        let _ = StreamColumns::new(Arc::new(StreamModel::fx_city_temperature()), column_values)
             .unwrap();
     }
 
@@ -242,7 +242,7 @@ mod tests {
         // lacks "temperature" column
 
         assert!(matches!(
-            StreamColumns::new(Arc::new(StreamShape::fx_city_temperature()), column_values)
+            StreamColumns::new(Arc::new(StreamModel::fx_city_temperature()), column_values)
                 .unwrap_err(),
             SpringError::Sql(_)
         ));
@@ -271,7 +271,7 @@ mod tests {
             .unwrap();
 
         assert!(matches!(
-            StreamColumns::new(Arc::new(StreamShape::fx_city_temperature()), column_values)
+            StreamColumns::new(Arc::new(StreamModel::fx_city_temperature()), column_values)
                 .unwrap_err(),
             SpringError::Sql(_)
         ));
@@ -300,7 +300,7 @@ mod tests {
             .unwrap();
 
         assert!(matches!(
-            StreamColumns::new(Arc::new(StreamShape::fx_city_temperature()), column_values)
+            StreamColumns::new(Arc::new(StreamModel::fx_city_temperature()), column_values)
                 .unwrap_err(),
             SpringError::Sql(_)
         ));

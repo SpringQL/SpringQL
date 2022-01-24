@@ -5,6 +5,8 @@ use std::sync::Arc;
 use springql_foreign_service::source::{source_input::ForeignSourceInput, ForeignSource};
 
 use crate::low_level_rs::SpringSourceReaderConfig;
+use crate::pipeline::name::StreamName;
+use crate::pipeline::stream_model::StreamModel;
 use crate::stream_engine::autonomous_executor::task::source_task::source_reader::net::NetSourceReader;
 use crate::stream_engine::autonomous_executor::task::source_task::source_reader::SourceReader;
 use crate::stream_engine::time::timestamp::Timestamp;
@@ -61,7 +63,7 @@ impl StreamColumns {
             )
             .unwrap();
 
-        Self::new(Arc::new(StreamShape::fx_city_temperature()), column_values).unwrap()
+        Self::new(Arc::new(StreamModel::fx_city_temperature()), column_values).unwrap()
     }
 
     pub(in crate::stream_engine) fn factory_trade(
@@ -89,7 +91,7 @@ impl StreamColumns {
             )
             .unwrap();
 
-        Self::new(Arc::new(StreamShape::fx_trade()), column_values).unwrap()
+        Self::new(Arc::new(StreamModel::fx_trade()), column_values).unwrap()
     }
 
     pub(in crate::stream_engine) fn factory_no_promoted_rowtime(amount: i32) -> Self {
@@ -102,7 +104,10 @@ impl StreamColumns {
             .unwrap();
 
         Self::new(
-            Arc::new(StreamShape::fx_no_promoted_rowtime()),
+            Arc::new(StreamModel::new(
+                StreamName::new("st".to_string()),
+                StreamShape::fx_no_promoted_rowtime(),
+            )),
             column_values,
         )
         .unwrap()

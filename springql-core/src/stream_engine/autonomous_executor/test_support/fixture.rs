@@ -9,10 +9,9 @@ use crate::{
         name::{PumpName, StreamName},
         pipeline_version::PipelineVersion,
         pump_model::{pump_input_type::PumpInputType, PumpModel},
-        sink_stream_model::SinkStreamModel,
         sink_writer_model::SinkWriterModel,
         source_reader_model::SourceReaderModel,
-        source_stream_model::SourceStreamModel,
+        stream_model::StreamModel,
     },
     stream_engine::{
         autonomous_executor::{
@@ -205,7 +204,7 @@ impl StreamColumns {
 
 impl AlterPipelineCommand {
     pub(in crate::stream_engine) fn fx_create_source_stream_trade(stream_name: StreamName) -> Self {
-        let stream = SourceStreamModel::fx_trade_with_name(stream_name);
+        let stream = StreamModel::fx_trade_with_name(stream_name);
         Self::CreateSourceStream(stream)
     }
 
@@ -219,7 +218,7 @@ impl AlterPipelineCommand {
     }
 
     pub(in crate::stream_engine) fn fx_create_sink_stream_trade(stream_name: StreamName) -> Self {
-        let stream = SinkStreamModel::fx_trade_with_name(stream_name);
+        let stream = StreamModel::fx_trade_with_name(stream_name);
         Self::CreateSinkStream(stream)
     }
 

@@ -92,7 +92,7 @@ impl SourceTask {
         let source_stream = context
             .pipeline_derivatives()
             .pipeline()
-            .get_source_stream(&self.source_stream_name)
+            .get_stream(&self.source_stream_name)
             .expect("cannot do anything if source stream name is wrong here");
 
         let mut source_reader = source_reader

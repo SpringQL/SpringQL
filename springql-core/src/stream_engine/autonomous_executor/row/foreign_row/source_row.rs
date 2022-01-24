@@ -4,7 +4,7 @@ use std::sync::Arc;
 
 use crate::{
     error::Result,
-    pipeline::stream_model::{stream_shape::StreamShape, StreamModel},
+    pipeline::stream_model::StreamModel,
     stream_engine::autonomous_executor::row::{column::stream_column::StreamColumns, Row},
 };
 
@@ -44,7 +44,7 @@ mod tests {
 
     #[test]
     fn test_json_into_row() {
-        let stream = Arc::new(StreamShape::fx_city_temperature());
+        let stream = Arc::new(StreamModel::fx_city_temperature());
 
         let fr = SourceRow::fx_city_temperature_tokyo();
         let r = Row::fx_city_temperature_tokyo();
