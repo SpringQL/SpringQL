@@ -19,10 +19,8 @@ pub(crate) mod pipeline_graph;
 pub(crate) mod pipeline_version;
 pub(crate) mod pump_model;
 pub(crate) mod relation;
-pub(crate) mod sink_stream_model;
 pub(crate) mod sink_writer_model;
 pub(crate) mod source_reader_model;
-pub(crate) mod source_stream_model;
 pub(crate) mod stream_model;
 
 #[cfg(test)]
