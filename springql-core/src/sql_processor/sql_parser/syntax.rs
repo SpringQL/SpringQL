@@ -1,21 +1,38 @@
 // Copyright (c) 2021 TOYOTA MOTOR CORPORATION. Licensed under MIT OR Apache-2.0.
 
-use crate::pipeline::name::{ColumnName, StreamName};
+use crate::{
+    expression::Expression,
+    pipeline::name::{CorrelationAlias, FieldAlias, StreamName},
+};
 
 #[derive(Clone, Eq, PartialEq, Debug)]
-pub(super) enum ColumnConstraintSyntax {
+pub(in crate::sql_processor) enum ColumnConstraintSyntax {
     NotNull, // this is treated as data type in pipeline
     Rowtime,
 }
 
 #[derive(Clone, Eq, PartialEq, Debug)]
-pub(super) struct OptionSyntax {
-    pub(super) option_name: String,
-    pub(super) option_value: String,
+pub(in crate::sql_processor) struct OptionSyntax {
+    pub(in crate::sql_processor) option_name: String,
+    pub(in crate::sql_processor) option_value: String,
+}
+
+#[derive(Clone, PartialEq, Debug)]
+pub(in crate::sql_processor) struct SelectStreamSyntax {
+    pub(in crate::sql_processor) fields: Vec<SelectFieldSyntax>,
+    pub(in crate::sql_processor) from_item: FromItemSyntax,
+}
+
+#[derive(Clone, PartialEq, Debug)]
+pub(in crate::sql_processor) struct SelectFieldSyntax {
+    pub(in crate::sql_processor) expression: Expression,
+    pub(in crate::sql_processor) alias: Option<FieldAlias>,
 }
 
 #[derive(Clone, Eq, PartialEq, Debug)]
-pub(in crate::sql_processor) struct SelectStreamSyntax {
-    pub(in crate::sql_processor) column_names: Vec<ColumnName>,
-    pub(in crate::sql_processor) from_stream: StreamName,
+pub(in crate::sql_processor) enum FromItemSyntax {
+    StreamVariant {
+        stream_name: StreamName,
+        alias: Option<CorrelationAlias>,
+    },
 }

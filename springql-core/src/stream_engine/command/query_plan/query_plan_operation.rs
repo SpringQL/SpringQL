@@ -2,17 +2,18 @@
 
 use std::time::Duration;
 
-use serde::{Deserialize, Serialize};
+use crate::pipeline::{field::field_pointer::FieldPointer, name::StreamName};
 
-use crate::pipeline::name::{ColumnName, StreamName};
+use super::aliaser::Aliaser;
 
-#[derive(Clone, Eq, PartialEq, Debug, Serialize, Deserialize)]
+#[derive(Clone, Eq, PartialEq, Debug)]
 pub(crate) enum QueryPlanOperation {
     Collect {
         stream: StreamName,
+        aliaser: Aliaser,
     },
     Projection {
-        column_names: Vec<ColumnName>,
+        field_pointers: Vec<FieldPointer>,
     },
     TimeBasedSlidingWindow {
         /// cannot use chrono::Duration here: <https://github.com/chronotope/chrono/issues/117>

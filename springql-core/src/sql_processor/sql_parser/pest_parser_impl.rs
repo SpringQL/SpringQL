@@ -4,6 +4,8 @@ mod generated_parser;
 mod helper;
 
 use crate::error::{Result, SpringError};
+use crate::expression::Expression;
+use crate::pipeline::field::field_pointer::FieldPointer;
 use crate::pipeline::name::{ColumnName, PumpName, SinkWriterName, SourceReaderName, StreamName};
 use crate::pipeline::option::options_builder::OptionsBuilder;
 use crate::pipeline::relation::column::column_constraint::ColumnConstraint;
@@ -27,6 +29,7 @@ use pest::{iterators::Pairs, Parser};
 use std::convert::identity;
 
 use super::parse_success::ParseSuccess;
+use super::syntax::{FromItemSyntax, SelectFieldSyntax};
 
 #[derive(Debug, Default)]
 pub(super) struct PestParserImpl;
@@ -317,6 +320,8 @@ impl PestParserImpl {
      */
 
     fn parse_select_stream(mut params: FnParseParams) -> Result<SelectStreamSyntax> {
+        // TODO fix syntax
+
         let column_names = parse_child_seq(
             &mut params,
             Rule::column_name,
@@ -329,10 +334,24 @@ impl PestParserImpl {
             Self::parse_stream_name,
             identity,
         )?;
-        Ok(SelectStreamSyntax {
-            column_names,
-            from_stream: stream_name,
-        })
+
+        let fields = column_names
+            .into_iter()
+            .map(|column_name| {
+                let field_pointer = FieldPointer::from(column_name.as_ref());
+                let expression = Expression::FieldPointer(field_pointer);
+                SelectFieldSyntax {
+                    expression,
+                    alias: None,
+                }
+            })
+            .collect();
+        let from_item = FromItemSyntax::StreamVariant {
+            stream_name,
+            alias: None,
+        };
+
+        Ok(SelectStreamSyntax { fields, from_item })
     }
 
     /*

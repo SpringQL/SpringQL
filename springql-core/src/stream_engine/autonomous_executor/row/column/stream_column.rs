@@ -61,6 +61,10 @@ impl StreamColumns {
         })
     }
 
+    pub(in crate::stream_engine::autonomous_executor) fn stream_model(&self) -> &StreamModel {
+        &self.stream_model
+    }
+
     pub(in crate::stream_engine::autonomous_executor) fn promoted_rowtime(
         &self,
     ) -> Option<Timestamp> {
@@ -110,30 +114,6 @@ impl StreamColumns {
             .values
             .get(pos)
             .expect("self.values must be sorted to the same as self.stream.columns()"))
-    }
-
-    /// # Failure
-    ///
-    /// - [SpringError::Sql](crate::error::SpringError::Sql) when:
-    ///   - No column named `column_name` is found from this stream.
-    pub(in crate::stream_engine::autonomous_executor) fn projection(
-        &self,
-        column_names: &[ColumnName],
-    ) -> Result<Self> {
-        let new_stream_shape = self.stream_model.shape().projection(column_names)?;
-        let new_stream_model = StreamModel::new(self.stream_model.name().clone(), new_stream_shape);
-
-        let new_colvals =
-            column_names
-                .iter()
-                .fold(Ok(ColumnValues::default()), |res_colvals, column_name| {
-                    let mut colvals = res_colvals?;
-                    self.get_by_column_name(column_name).and_then(|v| {
-                        colvals.insert(column_name.clone(), v.clone())?;
-                        Ok(colvals)
-                    })
-                })?;
-        Self::new(Arc::new(new_stream_model), new_colvals)
     }
 
     fn validate_or_try_convert_value_type(

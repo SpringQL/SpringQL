@@ -2,6 +2,7 @@
 
 use std::time::Duration;
 
+use pretty_assertions::assert_eq;
 use serde_json::json;
 use springql_core::error::Result;
 use springql_core::low_level_rs::*;
@@ -62,7 +63,7 @@ fn test_e2e_source_sink() -> Result<()> {
         .to_string(),
         "
         CREATE SINK STREAM sink_trade (
-          ts TIMESTAMP NOT NULL,    
+          ts TIMESTAMP NOT NULL ROWTIME,    
           ticker TEXT NOT NULL,
           amount INTEGER NOT NULL
         );
@@ -136,7 +137,7 @@ fn test_e2e_projection() -> Result<()> {
         .to_string(),
         "
         CREATE SINK STREAM sink_trade (
-          ts TIMESTAMP NOT NULL,    
+          ts TIMESTAMP NOT NULL ROWTIME,    
           ticker TEXT NOT NULL
         );
         "

@@ -17,7 +17,6 @@ use petgraph::{
     graph::{DiGraph, EdgeReference, NodeIndex},
     visit::EdgeRef,
 };
-use serde::{Deserialize, Serialize};
 
 use self::{edge::Edge, stream_node::StreamNode};
 
@@ -31,7 +30,7 @@ use super::{
 use crate::error::{Result, SpringError};
 use anyhow::anyhow;
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug)]
 pub(crate) struct PipelineGraph {
     graph: DiGraph<StreamNode, Edge>,
     stream_nodes: HashMap<StreamName, NodeIndex>,
@@ -60,7 +59,7 @@ impl PipelineGraph {
         Ok(())
     }
 
-    pub(super) fn get_stream(&self, name: &StreamName) -> Result<Arc<StreamModel>> {
+    pub(crate) fn get_stream(&self, name: &StreamName) -> Result<Arc<StreamModel>> {
         let node = self._find_stream(name)?;
         let stream_node = self.graph.node_weight(node).expect("index found");
         if let StreamNode::Stream(source_stream) = stream_node {

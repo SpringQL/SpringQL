@@ -9,6 +9,8 @@ use crate::pipeline::name::StreamName;
 use crate::pipeline::stream_model::StreamModel;
 use crate::stream_engine::autonomous_executor::task::source_task::source_reader::net::NetSourceReader;
 use crate::stream_engine::autonomous_executor::task::source_task::source_reader::SourceReader;
+use crate::stream_engine::autonomous_executor::task::tuple::Tuple;
+use crate::stream_engine::command::query_plan::aliaser::Aliaser;
 use crate::stream_engine::time::timestamp::Timestamp;
 use crate::{
     pipeline::{
@@ -22,6 +24,26 @@ use crate::{
         Row,
     },
 };
+
+impl SqlValue {
+    pub fn factory_integer(integer: i32) -> Self {
+        Self::NotNull(NnSqlValue::factory_integer(integer))
+    }
+
+    pub fn factory_bool(bool_: bool) -> Self {
+        Self::NotNull(NnSqlValue::factory_bool(bool_))
+    }
+}
+
+impl NnSqlValue {
+    pub fn factory_integer(integer: i32) -> Self {
+        Self::Integer(integer)
+    }
+
+    pub fn factory_bool(bool_: bool) -> Self {
+        Self::Boolean(bool_)
+    }
+}
 
 impl NetSourceReader {
     pub(in crate::stream_engine) fn factory_with_test_source(input: ForeignSourceInput) -> Self {
@@ -132,5 +154,28 @@ impl Row {
         amount: i16,
     ) -> Self {
         Self::new(StreamColumns::factory_trade(timestamp, ticker, amount))
+    }
+}
+
+impl Tuple {
+    pub(in crate::stream_engine) fn factory_city_temperature(
+        timestamp: Timestamp,
+        city: &str,
+        temperature: i32,
+    ) -> Self {
+        Self::from_row(
+            Row::factory_city_temperature(timestamp, city, temperature),
+            &Aliaser::default(),
+        )
+    }
+    pub(in crate::stream_engine) fn factory_trade(
+        timestamp: Timestamp,
+        ticker: &str,
+        amount: i16,
+    ) -> Self {
+        Self::from_row(
+            Row::factory_trade(timestamp, ticker, amount),
+            &Aliaser::default(),
+        )
     }
 }

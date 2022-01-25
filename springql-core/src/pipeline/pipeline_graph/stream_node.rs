@@ -12,15 +12,3 @@ pub(crate) enum StreamNode {
     VirtualRoot,
     VirtualLeaf { parent_sink_stream: StreamName },
 }
-
-impl StreamNode {
-    pub(crate) fn name(&self) -> StreamName {
-        match self {
-            StreamNode::Stream(stream) => stream.name().clone(),
-            StreamNode::VirtualRoot => StreamName::virtual_root(),
-            StreamNode::VirtualLeaf { parent_sink_stream } => {
-                StreamName::virtual_leaf(parent_sink_stream.clone())
-            }
-        }
-    }
-}

@@ -46,16 +46,6 @@ impl StreamShape {
         &self.cols
     }
 
-    pub(crate) fn projection(&self, column_names: &[ColumnName]) -> Result<Self> {
-        let cds = self
-            .cols
-            .iter()
-            .filter(|cd| column_names.contains(cd.column_data_type().column_name()))
-            .cloned()
-            .collect();
-        Self::new(cds)
-    }
-
     fn extract_promoted_rowtime(cols: &[ColumnDefinition]) -> Result<Option<ColumnName>> {
         let rowtime_cdts = cols
             .iter()

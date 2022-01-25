@@ -1,24 +1,22 @@
 // Copyright (c) 2021 TOYOTA MOTOR CORPORATION. Licensed under MIT OR Apache-2.0.
 
+mod query_planner;
 mod sql_parser;
 
-use self::sql_parser::{syntax::SelectStreamSyntax, SqlParser};
+use self::{
+    query_planner::QueryPlanner,
+    sql_parser::{syntax::SelectStreamSyntax, SqlParser},
+};
 use crate::{
     error::Result,
     pipeline::{
-        name::{ColumnName, PumpName, StreamName},
-        pump_model::PumpModel,
-        sink_writer_model::SinkWriterModel,
-        source_reader_model::SourceReaderModel,
-        stream_model::StreamModel,
-        Pipeline,
+        name::PumpName, pump_model::PumpModel, sink_writer_model::SinkWriterModel,
+        source_reader_model::SourceReaderModel, stream_model::StreamModel, Pipeline,
     },
     sql_processor::sql_parser::parse_success::ParseSuccess,
     stream_engine::command::{
-        alter_pipeline_command::AlterPipelineCommand,
-        insert_plan::InsertPlan,
-        query_plan::{query_plan_operation::QueryPlanOperation, QueryPlan},
-        Command,
+        alter_pipeline_command::AlterPipelineCommand, insert_plan::InsertPlan,
+        query_plan::QueryPlan, Command,
     },
 };
 
@@ -115,27 +113,10 @@ impl SqlProcessor {
     fn compile_select_stream(
         &self,
         select_stream_syntax: SelectStreamSyntax,
-        _pipeline: &Pipeline,
+        pipeline: &Pipeline,
     ) -> Result<QueryPlan> {
-        // TODO semantic check
-        let mut plan = QueryPlan::default();
-
-        let from_op = self.compile_from(select_stream_syntax.from_stream);
-        let projection_op = self.compile_projection(select_stream_syntax.column_names);
-
-        plan.add_root(projection_op.clone());
-        plan.add_left(&projection_op, from_op);
-        Ok(plan)
-    }
-
-    fn compile_from(&self, from_stream: StreamName) -> QueryPlanOperation {
-        QueryPlanOperation::Collect {
-            stream: from_stream,
-        }
-    }
-
-    fn compile_projection(&self, column_names: Vec<ColumnName>) -> QueryPlanOperation {
-        QueryPlanOperation::Projection { column_names }
+        let planner = QueryPlanner::new(select_stream_syntax);
+        planner.plan(pipeline)
     }
 }
 
@@ -144,7 +125,7 @@ mod tests {
     use super::*;
     use crate::{
         pipeline::{
-            name::{PumpName, SinkWriterName, SourceReaderName, StreamName},
+            name::{ColumnName, PumpName, SinkWriterName, SourceReaderName, StreamName},
             option::options_builder::OptionsBuilder,
             pipeline_version::PipelineVersion,
             pump_model::PumpModel,

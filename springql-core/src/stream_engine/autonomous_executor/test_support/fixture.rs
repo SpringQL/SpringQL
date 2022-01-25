@@ -22,12 +22,13 @@ use crate::{
             row::{
                 column::stream_column::StreamColumns, foreign_row::format::json::JsonObject, Row,
             },
+            task::tuple::Tuple,
             task_graph::{
                 queue_id::{row_queue_id::RowQueueId, window_queue_id::WindowQueueId, QueueId},
                 task_id::TaskId,
             },
         },
-        command::alter_pipeline_command::AlterPipelineCommand,
+        command::{alter_pipeline_command::AlterPipelineCommand, query_plan::aliaser::Aliaser},
         time::duration::wall_clock_duration::WallClockDuration,
     },
     stream_engine::{
@@ -173,6 +174,13 @@ impl Row {
 
     pub(in crate::stream_engine) fn fx_no_promoted_rowtime() -> Self {
         Self::new(StreamColumns::fx_no_promoted_rowtime())
+    }
+}
+
+impl Tuple {
+    pub(in crate::stream_engine) fn fx_trade_oracle() -> Self {
+        let row = Row::fx_trade_oracle();
+        Self::from_row(row, &Aliaser::default())
     }
 }
 

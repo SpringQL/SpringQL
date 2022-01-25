@@ -2,14 +2,12 @@
 
 use std::sync::Arc;
 
-use serde::{Deserialize, Serialize};
-
 use crate::pipeline::{
     pump_model::PumpModel, sink_writer_model::SinkWriterModel,
     source_reader_model::SourceReaderModel,
 };
 
-#[derive(Clone, Eq, PartialEq, Debug, Serialize, Deserialize)]
+#[derive(Clone, Eq, PartialEq, Debug)]
 pub(crate) enum Edge {
     /// A pump can have 2 or more upstreams (on JOIN, for example). Then, graph edges share the same PumpModel.
     Pump(Arc<PumpModel>),

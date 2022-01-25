@@ -1,12 +1,13 @@
 // Copyright (c) 2021 TOYOTA MOTOR CORPORATION. Licensed under MIT OR Apache-2.0.
 
-pub(in crate::stream_engine) mod child_direction;
+pub(crate) mod aliaser;
 pub(crate) mod query_plan_operation;
+
+pub(in crate::stream_engine) mod child_direction;
 
 mod graph_eq;
 
 use petgraph::graph::DiGraph;
-use serde::{Deserialize, Serialize};
 
 use crate::pipeline::{name::StreamName, pump_model::pump_input_type::PumpInputType};
 
@@ -15,7 +16,7 @@ use self::{child_direction::ChildDirection, query_plan_operation::QueryPlanOpera
 /// Query plan from which an executor can do its work deterministically.
 ///
 /// This is a binary tree because every SELECT operation can break down into unary or binary operations.
-#[derive(Clone, Debug, Default, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default)]
 pub(crate) struct QueryPlan(DiGraph<QueryPlanOperation, ChildDirection>);
 
 impl PartialEq for QueryPlan {
@@ -46,7 +47,7 @@ impl QueryPlan {
         self.0
             .node_weights()
             .filter_map(|op| match op {
-                QueryPlanOperation::Collect { stream } => Some(stream),
+                QueryPlanOperation::Collect { stream, .. } => Some(stream),
                 _ => None,
             })
             .collect()

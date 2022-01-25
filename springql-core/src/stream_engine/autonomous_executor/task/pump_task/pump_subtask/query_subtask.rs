@@ -10,12 +10,9 @@ use crate::{
     error::Result,
     stream_engine::autonomous_executor::{
         performance_metrics::metrics_update_command::metrics_update_by_task_execution::InQueueMetricsUpdateByTaskExecution,
-        task::task_context::TaskContext,
+        task::{task_context::TaskContext, tuple::Tuple},
     },
-    stream_engine::{
-        autonomous_executor::row::Row,
-        command::query_plan::{child_direction::ChildDirection, QueryPlan},
-    },
+    stream_engine::command::query_plan::{child_direction::ChildDirection, QueryPlan},
 };
 
 mod interm_row;
@@ -29,7 +26,7 @@ pub(in crate::stream_engine::autonomous_executor) struct QuerySubtask {
 
 #[derive(Debug, new)]
 pub(in crate::stream_engine::autonomous_executor) struct QuerySubtaskOut {
-    pub(in crate::stream_engine::autonomous_executor) row: Row,
+    pub(in crate::stream_engine::autonomous_executor) tuple: Tuple,
     pub(in crate::stream_engine::autonomous_executor) in_queue_metrics_update:
         InQueueMetricsUpdateByTaskExecution,
 }
@@ -62,25 +59,25 @@ impl QuerySubtask {
         match self.run_leaf(next_idx, context) {
             None => Ok(None),
             Some(leaf_query_subtask_out) => {
-                let mut next_row = leaf_query_subtask_out.row;
+                let mut next_tuple = leaf_query_subtask_out.tuple;
                 while let Some(parent_idx) = self.parent_node_idx(next_idx) {
                     next_idx = parent_idx;
-                    next_row = self.run_non_leaf(next_idx, next_row)?;
+                    next_tuple = self.run_non_leaf(next_idx, next_tuple)?;
                 }
 
                 Ok(Some(QuerySubtaskOut::new(
-                    next_row,
+                    next_tuple,
                     leaf_query_subtask_out.in_queue_metrics_update, // leaf subtask decides in queue metrics change
                 )))
             }
         }
     }
 
-    fn run_non_leaf(&self, subtask_idx: NodeIndex, downstream_row: Row) -> Result<Row> {
+    fn run_non_leaf(&self, subtask_idx: NodeIndex, downstream_tuple: Tuple) -> Result<Tuple> {
         let subtask = self.tree.node_weight(subtask_idx).expect("must be found");
         match subtask {
             QuerySubtaskNode::Projection(projection_subtask) => {
-                projection_subtask.run(downstream_row)
+                projection_subtask.run(downstream_tuple)
             }
             QuerySubtaskNode::Collect(_) => unreachable!(),
         }

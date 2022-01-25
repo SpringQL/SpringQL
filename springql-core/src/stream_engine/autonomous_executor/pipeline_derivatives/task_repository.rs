@@ -36,7 +36,7 @@ impl From<&PipelineGraph> for TaskRepository {
         let repo = pipeline_petgraph
             .edge_weights()
             .map(|edge| {
-                let task = Task::from(edge);
+                let task = Task::new(edge, pipeline_graph);
                 (task.id(), Arc::new(task))
             })
             .collect();

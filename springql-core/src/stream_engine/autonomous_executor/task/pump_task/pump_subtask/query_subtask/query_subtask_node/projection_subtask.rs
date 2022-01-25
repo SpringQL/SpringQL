@@ -1,14 +1,14 @@
 // Copyright (c) 2021 TOYOTA MOTOR CORPORATION. Licensed under MIT OR Apache-2.0.
 
 use crate::error::Result;
-use crate::pipeline::name::ColumnName;
-use crate::stream_engine::autonomous_executor::row::Row;
+use crate::pipeline::field::field_pointer::FieldPointer;
+use crate::stream_engine::autonomous_executor::task::tuple::Tuple;
 
 #[derive(Debug, new)]
-pub(in crate::stream_engine::autonomous_executor) struct ProjectionSubtask(Vec<ColumnName>);
+pub(in crate::stream_engine::autonomous_executor) struct ProjectionSubtask(Vec<FieldPointer>);
 
 impl ProjectionSubtask {
-    pub(in crate::stream_engine::autonomous_executor) fn run(&self, row: Row) -> Result<Row> {
-        row.projection(&self.0)
+    pub(in crate::stream_engine::autonomous_executor) fn run(&self, tuple: Tuple) -> Result<Tuple> {
+        tuple.projection(&self.0)
     }
 }

@@ -13,6 +13,8 @@
 //!
 //! ![Pipeline concept diagram](https://raw.githubusercontent.com/SpringQL/SpringQL.github.io/main/static/img/pipeline-and-task-graph.svg)
 
+pub(crate) mod correlation;
+pub(crate) mod field;
 pub(crate) mod name;
 pub(crate) mod option;
 pub(crate) mod pipeline_graph;
@@ -30,7 +32,6 @@ use anyhow::anyhow;
 use std::{collections::HashSet, sync::Arc};
 
 use crate::error::{Result, SpringError};
-use serde::{Deserialize, Serialize};
 
 use self::{
     name::StreamName, pipeline_graph::PipelineGraph, pipeline_version::PipelineVersion,
@@ -38,7 +39,7 @@ use self::{
     source_reader_model::SourceReaderModel, stream_model::StreamModel,
 };
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug)]
 pub(crate) struct Pipeline {
     version: PipelineVersion,
     object_names: HashSet<String>,

@@ -18,9 +18,11 @@ pub(super) enum QuerySubtaskNode {
 impl From<&QueryPlanOperation> for QuerySubtaskNode {
     fn from(op: &QueryPlanOperation) -> Self {
         match op {
-            QueryPlanOperation::Collect { .. } => QuerySubtaskNode::Collect(CollectSubtask::new()),
-            QueryPlanOperation::Projection { column_names } => {
-                QuerySubtaskNode::Projection(ProjectionSubtask::new(column_names.to_vec()))
+            QueryPlanOperation::Collect { aliaser, .. } => {
+                QuerySubtaskNode::Collect(CollectSubtask::new(aliaser.clone()))
+            }
+            QueryPlanOperation::Projection { field_pointers } => {
+                QuerySubtaskNode::Projection(ProjectionSubtask::new(field_pointers.to_vec()))
             }
             QueryPlanOperation::TimeBasedSlidingWindow { .. } => {
                 todo!()

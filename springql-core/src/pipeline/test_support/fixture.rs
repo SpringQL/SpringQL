@@ -5,6 +5,7 @@ use std::{net::IpAddr, sync::Arc};
 use crate::{
     low_level_rs::{SpringConfig, SpringSinkWriterConfig, SpringSourceReaderConfig},
     pipeline::{
+        field::{aliased_field_name::AliasedFieldName, field_pointer::FieldPointer},
         name::{ColumnName, PumpName, SinkWriterName, SourceReaderName, StreamName},
         option::{options_builder::OptionsBuilder, Options},
         pipeline_version::PipelineVersion,
@@ -23,7 +24,7 @@ use crate::{
     },
     stream_engine::command::{
         insert_plan::InsertPlan,
-        query_plan::{query_plan_operation::QueryPlanOperation, QueryPlan},
+        query_plan::{aliaser::Aliaser, query_plan_operation::QueryPlanOperation, QueryPlan},
     },
 };
 
@@ -433,8 +434,15 @@ impl QueryPlan {
     ) -> Self {
         let mut query_plan = QueryPlan::default();
 
-        let collection_op = QueryPlanOperation::fx_collect(upstream);
-        let projection_op = QueryPlanOperation::fx_projection(column_names);
+        let aliased_field_names = column_names
+            .into_iter()
+            .map(|column_name| AliasedFieldName::from_stream_column(upstream.clone(), column_name))
+            .collect::<Vec<AliasedFieldName>>();
+        let field_pointers = aliased_field_names.iter().map(FieldPointer::from).collect();
+        let aliaser = Aliaser::from(aliased_field_names);
+
+        let collection_op = QueryPlanOperation::fx_collect(upstream, aliaser);
+        let projection_op = QueryPlanOperation::fx_projection(field_pointers);
 
         query_plan.add_root(projection_op.clone());
         query_plan.add_left(&projection_op, collection_op);
@@ -443,12 +451,15 @@ impl QueryPlan {
 }
 
 impl QueryPlanOperation {
-    pub(crate) fn fx_collect(upstream: StreamName) -> Self {
-        Self::Collect { stream: upstream }
+    pub(crate) fn fx_collect(upstream: StreamName, aliaser: Aliaser) -> Self {
+        Self::Collect {
+            stream: upstream,
+            aliaser,
+        }
     }
 
-    pub(crate) fn fx_projection(column_names: Vec<ColumnName>) -> Self {
-        Self::Projection { column_names }
+    pub(crate) fn fx_projection(field_pointers: Vec<FieldPointer>) -> Self {
+        Self::Projection { field_pointers }
     }
 }
 

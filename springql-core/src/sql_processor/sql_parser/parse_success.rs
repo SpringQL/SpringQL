@@ -11,7 +11,7 @@ use crate::{
 use super::syntax::SelectStreamSyntax;
 
 #[allow(clippy::enum_variant_names)]
-#[derive(Clone, Eq, PartialEq, Debug)]
+#[derive(Clone, PartialEq, Debug)]
 pub(in crate::sql_processor) enum ParseSuccess {
     CreateSourceStream(StreamModel),
     CreateSourceReader(SourceReaderModel),

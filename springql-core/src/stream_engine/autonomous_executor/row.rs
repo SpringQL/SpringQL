@@ -14,6 +14,7 @@ use self::{column::stream_column::StreamColumns, value::sql_value::SqlValue};
 use crate::error::Result;
 use crate::mem_size::MemSize;
 use crate::pipeline::name::ColumnName;
+use crate::pipeline::stream_model::StreamModel;
 use crate::stream_engine::autonomous_executor::row::value::sql_value::nn_sql_value::NnSqlValue;
 use crate::stream_engine::time::timestamp::system_timestamp::SystemTimestamp;
 use crate::stream_engine::time::timestamp::Timestamp;
@@ -43,6 +44,22 @@ impl Row {
         }
     }
 
+    pub(in crate::stream_engine::autonomous_executor) fn stream_model(&self) -> &StreamModel {
+        self.cols.stream_model()
+    }
+
+    /// ROWTIME. See: <https://docs.sqlstream.com/glossary/rowtime-gl/>
+    ///
+    /// ROWTIME is a:
+    ///
+    /// - (default) Arrival time to a stream.
+    /// - Promoted from a column in a stream.
+    pub(in crate::stream_engine::autonomous_executor) fn arrival_rowtime(
+        &self,
+    ) -> Option<&Timestamp> {
+        self.arrival_rowtime.as_ref()
+    }
+
     /// ROWTIME. See: <https://docs.sqlstream.com/glossary/rowtime-gl/>
     ///
     /// ROWTIME is a:
@@ -55,18 +72,6 @@ impl Row {
                 .promoted_rowtime()
                 .expect("Either arrival ROWTIME or promoted ROWTIME must be enabled")
         })
-    }
-
-    /// # Failure
-    ///
-    /// - [SpringError::Sql](crate::error::SpringError::Sql) when:
-    ///   - No column named `column_name` is found from this stream.
-    pub(in crate::stream_engine::autonomous_executor) fn projection(
-        &self,
-        column_names: &[ColumnName],
-    ) -> Result<Self> {
-        let new_cols = self.cols.projection(column_names)?;
-        Ok(Self::new(new_cols))
     }
 
     /// # Failure

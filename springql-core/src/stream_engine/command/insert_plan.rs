@@ -7,11 +7,15 @@ use crate::pipeline::name::{ColumnName, StreamName};
 #[derive(Clone, Eq, PartialEq, Debug, Serialize, Deserialize, new)]
 pub(crate) struct InsertPlan {
     stream: StreamName,
-    insert_columns: Vec<ColumnName>,
+    column_order: Vec<ColumnName>,
 }
 
 impl InsertPlan {
     pub(crate) fn stream(&self) -> &StreamName {
         &self.stream
+    }
+
+    pub(crate) fn column_order(&self) -> &[ColumnName] {
+        &self.column_order
     }
 }

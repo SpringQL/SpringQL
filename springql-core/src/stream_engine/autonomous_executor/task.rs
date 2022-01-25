@@ -4,8 +4,12 @@ pub(super) mod pump_task;
 pub(super) mod sink_task;
 pub(super) mod source_task;
 pub(super) mod task_context;
+pub(super) mod tuple;
 
-use crate::{error::Result, pipeline::pipeline_graph::edge::Edge};
+use crate::{
+    error::Result,
+    pipeline::pipeline_graph::{edge::Edge, PipelineGraph},
+};
 
 use self::{
     pump_task::PumpTask, sink_task::SinkTask, source_task::SourceTask, task_context::TaskContext,
@@ -24,6 +28,14 @@ pub(crate) enum Task {
 }
 
 impl Task {
+    pub(super) fn new(edge: &Edge, pipeline_graph: &PipelineGraph) -> Self {
+        match edge {
+            Edge::Pump(p) => Self::Pump(PumpTask::new(p.as_ref(), pipeline_graph)),
+            Edge::Source(s) => Self::Source(SourceTask::new(s)),
+            Edge::Sink(s) => Self::Sink(SinkTask::new(s)),
+        }
+    }
+
     pub(super) fn id(&self) -> TaskId {
         match self {
             Task::Pump(t) => t.id().clone(),
@@ -47,13 +59,3 @@ impl PartialEq for Task {
     }
 }
 impl Eq for Task {}
-
-impl From<&Edge> for Task {
-    fn from(edge: &Edge) -> Self {
-        match edge {
-            Edge::Pump(p) => Self::Pump(PumpTask::from(p.as_ref())),
-            Edge::Source(s) => Self::Source(SourceTask::new(s)),
-            Edge::Sink(s) => Self::Sink(SinkTask::new(s)),
-        }
-    }
-}
