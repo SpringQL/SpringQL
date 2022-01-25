@@ -4,9 +4,14 @@ mod generated_parser;
 mod helper;
 
 use crate::error::{Result, SpringError};
+use crate::expression::boolean_expression::comparison_function::ComparisonFunction;
+use crate::expression::boolean_expression::BooleanExpression;
+use crate::expression::operator::{BinaryOperator, UnaryOperator};
 use crate::expression::Expression;
 use crate::pipeline::field::field_pointer::FieldPointer;
-use crate::pipeline::name::{ColumnName, PumpName, SinkWriterName, SourceReaderName, StreamName};
+use crate::pipeline::name::{
+    ColumnName, CorrelationName, FieldAlias, PumpName, SinkWriterName, SourceReaderName, StreamName,
+};
 use crate::pipeline::option::options_builder::OptionsBuilder;
 use crate::pipeline::relation::column::column_constraint::ColumnConstraint;
 use crate::pipeline::relation::column::column_data_type::ColumnDataType;
@@ -22,6 +27,7 @@ use crate::sql_processor::sql_parser::syntax::{
     ColumnConstraintSyntax, OptionSyntax, SelectStreamSyntax,
 };
 use crate::stream_engine::command::insert_plan::InsertPlan;
+use crate::stream_engine::{NnSqlValue, SqlValue};
 use anyhow::{anyhow, Context};
 use generated_parser::{GeneratedParser, Rule};
 use helper::{parse_child, parse_child_seq, self_as_str, try_parse_child, FnParseParams};
@@ -63,18 +69,96 @@ impl PestParserImpl {
      * ----------------------------------------------------------------------------
      */
 
-    fn parse_string_constant(mut params: FnParseParams) -> Result<String> {
+    fn parse_constant(mut params: FnParseParams) -> Result<SqlValue> {
+        try_parse_child(
+            &mut params,
+            Rule::null_constant,
+            |_| Ok(SqlValue::Null),
+            identity,
+        )?
+        .or(try_parse_child(
+            &mut params,
+            Rule::numeric_constant,
+            Self::parse_numeric_constant,
+            identity,
+        )?)
+        .or(try_parse_child(
+            &mut params,
+            Rule::string_constant,
+            Self::parse_string_constant,
+            identity,
+        )?)
+        .ok_or_else(|| SpringError::Sql(anyhow!("Does not match any child rule of constant.",)))
+    }
+
+    fn parse_numeric_constant(mut params: FnParseParams) -> Result<SqlValue> {
+        parse_child(
+            &mut params,
+            Rule::integer_constant,
+            Self::parse_integer_constant,
+            identity,
+        )
+    }
+
+    fn parse_integer_constant(mut params: FnParseParams) -> Result<SqlValue> {
+        let s = self_as_str(&mut params);
+
+        s.parse::<i16>()
+            .map(|i| SqlValue::NotNull(NnSqlValue::SmallInt(i)))
+            .or_else(|_| {
+                s.parse::<i32>()
+                    .map(|i| SqlValue::NotNull(NnSqlValue::Integer(i)))
+            })
+            .or_else(|_| {
+                s.parse::<i64>()
+                    .map(|i| SqlValue::NotNull(NnSqlValue::BigInt(i)))
+            })
+            .map_err(|_e| {
+                SpringError::Sql(anyhow!(
+                    "integer value `{}` could not be parsed as i64 (max supported size)",
+                    s
+                ))
+            })
+    }
+
+    fn parse_string_constant(mut params: FnParseParams) -> Result<SqlValue> {
         parse_child(
             &mut params,
             Rule::string_content,
             Self::parse_string_content,
-            identity,
+            |s| SqlValue::NotNull(NnSqlValue::Text(s)),
         )
     }
 
     fn parse_string_content(mut params: FnParseParams) -> Result<String> {
         let s = self_as_str(&mut params);
         Ok(s.into())
+    }
+
+    /*
+     * ----------------------------------------------------------------------------
+     * Operators
+     * ----------------------------------------------------------------------------
+     */
+
+    fn parse_unary_operator(mut params: FnParseParams) -> Result<UnaryOperator> {
+        let s = self_as_str(&mut params);
+        match s {
+            "-" => Ok(UnaryOperator::Minus),
+            _ => Err(SpringError::Sql(anyhow!(
+                "Does not match any child rule of unary_operator.",
+            ))),
+        }
+    }
+
+    fn parse_binary_operator(mut params: FnParseParams) -> Result<BinaryOperator> {
+        let s = self_as_str(&mut params);
+        match s.to_lowercase().as_str() {
+            "=" => Ok(BinaryOperator::Equal),
+            _ => Err(SpringError::Sql(anyhow!(
+                "Does not match any child rule of binary_operator.",
+            ))),
+        }
     }
 
     /*
@@ -320,12 +404,10 @@ impl PestParserImpl {
      */
 
     fn parse_select_stream(mut params: FnParseParams) -> Result<SelectStreamSyntax> {
-        // TODO fix syntax
-
-        let column_names = parse_child_seq(
+        let fields = parse_child_seq(
             &mut params,
-            Rule::column_name,
-            &Self::parse_column_name,
+            Rule::select_field,
+            &Self::parse_select_field,
             &identity,
         )?;
         let stream_name = parse_child(
@@ -335,23 +417,130 @@ impl PestParserImpl {
             identity,
         )?;
 
-        let fields = column_names
-            .into_iter()
-            .map(|column_name| {
-                let field_pointer = FieldPointer::from(column_name.as_ref());
-                let expression = Expression::FieldPointer(field_pointer);
-                SelectFieldSyntax {
-                    expression,
-                    alias: None,
-                }
-            })
-            .collect();
         let from_item = FromItemSyntax::StreamVariant {
             stream_name,
             alias: None,
         };
 
         Ok(SelectStreamSyntax { fields, from_item })
+    }
+
+    fn parse_select_field(mut params: FnParseParams) -> Result<SelectFieldSyntax> {
+        let expression = parse_child(
+            &mut params,
+            Rule::expression,
+            Self::parse_expression,
+            identity,
+        )?;
+        let alias = try_parse_child(
+            &mut params,
+            Rule::field_alias,
+            Self::parse_field_alias,
+            identity,
+        )?;
+        Ok(SelectFieldSyntax { expression, alias })
+    }
+
+    /*
+     * ================================================================================================
+     * Value Expressions:
+     * ================================================================================================
+     */
+
+    fn parse_expression(mut params: FnParseParams) -> Result<Expression> {
+        let expr = parse_child(
+            &mut params,
+            Rule::sub_expression,
+            Self::parse_sub_expression,
+            identity,
+        )?;
+
+        if let Some(bin_op) = try_parse_child(
+            &mut params,
+            Rule::binary_operator,
+            Self::parse_binary_operator,
+            identity,
+        )? {
+            let right_expr = parse_child(
+                &mut params,
+                Rule::expression,
+                Self::parse_expression,
+                identity,
+            )?;
+
+            match bin_op {
+                BinaryOperator::Equal => Ok(Expression::BooleanExpr(
+                    BooleanExpression::ComparisonFunctionVariant(
+                        ComparisonFunction::EqualVariant {
+                            left: Box::new(expr),
+                            right: Box::new(right_expr),
+                        },
+                    ),
+                )),
+            }
+        } else {
+            Ok(expr)
+        }
+    }
+
+    fn parse_sub_expression(mut params: FnParseParams) -> Result<Expression> {
+        try_parse_child(
+            &mut params,
+            Rule::constant,
+            Self::parse_constant,
+            Expression::Constant,
+        )?
+        .or(try_parse_child(
+            &mut params,
+            Rule::field_pointer,
+            Self::parse_field_pointer,
+            Expression::FieldPointer,
+        )?)
+        .or({
+            if let Some(uni_op) = try_parse_child(
+                &mut params,
+                Rule::unary_operator,
+                Self::parse_unary_operator,
+                identity,
+            )? {
+                Some(parse_child(
+                    &mut params,
+                    Rule::expression,
+                    Self::parse_expression,
+                    |expr| Expression::UnaryOperator(uni_op.clone(), Box::new(expr)),
+                )?)
+            } else {
+                None
+            }
+        })
+        .ok_or_else(|| {
+            SpringError::Sql(anyhow!("Does not match any child rule of sub_expression.",))
+        })
+    }
+
+    /*
+     * ----------------------------------------------------------------------------
+     * Field Pointer
+     * ----------------------------------------------------------------------------
+     */
+
+    fn parse_field_pointer(mut params: FnParseParams) -> Result<FieldPointer> {
+        let correlation = try_parse_child(
+            &mut params,
+            Rule::correlation,
+            Self::parse_correlation,
+            identity,
+        )?;
+        let column_name = parse_child(
+            &mut params,
+            Rule::column_name,
+            Self::parse_column_name,
+            identity,
+        )?;
+        Ok(FieldPointer::new(
+            correlation.map(|c| c.to_string()),
+            column_name.to_string(),
+        ))
     }
 
     /*
@@ -525,6 +714,24 @@ impl PestParserImpl {
         )
     }
 
+    fn parse_field_alias(mut params: FnParseParams) -> Result<FieldAlias> {
+        parse_child(
+            &mut params,
+            Rule::identifier,
+            Self::parse_identifier,
+            FieldAlias::new,
+        )
+    }
+
+    fn parse_correlation(mut params: FnParseParams) -> Result<CorrelationName> {
+        parse_child(
+            &mut params,
+            Rule::identifier,
+            Self::parse_identifier,
+            CorrelationName::new,
+        )
+    }
+
     fn parse_option_name(mut params: FnParseParams) -> Result<String> {
         parse_child(
             &mut params,
@@ -537,8 +744,8 @@ impl PestParserImpl {
     fn parse_option_value(mut params: FnParseParams) -> Result<String> {
         parse_child(
             &mut params,
-            Rule::string_constant,
-            Self::parse_string_constant,
+            Rule::string_content,
+            Self::parse_string_content,
             identity,
         )
     }

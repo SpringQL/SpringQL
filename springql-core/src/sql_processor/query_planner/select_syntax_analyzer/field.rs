@@ -141,7 +141,7 @@ mod tests {
     }
 
     #[test]
-    fn test_column_reference() {
+    fn test_field_pointer() {
         let test_data: Vec<TestDatum> = vec![
             TestDatum::new(
                 FieldPointer::from("c"),

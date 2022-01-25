@@ -213,18 +213,11 @@ expression = {
 // To avoid left-recursion
 sub_expression = {
     constant
-    | column_reference
+    | field_pointer
     | (unary_operator ~ expression)
 }
 
-/*
- * ----------------------------------------------------------------------------
- * Column References
- * (https://www.postgresql.org/docs/12/sql-expressions.html#SQL-EXPRESSIONS-COLUMN-REFS)
- * ----------------------------------------------------------------------------
- */
-
-column_reference = {
+field_pointer = {
     (correlation ~ ".")? ~ column_name
 }
 
@@ -379,8 +372,12 @@ create_sink_writer_command = {
 
 select_stream_command = {
     ^"SELECT" ~ "STREAM"
-    ~ column_name ~ ("," ~ column_name)*
+    ~ select_field ~ ("," ~ select_field)*
     ~ (^"FROM" ~ stream_name)
+}
+
+select_field = {
+    expression ~ (^"AS"? ~ field_alias)?
 }
 
 /*
@@ -423,7 +420,7 @@ correlation = {
     identifier
 }
 
-alias = {
+field_alias = {
     identifier
 }
 
@@ -468,5 +465,5 @@ option_specification = {
 }
 
 option_value = {
-    string_constant
+    "'" ~ string_content ~ "'"
 }

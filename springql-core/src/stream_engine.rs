@@ -34,7 +34,10 @@ mod sql_executor;
 mod time;
 
 pub(crate) use autonomous_executor::{
-    row::value::{sql_convertible::SqlConvertible, sql_value::SqlValue},
+    row::value::{
+        sql_convertible::SqlConvertible,
+        sql_value::{nn_sql_value::NnSqlValue, SqlValue},
+    },
     SinkRow,
 };
 
