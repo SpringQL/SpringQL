@@ -373,11 +373,19 @@ create_sink_writer_command = {
 select_stream_command = {
     ^"SELECT" ~ "STREAM"
     ~ select_field ~ ("," ~ select_field)*
-    ~ (^"FROM" ~ stream_name)
+    ~ (^"FROM" ~ from_item)
 }
 
 select_field = {
     expression ~ (^"AS"? ~ field_alias)?
+}
+
+from_item = {
+    sub_from_item
+}
+// To avoid left-recursion
+sub_from_item = {
+    stream_name ~ (^"AS"? ~ correlation_alias)?
 }
 
 /*
@@ -417,6 +425,10 @@ option_name = {
 }
 
 correlation = {
+    identifier
+}
+
+correlation_alias = {
     identifier
 }
 
