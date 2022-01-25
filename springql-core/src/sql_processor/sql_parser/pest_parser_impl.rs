@@ -10,7 +10,8 @@ use crate::expression::operator::{BinaryOperator, UnaryOperator};
 use crate::expression::Expression;
 use crate::pipeline::field::field_pointer::FieldPointer;
 use crate::pipeline::name::{
-    ColumnName, CorrelationName, FieldAlias, PumpName, SinkWriterName, SourceReaderName, StreamName,
+    ColumnName, CorrelationAlias, CorrelationName, FieldAlias, PumpName, SinkWriterName,
+    SourceReaderName, StreamName,
 };
 use crate::pipeline::option::options_builder::OptionsBuilder;
 use crate::pipeline::relation::column::column_constraint::ColumnConstraint;
@@ -410,17 +411,12 @@ impl PestParserImpl {
             &Self::parse_select_field,
             &identity,
         )?;
-        let stream_name = parse_child(
+        let from_item = parse_child(
             &mut params,
-            Rule::stream_name,
-            Self::parse_stream_name,
+            Rule::from_item,
+            Self::parse_from_item,
             identity,
         )?;
-
-        let from_item = FromItemSyntax::StreamVariant {
-            stream_name,
-            alias: None,
-        };
 
         Ok(SelectStreamSyntax { fields, from_item })
     }
@@ -439,6 +435,32 @@ impl PestParserImpl {
             identity,
         )?;
         Ok(SelectFieldSyntax { expression, alias })
+    }
+
+    fn parse_from_item(mut params: FnParseParams) -> Result<FromItemSyntax> {
+        let from_item = parse_child(
+            &mut params,
+            Rule::sub_from_item,
+            Self::parse_sub_from_item,
+            identity,
+        )?;
+        Ok(from_item)
+    }
+
+    fn parse_sub_from_item(mut params: FnParseParams) -> Result<FromItemSyntax> {
+        let stream_name = parse_child(
+            &mut params,
+            Rule::stream_name,
+            Self::parse_stream_name,
+            identity,
+        )?;
+        let alias = try_parse_child(
+            &mut params,
+            Rule::correlation_alias,
+            Self::parse_correlation_alias,
+            identity,
+        )?;
+        Ok(FromItemSyntax::StreamVariant { stream_name, alias })
     }
 
     /*
@@ -729,6 +751,15 @@ impl PestParserImpl {
             Rule::identifier,
             Self::parse_identifier,
             CorrelationName::new,
+        )
+    }
+
+    fn parse_correlation_alias(mut params: FnParseParams) -> Result<CorrelationAlias> {
+        parse_child(
+            &mut params,
+            Rule::identifier,
+            Self::parse_identifier,
+            CorrelationAlias::new,
         )
     }
 
