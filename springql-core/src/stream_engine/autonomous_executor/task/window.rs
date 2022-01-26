@@ -49,7 +49,7 @@ mod tests {
         //   SLIDING WINDOW duration_millis(1000), duration_mills(500)
         //   GROUP BY ticker;
 
-        fn t_expect(tuple: Tuple, expected_ticker: &str, expected_avg_amount: i16) {
+        fn t_expect(tuple: &Tuple, expected_ticker: &str, expected_avg_amount: i16) {
             let ticker = tuple.get_value(&FieldPointer::from("ticker")).unwrap();
             if let SqlValue::NotNull(ticker) = ticker {
                 assert_eq!(
@@ -137,8 +137,8 @@ mod tests {
             100,
         ));
         assert_eq!(out.len(), 2);
-        t_expect(out[0], "GOOGL", 100);
-        t_expect(out[1], "ORCL", 200);
+        t_expect(out.get(0).unwrap(), "GOOGL", 100);
+        t_expect(out.get(1).unwrap(), "ORCL", 200);
 
         // [0.500, 1.500): -> "ORCL" = 175
         // [1.000, 2.000): -> "ORCL" = 100
@@ -151,7 +151,7 @@ mod tests {
             100,
         ));
         assert_eq!(out.len(), 2);
-        t_expect(out[0], "ORCL", 175);
-        t_expect(out[1], "ORCL", 100);
+        t_expect(out.get(0).unwrap(), "ORCL", 175);
+        t_expect(out.get(1).unwrap(), "ORCL", 100);
     }
 }
