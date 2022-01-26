@@ -84,7 +84,7 @@ mod tests {
 
         // [0.000, 1.000): ("GOOGL", 100)
         let out = window.dispatch(Tuple::factory_trade(
-            Timestamp::from_str("2020-01-01T00:00:00.001").unwrap(),
+            Timestamp::from_str("2020-01-01 00:00:00.001000000").unwrap(),
             "GOOGL",
             100,
         ));
@@ -92,7 +92,7 @@ mod tests {
 
         // [0.000, 1.000): ("GOOGL", 100), ("ORCL", 100)
         let out = window.dispatch(Tuple::factory_trade(
-            Timestamp::from_str("2020-01-01T00:00:00.499").unwrap(),
+            Timestamp::from_str("2020-01-01 00:00:00.499000000").unwrap(),
             "ORCL",
             100,
         ));
@@ -101,7 +101,7 @@ mod tests {
         // [0.000, 1.000): ("GOOGL", 100), ("ORCL", 100), ("ORCL", 400)
         // [0.500, 1.500):                                ("ORCL", 400)
         let out = window.dispatch(Tuple::factory_trade(
-            Timestamp::from_str("2020-01-01T00:00:00.500").unwrap(),
+            Timestamp::from_str("2020-01-01 00:00:00.500000000").unwrap(),
             "ORCL",
             400,
         ));
@@ -111,7 +111,7 @@ mod tests {
         // [0.500, 1.500):                                ("ORCL", 400), ("ORCL", 100)
         // [1.000, 2.000):                                               ("ORCL", 100)
         let out = window.dispatch(Tuple::factory_trade(
-            Timestamp::from_str("2020-01-01T00:00:01.099").unwrap(),
+            Timestamp::from_str("2020-01-01 00:00:01.099000000").unwrap(),
             "ORCL",
             100,
         ));
@@ -121,7 +121,7 @@ mod tests {
         // [0.500, 1.500):                                ("ORCL", 400), ("ORCL", 100), ("ORCL", 100)
         // [1.000, 2.000):                                               ("ORCL", 100)
         let out = window.dispatch(Tuple::factory_trade(
-            Timestamp::from_str("2020-01-01T00:00:00.800").unwrap(),
+            Timestamp::from_str("2020-01-01 00:00:00.800000000").unwrap(),
             "ORCL",
             100,
         ));
@@ -132,7 +132,7 @@ mod tests {
         // [0.500, 1.500):                                ("ORCL", 400), ("ORCL", 100), ("ORCL", 100), ("ORCL", 100)
         // [1.000, 2.000):                                               ("ORCL", 100),                ("ORCL", 100)
         let out = window.dispatch(Tuple::factory_trade(
-            Timestamp::from_str("2020-01-01T00:00:01.100").unwrap(),
+            Timestamp::from_str("2020-01-01 00:00:01.100000000").unwrap(),
             "ORCL",
             100,
         ));
@@ -146,7 +146,7 @@ mod tests {
         // [1.500, 2.500):                                                                                           ("ORCL", 100)
         // [2.000, 3.000):                                                                                           ("ORCL", 100)
         let out = window.dispatch(Tuple::factory_trade(
-            Timestamp::from_str("2020-01-01T00:00:02.100").unwrap(),
+            Timestamp::from_str("2020-01-01 00:00:02.100000000").unwrap(),
             "ORCL",
             100,
         ));
