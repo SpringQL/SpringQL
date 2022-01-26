@@ -5,6 +5,7 @@ pub(super) mod sink_task;
 pub(super) mod source_task;
 pub(super) mod task_context;
 pub(super) mod tuple;
+pub(super) mod window;
 
 use crate::{
     error::Result,
