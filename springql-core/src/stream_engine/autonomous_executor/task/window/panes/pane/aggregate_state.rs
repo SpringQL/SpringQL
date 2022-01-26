@@ -9,7 +9,7 @@ pub(super) trait AggregateState: Default {
 
 // TODO more generic avg
 #[derive(Debug, Default)]
-pub(super) struct AvgState {
+pub(in crate::stream_engine::autonomous_executor) struct AvgState {
     current_avg: f32,
     current_n: u64,
 }
@@ -22,7 +22,7 @@ impl AggregateState for AvgState {
         let next_n = self.current_n + 1;
 
         self.current_avg =
-            self.current_avg + (next_val - self.current_avg) * (1.0 / (next_n as f32));
+            self.current_avg + ((next_val as f32) - self.current_avg) * (1.0 / (next_n as f32));
         self.current_n = next_n;
     }
 

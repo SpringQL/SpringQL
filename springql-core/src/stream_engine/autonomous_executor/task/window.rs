@@ -1,24 +1,46 @@
-mod pane;
+mod panes;
 mod watermark;
 
 use crate::pipeline::pump_model::{
     window_operation_parameter::WindowOperationParameter, window_parameter::WindowParameter,
 };
 
-use self::{pane::Pane, watermark::Watermark};
+use self::{panes::Panes, watermark::Watermark};
 
 use super::tuple::Tuple;
 
-#[derive(Debug, new)]
+#[derive(Debug)]
 pub(in crate::stream_engine::autonomous_executor) struct Window {
     watermark: Watermark,
-    panes: Vec<Pane>,
+    panes: Panes,
 
     window_param: WindowParameter,
     op_param: WindowOperationParameter,
 }
 
 impl Window {
+    pub(in crate::stream_engine::autonomous_executor) fn new(
+        window_param: WindowParameter,
+        op_param: WindowOperationParameter,
+    ) -> Self {
+        match window_param {
+            WindowParameter::TimedSlidingWindow {
+                length,
+                period,
+                allowed_delay,
+            } => {
+                let watermark = Watermark::new(allowed_delay);
+
+                Self {
+                    watermark,
+                    panes: Panes::default(),
+                    window_param,
+                    op_param,
+                }
+            }
+        }
+    }
+
     /// A task dispatches a tuple from waiting queue.
     /// This window returns output tuples from panes inside if they are closed.
     pub(in crate::stream_engine::autonomous_executor) fn dispatch(
@@ -28,15 +50,15 @@ impl Window {
         let rowtime = *tuple.rowtime();
 
         self.panes
-            .iter_mut()
-            .filter(|pane| pane.is_acceptable(&rowtime))
-            .for_each(|pane| pane.dispatch(tuple));
+            .panes_to_dispatch(rowtime)
+            .for_each(|pane| pane.dispatch(tuple.clone()));
 
         self.watermark.update(rowtime);
 
         self.panes
-            .iter_mut()
-            .filter_map(|pane| pane.should_close(&self.watermark).then(|| pane.close()))
+            .remove_panes_to_close(&self.watermark)
+            .into_iter()
+            .map(|pane| pane.close())
             .flatten()
             .collect()
     }
@@ -50,8 +72,11 @@ mod tests {
 
     use crate::{
         pipeline::{
-            field::field_pointer::FieldPointer, name::FieldAlias,
-            pump_model::window_operation_parameter::AggregateFunctionParameter,
+            field::{aliased_field_name::AliasedFieldName, field_pointer::FieldPointer},
+            name::{ColumnName, FieldAlias, StreamName},
+            pump_model::window_operation_parameter::{
+                AggregateFunctionParameter, AggregateParameter,
+            },
         },
         stream_engine::{
             autonomous_executor::task::tuple::Tuple,
@@ -95,12 +120,18 @@ mod tests {
                 period: EventDuration::from_secs(5),
                 allowed_delay: EventDuration::from_secs(1),
             },
-            WindowOperationParameter::Aggregation {
-                group_by: FieldPointer::from("ticker"),
-                aggregated: FieldPointer::from("amount"),
+            WindowOperationParameter::Aggregation(AggregateParameter {
+                group_by: AliasedFieldName::factory(
+                    StreamName::fx_trade().as_ref(),
+                    ColumnName::fx_ticker().as_ref(),
+                ),
+                aggregated: AliasedFieldName::factory(
+                    StreamName::fx_trade().as_ref(),
+                    ColumnName::fx_amount().as_ref(),
+                ),
                 aggregated_alias: FieldAlias::new("avg_amount".to_string()),
                 aggregate_function: AggregateFunctionParameter::Avg,
-            },
+            }),
         );
 
         // [:00, :10): ("GOOGL", 100)

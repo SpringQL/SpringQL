@@ -17,7 +17,7 @@ pub(super) struct WebConsoleReporter {
 impl WebConsoleReporter {
     pub(super) fn new(host: &str, port: u16, timeout: WallClockDuration) -> Self {
         let client = reqwest::blocking::Client::builder()
-            .timeout(Some(timeout.as_std().clone()))
+            .timeout(Some(*timeout.as_std()))
             .build()
             .expect("failed to build a reqwest client");
 
