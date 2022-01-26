@@ -44,7 +44,7 @@ impl Pane {
         &self,
         watermark: &Watermark,
     ) -> bool {
-        self.close_at <= watermark.to_timestamp()
+        self.close_at <= watermark.as_timestamp()
     }
 
     pub(in crate::stream_engine::autonomous_executor) fn dispatch(&mut self, tuple: Tuple) {
@@ -76,7 +76,7 @@ impl Pane {
 
                 let state = states
                     .entry(group_by_value)
-                    .or_insert_with(|| AvgState::default());
+                    .or_insert_with(AvgState::default);
 
                 state.next(
                     aggregated_value

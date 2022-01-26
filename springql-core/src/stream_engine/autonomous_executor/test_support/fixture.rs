@@ -29,7 +29,7 @@ use crate::{
             },
         },
         command::{alter_pipeline_command::AlterPipelineCommand, query_plan::aliaser::Aliaser},
-        time::duration::{wall_clock_duration::WallClockDuration, SpringDuration}, SqlValue,
+        time::duration::{wall_clock_duration::WallClockDuration, SpringDuration},
     },
     stream_engine::{
         autonomous_executor::{

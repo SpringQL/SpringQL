@@ -26,7 +26,7 @@ impl Watermark {
         }
     }
 
-    pub(in crate::stream_engine::autonomous_executor) fn to_timestamp(&self) -> Timestamp {
+    pub(in crate::stream_engine::autonomous_executor) fn as_timestamp(&self) -> Timestamp {
         self.max_rowtime
             - Duration::from_std(*self.allowed_delay.as_std())
                 .expect("duration conversion from std to chrono")
