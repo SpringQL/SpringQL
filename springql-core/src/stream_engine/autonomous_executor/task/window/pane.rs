@@ -40,7 +40,7 @@ impl Pane {
         &self.close_at <= watermark.as_timestamp()
     }
 
-    pub(super) fn dispatch(&mut self, tuple: Tuple) -> Result<()> {
+    pub(super) fn dispatch(&mut self, tuple: Tuple) {
         match &mut self.inner {
             PaneInner::Avg {
                 aggregation_parameter,
@@ -49,14 +49,18 @@ impl Pane {
                 let group_by_pointer = FieldPointer::from(&aggregation_parameter.group_by);
                 let aggregated_pointer = FieldPointer::from(&aggregation_parameter.aggregated);
 
-                let group_by_value = tuple.get_value(&group_by_pointer)?;
+                let group_by_value = tuple
+                    .get_value(&group_by_pointer)
+                    .expect("field pointer for GROUP BY must be checked before");
                 let group_by_value = if let SqlValue::NotNull(v) = group_by_value {
                     v
                 } else {
                     unimplemented!("group by NULL is not supported ")
                 };
 
-                let aggregated_value = tuple.get_value(&aggregated_pointer)?;
+                let aggregated_value = tuple
+                    .get_value(&aggregated_pointer)
+                    .expect("field pointer for aggregated value must be checked before");
                 let aggregated_value = if let SqlValue::NotNull(v) = aggregated_value {
                     v
                 } else {

@@ -1,13 +1,11 @@
 mod pane;
+mod watermark;
 
-use crate::{
-    pipeline::pump_model::{
-        window_operation_parameter::WindowOperationParameter, window_parameter::WindowParameter,
-    },
-    stream_engine::time::timestamp::Timestamp,
+use crate::pipeline::pump_model::{
+    window_operation_parameter::WindowOperationParameter, window_parameter::WindowParameter,
 };
 
-use self::pane::Pane;
+use self::{pane::Pane, watermark::Watermark};
 
 use super::tuple::Tuple;
 
@@ -27,34 +25,19 @@ impl Window {
         &mut self,
         tuple: Tuple,
     ) -> Vec<Tuple> {
-        let rowtime = tuple.rowtime();
+        let rowtime = *tuple.rowtime();
 
-        let paens = self.panes_to_dispatch(rowtime);
-        for pane in panes {
-            pane.dispatch(tuple);
-        }
+        self.panes
+            .iter_mut()
+            .filter(|pane| pane.is_acceptable(&rowtime))
+            .for_each(|pane| pane.dispatch(tuple));
 
         self.watermark.update(rowtime);
 
-        let panes = self.panes_to_close();
-        panes
-            .into_iter()
-            .map(|pane| pane.close())
+        self.panes
+            .iter_mut()
+            .filter_map(|pane| pane.should_close(&self.watermark).then(|| pane.close()))
             .flatten()
-            .collect()
-    }
-
-    fn panes_to_dispatch(&mut self, rowtime: &Timestamp) -> &mut [Pane] {
-        self.panes
-            .iter_mut()
-            .filter(|pane| pane.is_acceptable(rowtime))
-            .collect()
-    }
-
-    fn panes_to_close(&mut self) -> &mut [Pane] {
-        self.panes
-            .iter_mut()
-            .filter(|pane| pane.should_close(&self.watermark))
             .collect()
     }
 }

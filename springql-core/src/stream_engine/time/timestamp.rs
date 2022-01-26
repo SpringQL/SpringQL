@@ -5,7 +5,7 @@
 pub(crate) mod system_timestamp;
 
 use anyhow::Context;
-use chrono::{Duration, NaiveDateTime};
+use chrono::{naive::MIN_DATETIME, Duration, NaiveDateTime};
 use serde::{Deserialize, Serialize};
 use std::{
     ops::{Add, Sub},
@@ -16,6 +16,9 @@ use crate::{
     error::SpringError,
     mem_size::{chrono_naive_date_time_overhead_size, MemSize},
 };
+
+/// The minimum possible `Timestamp`.
+pub(crate) const MIN_TIMESTAMP: Timestamp = Timestamp(MIN_DATETIME);
 
 const FORMAT: &str = "%Y-%m-%d %H:%M:%S%.9f";
 
