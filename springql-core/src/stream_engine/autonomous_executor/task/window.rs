@@ -1,11 +1,21 @@
-use crate::pipeline::pump_model::{
-    window_operation_parameter::WindowOperationParameter, window_parameter::WindowParameter,
+mod pane;
+
+use crate::{
+    pipeline::pump_model::{
+        window_operation_parameter::WindowOperationParameter, window_parameter::WindowParameter,
+    },
+    stream_engine::time::timestamp::Timestamp,
 };
+
+use self::pane::Pane;
 
 use super::tuple::Tuple;
 
 #[derive(Debug, new)]
 pub(in crate::stream_engine::autonomous_executor) struct Window {
+    watermark: Watermark,
+    panes: Vec<Pane>,
+
     window_param: WindowParameter,
     op_param: WindowOperationParameter,
 }
@@ -14,10 +24,38 @@ impl Window {
     /// A task dispatches a tuple from waiting queue.
     /// This window returns output tuples from panes inside if they are closed.
     pub(in crate::stream_engine::autonomous_executor) fn dispatch(
-        &self,
+        &mut self,
         tuple: Tuple,
     ) -> Vec<Tuple> {
-        todo!()
+        let rowtime = tuple.rowtime();
+
+        let paens = self.panes_to_dispatch(rowtime);
+        for pane in panes {
+            pane.dispatch(tuple);
+        }
+
+        self.watermark.update(rowtime);
+
+        let panes = self.panes_to_close();
+        panes
+            .into_iter()
+            .map(|pane| pane.close())
+            .flatten()
+            .collect()
+    }
+
+    fn panes_to_dispatch(&mut self, rowtime: &Timestamp) -> &mut [Pane] {
+        self.panes
+            .iter_mut()
+            .filter(|pane| pane.is_acceptable(rowtime))
+            .collect()
+    }
+
+    fn panes_to_close(&mut self) -> &mut [Pane] {
+        self.panes
+            .iter_mut()
+            .filter(|pane| pane.should_close(&self.watermark))
+            .collect()
     }
 }
 
@@ -68,7 +106,7 @@ mod tests {
             }
         }
 
-        let window = Window::new(
+        let mut window = Window::new(
             WindowParameter::TimedSlidingWindow {
                 length: EventDuration::from_secs(10),
                 period: EventDuration::from_secs(5),
@@ -131,12 +169,20 @@ mod tests {
         //
         // [:05, :15):                                ("ORCL", 400), ("ORCL", 100), ("ORCL", 100), ("ORCL", 100)
         // [:10, :20):                                               ("ORCL", 100),                ("ORCL", 100)
-        let out = window.dispatch(Tuple::factory_trade(
+        let mut out = window.dispatch(Tuple::factory_trade(
             Timestamp::from_str("2020-01-01 00:00:11.000000000").unwrap(),
             "ORCL",
             100,
         ));
         assert_eq!(out.len(), 2);
+        out.sort_by_key(|tuple| {
+            tuple
+                .get_value(&FieldPointer::from("ticker"))
+                .unwrap()
+                .unwrap()
+                .unpack::<String>()
+                .unwrap()
+        });
         t_expect(out.get(0).unwrap(), "GOOGL", 100);
         t_expect(out.get(1).unwrap(), "ORCL", 200);
 

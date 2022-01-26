@@ -175,6 +175,17 @@ impl From<SqlValue> for serde_json::Value {
 }
 
 #[cfg(test)]
+impl SqlValue {
+    pub(in crate::stream_engine) fn unwrap(self) -> NnSqlValue {
+        if let SqlValue::NotNull(v) = self {
+            v
+        } else {
+            panic!("unwrap NULL")
+        }
+    }
+}
+
+#[cfg(test)]
 mod tests {
     use std::collections::HashSet;
 

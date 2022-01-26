@@ -83,6 +83,7 @@ impl PartialEq for NnSqlValue {
         matches!(self.sql_compare(other), Ok(SqlCompareResult::Eq))
     }
 }
+impl Eq for NnSqlValue {}
 
 impl Hash for NnSqlValue {
     /// Although raw format are different between two NnSqlValue, this hash function must return the same value if loosely typed values are the same.

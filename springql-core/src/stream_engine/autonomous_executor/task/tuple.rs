@@ -35,7 +35,7 @@ use std::sync::Arc;
 /// 3. Task puts a row converted from the final tuple.
 ///
 /// Unlike rows, tuples may have not only stream's columns but also fields derived from expressions.
-#[derive(PartialEq, Debug)]
+#[derive(PartialEq, Debug, new)]
 pub(in crate::stream_engine::autonomous_executor) struct Tuple {
     /// Either be an event-time or a process-time.
     /// If a row this tuple is constructed from has a ROWTIME column, `rowtime` has duplicate value with one of `fields`.
