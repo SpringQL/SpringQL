@@ -1,3 +1,5 @@
+use crate::stream_engine::time::duration::event_duration::EventDuration;
+
 /// Window parameters
 #[derive(Clone, Eq, PartialEq, Debug)]
 pub(crate) enum WindowParameter {

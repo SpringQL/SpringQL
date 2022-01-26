@@ -16,7 +16,7 @@ use crate::{
             pipeline_derivatives::PipelineDerivatives,
             worker::worker_thread::{WorkerThread, WorkerThreadLoopState},
         },
-        time::duration::wall_clock_duration::WallClockDuration,
+        time::duration::{wall_clock_duration::WallClockDuration, SpringDuration},
     },
 };
 

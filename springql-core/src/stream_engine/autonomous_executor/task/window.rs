@@ -31,7 +31,12 @@ mod tests {
     use crate::{
         pipeline::{field::field_pointer::FieldPointer, name::FieldAlias},
         stream_engine::{
-            autonomous_executor::task::tuple::Tuple, time::timestamp::Timestamp, SqlValue,
+            autonomous_executor::task::tuple::Tuple,
+            time::{
+                duration::{event_duration::EventDuration, SpringDuration},
+                timestamp::Timestamp,
+            },
+            SqlValue,
         },
     };
 
@@ -70,8 +75,8 @@ mod tests {
         let window = Window::new(
             WindowParameter::TimedSlidingWindow {
                 length: EventDuration::from_millis(1000),
-                period: EventDuration::from_mills(500),
-                allowed_delay: EventDuration::from_mills(100),
+                period: EventDuration::from_millis(500),
+                allowed_delay: EventDuration::from_millis(100),
             },
             WindowOperationParameter::Aggregation {
                 group_by: FieldPointer::from("ticker"),

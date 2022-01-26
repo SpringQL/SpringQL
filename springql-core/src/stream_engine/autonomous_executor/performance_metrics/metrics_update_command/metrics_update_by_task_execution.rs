@@ -3,7 +3,7 @@ use crate::stream_engine::{
         queue_id::{row_queue_id::RowQueueId, window_queue_id::WindowQueueId, QueueId},
         task_id::TaskId,
     },
-    time::duration::wall_clock_duration::WallClockDuration,
+    time::duration::{wall_clock_duration::WallClockDuration, SpringDuration},
 };
 
 /// Metrics update per task execution.
