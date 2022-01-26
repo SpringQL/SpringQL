@@ -37,7 +37,10 @@ use std::sync::Arc;
 /// Unlike rows, tuples may have not only stream's columns but also fields derived from expressions.
 #[derive(PartialEq, Debug)]
 pub(in crate::stream_engine::autonomous_executor) struct Tuple {
-    arrival_rowtime: Option<Timestamp>,
+    /// Either be an event-time or a process-time.
+    /// If a row this tuple is constructed from has a ROWTIME column, `rowtime` has duplicate value with one of `fields`.
+    rowtime: Timestamp,
+
     fields: Vec<Field>,
 }
 
@@ -46,7 +49,7 @@ impl Tuple {
         row: Row,
         aliaser: &Aliaser,
     ) -> Self {
-        let arrival_rowtime = row.arrival_rowtime().cloned();
+        let rowtime = row.rowtime();
 
         let stream_name = row.stream_model().name().clone();
         let fields = row
@@ -57,10 +60,7 @@ impl Tuple {
             })
             .collect();
 
-        Self {
-            arrival_rowtime,
-            fields,
-        }
+        Self { rowtime, fields }
     }
 
     /// ```text
@@ -89,6 +89,10 @@ impl Tuple {
         let stream_columns = StreamColumns::new(stream_model, column_values)
             .expect("type or shape mismatch? must be checked on pump creation");
         Row::new(stream_columns)
+    }
+
+    pub(in crate::stream_engine::autonomous_executor) fn rowtime(&self) -> &Timestamp {
+        &self.rowtime
     }
 
     /// # Failures
@@ -170,7 +174,7 @@ impl Tuple {
             })
             .collect::<Result<Vec<_>>>()?;
         Ok(Self {
-            arrival_rowtime: self.arrival_rowtime,
+            rowtime: self.rowtime,
             fields: new_fields,
         })
     }
