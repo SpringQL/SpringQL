@@ -1,11 +1,8 @@
-use self::{
+use crate::pipeline::pump_model::{
     window_operation_parameter::WindowOperationParameter, window_parameter::WindowParameter,
 };
 
 use super::tuple::Tuple;
-
-mod window_operation_parameter;
-mod window_parameter;
 
 #[derive(Debug, new)]
 pub(in crate::stream_engine::autonomous_executor) struct Window {
@@ -26,10 +23,15 @@ impl Window {
 
 #[cfg(test)]
 mod tests {
+    use super::*;
+
     use std::str::FromStr;
 
     use crate::{
-        pipeline::{field::field_pointer::FieldPointer, name::FieldAlias},
+        pipeline::{
+            field::field_pointer::FieldPointer, name::FieldAlias,
+            pump_model::window_operation_parameter::AggregateFunctionParameter,
+        },
         stream_engine::{
             autonomous_executor::task::tuple::Tuple,
             time::{
@@ -38,12 +40,6 @@ mod tests {
             },
             SqlValue,
         },
-    };
-
-    use super::{
-        window_operation_parameter::{AggregateFunctionParameter, WindowOperationParameter},
-        window_parameter::WindowParameter,
-        *,
     };
 
     #[test]

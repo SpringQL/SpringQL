@@ -27,11 +27,11 @@
 //! ![Communication between entities](https://raw.githubusercontent.com/SpringQL/SpringQL.github.io/main/static/img/stream-engine-architecture-communication.svg)
 
 pub(crate) mod command;
+pub(crate) mod time;
 
 mod autonomous_executor;
 mod in_memory_queue_repository;
 mod sql_executor;
-mod time;
 
 pub(crate) use autonomous_executor::{
     row::value::{

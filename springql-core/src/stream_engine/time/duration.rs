@@ -1,5 +1,5 @@
-pub(in crate::stream_engine) mod event_duration;
-pub(in crate::stream_engine) mod wall_clock_duration;
+pub(crate) mod event_duration;
+pub(crate) mod wall_clock_duration;
 
 use std::time::Duration;
 

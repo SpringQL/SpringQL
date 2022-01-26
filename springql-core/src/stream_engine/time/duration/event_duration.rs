@@ -9,7 +9,7 @@ use super::SpringDuration;
 
 /// Event-time duration.
 #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Debug, Serialize, Deserialize)]
-pub(in crate::stream_engine) struct EventDuration(Duration);
+pub(crate) struct EventDuration(Duration);
 
 impl SpringDuration for EventDuration {
     fn as_std(&self) -> &Duration {
