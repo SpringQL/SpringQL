@@ -29,7 +29,7 @@ mod tests {
     use std::str::FromStr;
 
     use crate::{
-        pipeline::field::field_pointer::FieldPointer,
+        pipeline::{field::field_pointer::FieldPointer, name::FieldAlias},
         stream_engine::{
             autonomous_executor::task::tuple::Tuple, time::timestamp::Timestamp, SqlValue,
         },
@@ -76,6 +76,7 @@ mod tests {
             WindowOperationParameter::Aggregation {
                 group_by: FieldPointer::from("ticker"),
                 aggregated: FieldPointer::from("amount"),
+                aggregated_alias: FieldAlias::new("avg_amount".to_string()),
                 aggregate_function: AggregateFunctionParameter::Avg,
             },
         );
