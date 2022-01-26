@@ -8,6 +8,14 @@ pub(in crate::stream_engine) trait SpringDuration {
     fn as_std(&self) -> &Duration;
     fn from_std(duration: Duration) -> Self;
 
+    fn from_secs(secs: u64) -> Self
+    where
+        Self: Sized,
+    {
+        let d = Duration::from_secs(secs);
+        Self::from_std(d)
+    }
+
     fn from_millis(millis: u64) -> Self
     where
         Self: Sized,

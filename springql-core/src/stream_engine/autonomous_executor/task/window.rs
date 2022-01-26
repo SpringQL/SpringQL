@@ -46,7 +46,7 @@ mod tests {
     fn test_timed_sliding_window_aggregation() {
         // SELECT ticker, AVG(amount) AS avg_amount
         //   FROM trade
-        //   SLIDING WINDOW duration_millis(1000), duration_mills(500)
+        //   SLIDING WINDOW duration_secs(10), duration_secs(5), duration_secs(1)
         //   GROUP BY ticker;
 
         fn t_expect(tuple: &Tuple, expected_ticker: &str, expected_avg_amount: i16) {
@@ -70,9 +70,9 @@ mod tests {
 
         let window = Window::new(
             WindowParameter::TimedSlidingWindow {
-                length: EventDuration::from_millis(1000),
-                period: EventDuration::from_millis(500),
-                allowed_delay: EventDuration::from_millis(100),
+                length: EventDuration::from_secs(10),
+                period: EventDuration::from_secs(5),
+                allowed_delay: EventDuration::from_secs(1),
             },
             WindowOperationParameter::Aggregation {
                 group_by: FieldPointer::from("ticker"),
@@ -82,57 +82,57 @@ mod tests {
             },
         );
 
-        // [0.000, 1.000): ("GOOGL", 100)
+        // [:00, :10): ("GOOGL", 100)
         let out = window.dispatch(Tuple::factory_trade(
-            Timestamp::from_str("2020-01-01 00:00:00.001000000").unwrap(),
+            Timestamp::from_str("2020-01-01 00:00:01.000000000").unwrap(),
             "GOOGL",
             100,
         ));
         assert!(out.is_empty());
 
-        // [0.000, 1.000): ("GOOGL", 100), ("ORCL", 100)
+        // [:00, :10): ("GOOGL", 100), ("ORCL", 100)
         let out = window.dispatch(Tuple::factory_trade(
-            Timestamp::from_str("2020-01-01 00:00:00.499000000").unwrap(),
+            Timestamp::from_str("2020-01-01 00:00:04.999999999").unwrap(),
             "ORCL",
             100,
         ));
         assert!(out.is_empty());
 
-        // [0.000, 1.000): ("GOOGL", 100), ("ORCL", 100), ("ORCL", 400)
-        // [0.500, 1.500):                                ("ORCL", 400)
+        // [:00, :10): ("GOOGL", 100), ("ORCL", 100), ("ORCL", 400)
+        // [:05, :15):                                ("ORCL", 400)
         let out = window.dispatch(Tuple::factory_trade(
-            Timestamp::from_str("2020-01-01 00:00:00.500000000").unwrap(),
+            Timestamp::from_str("2020-01-01 00:00:05.000000000").unwrap(),
             "ORCL",
             400,
         ));
         assert!(out.is_empty());
 
-        // [0.000, 1.000): ("GOOGL", 100), ("ORCL", 100), ("ORCL", 400) <-- !!NOT CLOSED YET (within delay)!!
-        // [0.500, 1.500):                                ("ORCL", 400), ("ORCL", 100)
-        // [1.000, 2.000):                                               ("ORCL", 100)
+        // [:00, :10): ("GOOGL", 100), ("ORCL", 100), ("ORCL", 400) <-- !!NOT CLOSED YET (within delay)!!
+        // [:05, :15):                                ("ORCL", 400), ("ORCL", 100)
+        // [:10, :20):                                               ("ORCL", 100)
         let out = window.dispatch(Tuple::factory_trade(
-            Timestamp::from_str("2020-01-01 00:00:01.099000000").unwrap(),
+            Timestamp::from_str("2020-01-01 00:00:10.999999999").unwrap(),
             "ORCL",
             100,
         ));
         assert!(out.is_empty());
 
-        // [0.000, 1.000): ("GOOGL", 100), ("ORCL", 100), ("ORCL", 400),                ("ORCL", 100) <-- !!LATE DATA!!
-        // [0.500, 1.500):                                ("ORCL", 400), ("ORCL", 100), ("ORCL", 100)
-        // [1.000, 2.000):                                               ("ORCL", 100)
+        // [:00, :10): ("GOOGL", 100), ("ORCL", 100), ("ORCL", 400),                ("ORCL", 100) <-- !!LATE DATA!!
+        // [:05, :15):                                ("ORCL", 400), ("ORCL", 100), ("ORCL", 100)
+        // [:10, :20):                                               ("ORCL", 100)
         let out = window.dispatch(Tuple::factory_trade(
-            Timestamp::from_str("2020-01-01 00:00:00.800000000").unwrap(),
+            Timestamp::from_str("2020-01-01 00:00:08.000000000").unwrap(),
             "ORCL",
             100,
         ));
         assert!(out.is_empty());
 
-        // [0.000, 1.000): -> "GOOGL" AVG = 100; "ORCL" AVG = 200
+        // [:00, :10): -> "GOOGL" AVG = 100; "ORCL" AVG = 200
         //
-        // [0.500, 1.500):                                ("ORCL", 400), ("ORCL", 100), ("ORCL", 100), ("ORCL", 100)
-        // [1.000, 2.000):                                               ("ORCL", 100),                ("ORCL", 100)
+        // [:05, :15):                                ("ORCL", 400), ("ORCL", 100), ("ORCL", 100), ("ORCL", 100)
+        // [:10, :20):                                               ("ORCL", 100),                ("ORCL", 100)
         let out = window.dispatch(Tuple::factory_trade(
-            Timestamp::from_str("2020-01-01 00:00:01.100000000").unwrap(),
+            Timestamp::from_str("2020-01-01 00:00:11.000000000").unwrap(),
             "ORCL",
             100,
         ));
@@ -140,13 +140,13 @@ mod tests {
         t_expect(out.get(0).unwrap(), "GOOGL", 100);
         t_expect(out.get(1).unwrap(), "ORCL", 200);
 
-        // [0.500, 1.500): -> "ORCL" = 175
-        // [1.000, 2.000): -> "ORCL" = 100
+        // [:05, :15): -> "ORCL" = 175
+        // [:10, :20): -> "ORCL" = 100
         //
-        // [1.500, 2.500):                                                                                           ("ORCL", 100)
-        // [2.000, 3.000):                                                                                           ("ORCL", 100)
+        // [:15, :25):                                                                                           ("ORCL", 100)
+        // [:20, :30):                                                                                           ("ORCL", 100)
         let out = window.dispatch(Tuple::factory_trade(
-            Timestamp::from_str("2020-01-01 00:00:02.100000000").unwrap(),
+            Timestamp::from_str("2020-01-01 00:00:21.000000000").unwrap(),
             "ORCL",
             100,
         ));
