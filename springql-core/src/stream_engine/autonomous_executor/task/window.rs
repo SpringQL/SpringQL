@@ -61,6 +61,8 @@ impl Window {
 
 #[cfg(test)]
 mod tests {
+    use springql_test_logger::setup_test_logger;
+
     use super::*;
 
     use std::str::FromStr;
@@ -85,6 +87,8 @@ mod tests {
 
     #[test]
     fn test_timed_sliding_window_aggregation() {
+        setup_test_logger();
+
         // SELECT ticker, AVG(amount) AS avg_amount
         //   FROM trade
         //   SLIDING WINDOW duration_secs(10), duration_secs(5), duration_secs(1)

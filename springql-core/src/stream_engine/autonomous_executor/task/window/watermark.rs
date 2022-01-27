@@ -19,7 +19,7 @@ pub(in crate::stream_engine::autonomous_executor) struct Watermark {
 impl Watermark {
     pub(in crate::stream_engine::autonomous_executor) fn new(allowed_delay: EventDuration) -> Self {
         Self {
-            max_rowtime: MIN_TIMESTAMP,
+            max_rowtime: MIN_TIMESTAMP + allowed_delay.to_chrono(), // to avoid overflow
             allowed_delay,
         }
     }
