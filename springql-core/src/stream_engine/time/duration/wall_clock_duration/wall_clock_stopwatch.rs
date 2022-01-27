@@ -1,4 +1,7 @@
-use crate::stream_engine::time::timestamp::{system_timestamp::SystemTimestamp, Timestamp};
+use crate::stream_engine::time::{
+    duration::SpringDuration,
+    timestamp::{system_timestamp::SystemTimestamp, Timestamp},
+};
 
 use super::WallClockDuration;
 
@@ -22,6 +25,6 @@ impl WallClockStopwatch {
         assert!(stop_at >= self.start_at);
 
         let duration = stop_at - self.start_at;
-        WallClockDuration::from(duration.to_std().expect("chrono to_std"))
+        WallClockDuration::from_std(duration.to_std().expect("chrono to_std"))
     }
 }

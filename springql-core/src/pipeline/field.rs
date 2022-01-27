@@ -14,7 +14,7 @@ use crate::stream_engine::SqlValue;
 use self::aliased_field_name::AliasedFieldName;
 
 /// Field == SqlValue + AliasedFieldName
-#[derive(PartialEq, Debug, new)]
+#[derive(Clone, PartialEq, Debug, new)]
 pub(crate) struct Field {
     name: AliasedFieldName,
     value: SqlValue,

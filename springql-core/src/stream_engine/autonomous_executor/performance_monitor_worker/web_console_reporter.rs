@@ -2,7 +2,7 @@ mod web_console_request;
 
 use crate::stream_engine::{
     autonomous_executor::{performance_metrics::PerformanceMetrics, task_graph::TaskGraph},
-    time::duration::wall_clock_duration::WallClockDuration,
+    time::duration::{wall_clock_duration::WallClockDuration, SpringDuration},
 };
 
 use self::web_console_request::WebConsoleRequest;
@@ -17,7 +17,7 @@ pub(super) struct WebConsoleReporter {
 impl WebConsoleReporter {
     pub(super) fn new(host: &str, port: u16, timeout: WallClockDuration) -> Self {
         let client = reqwest::blocking::Client::builder()
-            .timeout(Some(timeout.into()))
+            .timeout(Some(*timeout.as_std()))
             .build()
             .expect("failed to build a reqwest client");
 
@@ -52,6 +52,8 @@ impl WebConsoleReporter {
 #[cfg(test)]
 mod tests {
     use springql_test_logger::setup_test_logger;
+
+    use crate::stream_engine::time::duration::SpringDuration;
 
     use super::*;
 
