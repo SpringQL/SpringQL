@@ -23,6 +23,16 @@ impl AliasedFieldName {
         Self::new(field_name, None)
     }
 
+    pub(crate) fn from_only_alias(field_alias: FieldAlias) -> Self {
+        Self::new(
+            FieldName::new(
+                AliasedCorrelationName::new(CorrelationName::new("".to_string()), None),
+                AttributeName::new("_".to_string()),
+            ),
+            Some(field_alias),
+        )
+    }
+
     /// Whether the index matches to this name.
     pub(crate) fn matches(&self, pointer: &FieldPointer) -> bool {
         match pointer.prefix() {
