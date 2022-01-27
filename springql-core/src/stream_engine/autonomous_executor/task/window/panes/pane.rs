@@ -4,7 +4,7 @@ use std::collections::HashMap;
 
 use crate::{
     pipeline::{
-        field::{field_pointer::FieldPointer, Field},
+        field::Field,
         pump_model::window_operation_parameter::{AggregateFunctionParameter, AggregateParameter},
     },
     stream_engine::{
@@ -50,7 +50,7 @@ impl Pane {
                 states,
             } => {
                 let group_by_pointer = &aggregation_parameter.group_by;
-                let aggregated_pointer = FieldPointer::from(&aggregation_parameter.aggregated);
+                let aggregated_pointer = &aggregation_parameter.aggregated;
 
                 let group_by_value = tuple
                     .get_value(group_by_pointer)

@@ -132,7 +132,7 @@ mod tests {
 
     use crate::{
         pipeline::{
-            field::{aliased_field_name::AliasedFieldName, field_pointer::FieldPointer},
+            field::field_pointer::FieldPointer,
             name::FieldAlias,
             pump_model::window_operation_parameter::{
                 AggregateFunctionParameter, AggregateParameter,
@@ -147,7 +147,7 @@ mod tests {
     fn dont_care_window_operation_parameter() -> WindowOperationParameter {
         WindowOperationParameter::Aggregation(AggregateParameter::new(
             FieldPointer::from("dontcare"),
-            AliasedFieldName::factory("", ""),
+            FieldPointer::from("dontcare"),
             FieldAlias::new("".to_string()),
             AggregateFunctionParameter::Avg,
         ))
