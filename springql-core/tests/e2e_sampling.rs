@@ -69,7 +69,8 @@ fn test_e2e_sampling() -> Result<()> {
             FLOOR(ts, DURATION_SECS(10)) AS sampled_ts,
             AVG(amount) AS avg_amount
           FROM source_trade
-          GROUP BY sampled_ts;
+          GROUP BY sampled_ts
+          FIXED WINDOW DURATION_SECS(10), DURATION_SECS(0);
         "
         .to_string(),
         format!(
