@@ -274,7 +274,7 @@ mod tests {
 
         // [:00, :10): ("GOOGL", 100), ("ORCL", 100)
         let out = window.dispatch(Tuple::factory_trade(
-            Timestamp::from_str("2020-01-01 00:00:09.999999999").unwrap(),
+            Timestamp::from_str("2020-01-01 00:00:09.000000000").unwrap(),
             "ORCL",
             100,
         ));
@@ -282,7 +282,7 @@ mod tests {
 
         // [:00, :10): ("GOOGL", 100), ("ORCL", 100), ("ORCL", 400)
         let out = window.dispatch(Tuple::factory_trade(
-            Timestamp::from_str("2020-01-01 00:00:06.000000000").unwrap(),
+            Timestamp::from_str("2020-01-01 00:00:09.999999999").unwrap(),
             "ORCL",
             400,
         ));
@@ -345,7 +345,7 @@ mod tests {
             "ORCL",
             100,
         ));
-        assert_eq!(out.len(), 2);
-        t_expect(out.get(1).unwrap(), "ORCL", 100);
+        assert_eq!(out.len(), 1);
+        t_expect(out.get(0).unwrap(), "ORCL", 100);
     }
 }
