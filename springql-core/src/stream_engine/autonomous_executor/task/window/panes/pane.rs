@@ -31,6 +31,9 @@ impl Pane {
     pub(in crate::stream_engine::autonomous_executor) fn open_at(&self) -> Timestamp {
         self.open_at
     }
+    pub(in crate::stream_engine::autonomous_executor) fn close_at(&self) -> Timestamp {
+        self.close_at
+    }
 
     pub(in crate::stream_engine::autonomous_executor) fn is_acceptable(
         &self,

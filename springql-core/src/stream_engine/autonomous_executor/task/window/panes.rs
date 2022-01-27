@@ -69,27 +69,28 @@ impl Panes {
     pub(super) fn remove_panes_to_close(&mut self, watermark: &Watermark) -> Vec<Pane> {
         let mut panes_to_close = vec![];
 
-        // `0..self.panes.len()` is wrong since length changes in the loop.
-        for idx in 0.. {
-            if idx >= self.panes.len() {
-                break;
-            }
-
+        let mut idx = 0;
+        while idx < self.panes.len() {
             let pane = &mut self.panes[idx];
 
             if pane.should_close(watermark) {
                 let pane = self.panes.remove(idx);
                 panes_to_close.push(pane);
+            } else {
+                idx += 1;
             }
         }
 
         log::error!(
             "[remove] watermark: {:?}\npanes(open_at): {:?}\npanes_to_close(open_at): {:?}\n",
             watermark.as_timestamp(),
-            self.panes.iter().map(|p| p.open_at()).collect::<Vec<_>>(),
+            self.panes
+                .iter()
+                .map(|p| (p.open_at(), p.close_at()))
+                .collect::<Vec<_>>(),
             panes_to_close
                 .iter()
-                .map(|p| p.open_at())
+                .map(|p| (p.open_at(), p.close_at()))
                 .collect::<Vec<_>>(),
         );
 
