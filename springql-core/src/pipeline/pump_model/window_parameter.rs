@@ -20,18 +20,44 @@ pub(crate) enum WindowParameter {
         period: EventDuration,
         allowed_delay: EventDuration,
     },
+
+    /// Time-based fixed window
+    ///
+    /// ```text
+    /// length = 10sec, allowed_delay = 0;
+    ///
+    /// pane1 |         |
+    /// pane2           |         |
+    /// pane3                     |          |
+    ///
+    /// -----------------------------------> t
+    ///      :00  :05  :10  :15  :20
+    /// ```
+    TimedFixedWindow {
+        length: EventDuration,
+        allowed_delay: EventDuration,
+    },
 }
 
 impl WindowParameter {
     pub(crate) fn length(&self) -> EventDuration {
         match self {
             WindowParameter::TimedSlidingWindow { length, .. } => *length,
+            WindowParameter::TimedFixedWindow { length, .. } => *length,
         }
     }
 
     pub(crate) fn period(&self) -> EventDuration {
         match self {
             WindowParameter::TimedSlidingWindow { period, .. } => *period,
+            WindowParameter::TimedFixedWindow { length, .. } => *length,
+        }
+    }
+
+    pub(crate) fn allowed_delay(&self) -> EventDuration {
+        match self {
+            WindowParameter::TimedSlidingWindow { allowed_delay, .. } => *allowed_delay,
+            WindowParameter::TimedFixedWindow { allowed_delay, .. } => *allowed_delay,
         }
     }
 }
