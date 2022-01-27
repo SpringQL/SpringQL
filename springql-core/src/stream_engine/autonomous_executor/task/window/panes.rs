@@ -1,3 +1,5 @@
+use std::cmp::Ordering;
+
 use crate::{
     pipeline::pump_model::{
         window_operation_parameter::WindowOperationParameter, window_parameter::WindowParameter,
@@ -47,6 +49,12 @@ impl Panes {
 
         self.generate_panes_if_not_exist(rowtime);
 
+        log::error!(
+            "[after generate] rowtime: {:?}\npanes(open_at): {:?}",
+            rowtime,
+            self.panes.iter().map(|p| p.open_at()).collect::<Vec<_>>(),
+        );
+
         // log::error!(
         //     "[after generate] panes_to_dispatch: rowtime: {:?}, panes(open_at): {:#?}",
         //     rowtime,
@@ -76,7 +84,7 @@ impl Panes {
         }
 
         log::error!(
-            "watermark: {:?}\npanes(open_at): {:?}\npanes_to_close(open_at): {:?}\n",
+            "[remove] watermark: {:?}\npanes(open_at): {:?}\npanes_to_close(open_at): {:?}\n",
             watermark.as_timestamp(),
             self.panes.iter().map(|p| p.open_at()).collect::<Vec<_>>(),
             panes_to_close
@@ -92,15 +100,24 @@ impl Panes {
         // Sort-Merge Join like algorithm
         let mut pane_idx = 0;
         for open_at in self.valid_open_at_s(rowtime) {
-            if pane_idx >= self.panes.len() {
-                self.panes.push(self.generate_pane(open_at));
-            } else if open_at < self.panes[pane_idx].open_at() {
-                self.panes.insert(pane_idx, self.generate_pane(open_at));
-            } else if open_at == self.panes[pane_idx].open_at() {
-                // Pane already exists. Do nothing
-            } else {
-                // next pane may have the open_at
-                pane_idx += 1;
+            loop {
+                if pane_idx < self.panes.len() {
+                    match open_at.cmp(&self.panes[pane_idx].open_at()) {
+                        Ordering::Less => unreachable!("watermark must kick this rowtime"),
+                        Ordering::Equal => {
+                            // Pane already exists.
+                            break; // next open_at
+                        }
+                        Ordering::Greater => {
+                            // next pane may have the open_at
+                            pane_idx += 1;
+                        }
+                    }
+                } else {
+                    // no pane has the open_at
+                    self.panes.push(self.generate_pane(open_at));
+                    break; // next open_at
+                }
             }
         }
     }
@@ -126,6 +143,8 @@ impl Panes {
             ret.push(open_at);
             open_at = open_at + self.window_param.period().to_chrono();
         }
+
+        log::error!("[valid_open_at_s] {:?}", ret);
 
         ret
     }

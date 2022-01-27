@@ -142,35 +142,35 @@ mod tests {
         ));
         assert!(out.is_empty());
 
-        // [:55, :05): ("GOOGL", 100), ("ORCL", 100)
-        // [:00, :10): ("GOOGL", 100), ("ORCL", 100)
-        let out = window.dispatch(Tuple::factory_trade(
-            Timestamp::from_str("2020-01-01 00:00:04.999999999").unwrap(),
-            "ORCL",
-            100,
-        ));
-        assert!(out.is_empty());
+        // // [:55, :05): ("GOOGL", 100), ("ORCL", 100)
+        // // [:00, :10): ("GOOGL", 100), ("ORCL", 100)
+        // let out = window.dispatch(Tuple::factory_trade(
+        //     Timestamp::from_str("2020-01-01 00:00:04.999999999").unwrap(),
+        //     "ORCL",
+        //     100,
+        // ));
+        // assert!(out.is_empty());
 
-        // [:55, :05): -> "GOOGL" AVG = 100; "ORCL" AVG = 100
-        //
-        // [:00, :10): ("GOOGL", 100), ("ORCL", 100), ("ORCL", 400)
-        // [:05, :15):                                ("ORCL", 400)
-        let mut out = window.dispatch(Tuple::factory_trade(
-            Timestamp::from_str("2020-01-01 00:00:06.000000000").unwrap(),
-            "ORCL",
-            400,
-        ));
-        assert_eq!(out.len(), 2);
-        out.sort_by_key(|tuple| {
-            tuple
-                .get_value(&FieldPointer::from("ticker"))
-                .unwrap()
-                .unwrap()
-                .unpack::<String>()
-                .unwrap()
-        });
-        t_expect(out.get(0).unwrap(), "GOOGL", 100);
-        t_expect(out.get(1).unwrap(), "ORCL", 100);
+        // // [:55, :05): -> "GOOGL" AVG = 100; "ORCL" AVG = 100
+        // //
+        // // [:00, :10): ("GOOGL", 100), ("ORCL", 100), ("ORCL", 400)
+        // // [:05, :15):                                ("ORCL", 400)
+        // let mut out = window.dispatch(Tuple::factory_trade(
+        //     Timestamp::from_str("2020-01-01 00:00:06.000000000").unwrap(),
+        //     "ORCL",
+        //     400,
+        // ));
+        // assert_eq!(out.len(), 2);
+        // out.sort_by_key(|tuple| {
+        //     tuple
+        //         .get_value(&FieldPointer::from("ticker"))
+        //         .unwrap()
+        //         .unwrap()
+        //         .unpack::<String>()
+        //         .unwrap()
+        // });
+        // t_expect(out.get(0).unwrap(), "GOOGL", 100);
+        // t_expect(out.get(1).unwrap(), "ORCL", 100);
 
         // // [:00, :10): ("GOOGL", 100), ("ORCL", 100), ("ORCL", 400) <-- !!NOT CLOSED YET (within delay)!!
         // // [:05, :15):                                ("ORCL", 400), ("ORCL", 100)
