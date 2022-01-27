@@ -182,11 +182,23 @@ mod tests {
         ));
         assert!(out.is_empty());
 
+        // too late data to be ignored
+        //
+        // [:00, :10): ("GOOGL", 100), ("ORCL", 100), ("ORCL", 400)
+        // [:05, :15):                                ("ORCL", 400), ("ORCL", 100)
+        // [:10, :20):                                               ("ORCL", 100)
+        let out = window.dispatch(Tuple::factory_trade(
+            Timestamp::from_str("2020-01-01 00:00:09.999999998").unwrap(),
+            "ORCL",
+            100,
+        ));
+        assert!(out.is_empty());
+
         // [:00, :10): ("GOOGL", 100), ("ORCL", 100), ("ORCL", 400),                ("ORCL", 100) <-- !!LATE DATA!!
         // [:05, :15):                                ("ORCL", 400), ("ORCL", 100), ("ORCL", 100)
         // [:10, :20):                                               ("ORCL", 100)
         let out = window.dispatch(Tuple::factory_trade(
-            Timestamp::from_str("2020-01-01 00:00:08.000000000").unwrap(),
+            Timestamp::from_str("2020-01-01 00:00:09.9999999999").unwrap(),
             "ORCL",
             100,
         ));
@@ -213,18 +225,19 @@ mod tests {
         t_expect(out.get(0).unwrap(), "GOOGL", 100);
         t_expect(out.get(1).unwrap(), "ORCL", 200);
 
-        // // [:05, :15): -> "ORCL" = 175
-        // // [:10, :20): -> "ORCL" = 100
-        // //
-        // // [:15, :25):                                                                                           ("ORCL", 100)
-        // // [:20, :30):                                                                                           ("ORCL", 100)
-        // let out = window.dispatch(Tuple::factory_trade(
-        //     Timestamp::from_str("2020-01-01 00:00:21.000000000").unwrap(),
-        //     "ORCL",
-        //     100,
-        // ));
-        // assert_eq!(out.len(), 2);
-        // t_expect(out.get(0).unwrap(), "ORCL", 175);
-        // t_expect(out.get(1).unwrap(), "ORCL", 100);
+        // [:05, :15): -> "ORCL" = 175
+        // [:10, :20): -> "ORCL" = 100
+        //
+        // [:15, :25):                                                                                           ("ORCL", 100)
+        // [:20, :30):                                                                                           ("ORCL", 100)
+        let out = window.dispatch(Tuple::factory_trade(
+            Timestamp::from_str("2020-01-01 00:00:21.000000000").unwrap(),
+            "ORCL",
+            100,
+        ));
+        log::error!("{:#?}", out);
+        assert_eq!(out.len(), 2);
+        t_expect(out.get(0).unwrap(), "ORCL", 175);
+        t_expect(out.get(1).unwrap(), "ORCL", 100);
     }
 }

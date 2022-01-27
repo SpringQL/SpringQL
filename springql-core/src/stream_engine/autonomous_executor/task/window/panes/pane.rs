@@ -47,6 +47,12 @@ impl Pane {
     }
 
     pub(in crate::stream_engine::autonomous_executor) fn dispatch(&mut self, tuple: Tuple) {
+        log::error!(
+            "[Pane::dispatch] self(open_at): {:?}\ntuple: {:?}",
+            self.open_at,
+            tuple
+        );
+
         match &mut self.inner {
             PaneInner::Avg {
                 aggregation_parameter,
