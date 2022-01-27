@@ -4,10 +4,7 @@ use std::collections::HashMap;
 
 use crate::{
     pipeline::{
-        field::{
-            aliased_field_name::AliasedFieldName, field_name::FieldName,
-            field_pointer::FieldPointer, Field,
-        },
+        field::{field_pointer::FieldPointer, Field},
         pump_model::window_operation_parameter::{AggregateFunctionParameter, AggregateParameter},
     },
     stream_engine::{
@@ -30,9 +27,6 @@ pub(in crate::stream_engine::autonomous_executor) struct Pane {
 impl Pane {
     pub(in crate::stream_engine::autonomous_executor) fn open_at(&self) -> Timestamp {
         self.open_at
-    }
-    pub(in crate::stream_engine::autonomous_executor) fn close_at(&self) -> Timestamp {
-        self.close_at
     }
 
     pub(in crate::stream_engine::autonomous_executor) fn is_acceptable(
