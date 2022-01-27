@@ -9,7 +9,8 @@ use crate::{
 
 use self::{
     boolean_expression::{comparison_function::ComparisonFunction, BooleanExpression},
-    operator::UnaryOperator, function_call::FunctionCall,
+    function_call::FunctionCall,
+    operator::UnaryOperator,
 };
 
 /// Expression.
@@ -50,11 +51,18 @@ impl Expression {
             }
         }
 
+        fn helper_function_call(function_call: &FunctionCall) -> Vec<FieldPointer> {
+            match function_call {
+                FunctionCall::Floor { target: expression } => expression.to_field_pointers(),
+            }
+        }
+
         match self {
             Expression::Constant(_) => vec![],
             Expression::FieldPointer(idx) => vec![idx.clone()],
             Expression::UnaryOperator(_op, expr) => expr.to_field_pointers(),
             Expression::BooleanExpr(bool_expr) => helper_boolean_expr(bool_expr),
+            Expression::FunctionCall(function_call) => helper_function_call(function_call),
         }
     }
 }

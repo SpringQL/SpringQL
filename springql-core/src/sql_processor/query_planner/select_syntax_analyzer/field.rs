@@ -1,14 +1,14 @@
 use super::SelectSyntaxAnalyzer;
 use crate::{
     error::{Result, SpringError},
-    expression::Expression,
+    expression::{function_call::FunctionCall, Expression},
     pipeline::{
         correlation::aliased_correlation_name::AliasedCorrelationName,
         field::{
             aliased_field_name::AliasedFieldName, field_name::FieldName,
             field_pointer::FieldPointer,
         },
-        name::AttributeName,
+        name::{AttributeName, FieldAlias},
     },
     sql_processor::sql_parser::syntax::SelectFieldSyntax,
 };
@@ -46,6 +46,13 @@ impl SelectSyntaxAnalyzer {
                 let afn = AliasedFieldName::new(field_name, select_field.alias.clone());
                 Ok(afn)
             }
+            Expression::FunctionCall(_) => select_field
+                .alias
+                .as_ref()
+                .map(|alias| AliasedFieldName::from_only_alias(alias.clone()))
+                .ok_or_else(|| {
+                    SpringError::Sql(anyhow!("field alias is required for function call"))
+                }),
         }
     }
 

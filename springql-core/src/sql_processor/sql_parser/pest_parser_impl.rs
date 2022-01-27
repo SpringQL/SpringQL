@@ -596,7 +596,7 @@ impl PestParserImpl {
             "floor" => {
                 if parameters.len() == 1 {
                     Ok(FunctionCall::Floor {
-                        expression: Box::new(parameters[0].clone()),
+                        target: Box::new(parameters[0].clone()),
                     })
                 } else {
                     Err(SpringError::Sql(anyhow!(

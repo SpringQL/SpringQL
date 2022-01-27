@@ -5,6 +5,7 @@ use crate::{
             comparison_function::ComparisonFunction, logical_function::LogicalFunction,
             BooleanExpression,
         },
+        function_call::FunctionCall,
         operator::UnaryOperator,
         Expression,
     },
@@ -26,6 +27,7 @@ use crate::{
     },
 };
 use anyhow::anyhow;
+use chrono::Duration;
 use std::sync::Arc;
 
 /// Tuple is a temporary structure appearing only in task execution.
@@ -153,6 +155,26 @@ impl Tuple {
                     }
                 }
             },
+            Expression::FunctionCall(function_call) => self.eval_function_call(function_call),
+        }
+    }
+
+    fn eval_function_call(&self, function_call: FunctionCall) -> Result<SqlValue> {
+        match function_call {
+            FunctionCall::Floor { target: expression } => {
+                let sql_value = self.eval_expression(*expression)?;
+                match sql_value {
+                    SqlValue::NotNull(NnSqlValue::Timestamp(ts)) => {
+                        // TODO resolution from syntax
+                        let ts_floor = ts.floor(Duration::seconds(10));
+                        Ok(SqlValue::NotNull(NnSqlValue::Timestamp(ts_floor)))
+                    }
+                    _ => Err(SpringError::Sql(anyhow!(
+                        "floor is only supported for non-NULL TIMESTAMP `{}`",
+                        sql_value
+                    ))),
+                }
+            }
         }
     }
 
