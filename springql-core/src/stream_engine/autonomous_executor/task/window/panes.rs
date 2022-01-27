@@ -49,7 +49,12 @@ impl Panes {
     pub(super) fn remove_panes_to_close(&mut self, watermark: &Watermark) -> Vec<Pane> {
         let mut panes_to_close = vec![];
 
-        for idx in 0..self.panes.len() {
+        // `0..self.panes.len()` is wrong since length changes in the loop.
+        for idx in 0.. {
+            if idx >= self.panes.len() {
+                break;
+            }
+
             let pane = &mut self.panes[idx];
 
             if pane.should_close(watermark) {
