@@ -81,8 +81,17 @@ impl Panes {
     fn valid_open_at_s(&self, rowtime: Timestamp) -> Vec<Timestamp> {
         let mut ret = vec![];
 
-        let leftmost_open_at = (rowtime - self.window_param.length().to_chrono())
-            .ceil(self.window_param.period().to_chrono());
+        let leftmost_open_at = {
+            let l = (rowtime - self.window_param.length().to_chrono())
+                .ceil(self.window_param.period().to_chrono());
+
+            // edge case
+            if l == rowtime - self.window_param.length().to_chrono() {
+                l + self.window_param.period().to_chrono()
+            } else {
+                l
+            }
+        };
         let rightmost_open_at = rowtime.floor(self.window_param.period().to_chrono());
 
         let mut open_at = leftmost_open_at;
@@ -144,11 +153,30 @@ mod tests {
         }
 
         let panes = sliding_window_panes(EventDuration::from_secs(10), EventDuration::from_secs(5));
-        let ret =
-            panes.valid_open_at_s(Timestamp::from_str("2020-01-01 00:00:05.000000000").unwrap());
         assert_eq!(
-            ret,
-            vec![Timestamp::from_str("2020-01-01 00:00:05.000000000").unwrap()]
+            panes.valid_open_at_s(Timestamp::from_str("2020-01-01 00:00:05.000000000").unwrap()),
+            vec![
+                Timestamp::from_str("2020-01-01 00:00:00.000000000").unwrap(),
+                Timestamp::from_str("2020-01-01 00:00:05.000000000").unwrap()
+            ]
+        );
+        assert_eq!(
+            panes.valid_open_at_s(Timestamp::from_str("2020-01-01 00:00:09.999999999").unwrap()),
+            vec![
+                Timestamp::from_str("2020-01-01 00:00:00.000000000").unwrap(),
+                Timestamp::from_str("2020-01-01 00:00:05.000000000").unwrap()
+            ]
+        );
+
+        let panes =
+            sliding_window_panes(EventDuration::from_secs(10), EventDuration::from_secs(10));
+        assert_eq!(
+            panes.valid_open_at_s(Timestamp::from_str("2020-01-01 00:00:00.000000000").unwrap()),
+            vec![Timestamp::from_str("2020-01-01 00:00:00.000000000").unwrap(),]
+        );
+        assert_eq!(
+            panes.valid_open_at_s(Timestamp::from_str("2020-01-01 00:00:09.999999999").unwrap()),
+            vec![Timestamp::from_str("2020-01-01 00:00:00.000000000").unwrap(),]
         );
     }
 }
