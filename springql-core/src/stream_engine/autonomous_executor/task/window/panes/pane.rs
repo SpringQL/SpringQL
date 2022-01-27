@@ -5,7 +5,7 @@ use std::collections::HashMap;
 use crate::{
     pipeline::{
         field::{field_pointer::FieldPointer, Field},
-        pump_model::window_operation_parameter::AggregateParameter,
+        pump_model::window_operation_parameter::{AggregateFunctionParameter, AggregateParameter},
     },
     stream_engine::{
         autonomous_executor::task::{tuple::Tuple, window::watermark::Watermark},
@@ -16,7 +16,7 @@ use crate::{
 
 use self::aggregate_state::{AggregateState, AvgState};
 
-#[derive(Debug)]
+#[derive(Debug, new)]
 pub(in crate::stream_engine::autonomous_executor) struct Pane {
     open_at: Timestamp,
     close_at: Timestamp,
@@ -24,15 +24,11 @@ pub(in crate::stream_engine::autonomous_executor) struct Pane {
     inner: PaneInner,
 }
 
-#[derive(Debug)]
-pub(in crate::stream_engine::autonomous_executor) enum PaneInner {
-    Avg {
-        aggregation_parameter: AggregateParameter,
-        states: HashMap<NnSqlValue, AvgState>,
-    },
-}
-
 impl Pane {
+    pub(in crate::stream_engine::autonomous_executor) fn open_at(&self) -> Timestamp {
+        self.open_at
+    }
+
     pub(in crate::stream_engine::autonomous_executor) fn is_acceptable(
         &self,
         rowtime: &Timestamp,
@@ -107,6 +103,30 @@ impl Pane {
                     Tuple::new(rowtime, vec![avg_field, group_by_field])
                 })
                 .collect(),
+        }
+    }
+}
+
+#[derive(Debug)]
+pub(in crate::stream_engine::autonomous_executor) enum PaneInner {
+    Avg {
+        aggregation_parameter: AggregateParameter,
+        states: HashMap<NnSqlValue, AvgState>,
+    },
+}
+
+impl PaneInner {
+    pub(in crate::stream_engine::autonomous_executor) fn new(
+        aggregation_parameter: AggregateParameter,
+    ) -> Self {
+        match aggregation_parameter.aggregate_function {
+            AggregateFunctionParameter::Avg => {
+                let states = HashMap::new();
+                PaneInner::Avg {
+                    aggregation_parameter,
+                    states,
+                }
+            }
         }
     }
 }

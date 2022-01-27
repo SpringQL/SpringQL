@@ -14,7 +14,7 @@ pub(crate) enum WindowOperationParameter {
 ///   GROUP BY group_by
 ///   SLIDING WINDOW ...;
 /// ```
-#[derive(Clone, Eq, PartialEq, Debug)]
+#[derive(Clone, Eq, PartialEq, Debug, new)]
 pub(crate) struct AggregateParameter {
     pub(crate) group_by: AliasedFieldName,
     pub(crate) aggregated: AliasedFieldName,

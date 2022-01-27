@@ -1,7 +1,5 @@
 use std::cmp::max;
 
-use chrono::Duration;
-
 use crate::stream_engine::time::{
     duration::{event_duration::EventDuration, SpringDuration},
     timestamp::{Timestamp, MIN_TIMESTAMP},
@@ -27,9 +25,7 @@ impl Watermark {
     }
 
     pub(in crate::stream_engine::autonomous_executor) fn as_timestamp(&self) -> Timestamp {
-        self.max_rowtime
-            - Duration::from_std(*self.allowed_delay.as_std())
-                .expect("duration conversion from std to chrono")
+        self.max_rowtime - self.allowed_delay.to_chrono()
     }
 
     pub(in crate::stream_engine::autonomous_executor) fn update(&mut self, rowtime: Timestamp) {

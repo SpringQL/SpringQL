@@ -38,4 +38,8 @@ pub(in crate::stream_engine) trait SpringDuration {
     fn as_secs_f32(&self) -> f32 {
         self.as_std().as_secs_f32()
     }
+
+    fn to_chrono(&self) -> chrono::Duration {
+        chrono::Duration::from_std(*self.as_std()).expect("too large duration for chrono")
+    }
 }

@@ -13,9 +13,6 @@ use super::tuple::Tuple;
 pub(in crate::stream_engine::autonomous_executor) struct Window {
     watermark: Watermark,
     panes: Panes,
-
-    window_param: WindowParameter,
-    op_param: WindowOperationParameter,
 }
 
 impl Window {
@@ -33,9 +30,7 @@ impl Window {
 
                 Self {
                     watermark,
-                    panes: Panes::default(),
-                    window_param,
-                    op_param,
+                    panes: Panes::new(window_param, op_param),
                 }
             }
         }
@@ -49,18 +44,23 @@ impl Window {
     ) -> Vec<Tuple> {
         let rowtime = *tuple.rowtime();
 
-        self.panes
-            .panes_to_dispatch(rowtime)
-            .for_each(|pane| pane.dispatch(tuple.clone()));
+        if rowtime < self.watermark.as_timestamp() {
+            // too late tuple does not have any chance to be dispatched nor to close a pane.
+            Vec::new()
+        } else {
+            self.panes
+                .panes_to_dispatch(rowtime)
+                .for_each(|pane| pane.dispatch(tuple.clone()));
 
-        self.watermark.update(rowtime);
+            self.watermark.update(rowtime);
 
-        self.panes
-            .remove_panes_to_close(&self.watermark)
-            .into_iter()
-            .map(|pane| pane.close())
-            .flatten()
-            .collect()
+            self.panes
+                .remove_panes_to_close(&self.watermark)
+                .into_iter()
+                .map(|pane| pane.close())
+                .flatten()
+                .collect()
+        }
     }
 }
 

@@ -21,3 +21,17 @@ pub(crate) enum WindowParameter {
         allowed_delay: EventDuration,
     },
 }
+
+impl WindowParameter {
+    pub(crate) fn length(&self) -> EventDuration {
+        match self {
+            WindowParameter::TimedSlidingWindow { length, .. } => *length,
+        }
+    }
+
+    pub(crate) fn period(&self) -> EventDuration {
+        match self {
+            WindowParameter::TimedSlidingWindow { period, .. } => *period,
+        }
+    }
+}
