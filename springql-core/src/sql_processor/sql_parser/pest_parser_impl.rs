@@ -15,6 +15,9 @@ use crate::pipeline::name::{
     SourceReaderName, StreamName,
 };
 use crate::pipeline::option::options_builder::OptionsBuilder;
+use crate::pipeline::pump_model::window_operation_parameter::{
+    AggregateFunctionParameter, AggregateParameter,
+};
 use crate::pipeline::relation::column::column_constraint::ColumnConstraint;
 use crate::pipeline::relation::column::column_data_type::ColumnDataType;
 use crate::pipeline::relation::column::column_definition::ColumnDefinition;
@@ -37,7 +40,7 @@ use pest::{iterators::Pairs, Parser};
 use std::convert::identity;
 
 use super::parse_success::ParseSuccess;
-use super::syntax::{FromItemSyntax, SelectFieldSyntax};
+use super::syntax::{AggregateSyntax, FromItemSyntax, SelectFieldSyntax};
 
 #[derive(Debug, Default)]
 pub(super) struct PestParserImpl;
@@ -423,19 +426,49 @@ impl PestParserImpl {
     }
 
     fn parse_select_field(mut params: FnParseParams) -> Result<SelectFieldSyntax> {
-        let expression = parse_child(
+        try_parse_child(
             &mut params,
             Rule::expression,
             Self::parse_expression,
             identity,
-        )?;
-        let alias = try_parse_child(
+        )?
+        .map(|expression| {
+            let alias = try_parse_child(
+                &mut params,
+                Rule::field_alias,
+                Self::parse_field_alias,
+                identity,
+            )?;
+            Ok(SelectFieldSyntax::Expression { expression, alias })
+        })
+        .transpose()?
+        .or(try_parse_child(
             &mut params,
-            Rule::field_alias,
-            Self::parse_field_alias,
+            Rule::aggregate,
+            Self::parse_aggregate,
             identity,
-        )?;
-        Ok(SelectFieldSyntax { expression, alias })
+        )?
+        .map(|aggregate_syntax| {
+            let aggregated_alias = parse_child(
+                &mut params,
+                Rule::field_alias,
+                Self::parse_field_alias,
+                identity,
+            )?;
+            let aggregate_parameter = AggregateParameter {
+                aggregated: aggregate_syntax.aggregated,
+                aggregated_alias,
+                aggregate_function: aggregate_syntax.aggregate_function,
+            };
+            Ok(SelectFieldSyntax::Aggregate(aggregate_parameter))
+        })
+        .transpose()?)
+        .ok_or_else(|| {
+            SpringError::Sql(anyhow!(
+                "Does not match any child rule of command: {}",
+                params.sql
+            ))
+        })
     }
 
     fn parse_from_item(mut params: FnParseParams) -> Result<FromItemSyntax> {
@@ -607,6 +640,48 @@ impl PestParserImpl {
             _ => Err(SpringError::Sql(anyhow!(
                 "unknown function {}",
                 function_name.to_lowercase()
+            ))),
+        }
+    }
+
+    /*
+     * ----------------------------------------------------------------------------
+     * Aggregate
+     * ----------------------------------------------------------------------------
+     */
+
+    fn parse_aggregate(mut params: FnParseParams) -> Result<AggregateSyntax> {
+        let aggregate_function = parse_child(
+            &mut params,
+            Rule::aggregate_name,
+            Self::parse_aggregate_name,
+            identity,
+        )?;
+        let aggregated = parse_child(
+            &mut params,
+            Rule::field_pointer,
+            &Self::parse_field_pointer,
+            &identity,
+        )?;
+        Ok(AggregateSyntax {
+            aggregate_function,
+            aggregated,
+        })
+    }
+
+    fn parse_aggregate_name(mut params: FnParseParams) -> Result<AggregateFunctionParameter> {
+        let aggregate_name = parse_child(
+            &mut params,
+            Rule::identifier,
+            Self::parse_identifier,
+            identity,
+        )?;
+
+        match aggregate_name.to_lowercase().as_str() {
+            "avg" => Ok(AggregateFunctionParameter::Avg),
+            _ => Err(SpringError::Sql(anyhow!(
+                "unknown aggregate function {}",
+                aggregate_name.to_lowercase()
             ))),
         }
     }

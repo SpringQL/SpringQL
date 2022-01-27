@@ -2,7 +2,11 @@
 
 use crate::{
     expression::Expression,
-    pipeline::name::{CorrelationAlias, FieldAlias, StreamName},
+    pipeline::{
+        field::field_pointer::FieldPointer,
+        name::{CorrelationAlias, FieldAlias, StreamName},
+        pump_model::window_operation_parameter::{AggregateFunctionParameter, AggregateParameter},
+    },
 };
 
 #[derive(Clone, Eq, PartialEq, Debug)]
@@ -24,9 +28,12 @@ pub(in crate::sql_processor) struct SelectStreamSyntax {
 }
 
 #[derive(Clone, PartialEq, Debug)]
-pub(in crate::sql_processor) struct SelectFieldSyntax {
-    pub(in crate::sql_processor) expression: Expression,
-    pub(in crate::sql_processor) alias: Option<FieldAlias>,
+pub(in crate::sql_processor) enum SelectFieldSyntax {
+    Expression {
+        expression: Expression,
+        alias: Option<FieldAlias>,
+    },
+    Aggregate(AggregateParameter),
 }
 
 #[derive(Clone, Eq, PartialEq, Debug)]
@@ -35,4 +42,10 @@ pub(in crate::sql_processor) enum FromItemSyntax {
         stream_name: StreamName,
         alias: Option<CorrelationAlias>,
     },
+}
+
+#[derive(Clone, Eq, PartialEq, Debug)]
+pub(in crate::sql_processor) struct AggregateSyntax {
+    pub(in crate::sql_processor) aggregate_function: AggregateFunctionParameter,
+    pub(in crate::sql_processor) aggregated: FieldPointer,
 }
