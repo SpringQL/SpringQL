@@ -1,4 +1,5 @@
 pub(crate) mod boolean_expression;
+pub(crate) mod function_call;
 pub(crate) mod operator;
 
 use crate::{
@@ -8,7 +9,7 @@ use crate::{
 
 use self::{
     boolean_expression::{comparison_function::ComparisonFunction, BooleanExpression},
-    operator::UnaryOperator,
+    operator::UnaryOperator, function_call::FunctionCall,
 };
 
 /// Expression.
@@ -18,6 +19,7 @@ pub(crate) enum Expression {
     FieldPointer(FieldPointer),
     UnaryOperator(UnaryOperator, Box<Expression>),
     BooleanExpr(BooleanExpression),
+    FunctionCall(FunctionCall),
 }
 
 impl Expression {
