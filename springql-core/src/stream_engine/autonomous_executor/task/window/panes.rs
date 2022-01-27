@@ -41,25 +41,7 @@ impl Panes {
         &mut self,
         rowtime: Timestamp,
     ) -> impl Iterator<Item = &mut Pane> {
-        // log::error!(
-        //     "[start] panes_to_dispatch: rowtime: {:?}, panes(open_at): {:#?}",
-        //     rowtime,
-        //     self.panes.iter().map(|p| p.open_at()).collect::<Vec<_>>()
-        // );
-
         self.generate_panes_if_not_exist(rowtime);
-
-        log::error!(
-            "[after generate] rowtime: {:?}\npanes(open_at): {:?}",
-            rowtime,
-            self.panes.iter().map(|p| p.open_at()).collect::<Vec<_>>(),
-        );
-
-        // log::error!(
-        //     "[after generate] panes_to_dispatch: rowtime: {:?}, panes(open_at): {:#?}",
-        //     rowtime,
-        //     self.panes.iter().map(|p| p.open_at()).collect::<Vec<_>>()
-        // );
 
         self.panes
             .iter_mut()
@@ -80,19 +62,6 @@ impl Panes {
                 idx += 1;
             }
         }
-
-        log::error!(
-            "[remove] watermark: {:?}\npanes(open_at): {:?}\npanes_to_close(open_at): {:?}\n",
-            watermark.as_timestamp(),
-            self.panes
-                .iter()
-                .map(|p| (p.open_at(), p.close_at()))
-                .collect::<Vec<_>>(),
-            panes_to_close
-                .iter()
-                .map(|p| (p.open_at(), p.close_at()))
-                .collect::<Vec<_>>(),
-        );
 
         panes_to_close
     }
@@ -144,8 +113,6 @@ impl Panes {
             ret.push(open_at);
             open_at = open_at + self.window_param.period().to_chrono();
         }
-
-        log::error!("[valid_open_at_s] {:?}", ret);
 
         ret
     }

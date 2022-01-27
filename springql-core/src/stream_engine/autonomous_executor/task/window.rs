@@ -235,7 +235,6 @@ mod tests {
             "ORCL",
             100,
         ));
-        log::error!("{:#?}", out);
         assert_eq!(out.len(), 2);
         t_expect(out.get(0).unwrap(), "ORCL", 175);
         t_expect(out.get(1).unwrap(), "ORCL", 100);
