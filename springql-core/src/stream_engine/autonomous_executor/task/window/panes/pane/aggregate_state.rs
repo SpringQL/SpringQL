@@ -30,3 +30,17 @@ impl AggregateState for AvgState {
         self.current_avg.round() as i64
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_avg_state() {
+        let mut state = AvgState::default();
+        state.next(100);
+        state.next(400);
+        state.next(100);
+        assert_eq!(state.finalize(), 200);
+    }
+}
