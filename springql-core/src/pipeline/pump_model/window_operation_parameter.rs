@@ -1,6 +1,8 @@
 use crate::pipeline::{
     correlation::aliased_correlation_name::AliasedCorrelationName,
-    field::{aliased_field_name::AliasedFieldName, field_name::FieldName},
+    field::{
+        aliased_field_name::AliasedFieldName, field_name::FieldName, field_pointer::FieldPointer,
+    },
     name::{AttributeName, CorrelationName, FieldAlias},
 };
 
@@ -20,7 +22,7 @@ pub(crate) enum WindowOperationParameter {
 /// ```
 #[derive(Clone, Eq, PartialEq, Debug, new)]
 pub(crate) struct AggregateParameter {
-    pub(crate) group_by: AliasedFieldName,
+    pub(crate) group_by: FieldPointer,
     pub(crate) aggregated: AliasedFieldName,
     pub(crate) aggregated_alias: FieldAlias,
     pub(crate) aggregate_function: AggregateFunctionParameter,
@@ -39,5 +41,16 @@ impl AggregateParameter {
             AttributeName::new("_".to_string()),
         );
         AliasedFieldName::new(field_name, Some(self.aggregated_alias.clone()))
+    }
+
+    pub(crate) fn group_by_aliased_field_name(&self) -> AliasedFieldName {
+        let field_name = FieldName::new(
+            AliasedCorrelationName::new(CorrelationName::new("_".to_string()), None),
+            AttributeName::new("_".to_string()),
+        );
+        AliasedFieldName::new(
+            field_name,
+            Some(FieldAlias::new(self.group_by.attr().to_string())),
+        )
     }
 }

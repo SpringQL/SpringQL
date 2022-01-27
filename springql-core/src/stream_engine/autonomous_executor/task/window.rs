@@ -116,9 +116,9 @@ mod tests {
                 allowed_delay: EventDuration::from_secs(1),
             },
             WindowOperationParameter::Aggregation(AggregateParameter {
-                group_by: AliasedFieldName::factory(
-                    StreamName::fx_trade().as_ref(),
-                    ColumnName::fx_ticker().as_ref(),
+                group_by: FieldPointer::new(
+                    Some(StreamName::fx_trade().to_string()),
+                    ColumnName::fx_ticker().to_string(),
                 ),
                 aggregated: AliasedFieldName::factory(
                     StreamName::fx_trade().as_ref(),
@@ -251,9 +251,9 @@ mod tests {
                 allowed_delay: EventDuration::from_secs(1),
             },
             WindowOperationParameter::Aggregation(AggregateParameter {
-                group_by: AliasedFieldName::factory(
-                    StreamName::fx_trade().as_ref(),
-                    ColumnName::fx_ticker().as_ref(),
+                group_by: FieldPointer::new(
+                    Some(StreamName::fx_trade().to_string()),
+                    ColumnName::fx_ticker().to_string(),
                 ),
                 aggregated: AliasedFieldName::factory(
                     StreamName::fx_trade().as_ref(),
