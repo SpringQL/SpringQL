@@ -21,13 +21,8 @@ impl Window {
         op_param: WindowOperationParameter,
     ) -> Self {
         match window_param {
-            WindowParameter::TimedSlidingWindow {
-                length,
-                period,
-                allowed_delay,
-            } => {
+            WindowParameter::TimedSlidingWindow { allowed_delay, .. } => {
                 let watermark = Watermark::new(allowed_delay);
-
                 Self {
                     watermark,
                     panes: Panes::new(window_param, op_param),
