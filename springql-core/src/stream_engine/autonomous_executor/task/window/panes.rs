@@ -39,7 +39,19 @@ impl Panes {
         &mut self,
         rowtime: Timestamp,
     ) -> impl Iterator<Item = &mut Pane> {
+        // log::error!(
+        //     "[start] panes_to_dispatch: rowtime: {:?}, panes(open_at): {:#?}",
+        //     rowtime,
+        //     self.panes.iter().map(|p| p.open_at()).collect::<Vec<_>>()
+        // );
+
         self.generate_panes_if_not_exist(rowtime);
+
+        // log::error!(
+        //     "[after generate] panes_to_dispatch: rowtime: {:?}, panes(open_at): {:#?}",
+        //     rowtime,
+        //     self.panes.iter().map(|p| p.open_at()).collect::<Vec<_>>()
+        // );
 
         self.panes
             .iter_mut()
@@ -62,6 +74,16 @@ impl Panes {
                 panes_to_close.push(pane);
             }
         }
+
+        log::error!(
+            "watermark: {:?}\npanes(open_at): {:?}\npanes_to_close(open_at): {:?}\n",
+            watermark.as_timestamp(),
+            self.panes.iter().map(|p| p.open_at()).collect::<Vec<_>>(),
+            panes_to_close
+                .iter()
+                .map(|p| p.open_at())
+                .collect::<Vec<_>>(),
+        );
 
         panes_to_close
     }
@@ -109,7 +131,7 @@ impl Panes {
     }
 
     fn generate_pane(&self, open_at: Timestamp) -> Pane {
-        let close_at = open_at + self.window_param.period().to_chrono();
+        let close_at = open_at + self.window_param.length().to_chrono();
         let pane_inner = match &self.op_param {
             WindowOperationParameter::Aggregation(param) => PaneInner::new(param.clone()),
         };
