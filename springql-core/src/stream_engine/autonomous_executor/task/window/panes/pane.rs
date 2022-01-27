@@ -4,7 +4,10 @@ use std::collections::HashMap;
 
 use crate::{
     pipeline::{
-        field::{field_pointer::FieldPointer, Field},
+        field::{
+            aliased_field_name::AliasedFieldName, field_name::FieldName,
+            field_pointer::FieldPointer, Field,
+        },
         pump_model::window_operation_parameter::{AggregateFunctionParameter, AggregateParameter},
     },
     stream_engine::{
@@ -94,7 +97,10 @@ impl Pane {
                     let rowtime = self.close_at; // FIXME tuple.rowtime is always close_at
                     let avg_field = {
                         let avg_value = SqlValue::NotNull(NnSqlValue::BigInt(state.finalize()));
-                        Field::new(aggregation_parameter.aggregated.clone(), avg_value)
+                        Field::new(
+                            aggregation_parameter.aggregated_aliased_field_name(),
+                            avg_value,
+                        )
                     };
                     let group_by_field = {
                         let group_by_value = SqlValue::NotNull(group_by);

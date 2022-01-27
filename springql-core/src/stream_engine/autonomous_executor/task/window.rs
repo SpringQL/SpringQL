@@ -170,7 +170,7 @@ mod tests {
                 .unwrap()
         });
         t_expect(out.get(0).unwrap(), "GOOGL", 100);
-        t_expect(out.get(1).unwrap(), "ORCL", 200);
+        t_expect(out.get(1).unwrap(), "ORCL", 100);
 
         // // [:00, :10): ("GOOGL", 100), ("ORCL", 100), ("ORCL", 400) <-- !!NOT CLOSED YET (within delay)!!
         // // [:05, :15):                                ("ORCL", 400), ("ORCL", 100)

@@ -1,4 +1,8 @@
-use crate::pipeline::{field::aliased_field_name::AliasedFieldName, name::FieldAlias};
+use crate::pipeline::{
+    correlation::aliased_correlation_name::AliasedCorrelationName,
+    field::{aliased_field_name::AliasedFieldName, field_name::FieldName},
+    name::{AttributeName, CorrelationName, FieldAlias},
+};
 
 /// Window operation parameters
 #[derive(Clone, Eq, PartialEq, Debug)]
@@ -25,4 +29,15 @@ pub(crate) struct AggregateParameter {
 #[derive(Clone, Eq, PartialEq, Debug)]
 pub(crate) enum AggregateFunctionParameter {
     Avg,
+}
+
+impl AggregateParameter {
+    pub(crate) fn aggregated_aliased_field_name(&self) -> AliasedFieldName {
+        // FIXME field name for expression
+        let field_name = FieldName::new(
+            AliasedCorrelationName::new(CorrelationName::new("_".to_string()), None),
+            AttributeName::new("_".to_string()),
+        );
+        AliasedFieldName::new(field_name, Some(self.aggregated_alias.clone()))
+    }
 }
