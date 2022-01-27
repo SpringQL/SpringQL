@@ -67,8 +67,8 @@ mod tests {
         pipeline::{
             field::field_pointer::FieldPointer,
             name::{ColumnName, FieldAlias, StreamName},
-            pump_model::window_operation_parameter::{
-                AggregateFunctionParameter, AggregateParameter,
+            pump_model::window_operation_parameter::aggregate::{
+                AggregateFunctionParameter, AggregateParameter, GroupAggregateParameter,
             },
         },
         stream_engine::{
@@ -115,17 +115,19 @@ mod tests {
                 period: EventDuration::from_secs(5),
                 allowed_delay: EventDuration::from_secs(1),
             },
-            WindowOperationParameter::Aggregation(AggregateParameter {
+            WindowOperationParameter::GroupAggregation(GroupAggregateParameter {
+                aggregation_parameter: AggregateParameter {
+                    aggregated: FieldPointer::new(
+                        Some(StreamName::fx_trade().to_string()),
+                        ColumnName::fx_amount().to_string(),
+                    ),
+                    aggregated_alias: FieldAlias::new("avg_amount".to_string()),
+                    aggregate_function: AggregateFunctionParameter::Avg,
+                },
                 group_by: FieldPointer::new(
                     Some(StreamName::fx_trade().to_string()),
                     ColumnName::fx_ticker().to_string(),
                 ),
-                aggregated: FieldPointer::new(
-                    Some(StreamName::fx_trade().to_string()),
-                    ColumnName::fx_amount().to_string(),
-                ),
-                aggregated_alias: FieldAlias::new("avg_amount".to_string()),
-                aggregate_function: AggregateFunctionParameter::Avg,
             }),
         );
 
@@ -250,17 +252,19 @@ mod tests {
                 length: EventDuration::from_secs(10),
                 allowed_delay: EventDuration::from_secs(1),
             },
-            WindowOperationParameter::Aggregation(AggregateParameter {
+            WindowOperationParameter::GroupAggregation(GroupAggregateParameter {
+                aggregation_parameter: AggregateParameter {
+                    aggregated: FieldPointer::new(
+                        Some(StreamName::fx_trade().to_string()),
+                        ColumnName::fx_amount().to_string(),
+                    ),
+                    aggregated_alias: FieldAlias::new("avg_amount".to_string()),
+                    aggregate_function: AggregateFunctionParameter::Avg,
+                },
                 group_by: FieldPointer::new(
                     Some(StreamName::fx_trade().to_string()),
                     ColumnName::fx_ticker().to_string(),
                 ),
-                aggregated: FieldPointer::new(
-                    Some(StreamName::fx_trade().to_string()),
-                    ColumnName::fx_amount().to_string(),
-                ),
-                aggregated_alias: FieldAlias::new("avg_amount".to_string()),
-                aggregate_function: AggregateFunctionParameter::Avg,
             }),
         );
 

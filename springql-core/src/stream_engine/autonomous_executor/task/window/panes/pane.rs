@@ -5,7 +5,9 @@ use std::collections::HashMap;
 use crate::{
     pipeline::{
         field::Field,
-        pump_model::window_operation_parameter::{AggregateFunctionParameter, AggregateParameter},
+        pump_model::window_operation_parameter::aggregate::{
+            AggregateFunctionParameter, GroupAggregateParameter,
+        },
     },
     stream_engine::{
         autonomous_executor::task::{tuple::Tuple, window::watermark::Watermark},
@@ -46,11 +48,12 @@ impl Pane {
     pub(in crate::stream_engine::autonomous_executor) fn dispatch(&mut self, tuple: Tuple) {
         match &mut self.inner {
             PaneInner::Avg {
-                aggregation_parameter,
+                group_aggregation_parameter,
                 states,
             } => {
-                let group_by_pointer = &aggregation_parameter.group_by;
-                let aggregated_pointer = &aggregation_parameter.aggregated;
+                let group_by_pointer = &group_aggregation_parameter.group_by;
+                let aggregated_pointer =
+                    &group_aggregation_parameter.aggregation_parameter.aggregated;
 
                 let group_by_value = tuple
                     .get_value(group_by_pointer)
@@ -86,7 +89,7 @@ impl Pane {
     pub(in crate::stream_engine::autonomous_executor) fn close(self) -> Vec<Tuple> {
         match self.inner {
             PaneInner::Avg {
-                aggregation_parameter,
+                group_aggregation_parameter,
                 states,
             } => states
                 .into_iter()
@@ -95,14 +98,16 @@ impl Pane {
                     let avg_field = {
                         let avg_value = SqlValue::NotNull(NnSqlValue::BigInt(state.finalize()));
                         Field::new(
-                            aggregation_parameter.aggregated_aliased_field_name(),
+                            group_aggregation_parameter
+                                .aggregation_parameter
+                                .aggregated_aliased_field_name(),
                             avg_value,
                         )
                     };
                     let group_by_field = {
                         let group_by_value = SqlValue::NotNull(group_by);
                         Field::new(
-                            aggregation_parameter.group_by_aliased_field_name(),
+                            group_aggregation_parameter.group_by_aliased_field_name(),
                             group_by_value,
                         )
                     };
@@ -116,20 +121,23 @@ impl Pane {
 #[derive(Debug)]
 pub(in crate::stream_engine::autonomous_executor) enum PaneInner {
     Avg {
-        aggregation_parameter: AggregateParameter,
+        group_aggregation_parameter: GroupAggregateParameter,
         states: HashMap<NnSqlValue, AvgState>,
     },
 }
 
 impl PaneInner {
     pub(in crate::stream_engine::autonomous_executor) fn new(
-        aggregation_parameter: AggregateParameter,
+        group_aggregation_parameter: GroupAggregateParameter,
     ) -> Self {
-        match aggregation_parameter.aggregate_function {
+        match group_aggregation_parameter
+            .aggregation_parameter
+            .aggregate_function
+        {
             AggregateFunctionParameter::Avg => {
                 let states = HashMap::new();
                 PaneInner::Avg {
-                    aggregation_parameter,
+                    group_aggregation_parameter,
                     states,
                 }
             }

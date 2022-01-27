@@ -120,7 +120,7 @@ impl Panes {
     fn generate_pane(&self, open_at: Timestamp) -> Pane {
         let close_at = open_at + self.window_param.length().to_chrono();
         let pane_inner = match &self.op_param {
-            WindowOperationParameter::Aggregation(param) => PaneInner::new(param.clone()),
+            WindowOperationParameter::GroupAggregation(param) => PaneInner::new(param.clone()),
         };
         Pane::new(open_at, close_at, pane_inner)
     }
@@ -134,8 +134,8 @@ mod tests {
         pipeline::{
             field::field_pointer::FieldPointer,
             name::FieldAlias,
-            pump_model::window_operation_parameter::{
-                AggregateFunctionParameter, AggregateParameter,
+            pump_model::window_operation_parameter::aggregate::{
+                AggregateFunctionParameter, AggregateParameter, GroupAggregateParameter,
             },
         },
         stream_engine::time::duration::event_duration::EventDuration,
@@ -145,12 +145,14 @@ mod tests {
     use pretty_assertions::assert_eq;
 
     fn dont_care_window_operation_parameter() -> WindowOperationParameter {
-        WindowOperationParameter::Aggregation(AggregateParameter::new(
-            FieldPointer::from("dontcare"),
-            FieldPointer::from("dontcare"),
-            FieldAlias::new("".to_string()),
-            AggregateFunctionParameter::Avg,
-        ))
+        WindowOperationParameter::GroupAggregation(GroupAggregateParameter {
+            aggregation_parameter: AggregateParameter::new(
+                FieldPointer::from("dontcare"),
+                FieldAlias::new("".to_string()),
+                AggregateFunctionParameter::Avg,
+            ),
+            group_by: FieldPointer::from("dontcare"),
+        })
     }
 
     #[test]
