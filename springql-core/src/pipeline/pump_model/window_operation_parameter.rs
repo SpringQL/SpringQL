@@ -22,8 +22,8 @@ pub(crate) enum WindowOperationParameter {
 /// ```
 #[derive(Clone, Eq, PartialEq, Debug, new)]
 pub(crate) struct AggregateParameter {
-    pub(crate) group_by: FieldPointer,
-    pub(crate) aggregated: AliasedFieldName,
+    pub(crate) group_by: FieldPointer,       // TODO exclude
+    pub(crate) aggregated: AliasedFieldName, // TODO FieldPointer
     pub(crate) aggregated_alias: FieldAlias,
     pub(crate) aggregate_function: AggregateFunctionParameter,
 }
