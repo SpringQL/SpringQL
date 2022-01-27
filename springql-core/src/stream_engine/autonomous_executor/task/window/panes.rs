@@ -81,9 +81,9 @@ impl Panes {
     fn valid_open_at_s(&self, rowtime: Timestamp) -> Vec<Timestamp> {
         let mut ret = vec![];
 
-        let leftmost_open_at =
-            (rowtime - self.window_param.length().to_chrono()).ceil(self.window_param.period());
-        let rightmost_open_at = rowtime.floor(self.window_param.period());
+        let leftmost_open_at = (rowtime - self.window_param.length().to_chrono())
+            .ceil(self.window_param.period().to_chrono());
+        let rightmost_open_at = rowtime.floor(self.window_param.period().to_chrono());
 
         let mut open_at = leftmost_open_at;
         while open_at <= rightmost_open_at {
@@ -96,8 +96,8 @@ impl Panes {
 
     fn generate_pane(&self, open_at: Timestamp) -> Pane {
         let close_at = open_at + self.window_param.period().to_chrono();
-        let pane_inner = match self.op_param {
-            WindowOperationParameter::Aggregation(param) => PaneInner::new(param),
+        let pane_inner = match &self.op_param {
+            WindowOperationParameter::Aggregation(param) => PaneInner::new(param.clone()),
         };
         Pane::new(open_at, close_at, pane_inner)
     }
