@@ -26,7 +26,7 @@ impl AliasedFieldName {
     pub(crate) fn from_only_alias(field_alias: FieldAlias) -> Self {
         Self::new(
             FieldName::new(
-                AliasedCorrelationName::new(CorrelationName::new("".to_string()), None),
+                AliasedCorrelationName::new(CorrelationName::new("_".to_string()), None),
                 AttributeName::new("_".to_string()),
             ),
             Some(field_alias),
