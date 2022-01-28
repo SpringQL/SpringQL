@@ -82,6 +82,11 @@ impl AliasedFieldName {
 
 impl From<&AliasedFieldName> for FieldPointer {
     fn from(n: &AliasedFieldName) -> Self {
-        Self::from(&n.field_name)
+        // FIXME prioritize alias over field name but want to fix issue: <https://gh01.base.toyota-tokyo.tech/SpringQL-internal/SpringQL/issues/156>
+        if let Some(alias) = &n.field_alias {
+            Self::from(alias.as_ref())
+        } else {
+            Self::from(&n.field_name)
+        }
     }
 }
