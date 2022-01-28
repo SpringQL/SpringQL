@@ -26,6 +26,8 @@ keyword = {
     | ^"BIGINT"
     | ^"BY"
     | ^"CREATE"
+    | ^"DURATION_SECS"
+    | ^"FIXED"
     | ^"FLOOR"
     | ^"FOR"
     | ^"FROM"
@@ -49,6 +51,7 @@ keyword = {
     | ^"TEXT"
     | ^"TIMESTAMP"
     | ^"TYPE"
+    | ^"WINDOW"
     | ^"WRITER"
 }
 
@@ -134,6 +137,7 @@ constant = {
     null_constant
     | numeric_constant
     | string_constant
+    | duration_constant
 }
 
 null_constant = {
@@ -154,6 +158,14 @@ string_constant = {
 
 string_content = @{
     string_character*
+}
+
+duration_constant = {
+    duration_function ~ "(" ~ integer_constant ~ ")"
+}
+
+duration_function = {
+    ^"DURATION_SECS"
 }
 
 /*
@@ -398,6 +410,7 @@ select_stream_command = {
     ~ select_field ~ ("," ~ select_field)*
     ~ (^"FROM" ~ from_item)
     ~ (^"GROUP" ~ "BY" ~ grouping_element)? // TODO multiple grouping elements
+    ~ window_clause?
 }
 
 select_field = {
@@ -417,6 +430,17 @@ grouping_element = {
     field_pointer // TODO expression
 }
 
+window_clause = {
+    ^"FIXED" ~ ^"WINDOW" ~ window_length ~ "," ~ allowed_delay
+}
+
+window_length = {
+    duration_constant
+}
+
+allowed_delay = {
+    duration_constant
+}
 
 /*
  * ----------------------------------------------------------------------------

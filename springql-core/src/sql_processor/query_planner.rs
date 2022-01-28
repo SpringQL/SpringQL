@@ -52,6 +52,8 @@ impl QueryPlanner {
             .next()
             .expect("collect_ops.len() == 1");
 
+        let group_aggregate_window_op = self.create_group_aggregate_window_op()?; // TODO loosely coupled GROUP BY, AGGR(*), and WINDOW.
+
         // self.create_window_nodes()?;
         // self.create_join_nodes()?;
         // self.create_aggregation_nodes()?;
@@ -61,6 +63,7 @@ impl QueryPlanner {
 
         let mut plan = self.plan;
         plan.add_root(projection_op.clone());
+        // TODO group_aggregate_window_op
         plan.add_left(&projection_op, collect_op);
         Ok(plan)
     }
@@ -84,6 +87,10 @@ impl QueryPlanner {
                 Ok(QueryPlanOperation::Collect { stream, aliaser })
             })
             .collect::<Result<Vec<_>>>()
+    }
+
+    fn create_group_aggregate_window_op(&self) -> Result<Option<QueryPlanOperation>> {
+        Ok(None) // TODO
     }
 
     fn create_projection_op(&self) -> Result<QueryPlanOperation> {
