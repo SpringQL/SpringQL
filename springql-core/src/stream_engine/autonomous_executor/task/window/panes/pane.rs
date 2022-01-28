@@ -65,7 +65,7 @@ impl Pane {
                 };
 
                 let aggregated_value = tuple
-                    .get_value(&aggregated_pointer)
+                    .get_value(aggregated_pointer)
                     .expect("field pointer for aggregated value must be checked before");
                 let aggregated_value = if let SqlValue::NotNull(v) = aggregated_value {
                     v

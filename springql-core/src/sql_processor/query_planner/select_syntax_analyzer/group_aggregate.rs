@@ -9,7 +9,7 @@ impl SelectSyntaxAnalyzer {
     pub(in super::super) fn group_aggregate_parameter(
         &self,
     ) -> Result<Option<GroupAggregateParameter>> {
-        let opt_group_by = self.select_syntax.grouping_element;
+        let opt_group_by = &self.select_syntax.grouping_element;
         let mut aggregate_parameters = self.aggregate_parameters();
 
         match (opt_group_by, aggregate_parameters.len()) {
@@ -18,7 +18,7 @@ impl SelectSyntaxAnalyzer {
                     .into_iter()
                     .next()
                     .expect("len checked"),
-                group_by,
+                group_by.clone(),
             ))),
             (None, 0) => Ok(None),
             _ => unimplemented!(),
