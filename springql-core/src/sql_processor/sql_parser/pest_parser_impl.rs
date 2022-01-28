@@ -18,6 +18,7 @@ use crate::pipeline::option::options_builder::OptionsBuilder;
 use crate::pipeline::pump_model::window_operation_parameter::aggregate::{
     AggregateFunctionParameter, AggregateParameter,
 };
+use crate::pipeline::pump_model::window_parameter::WindowParameter;
 use crate::pipeline::relation::column::column_constraint::ColumnConstraint;
 use crate::pipeline::relation::column::column_data_type::ColumnDataType;
 use crate::pipeline::relation::column::column_definition::ColumnDefinition;
@@ -32,6 +33,8 @@ use crate::sql_processor::sql_parser::syntax::{
     ColumnConstraintSyntax, OptionSyntax, SelectStreamSyntax,
 };
 use crate::stream_engine::command::insert_plan::InsertPlan;
+use crate::stream_engine::time::duration::event_duration::EventDuration;
+use crate::stream_engine::time::duration::SpringDuration;
 use crate::stream_engine::{NnSqlValue, SqlValue};
 use anyhow::{anyhow, Context};
 use generated_parser::{GeneratedParser, Rule};
@@ -40,7 +43,7 @@ use pest::{iterators::Pairs, Parser};
 use std::convert::identity;
 
 use super::parse_success::ParseSuccess;
-use super::syntax::{AggregateSyntax, FromItemSyntax, SelectFieldSyntax};
+use super::syntax::{AggregateSyntax, DurationFunction, FromItemSyntax, SelectFieldSyntax};
 
 #[derive(Debug, Default)]
 pub(super) struct PestParserImpl;
@@ -138,6 +141,38 @@ impl PestParserImpl {
     fn parse_string_content(mut params: FnParseParams) -> Result<String> {
         let s = self_as_str(&mut params);
         Ok(s.into())
+    }
+
+    fn parse_duration_constant(mut params: FnParseParams) -> Result<EventDuration> {
+        let duration_function = parse_child(
+            &mut params,
+            Rule::duration_function,
+            Self::parse_duration_function,
+            identity,
+        )?;
+        let integer_constant = parse_child(
+            &mut params,
+            Rule::integer_constant,
+            Self::parse_integer_constant,
+            identity,
+        )?;
+
+        match duration_function {
+            DurationFunction::Secs => {
+                Ok(EventDuration::from_secs(integer_constant.to_i64()? as u64))
+            }
+        }
+    }
+
+    fn parse_duration_function(mut params: FnParseParams) -> Result<DurationFunction> {
+        let s = self_as_str(&mut params);
+        match s.to_lowercase().as_ref() {
+            "duration_secs" => Ok(DurationFunction::Secs),
+            _ => Err(SpringError::Sql(anyhow!(
+                "duration function `{}` is invalid",
+                s
+            ))),
+        }
     }
 
     /*
@@ -427,11 +462,18 @@ impl PestParserImpl {
             Self::parse_grouping_element,
             identity,
         )?;
+        let window_clause = try_parse_child(
+            &mut params,
+            Rule::window_clause,
+            Self::parse_window_clause,
+            identity,
+        )?;
 
         Ok(SelectStreamSyntax {
             fields,
             from_item,
             grouping_element,
+            window_clause,
         })
     }
 
@@ -515,6 +557,44 @@ impl PestParserImpl {
             identity,
         )
     }
+
+    fn parse_window_clause(mut params: FnParseParams) -> Result<WindowParameter> {
+        let length = parse_child(
+            &mut params,
+            Rule::window_length,
+            Self::parse_window_length,
+            identity,
+        )?;
+        let allowed_delay = parse_child(
+            &mut params,
+            Rule::allowed_delay,
+            Self::parse_allowed_delay,
+            identity,
+        )?;
+
+        Ok(WindowParameter::TimedFixedWindow {
+            length,
+            allowed_delay,
+        })
+    }
+
+    fn parse_window_length(mut params: FnParseParams) -> Result<EventDuration> {
+        parse_child(
+            &mut params,
+            Rule::duration_constant,
+            Self::parse_duration_constant,
+            identity,
+        )
+    }
+    fn parse_allowed_delay(mut params: FnParseParams) -> Result<EventDuration> {
+        parse_child(
+            &mut params,
+            Rule::duration_constant,
+            Self::parse_duration_constant,
+            identity,
+        )
+    }
+
     /*
      * ================================================================================================
      * Value Expressions:

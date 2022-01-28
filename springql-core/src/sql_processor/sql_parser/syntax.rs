@@ -5,8 +5,11 @@ use crate::{
     pipeline::{
         field::field_pointer::FieldPointer,
         name::{CorrelationAlias, FieldAlias, StreamName},
-        pump_model::window_operation_parameter::aggregate::{
-            AggregateFunctionParameter, AggregateParameter,
+        pump_model::{
+            window_operation_parameter::aggregate::{
+                AggregateFunctionParameter, AggregateParameter,
+            },
+            window_parameter::WindowParameter,
         },
     },
 };
@@ -28,6 +31,7 @@ pub(in crate::sql_processor) struct SelectStreamSyntax {
     pub(in crate::sql_processor) fields: Vec<SelectFieldSyntax>,
     pub(in crate::sql_processor) from_item: FromItemSyntax,
     pub(in crate::sql_processor) grouping_element: Option<FieldPointer>,
+    pub(in crate::sql_processor) window_clause: Option<WindowParameter>,
 }
 
 #[derive(Clone, PartialEq, Debug)]
@@ -51,4 +55,9 @@ pub(in crate::sql_processor) enum FromItemSyntax {
 pub(in crate::sql_processor) struct AggregateSyntax {
     pub(in crate::sql_processor) aggregate_function: AggregateFunctionParameter,
     pub(in crate::sql_processor) aggregated: FieldPointer,
+}
+
+#[derive(Clone, Eq, PartialEq, Debug)]
+pub(in crate::sql_processor) enum DurationFunction {
+    Secs,
 }

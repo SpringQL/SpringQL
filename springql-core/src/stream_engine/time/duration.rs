@@ -4,7 +4,7 @@ pub(crate) mod wall_clock_duration;
 use std::time::Duration;
 
 /// Duration based on event-time or process-time.
-pub(in crate::stream_engine) trait SpringDuration {
+pub(crate) trait SpringDuration {
     fn as_std(&self) -> &Duration;
     fn from_std(duration: Duration) -> Self;
 
