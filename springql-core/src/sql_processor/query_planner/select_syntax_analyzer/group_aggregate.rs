@@ -14,7 +14,10 @@ impl SelectSyntaxAnalyzer {
 
         match (opt_group_by, aggregate_parameters.len()) {
             (Some(group_by), 1) => Ok(Some(GroupAggregateParameter::new(
-                aggregate_parameters.next().expect("len checked"),
+                aggregate_parameters
+                    .into_iter()
+                    .next()
+                    .expect("len checked"),
                 group_by,
             ))),
             (None, 0) => Ok(None),
