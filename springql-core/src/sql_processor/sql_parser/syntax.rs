@@ -5,7 +5,9 @@ use crate::{
     pipeline::{
         field::field_pointer::FieldPointer,
         name::{CorrelationAlias, FieldAlias, StreamName},
-        pump_model::window_operation_parameter::{AggregateFunctionParameter, AggregateParameter},
+        pump_model::window_operation_parameter::aggregate::{
+            AggregateFunctionParameter, AggregateParameter,
+        },
     },
 };
 

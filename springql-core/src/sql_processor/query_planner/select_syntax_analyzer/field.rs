@@ -1,7 +1,7 @@
 use super::SelectSyntaxAnalyzer;
 use crate::{
     error::{Result, SpringError},
-    expression::{function_call::FunctionCall, Expression},
+    expression::Expression,
     pipeline::{
         correlation::aliased_correlation_name::AliasedCorrelationName,
         field::{
@@ -33,7 +33,26 @@ impl SelectSyntaxAnalyzer {
         select_field: &SelectFieldSyntax,
         from_item_correlations: &[AliasedCorrelationName],
     ) -> Result<AliasedFieldName> {
-        match &select_field.expression {
+        match &select_field {
+            SelectFieldSyntax::Expression { expression, alias } => {
+                Self::select_field_expression_into_aliased_field_name(
+                    expression,
+                    alias,
+                    from_item_correlations,
+                )
+            }
+            SelectFieldSyntax::Aggregate(aggregate_parameter) => {
+                Ok(aggregate_parameter.aggregated_aliased_field_name())
+            }
+        }
+    }
+
+    fn select_field_expression_into_aliased_field_name(
+        expression: &Expression,
+        alias: &Option<FieldAlias>,
+        from_item_correlations: &[AliasedCorrelationName],
+    ) -> Result<AliasedFieldName> {
+        match &expression {
             Expression::Constant(_) => {
                 unimplemented!("constant in select field is not supported currently",)
             }
@@ -43,11 +62,10 @@ impl SelectSyntaxAnalyzer {
             }
             Expression::FieldPointer(ptr) => {
                 let field_name = Self::field_name(ptr, from_item_correlations)?;
-                let afn = AliasedFieldName::new(field_name, select_field.alias.clone());
+                let afn = AliasedFieldName::new(field_name, alias.clone());
                 Ok(afn)
             }
-            Expression::FunctionCall(_) => select_field
-                .alias
+            Expression::FunctionCall(_) => alias
                 .as_ref()
                 .map(|alias| AliasedFieldName::from_only_alias(alias.clone()))
                 .ok_or_else(|| {

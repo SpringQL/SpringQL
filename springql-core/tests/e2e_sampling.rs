@@ -43,7 +43,7 @@ fn test_e2e_sampling() -> Result<()> {
     let source_input = vec![json_00_1, json_00_2, json_10_1, json_20_1];
 
     let test_source =
-        ForeignSource::start(ForeignSourceInput::new_fifo_batch(source_input.clone())).unwrap();
+        ForeignSource::start(ForeignSourceInput::new_fifo_batch(source_input)).unwrap();
     let test_sink = ForeignSink::start().unwrap();
 
     let ddls = vec![

@@ -15,7 +15,7 @@ use crate::pipeline::name::{
     SourceReaderName, StreamName,
 };
 use crate::pipeline::option::options_builder::OptionsBuilder;
-use crate::pipeline::pump_model::window_operation_parameter::{
+use crate::pipeline::pump_model::window_operation_parameter::aggregate::{
     AggregateFunctionParameter, AggregateParameter,
 };
 use crate::pipeline::relation::column::column_constraint::ColumnConstraint;
@@ -40,7 +40,7 @@ use pest::{iterators::Pairs, Parser};
 use std::convert::identity;
 
 use super::parse_success::ParseSuccess;
-use super::syntax::{AggregateSyntax, FromItemSyntax, SelectFieldSyntax};
+use super::syntax::{FromItemSyntax, SelectFieldSyntax, AggregateSyntax};
 
 #[derive(Debug, Default)]
 pub(super) struct PestParserImpl;
