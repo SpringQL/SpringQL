@@ -27,6 +27,7 @@ pub(in crate::sql_processor) struct OptionSyntax {
 pub(in crate::sql_processor) struct SelectStreamSyntax {
     pub(in crate::sql_processor) fields: Vec<SelectFieldSyntax>,
     pub(in crate::sql_processor) from_item: FromItemSyntax,
+    pub(in crate::sql_processor) grouping_element: Option<FieldPointer>,
 }
 
 #[derive(Clone, PartialEq, Debug)]

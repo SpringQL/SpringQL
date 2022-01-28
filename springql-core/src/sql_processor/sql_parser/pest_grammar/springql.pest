@@ -24,10 +24,12 @@ keyword = {
     | ^"ALTER"
     | ^"AVG"
     | ^"BIGINT"
+    | ^"BY"
     | ^"CREATE"
     | ^"FLOOR"
     | ^"FOR"
     | ^"FROM"
+    | ^"GROUP"
     | ^"INSERT"
     | ^"INTEGER"
     | ^"INTO"
@@ -395,6 +397,7 @@ select_stream_command = {
     ^"SELECT" ~ "STREAM"
     ~ select_field ~ ("," ~ select_field)*
     ~ (^"FROM" ~ from_item)
+    ~ (^"GROUP" ~ "BY" ~ grouping_element)? // TODO multiple grouping elements
 }
 
 select_field = {
@@ -409,6 +412,11 @@ from_item = {
 sub_from_item = {
     stream_name ~ (^"AS"? ~ correlation_alias)?
 }
+
+grouping_element = {
+    field_pointer // TODO expression
+}
+
 
 /*
  * ----------------------------------------------------------------------------

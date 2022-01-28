@@ -40,7 +40,7 @@ use pest::{iterators::Pairs, Parser};
 use std::convert::identity;
 
 use super::parse_success::ParseSuccess;
-use super::syntax::{FromItemSyntax, SelectFieldSyntax, AggregateSyntax};
+use super::syntax::{AggregateSyntax, FromItemSyntax, SelectFieldSyntax};
 
 #[derive(Debug, Default)]
 pub(super) struct PestParserImpl;
@@ -421,8 +421,18 @@ impl PestParserImpl {
             Self::parse_from_item,
             identity,
         )?;
+        let grouping_element = try_parse_child(
+            &mut params,
+            Rule::grouping_element,
+            Self::parse_grouping_element,
+            identity,
+        )?;
 
-        Ok(SelectStreamSyntax { fields, from_item })
+        Ok(SelectStreamSyntax {
+            fields,
+            from_item,
+            grouping_element,
+        })
     }
 
     fn parse_select_field(mut params: FnParseParams) -> Result<SelectFieldSyntax> {
@@ -497,6 +507,14 @@ impl PestParserImpl {
         Ok(FromItemSyntax::StreamVariant { stream_name, alias })
     }
 
+    fn parse_grouping_element(mut params: FnParseParams) -> Result<FieldPointer> {
+        parse_child(
+            &mut params,
+            Rule::field_pointer,
+            Self::parse_field_pointer,
+            identity,
+        )
+    }
     /*
      * ================================================================================================
      * Value Expressions:
