@@ -128,13 +128,13 @@ impl SqlValue {
             SqlValue::Null => Err(SpringError::Sql(anyhow!(
                 "NULL cannot be evaluated as BIGINT",
             ))),
-            SqlValue::NotNull(nn_sql_value) => match nn_sql_value {
-                NnSqlValue::BigInt(i) => Ok(*i),
-                _ => Err(SpringError::Sql(anyhow!(
-                    "{:?} cannot be evaluated as BOOLEAN",
-                    nn_sql_value.sql_type()
-                ))),
-            },
+            SqlValue::NotNull(nn_sql_value) => nn_sql_value.unpack::<i64>().map_err(|e| {
+                SpringError::Sql(anyhow!(
+                    "{} cannot be evaluated as BIGINT: {:?}",
+                    nn_sql_value,
+                    e
+                ))
+            }),
         }
     }
 
