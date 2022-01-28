@@ -103,7 +103,7 @@ impl QueryPlanner {
 
     fn create_group_aggregate_window_op(&self) -> Result<Option<QueryPlanOperation>> {
         let group_aggregate_parameter = self.analyzer.group_aggregate_parameter()?;
-        let window_parameter = self.analyzer.window_parameter()?;
+        let window_parameter = self.analyzer.window_parameter();
 
         match (group_aggregate_parameter, window_parameter) {
             (Some(group_aggr_param), Some(window_param)) => {
