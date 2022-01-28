@@ -57,7 +57,7 @@ impl QueryPlanner {
         // self.create_aggregation_nodes()?;
         // self.create_sort_node()?;
         // self.create_selection_node()?;
-        let projection_op = self.create_projection_node()?;
+        let projection_op = self.create_projection_op()?;
 
         let mut plan = self.plan;
         plan.add_root(projection_op.clone());
@@ -86,7 +86,7 @@ impl QueryPlanner {
             .collect::<Result<Vec<_>>>()
     }
 
-    fn create_projection_node(&self) -> Result<QueryPlanOperation> {
+    fn create_projection_op(&self) -> Result<QueryPlanOperation> {
         let aliased_field_names = self.analyzer.aliased_field_names_in_projection()?;
 
         let projection_op = QueryPlanOperation::Projection {
