@@ -768,18 +768,12 @@ impl PestParserImpl {
     }
 
     fn parse_aggregate_name(mut params: FnParseParams) -> Result<AggregateFunctionParameter> {
-        let aggregate_name = parse_child(
-            &mut params,
-            Rule::identifier,
-            Self::parse_identifier,
-            identity,
-        )?;
-
-        match aggregate_name.to_lowercase().as_str() {
+        let s = self_as_str(&mut params);
+        match s.to_lowercase().as_str() {
             "avg" => Ok(AggregateFunctionParameter::Avg),
             _ => Err(SpringError::Sql(anyhow!(
                 "unknown aggregate function {}",
-                aggregate_name.to_lowercase()
+                s.to_lowercase()
             ))),
         }
     }
@@ -983,12 +977,7 @@ impl PestParserImpl {
     }
 
     fn parse_function_name(mut params: FnParseParams) -> Result<String> {
-        parse_child(
-            &mut params,
-            Rule::identifier,
-            Self::parse_identifier,
-            identity,
-        )
+        Ok(self_as_str(&mut params).to_string())
     }
 
     fn parse_option_name(mut params: FnParseParams) -> Result<String> {
