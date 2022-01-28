@@ -43,7 +43,12 @@ pub(super) fn parse_child<T, ChildRet>(
     let child_pair: Pair<Rule> = params
         .children_pairs
         .pop_front()
-        .with_context(|| format!("Tried to parse a term but nothing left: {}", params.sql))
+        .with_context(|| {
+            format!(
+                "Tried to parse a term `{:?}` but nothing left: {}\n{:#?}",
+                child_term, params.sql, params
+            )
+        })
         .map_err(SpringError::Sql)?;
 
     if child_pair.as_rule() == child_term {
