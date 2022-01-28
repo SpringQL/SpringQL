@@ -10,7 +10,7 @@ impl SelectSyntaxAnalyzer {
         &self,
     ) -> Result<Option<GroupAggregateParameter>> {
         let opt_group_by = &self.select_syntax.grouping_element;
-        let mut aggregate_parameters = self.aggregate_parameters();
+        let aggregate_parameters = self.aggregate_parameters();
 
         match (opt_group_by, aggregate_parameters.len()) {
             (Some(group_by), 1) => Ok(Some(GroupAggregateParameter::new(

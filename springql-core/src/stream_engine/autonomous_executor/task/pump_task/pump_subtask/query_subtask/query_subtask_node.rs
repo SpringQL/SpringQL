@@ -17,7 +17,7 @@ use self::{
 pub(super) enum QuerySubtaskNode {
     Collect(CollectSubtask),
     Projection(ProjectionSubtask),
-    GroupAggregateWindow(GroupAggregateWindowSubtask),
+    GroupAggregateWindow(Box<GroupAggregateWindowSubtask>), // Boxed to avoid <https://rust-lang.github.io/rust-clippy/master/index.html#large_enum_variant>
 }
 
 impl From<&QueryPlanOperation> for QuerySubtaskNode {
@@ -32,9 +32,8 @@ impl From<&QueryPlanOperation> for QuerySubtaskNode {
             QueryPlanOperation::GroupAggregateWindow {
                 window_param,
                 op_param,
-            } => QuerySubtaskNode::GroupAggregateWindow(GroupAggregateWindowSubtask::new(
-                window_param.clone(),
-                op_param.clone(),
+            } => QuerySubtaskNode::GroupAggregateWindow(Box::new(
+                GroupAggregateWindowSubtask::new(window_param.clone(), op_param.clone()),
             )),
         }
     }
