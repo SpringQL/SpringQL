@@ -1,10 +1,14 @@
 mod select_syntax_analyzer;
 
 use crate::{
-    error::Result,
-    pipeline::{field::field_pointer::FieldPointer, name::StreamName, Pipeline},
+    error::{Result, SpringError},
+    pipeline::{
+        field::field_pointer::FieldPointer, name::StreamName,
+        pump_model::window_operation_parameter::WindowOperationParameter, Pipeline,
+    },
     stream_engine::command::query_plan::{query_plan_operation::QueryPlanOperation, QueryPlan},
 };
+use anyhow::anyhow;
 
 use self::select_syntax_analyzer::SelectSyntaxAnalyzer;
 
@@ -98,7 +102,22 @@ impl QueryPlanner {
     }
 
     fn create_group_aggregate_window_op(&self) -> Result<Option<QueryPlanOperation>> {
-        Ok(None) // TODO
+        let group_aggregate_parameter = self.analyzer.group_aggregate_parameter()?;
+        let window_parameter = self.analyzer.window_parameter()?;
+
+        match (group_aggregate_parameter, window_parameter) {
+            (Some(group_aggr_param), Some(window_param)) => {
+                let op_param = WindowOperationParameter::GroupAggregation(group_aggr_param);
+                Ok(Some(QueryPlanOperation::GroupAggregateWindow {
+                    op_param,
+                    window_param,
+                }))
+            }
+            (None, None) => Ok(None),
+            _ => Err(SpringError::Sql(anyhow!(
+                "currently GROUP BY and WINDOW must come together",
+            ))),
+        }
     }
 
     fn create_projection_op(&self) -> Result<QueryPlanOperation> {

@@ -1,8 +1,12 @@
 // Copyright (c) 2021 TOYOTA MOTOR CORPORATION. Licensed under MIT OR Apache-2.0.
 
-use std::time::Duration;
-
-use crate::pipeline::{field::field_pointer::FieldPointer, name::StreamName};
+use crate::pipeline::{
+    field::field_pointer::FieldPointer,
+    name::StreamName,
+    pump_model::{
+        window_operation_parameter::WindowOperationParameter, window_parameter::WindowParameter,
+    },
+};
 
 use super::aliaser::Aliaser;
 
@@ -15,8 +19,8 @@ pub(crate) enum QueryPlanOperation {
     Projection {
         field_pointers: Vec<FieldPointer>,
     },
-    TimeBasedSlidingWindow {
-        /// cannot use chrono::Duration here: <https://github.com/chronotope/chrono/issues/117>
-        lower_bound: Duration,
+    GroupAggregateWindow {
+        window_param: WindowParameter,
+        op_param: WindowOperationParameter,
     },
 }
