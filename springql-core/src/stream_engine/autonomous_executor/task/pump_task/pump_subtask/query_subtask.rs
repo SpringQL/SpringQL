@@ -26,7 +26,7 @@ pub(in crate::stream_engine::autonomous_executor) struct QuerySubtask {
 
 #[derive(Debug, new)]
 pub(in crate::stream_engine::autonomous_executor) struct QuerySubtaskOut {
-    pub(in crate::stream_engine::autonomous_executor) tuple: Tuple,
+    pub(in crate::stream_engine::autonomous_executor) tuples: Vec<Tuple>,
     pub(in crate::stream_engine::autonomous_executor) in_queue_metrics_update:
         InQueueMetricsUpdateByTaskExecution,
 }
@@ -59,25 +59,33 @@ impl QuerySubtask {
         match self.run_leaf(next_idx, context) {
             None => Ok(None),
             Some(leaf_query_subtask_out) => {
-                let mut next_tuple = leaf_query_subtask_out.tuple;
+                let mut next_tuples = leaf_query_subtask_out.tuples;
                 while let Some(parent_idx) = self.parent_node_idx(next_idx) {
                     next_idx = parent_idx;
-                    next_tuple = self.run_non_leaf(next_idx, next_tuple)?;
+                    next_tuples = next_tuples
+                        .into_iter()
+                        .map(|next_tuple| self.run_non_leaf(next_idx, next_tuple))
+                        .collect::<Result<Vec<Vec<_>>>>()?
+                        .concat();
                 }
 
                 Ok(Some(QuerySubtaskOut::new(
-                    next_tuple,
+                    next_tuples,
                     leaf_query_subtask_out.in_queue_metrics_update, // leaf subtask decides in queue metrics change
                 )))
             }
         }
     }
 
-    fn run_non_leaf(&self, subtask_idx: NodeIndex, downstream_tuple: Tuple) -> Result<Tuple> {
+    /// # Returns
+    ///
+    /// Although many subtasks return single tuple, selection subtask may return empty (filtered-out) and window subtask may return multiple tuples.
+    fn run_non_leaf(&self, subtask_idx: NodeIndex, child_tuple: Tuple) -> Result<Vec<Tuple>> {
         let subtask = self.tree.node_weight(subtask_idx).expect("must be found");
         match subtask {
             QuerySubtaskNode::Projection(projection_subtask) => {
-                projection_subtask.run(downstream_tuple)
+                let tuple = projection_subtask.run(child_tuple)?;
+                Ok(vec![tuple])
             }
             QuerySubtaskNode::Collect(_) => unreachable!(),
         }

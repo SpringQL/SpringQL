@@ -45,14 +45,17 @@ impl InsertSubtask {
 
     pub(in crate::stream_engine::autonomous_executor) fn run(
         &self,
-        tuple: Tuple,
+        tuples: Vec<Tuple>,
         context: &TaskContext,
     ) -> InsertSubtaskOut {
         let repos = context.repos();
         let row_q_repo = repos.row_queue_repository();
         let output_queues = context.output_queues();
 
-        let row = tuple.into_row(self.into_stream.clone(), self.column_order.clone());
+        let rows = tuples
+            .into_iter()
+            .map(|tuple| tuple.into_row(self.into_stream.clone(), self.column_order.clone()))
+            .collect::<Vec<_>>();
 
         // TODO modify row on INSERT if necessary
         let out_queues_metrics_update = output_queues
@@ -60,10 +63,18 @@ impl InsertSubtask {
             .map(|q| match q {
                 QueueId::Row(queue_id) => {
                     let row_q = row_q_repo.get(&queue_id);
-                    let bytes_put = row.mem_size();
 
-                    row_q.put(row.clone());
-                    OutQueueMetricsUpdateByTaskExecution::new(queue_id.into(), 1, bytes_put as u64)
+                    let mut bytes_put = 0;
+                    for row in rows.clone() {
+                        bytes_put += row.mem_size();
+                        row_q.put(row);
+                    }
+
+                    OutQueueMetricsUpdateByTaskExecution::new(
+                        queue_id.into(),
+                        rows.len() as u64,
+                        bytes_put as u64,
+                    )
                 }
                 QueueId::Window(_) => todo!(),
             })
