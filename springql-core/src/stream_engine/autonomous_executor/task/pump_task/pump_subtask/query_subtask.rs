@@ -73,12 +73,11 @@ impl QuerySubtask {
         }
     }
 
-    fn run_non_leaf(&self, subtask_idx: NodeIndex, downstream_tuple: Tuple) -> Result<Tuple> {
+    fn run_non_leaf(&self, subtask_idx: NodeIndex, child_tuple: Tuple) -> Result<Tuple> {
         let subtask = self.tree.node_weight(subtask_idx).expect("must be found");
         match subtask {
-            QuerySubtaskNode::Projection(projection_subtask) => {
-                projection_subtask.run(downstream_tuple)
-            }
+            QuerySubtaskNode::Projection(projection_subtask) => projection_subtask.run(child_tuple),
+            QuerySubtaskNode::GroupAggregateWindow(subtask) => subtask.run(child_tuple),
             QuerySubtaskNode::Collect(_) => unreachable!(),
         }
     }
