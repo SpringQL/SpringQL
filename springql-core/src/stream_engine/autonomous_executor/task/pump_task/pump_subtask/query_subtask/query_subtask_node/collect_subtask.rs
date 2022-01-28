@@ -36,7 +36,7 @@ impl CollectSubtask {
                             let tuple = Tuple::from_row(row, &self.aliaser);
 
                             QuerySubtaskOut::new(
-                                tuple,
+                                vec![tuple],
                                 InQueueMetricsUpdateByTaskExecution::Row {
                                     queue_id,
                                     rows_used: 1,
