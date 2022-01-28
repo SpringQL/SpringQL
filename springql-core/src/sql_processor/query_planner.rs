@@ -63,8 +63,16 @@ impl QueryPlanner {
 
         let mut plan = self.plan;
         plan.add_root(projection_op.clone());
+
+        let parent_op = if let Some(op) = group_aggregate_window_op {
+            plan.add_left(&projection_op, op.clone());
+            op
+        } else {
+            projection_op
+        };
+
         // TODO group_aggregate_window_op
-        plan.add_left(&projection_op, collect_op);
+        plan.add_left(&parent_op, collect_op);
         Ok(plan)
     }
 
