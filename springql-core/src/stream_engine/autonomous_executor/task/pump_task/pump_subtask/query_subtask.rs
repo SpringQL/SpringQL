@@ -83,6 +83,10 @@ impl QuerySubtask {
     fn run_non_leaf(&self, subtask_idx: NodeIndex, child_tuple: Tuple) -> Result<Vec<Tuple>> {
         let subtask = self.tree.node_weight(subtask_idx).expect("must be found");
         match subtask {
+            QuerySubtaskNode::EvalExpression(eval_expression_subtask) => {
+                let tuple = eval_expression_subtask.run(child_tuple)?;
+                Ok(vec![tuple])
+            }
             QuerySubtaskNode::Projection(projection_subtask) => {
                 let tuple = projection_subtask.run(child_tuple)?;
                 Ok(vec![tuple])

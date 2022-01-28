@@ -3,6 +3,7 @@
 use crate::{
     expression::Expression,
     pipeline::{
+        expression_to_field::ExpressionToField,
         field::field_pointer::FieldPointer,
         name::{CorrelationAlias, FieldAlias, StreamName},
         pump_model::{
@@ -36,10 +37,7 @@ pub(in crate::sql_processor) struct SelectStreamSyntax {
 
 #[derive(Clone, PartialEq, Debug)]
 pub(in crate::sql_processor) enum SelectFieldSyntax {
-    Expression {
-        expression: Expression,
-        alias: Option<FieldAlias>,
-    },
+    Expression(ExpressionToField),
     Aggregate(AggregateParameter),
 }
 

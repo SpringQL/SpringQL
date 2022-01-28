@@ -14,6 +14,7 @@
 //! ![Pipeline concept diagram](https://raw.githubusercontent.com/SpringQL/SpringQL.github.io/main/static/img/pipeline-and-task-graph.svg)
 
 pub(crate) mod correlation;
+pub(crate) mod expression_to_field;
 pub(crate) mod field;
 pub(crate) mod name;
 pub(crate) mod option;

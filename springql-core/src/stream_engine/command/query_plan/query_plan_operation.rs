@@ -1,6 +1,7 @@
 // Copyright (c) 2021 TOYOTA MOTOR CORPORATION. Licensed under MIT OR Apache-2.0.
 
 use crate::pipeline::{
+    expression_to_field::ExpressionToField,
     field::field_pointer::FieldPointer,
     name::StreamName,
     pump_model::{
@@ -10,11 +11,14 @@ use crate::pipeline::{
 
 use super::aliaser::Aliaser;
 
-#[derive(Clone, Eq, PartialEq, Debug)]
+#[derive(Clone, PartialEq, Debug)]
 pub(crate) enum QueryPlanOperation {
     Collect {
         stream: StreamName,
         aliaser: Aliaser,
+    },
+    EvalExpression {
+        expr_to_fields: Vec<ExpressionToField>,
     },
     Projection {
         field_pointers: Vec<FieldPointer>,

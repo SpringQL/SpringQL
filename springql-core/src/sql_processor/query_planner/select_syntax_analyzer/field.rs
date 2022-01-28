@@ -4,6 +4,7 @@ use crate::{
     expression::Expression,
     pipeline::{
         correlation::aliased_correlation_name::AliasedCorrelationName,
+        expression_to_field::ExpressionToField,
         field::{
             aliased_field_name::AliasedFieldName, field_name::FieldName,
             field_pointer::FieldPointer,
@@ -15,6 +16,18 @@ use crate::{
 use anyhow::anyhow;
 
 impl SelectSyntaxAnalyzer {
+    pub(in super::super) fn expression_to_fields(&self) -> Vec<ExpressionToField> {
+        self.select_syntax
+            .fields
+            .iter()
+            .filter_map(|select_field| match select_field {
+                SelectFieldSyntax::Expression(expr_to_field) => Some(expr_to_field),
+                SelectFieldSyntax::Aggregate(_) => None,
+            })
+            .cloned()
+            .collect()
+    }
+
     pub(in super::super) fn aliased_field_names_in_projection(
         &self,
     ) -> Result<Vec<AliasedFieldName>> {
@@ -34,7 +47,7 @@ impl SelectSyntaxAnalyzer {
         from_item_correlations: &[AliasedCorrelationName],
     ) -> Result<AliasedFieldName> {
         match &select_field {
-            SelectFieldSyntax::Expression { expression, alias } => {
+            SelectFieldSyntax::Expression(ExpressionToField { expression, alias }) => {
                 Self::select_field_expression_into_aliased_field_name(
                     expression,
                     alias,

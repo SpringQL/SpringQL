@@ -56,6 +56,8 @@ impl QueryPlanner {
             .next()
             .expect("collect_ops.len() == 1");
 
+        let eval_expression_op = self.create_eval_expression_op();
+
         let group_aggregate_window_op = self.create_group_aggregate_window_op()?; // TODO loosely coupled GROUP BY, AGGR(*), and WINDOW.
 
         // self.create_window_nodes()?;
@@ -75,8 +77,9 @@ impl QueryPlanner {
             projection_op
         };
 
-        // TODO group_aggregate_window_op
-        plan.add_left(&parent_op, collect_op);
+        plan.add_left(&parent_op, eval_expression_op.clone());
+        plan.add_left(&eval_expression_op, collect_op);
+
         Ok(plan)
     }
 
@@ -99,6 +102,11 @@ impl QueryPlanner {
                 Ok(QueryPlanOperation::Collect { stream, aliaser })
             })
             .collect::<Result<Vec<_>>>()
+    }
+
+    fn create_eval_expression_op(&self) -> QueryPlanOperation {
+        let expr_to_fields = self.analyzer.expression_to_fields();
+        QueryPlanOperation::EvalExpression { expr_to_fields }
     }
 
     fn create_group_aggregate_window_op(&self) -> Result<Option<QueryPlanOperation>> {

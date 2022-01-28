@@ -9,6 +9,7 @@ use crate::expression::boolean_expression::BooleanExpression;
 use crate::expression::function_call::FunctionCall;
 use crate::expression::operator::{BinaryOperator, UnaryOperator};
 use crate::expression::Expression;
+use crate::pipeline::expression_to_field::ExpressionToField;
 use crate::pipeline::field::field_pointer::FieldPointer;
 use crate::pipeline::name::{
     ColumnName, CorrelationAlias, CorrelationName, FieldAlias, PumpName, SinkWriterName,
@@ -491,7 +492,9 @@ impl PestParserImpl {
                 Self::parse_field_alias,
                 identity,
             )?;
-            Ok(SelectFieldSyntax::Expression { expression, alias })
+            Ok(SelectFieldSyntax::Expression(ExpressionToField::new(
+                expression, alias,
+            )))
         })
         .transpose()?
         .or(try_parse_child(
