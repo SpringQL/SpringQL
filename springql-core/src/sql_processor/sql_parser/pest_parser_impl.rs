@@ -594,13 +594,14 @@ impl PestParserImpl {
 
         match function_name.to_lowercase().as_str() {
             "floor" => {
-                if parameters.len() == 1 {
+                if parameters.len() == 2 {
                     Ok(FunctionCall::FloorTime {
                         target: Box::new(parameters[0].clone()),
+                        resolution: Box::new(parameters[1].clone()),
                     })
                 } else {
                     Err(SpringError::Sql(anyhow!(
-                        "floor() takes exactly one parameter."
+                        "floor() takes exactly two parameters (target, resolution)."
                     )))
                 }
             }

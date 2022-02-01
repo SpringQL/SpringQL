@@ -26,7 +26,6 @@ use crate::{
     },
 };
 use anyhow::anyhow;
-use chrono::Duration;
 use std::sync::Arc;
 
 /// Tuple is a temporary structure appearing only in task execution.
@@ -157,17 +156,22 @@ impl Tuple {
 
     fn eval_function_call(&self, function_call: FunctionCall) -> Result<SqlValue> {
         match function_call {
-            FunctionCall::FloorTime { target: expression } => {
-                let sql_value = self.eval_expression(*expression)?;
-                match sql_value {
-                    SqlValue::NotNull(NnSqlValue::Timestamp(ts)) => {
-                        // TODO resolution from syntax
-                        let ts_floor = ts.floor(Duration::seconds(10));
+            FunctionCall::FloorTime { target, resolution } => {
+                let target_value = self.eval_expression(*target)?;
+                let resolution_value = self.eval_expression(*resolution)?;
+
+                match (target_value, resolution_value) {
+                    (
+                        SqlValue::NotNull(NnSqlValue::Timestamp(ts)),
+                        SqlValue::NotNull(NnSqlValue::Duration(resolution)),
+                    ) => {
+                        let ts_floor = ts.floor(resolution);
                         Ok(SqlValue::NotNull(NnSqlValue::Timestamp(ts_floor)))
                     }
                     _ => Err(SpringError::Sql(anyhow!(
-                        "floor is only supported for non-NULL TIMESTAMP `{}`",
-                        sql_value
+                        "invalid parameter to FLOOR_TIME: `({}, {})`",
+                        target_value,
+                        resolution_value
                     ))),
                 }
             }
