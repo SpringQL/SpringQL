@@ -24,6 +24,7 @@ keyword = {
     | ^"ALTER"
     | ^"BIGINT"
     | ^"CREATE"
+    | ^"FLOOR"
     | ^"FOR"
     | ^"FROM"
     | ^"INSERT"
@@ -215,10 +216,20 @@ sub_expression = {
     constant
     | field_pointer
     | (unary_operator ~ expression)
+    | function_call
 }
 
 field_pointer = {
     (correlation ~ ".")? ~ column_name
+}
+
+function_call = {
+    function_name ~ "("
+    ~ expression ~ ("," ~ expression)*
+    ~ ")"
+}
+function_name = {
+    ^"FLOOR"
 }
 
 /*
