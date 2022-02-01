@@ -1,15 +1,25 @@
 use std::{
+    fmt::Display,
+    mem::size_of,
     ops::{Add, Div, Mul, Sub},
     time::Duration,
 };
 
 use serde::{Deserialize, Serialize};
 
+use crate::mem_size::MemSize;
+
 use super::SpringDuration;
 
 /// Event-time duration.
-#[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Debug, Serialize, Deserialize)]
+#[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Serialize, Deserialize)]
 pub(crate) struct EventDuration(Duration);
+
+impl MemSize for EventDuration {
+    fn mem_size(&self) -> usize {
+        size_of::<u64>() + size_of::<u32>()
+    }
+}
 
 impl SpringDuration for EventDuration {
     fn as_std(&self) -> &Duration {
@@ -18,6 +28,12 @@ impl SpringDuration for EventDuration {
 
     fn from_std(duration: Duration) -> Self {
         Self(duration)
+    }
+}
+
+impl Display for EventDuration {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{} secs", self.0.as_secs())
     }
 }
 

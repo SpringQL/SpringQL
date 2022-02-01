@@ -10,6 +10,7 @@ use crate::pipeline::relation::sql_type::{
     self, NumericComparableType, SqlType, StringComparableLoseType,
 };
 use crate::stream_engine::autonomous_executor::row::value::sql_convertible::SqlConvertible;
+use crate::stream_engine::time::duration::event_duration::EventDuration;
 use crate::stream_engine::time::timestamp::Timestamp;
 use anyhow::anyhow;
 use serde::{Deserialize, Serialize};
@@ -32,6 +33,9 @@ pub(crate) enum NnSqlValue {
 
     /// TIMESTAMP
     Timestamp(Timestamp),
+
+    /// DURATION
+    Duration(EventDuration),
 }
 
 impl MemSize for NnSqlValue {
@@ -46,6 +50,8 @@ impl MemSize for NnSqlValue {
             NnSqlValue::Boolean(_) => size_of::<bool>(),
 
             NnSqlValue::Timestamp(ts) => ts.mem_size(),
+
+            NnSqlValue::Duration(dur) => dur.mem_size(),
         }
     }
 }
@@ -65,7 +71,7 @@ impl MemSize for NnSqlValue {
 ///
 /// does not work properly with closures which capture &mut environments.
 macro_rules! for_all_loose_types {
-    ( $nn_sql_value:expr, $closure_i64:expr, $closure_string:expr, $closure_bool:expr, $closure_timestamp:expr ) => {{
+    ( $nn_sql_value:expr, $closure_i64:expr, $closure_string:expr, $closure_bool:expr, $closure_timestamp:expr, $closure_duration:expr ) => {{
         match &$nn_sql_value {
             NnSqlValue::SmallInt(_) | NnSqlValue::Integer(_) | NnSqlValue::BigInt(_) => {
                 let v = $nn_sql_value.unpack::<i64>().unwrap();
@@ -74,6 +80,7 @@ macro_rules! for_all_loose_types {
             NnSqlValue::Text(s) => $closure_string(s.to_string()),
             NnSqlValue::Boolean(b) => $closure_bool(b.clone()),
             NnSqlValue::Timestamp(t) => $closure_timestamp(*t),
+            NnSqlValue::Duration(d) => $closure_duration(*d),
         }
     }};
 }
@@ -98,7 +105,8 @@ impl Hash for NnSqlValue {
                 s.hash(state);
             },
             |b: bool| { b.hash(state) },
-            |t: Timestamp| { t.hash(state) }
+            |t: Timestamp| { t.hash(state) },
+            |d: EventDuration| { d.hash(state) }
         )
     }
 }
@@ -110,7 +118,8 @@ impl Display for NnSqlValue {
             |i: i64| i.to_string(),
             |s: String| format!(r#""{}""#, s),
             |b: bool| (if b { "TRUE" } else { "FALSE" }).to_string(),
-            |t: Timestamp| t.to_string()
+            |t: Timestamp| t.to_string(),
+            |d: EventDuration| d.to_string()
         );
         write!(f, "{}", s)
     }
@@ -137,6 +146,7 @@ impl NnSqlValue {
             NnSqlValue::Text(string) => T::try_from_string(string),
             NnSqlValue::Boolean(b) => T::try_from_bool(b),
             NnSqlValue::Timestamp(t) => T::try_from_timestamp(t),
+            NnSqlValue::Duration(d) => T::try_from_duration(d),
         }
     }
 
@@ -149,6 +159,7 @@ impl NnSqlValue {
             NnSqlValue::Text(_) => SqlType::text(),
             NnSqlValue::Boolean(_) => SqlType::boolean(),
             NnSqlValue::Timestamp(_) => SqlType::timestamp(),
+            NnSqlValue::Duration(_) => SqlType::duration(),
         }
     }
 
@@ -184,6 +195,9 @@ impl NnSqlValue {
             },
             SqlType::BooleanComparable => self.unpack::<bool>().map(|v| v.into_sql_value()),
             SqlType::TimestampComparable => self.unpack::<Timestamp>().map(|v| v.into_sql_value()),
+            SqlType::DurationComparable => {
+                self.unpack::<EventDuration>().map(|v| v.into_sql_value())
+            }
         }
     }
 
@@ -231,9 +245,10 @@ impl NnSqlValue {
             NnSqlValue::SmallInt(v) => Ok(Self::SmallInt(-v)),
             NnSqlValue::Integer(v) => Ok(Self::Integer(-v)),
             NnSqlValue::BigInt(v) => Ok(Self::BigInt(-v)),
-            NnSqlValue::Text(_) | NnSqlValue::Boolean(_) | NnSqlValue::Timestamp(_) => {
-                Err(SpringError::Sql(anyhow!("{} cannot negate", self)))
-            }
+            NnSqlValue::Text(_)
+            | NnSqlValue::Boolean(_)
+            | NnSqlValue::Timestamp(_)
+            | NnSqlValue::Duration(_) => Err(SpringError::Sql(anyhow!("{} cannot negate", self))),
         }
     }
 }
@@ -247,6 +262,9 @@ impl From<NnSqlValue> for serde_json::Value {
             NnSqlValue::Text(s) => serde_json::Value::from(s),
             NnSqlValue::Boolean(b) => serde_json::Value::from(b),
             NnSqlValue::Timestamp(t) => serde_json::Value::from(t.to_string()),
+            NnSqlValue::Duration(_) => {
+                unimplemented!("never appear in stream definition (just an intermediate type)")
+            }
         }
     }
 }

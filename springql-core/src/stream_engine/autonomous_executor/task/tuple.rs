@@ -21,7 +21,7 @@ use crate::{
             value::sql_value::{nn_sql_value::NnSqlValue, sql_compare_result::SqlCompareResult},
             Row,
         },
-        time::timestamp::Timestamp,
+        time::{duration::SpringDuration, timestamp::Timestamp},
         SqlValue,
     },
 };
@@ -160,12 +160,12 @@ impl Tuple {
                 let target_value = self.eval_expression(*target)?;
                 let resolution_value = self.eval_expression(*resolution)?;
 
-                match (target_value, resolution_value) {
+                match (&target_value, &resolution_value) {
                     (
                         SqlValue::NotNull(NnSqlValue::Timestamp(ts)),
                         SqlValue::NotNull(NnSqlValue::Duration(resolution)),
                     ) => {
-                        let ts_floor = ts.floor(resolution);
+                        let ts_floor = ts.floor(resolution.to_chrono());
                         Ok(SqlValue::NotNull(NnSqlValue::Timestamp(ts_floor)))
                     }
                     _ => Err(SpringError::Sql(anyhow!(
