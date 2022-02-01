@@ -10,8 +10,8 @@ use crate::expression::operator::{BinaryOperator, UnaryOperator};
 use crate::expression::Expression;
 use crate::pipeline::field::field_pointer::FieldPointer;
 use crate::pipeline::name::{
-    ColumnName, CorrelationAlias, CorrelationName, FieldAlias, PumpName, SinkWriterName,
-    SourceReaderName, StreamName,
+    ColumnName, CorrelationAlias, FieldAlias, PumpName, SinkWriterName, SourceReaderName,
+    StreamName,
 };
 use crate::pipeline::option::options_builder::OptionsBuilder;
 use crate::pipeline::relation::column::column_constraint::ColumnConstraint;
@@ -745,12 +745,12 @@ impl PestParserImpl {
         )
     }
 
-    fn parse_correlation(mut params: FnParseParams) -> Result<CorrelationName> {
+    fn parse_correlation(mut params: FnParseParams) -> Result<StreamName> {
         parse_child(
             &mut params,
             Rule::identifier,
             Self::parse_identifier,
-            CorrelationName::new,
+            StreamName::new,
         )
     }
 

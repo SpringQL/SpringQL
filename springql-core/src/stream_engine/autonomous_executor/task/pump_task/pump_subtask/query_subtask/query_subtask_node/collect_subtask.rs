@@ -6,12 +6,9 @@ use crate::stream_engine::autonomous_executor::task::pump_task::pump_subtask::qu
 use crate::stream_engine::autonomous_executor::task::task_context::TaskContext;
 use crate::stream_engine::autonomous_executor::task::tuple::Tuple;
 use crate::stream_engine::autonomous_executor::task_graph::queue_id::QueueId;
-use crate::stream_engine::command::query_plan::aliaser::Aliaser;
 
 #[derive(Debug, new)]
-pub(in crate::stream_engine::autonomous_executor) struct CollectSubtask {
-    aliaser: Aliaser,
-}
+pub(in crate::stream_engine::autonomous_executor) struct CollectSubtask;
 
 impl CollectSubtask {
     /// # Returns
@@ -33,7 +30,7 @@ impl CollectSubtask {
                         let opt_row = queue.use_();
                         opt_row.map(|row| {
                             let bytes_used = row.mem_size();
-                            let tuple = Tuple::from_row(row, &self.aliaser);
+                            let tuple = Tuple::from_row(row);
 
                             QuerySubtaskOut::new(
                                 vec![tuple],

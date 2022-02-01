@@ -65,7 +65,7 @@ mod tests {
 
     use crate::{
         pipeline::{
-            field::field_pointer::FieldPointer,
+            field::{field_name::ColumnReference, field_pointer::FieldPointer},
             name::{ColumnName, FieldAlias, StreamName},
             pump_model::window_operation_parameter::aggregate::{
                 AggregateFunctionParameter, AggregateParameter, GroupAggregateParameter,
@@ -117,17 +117,14 @@ mod tests {
             },
             WindowOperationParameter::GroupAggregation(GroupAggregateParameter {
                 aggregation_parameter: AggregateParameter {
-                    aggregated: FieldPointer::new(
-                        Some(StreamName::fx_trade().to_string()),
-                        ColumnName::fx_amount().to_string(),
+                    aggregated: ColumnReference::new(
+                        StreamName::fx_trade(),
+                        ColumnName::fx_amount(),
                     ),
                     aggregated_alias: FieldAlias::new("avg_amount".to_string()),
                     aggregate_function: AggregateFunctionParameter::Avg,
                 },
-                group_by: FieldPointer::new(
-                    Some(StreamName::fx_trade().to_string()),
-                    ColumnName::fx_ticker().to_string(),
-                ),
+                group_by: ColumnReference::new(StreamName::fx_trade(), ColumnName::fx_ticker()),
             }),
         );
 
@@ -254,17 +251,14 @@ mod tests {
             },
             WindowOperationParameter::GroupAggregation(GroupAggregateParameter {
                 aggregation_parameter: AggregateParameter {
-                    aggregated: FieldPointer::new(
-                        Some(StreamName::fx_trade().to_string()),
-                        ColumnName::fx_amount().to_string(),
+                    aggregated: ColumnReference::new(
+                        StreamName::fx_trade(),
+                        ColumnName::fx_amount(),
                     ),
                     aggregated_alias: FieldAlias::new("avg_amount".to_string()),
                     aggregate_function: AggregateFunctionParameter::Avg,
                 },
-                group_by: FieldPointer::new(
-                    Some(StreamName::fx_trade().to_string()),
-                    ColumnName::fx_ticker().to_string(),
-                ),
+                group_by: ColumnReference::new(StreamName::fx_trade(), ColumnName::fx_ticker()),
             }),
         );
 
