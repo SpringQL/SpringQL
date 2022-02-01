@@ -1,7 +1,7 @@
 use super::SelectSyntaxAnalyzer;
 use crate::{
     error::{Result, SpringError},
-    expression::Expression,
+    expression::{function_call::FunctionCall, Expression},
     pipeline::{
         field::{field_name::ColumnReference, field_pointer::FieldPointer},
         name::{AttributeName, ColumnName, StreamName},
@@ -36,7 +36,21 @@ impl SelectSyntaxAnalyzer {
                 unimplemented!("unary/binary operation in select field is not supported currently",)
             }
             Expression::FieldPointer(ptr) => Self::column_reference(ptr, from_item_streams),
-            Expression::FunctionCall(_) => todo!("will use label for projection"),
+            Expression::FunctionCall(fun_call) => match fun_call {
+                FunctionCall::FloorTime { target, .. } => {
+                    // TODO will use label for projection
+                    match target.as_ref() {
+                        Expression::FieldPointer(ptr) => Ok(ColumnReference::new(
+                            from_item_streams.first().unwrap().clone(), // super ugly...
+                            ColumnName::new(ptr.attr().to_string()),
+                        )),
+                        _ => unimplemented!(),
+                    }
+                }
+                FunctionCall::DurationSecs { .. } => {
+                    unreachable!("DURATION_SECS() cannot appear in field list")
+                }
+            },
         }
     }
 
