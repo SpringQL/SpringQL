@@ -1,4 +1,5 @@
 pub(crate) mod boolean_expression;
+pub(crate) mod function_call;
 pub(crate) mod operator;
 
 use crate::{
@@ -8,6 +9,7 @@ use crate::{
 
 use self::{
     boolean_expression::{comparison_function::ComparisonFunction, BooleanExpression},
+    function_call::FunctionCall,
     operator::UnaryOperator,
 };
 
@@ -18,6 +20,7 @@ pub(crate) enum Expression {
     FieldPointer(FieldPointer),
     UnaryOperator(UnaryOperator, Box<Expression>),
     BooleanExpr(BooleanExpression),
+    FunctionCall(FunctionCall),
 }
 
 impl Expression {
@@ -48,11 +51,18 @@ impl Expression {
             }
         }
 
+        fn helper_function_call(function_call: &FunctionCall) -> Vec<FieldPointer> {
+            match function_call {
+                FunctionCall::Floor { target: expression } => expression.to_field_pointers(),
+            }
+        }
+
         match self {
             Expression::Constant(_) => vec![],
             Expression::FieldPointer(idx) => vec![idx.clone()],
             Expression::UnaryOperator(_op, expr) => expr.to_field_pointers(),
             Expression::BooleanExpr(bool_expr) => helper_boolean_expr(bool_expr),
+            Expression::FunctionCall(function_call) => helper_function_call(function_call),
         }
     }
 }

@@ -36,6 +36,7 @@ impl SelectSyntaxAnalyzer {
                 unimplemented!("unary/binary operation in select field is not supported currently",)
             }
             Expression::FieldPointer(ptr) => Self::column_reference(ptr, from_item_streams),
+            Expression::FunctionCall(_) => todo!("will use label for projection"),
         }
     }
 
