@@ -604,7 +604,7 @@ impl PestParserImpl {
                     )))
                 }
             }
-            "floor" => {
+            "floor_time" => {
                 if parameters.len() == 2 {
                     Ok(FunctionCall::FloorTime {
                         target: Box::new(parameters[0].clone()),
@@ -612,7 +612,7 @@ impl PestParserImpl {
                     })
                 } else {
                     Err(SpringError::Sql(anyhow!(
-                        "floor() takes exactly two parameters (target, resolution)."
+                        "floor_time() takes exactly two parameters (target, resolution)."
                     )))
                 }
             }
