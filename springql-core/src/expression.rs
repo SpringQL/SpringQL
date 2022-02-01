@@ -53,7 +53,9 @@ impl Expression {
 
         fn helper_function_call(function_call: &FunctionCall) -> Vec<FieldPointer> {
             match function_call {
-                FunctionCall::Floor { target: expression } => expression.to_field_pointers(),
+                FunctionCall::FloorTime {
+                    target: expression, ..
+                } => expression.to_field_pointers(),
             }
         }
 

@@ -595,7 +595,7 @@ impl PestParserImpl {
         match function_name.to_lowercase().as_str() {
             "floor" => {
                 if parameters.len() == 1 {
-                    Ok(FunctionCall::Floor {
+                    Ok(FunctionCall::FloorTime {
                         target: Box::new(parameters[0].clone()),
                     })
                 } else {

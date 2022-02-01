@@ -157,7 +157,7 @@ impl Tuple {
 
     fn eval_function_call(&self, function_call: FunctionCall) -> Result<SqlValue> {
         match function_call {
-            FunctionCall::Floor { target: expression } => {
+            FunctionCall::FloorTime { target: expression } => {
                 let sql_value = self.eval_expression(*expression)?;
                 match sql_value {
                     SqlValue::NotNull(NnSqlValue::Timestamp(ts)) => {
