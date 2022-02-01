@@ -2,7 +2,7 @@ mod select_syntax_analyzer;
 
 use crate::{
     error::Result,
-    pipeline::{field::field_pointer::FieldPointer, name::StreamName, Pipeline},
+    pipeline::{field::field_pointer::FieldPointer, Pipeline},
     stream_engine::command::query_plan::{query_plan_operation::QueryPlanOperation, QueryPlan},
 };
 
@@ -83,10 +83,10 @@ impl QueryPlanner {
     }
 
     fn create_projection_node(&self) -> Result<QueryPlanOperation> {
-        let aliased_field_names = self.analyzer.column_references_in_projection()?;
+        let colrefs = self.analyzer.column_references_in_projection()?;
 
         let projection_op = QueryPlanOperation::Projection {
-            field_pointers: aliased_field_names.iter().map(FieldPointer::from).collect(),
+            field_pointers: colrefs.iter().map(FieldPointer::from).collect(),
         };
         Ok(projection_op)
     }

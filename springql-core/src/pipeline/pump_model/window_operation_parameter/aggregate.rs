@@ -1,7 +1,4 @@
-use crate::pipeline::{
-    field::{field_name::ColumnReference, field_pointer::FieldPointer},
-    name::FieldAlias,
-};
+use crate::pipeline::{field::field_name::ColumnReference, name::FieldAlias};
 
 /// TODO [support complex expression with aggregations](https://gh01.base.toyota-tokyo.tech/SpringQL-internal/SpringQL/issues/152)
 ///

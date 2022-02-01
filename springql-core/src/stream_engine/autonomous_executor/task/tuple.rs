@@ -96,8 +96,8 @@ impl Tuple {
     /// `SpringError::Sql` if `field_pointer` does not match any field.
     pub(super) fn get_value(&self, field_pointer: &FieldPointer) -> Result<SqlValue> {
         let sql_value = self.fields.iter().find_map(|field| {
-            let aliased_field_name = field.name();
-            aliased_field_name
+            let colrefs = field.name();
+            colrefs
                 .matches(field_pointer)
                 .then(|| field.sql_value().clone())
         });
