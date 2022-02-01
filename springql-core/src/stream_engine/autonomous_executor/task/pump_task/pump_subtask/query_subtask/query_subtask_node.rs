@@ -18,9 +18,7 @@ pub(super) enum QuerySubtaskNode {
 impl From<&QueryPlanOperation> for QuerySubtaskNode {
     fn from(op: &QueryPlanOperation) -> Self {
         match op {
-            QueryPlanOperation::Collect { aliaser, .. } => {
-                QuerySubtaskNode::Collect(CollectSubtask::new(aliaser.clone()))
-            }
+            QueryPlanOperation::Collect { .. } => QuerySubtaskNode::Collect(CollectSubtask::new()),
             QueryPlanOperation::Projection { field_pointers } => {
                 QuerySubtaskNode::Projection(ProjectionSubtask::new(field_pointers.to_vec()))
             }

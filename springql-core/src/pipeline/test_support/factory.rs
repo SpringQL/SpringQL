@@ -10,11 +10,8 @@ use crate::{
         Expression,
     },
     pipeline::{
-        correlation::aliased_correlation_name::AliasedCorrelationName,
-        field::{aliased_field_name::AliasedFieldName, field_name::FieldName},
-        name::{
-            AttributeName, CorrelationAlias, CorrelationName, FieldAlias, PumpName, StreamName,
-        },
+        field::field_name::ColumnReference,
+        name::{AttributeName, ColumnName, CorrelationAlias, PumpName, StreamName},
     },
     stream_engine::SqlValue,
 };
@@ -28,22 +25,6 @@ impl StreamName {
 impl PumpName {
     pub(crate) fn factory(name: &str) -> Self {
         Self::new(name.to_string())
-    }
-}
-
-impl AliasedFieldName {
-    pub(crate) fn factory(stream_name: &str, column_name: &str) -> Self {
-        Self::new(FieldName::factory(stream_name, column_name), None)
-    }
-
-    pub(crate) fn with_corr_alias(self, correlation_alias: &str) -> Self {
-        let field_name = self.field_name.with_corr_alias(correlation_alias);
-        Self::new(field_name, None)
-    }
-
-    pub(crate) fn with_field_alias(self, field_alias: &str) -> Self {
-        let alias = FieldAlias::new(field_alias.to_string());
-        Self::new(self.field_name, Some(alias))
     }
 }
 
@@ -83,34 +64,12 @@ impl BooleanExpression {
     }
 }
 
-impl FieldName {
+impl ColumnReference {
     pub(crate) fn factory(stream_name: &str, column_name: &str) -> Self {
         Self::new(
-            AliasedCorrelationName::factory_sn(stream_name),
-            AttributeName::factory(column_name),
+            StreamName::factory(stream_name),
+            ColumnName::new(column_name.to_string()),
         )
-    }
-
-    pub(crate) fn with_corr_alias(self, correlation_alias: &str) -> Self {
-        let aliased_correlation_name = self.aliased_correlation_name.with_alias(correlation_alias);
-        Self::new(aliased_correlation_name, self.attribute_name)
-    }
-}
-
-impl AliasedCorrelationName {
-    pub(crate) fn factory_sn(stream_name: &str) -> Self {
-        Self::new(CorrelationName::factory(stream_name), None)
-    }
-
-    pub(crate) fn with_alias(self, correlation_alias: &str) -> Self {
-        let alias = CorrelationAlias::factory(correlation_alias);
-        Self::new(self.correlation_name, Some(alias))
-    }
-}
-
-impl CorrelationName {
-    pub(crate) fn factory(stream_name: &str) -> Self {
-        Self::new(stream_name.to_string())
     }
 }
 

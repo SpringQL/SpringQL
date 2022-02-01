@@ -66,7 +66,7 @@ impl QueryPlanner {
     }
 
     fn create_collect_ops(&self) -> Result<Vec<QueryPlanOperation>> {
-        let from_item_correlations = self.analyzer.from_item_correlations()?;
+        let from_item_correlations = self.analyzer.from_item_streams()?;
         assert!(
             !from_item_correlations.is_empty(),
             "at least 1 from item is expected"
@@ -78,16 +78,12 @@ impl QueryPlanner {
 
         from_item_correlations
             .into_iter()
-            .map(|aliased_correlation_name| {
-                let stream = StreamName::new(aliased_correlation_name.correlation_name.to_string());
-                let aliaser = self.analyzer.aliaser()?;
-                Ok(QueryPlanOperation::Collect { stream, aliaser })
-            })
+            .map(|stream| Ok(QueryPlanOperation::Collect { stream }))
             .collect::<Result<Vec<_>>>()
     }
 
     fn create_projection_node(&self) -> Result<QueryPlanOperation> {
-        let aliased_field_names = self.analyzer.aliased_field_names_in_projection()?;
+        let aliased_field_names = self.analyzer.column_references_in_projection()?;
 
         let projection_op = QueryPlanOperation::Projection {
             field_pointers: aliased_field_names.iter().map(FieldPointer::from).collect(),

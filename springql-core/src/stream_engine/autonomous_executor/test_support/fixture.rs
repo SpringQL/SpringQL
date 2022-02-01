@@ -28,7 +28,7 @@ use crate::{
                 task_id::TaskId,
             },
         },
-        command::{alter_pipeline_command::AlterPipelineCommand, query_plan::aliaser::Aliaser},
+        command::alter_pipeline_command::AlterPipelineCommand,
         time::duration::{wall_clock_duration::WallClockDuration, SpringDuration},
     },
     stream_engine::{
@@ -180,7 +180,7 @@ impl Row {
 impl Tuple {
     pub(in crate::stream_engine) fn fx_trade_oracle() -> Self {
         let row = Row::fx_trade_oracle();
-        Self::from_row(row, &Aliaser::default())
+        Self::from_row(row)
     }
 }
 

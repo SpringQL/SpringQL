@@ -9,7 +9,7 @@ use crate::{
         Expression,
     },
     pipeline::{
-        field::{field_pointer::FieldPointer, Field},
+        field::{field_name::ColumnReference, field_pointer::FieldPointer, Field},
         name::ColumnName,
         stream_model::StreamModel,
     },
@@ -20,7 +20,6 @@ use crate::{
             value::sql_value::{nn_sql_value::NnSqlValue, sql_compare_result::SqlCompareResult},
             Row,
         },
-        command::query_plan::aliaser::Aliaser,
         time::timestamp::Timestamp,
         SqlValue,
     },
@@ -45,18 +44,15 @@ pub(in crate::stream_engine::autonomous_executor) struct Tuple {
 }
 
 impl Tuple {
-    pub(in crate::stream_engine::autonomous_executor) fn from_row(
-        row: Row,
-        aliaser: &Aliaser,
-    ) -> Self {
+    pub(in crate::stream_engine::autonomous_executor) fn from_row(row: Row) -> Self {
         let rowtime = row.rowtime();
 
         let stream_name = row.stream_model().name().clone();
         let fields = row
             .into_iter()
             .map(|(column_name, sql_value)| {
-                let aliased_field_name = aliaser.alias(&stream_name, &column_name);
-                Field::new(aliased_field_name, sql_value)
+                let colref = ColumnReference::new(stream_name.clone(), column_name);
+                Field::new(colref, sql_value)
             })
             .collect();
 

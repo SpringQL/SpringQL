@@ -4,7 +4,8 @@ use std::collections::HashMap;
 
 use crate::{
     pipeline::{
-        field::Field,
+        field::{field_name::ColumnReference, field_pointer::FieldPointer, Field},
+        name::{ColumnName, StreamName},
         pump_model::window_operation_parameter::aggregate::{
             AggregateFunctionParameter, GroupAggregateParameter,
         },
@@ -51,12 +52,13 @@ impl Pane {
                 group_aggregation_parameter,
                 states,
             } => {
-                let group_by_pointer = &group_aggregation_parameter.group_by;
-                let aggregated_pointer =
-                    &group_aggregation_parameter.aggregation_parameter.aggregated;
+                let group_by_pointer = FieldPointer::from(&group_aggregation_parameter.group_by);
+                let aggregated_pointer = FieldPointer::from(
+                    &group_aggregation_parameter.aggregation_parameter.aggregated,
+                );
 
                 let group_by_value = tuple
-                    .get_value(group_by_pointer)
+                    .get_value(&group_by_pointer)
                     .expect("field pointer for GROUP BY must be checked before");
                 let group_by_value = if let SqlValue::NotNull(v) = group_by_value {
                     v
@@ -65,7 +67,7 @@ impl Pane {
                 };
 
                 let aggregated_value = tuple
-                    .get_value(aggregated_pointer)
+                    .get_value(&aggregated_pointer)
                     .expect("field pointer for aggregated value must be checked before");
                 let aggregated_value = if let SqlValue::NotNull(v) = aggregated_value {
                     v
@@ -97,19 +99,23 @@ impl Pane {
                     let rowtime = self.close_at; // FIXME tuple.rowtime is always close_at
                     let avg_field = {
                         let avg_value = SqlValue::NotNull(NnSqlValue::BigInt(state.finalize()));
+                        let fixme_colref = ColumnReference::new(
+                            StreamName::new("_".to_string()),
+                            ColumnName::new(
+                                group_aggregation_parameter
+                                    .aggregation_parameter
+                                    .aggregated_alias
+                                    .to_string(),
+                            ),
+                        );
                         Field::new(
-                            group_aggregation_parameter
-                                .aggregation_parameter
-                                .aggregated_aliased_field_name(),
+                            fixme_colref, // TODO use label instead of `stream.alias`
                             avg_value,
                         )
                     };
                     let group_by_field = {
                         let group_by_value = SqlValue::NotNull(group_by);
-                        Field::new(
-                            group_aggregation_parameter.group_by_aliased_field_name(),
-                            group_by_value,
-                        )
+                        Field::new(group_aggregation_parameter.group_by.clone(), group_by_value)
                     };
                     Tuple::new(rowtime, vec![avg_field, group_by_field])
                 })

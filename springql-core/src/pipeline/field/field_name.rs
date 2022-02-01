@@ -1,23 +1,44 @@
-use crate::pipeline::{
-    correlation::aliased_correlation_name::AliasedCorrelationName, name::AttributeName,
-};
+use crate::pipeline::name::{ColumnName, StreamName};
 
 use super::field_pointer::FieldPointer;
 
-/// Name of a field.
-/// Although correlation name is sometimes omitted in SQL, it must be supplied from context to create this struct.
+/// Reference to a column in a row.
+///
+/// Note that this never point to other expressions like `1 + 1 AS a`.
 #[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, new)]
-pub(crate) struct FieldName {
-    pub(crate) aliased_correlation_name: AliasedCorrelationName,
-    pub(crate) attribute_name: AttributeName,
+pub(crate) struct ColumnReference {
+    pub(crate) stream_name: StreamName,
+    pub(crate) column_name: ColumnName,
 }
 
-impl From<&FieldName> for FieldPointer {
-    fn from(n: &FieldName) -> Self {
-        let s = format!(
-            "{}.{}",
-            n.aliased_correlation_name.correlation_name, n.attribute_name
-        );
+impl ColumnReference {
+    /// Whether the index matches to this name.
+    pub(crate) fn matches(&self, pointer: &FieldPointer) -> bool {
+        match pointer.prefix() {
+            Some(prefix) => self._prefix_attr_match(prefix, pointer.attr()),
+            None => self._attr_matches(pointer.attr()),
+        }
+    }
+
+    /// Whether the attr part of index matches to this name.
+    fn _attr_matches(&self, attr: &str) -> bool {
+        self.column_name.as_ref() == attr
+    }
+
+    /// Whether the prefix part of index matches to this name.
+    fn _prefix_matches(&self, prefix: &str) -> bool {
+        self.stream_name.as_ref() == prefix
+    }
+
+    /// Whether both the attr part and prefix part of index match to this name.
+    fn _prefix_attr_match(&self, prefix: &str, attr: &str) -> bool {
+        self._prefix_matches(prefix) && self._attr_matches(attr)
+    }
+}
+
+impl From<&ColumnReference> for FieldPointer {
+    fn from(n: &ColumnReference) -> Self {
+        let s = format!("{}.{}", n.stream_name, n.column_name);
         Self::from(s.as_str())
     }
 }
