@@ -2,15 +2,10 @@ pub(crate) mod boolean_expression;
 pub(crate) mod function_call;
 pub(crate) mod operator;
 
-use crate::{
-    expression::boolean_expression::logical_function::LogicalFunction,
-    pipeline::field::field_pointer::FieldPointer, stream_engine::SqlValue,
-};
+use crate::{pipeline::field::field_pointer::FieldPointer, stream_engine::SqlValue};
 
 use self::{
-    boolean_expression::{comparison_function::ComparisonFunction, BooleanExpression},
-    function_call::FunctionCall,
-    operator::UnaryOperator,
+    boolean_expression::BooleanExpression, function_call::FunctionCall, operator::UnaryOperator,
 };
 
 /// Expression.
