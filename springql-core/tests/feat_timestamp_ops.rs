@@ -4,7 +4,6 @@ mod test_support;
 
 use pretty_assertions::assert_eq;
 use serde_json::json;
-use springql_core::error::Result;
 use springql_core::low_level_rs::*;
 use springql_foreign_service::sink::ForeignSink;
 use springql_foreign_service::source::source_input::ForeignSourceInput;
@@ -25,7 +24,7 @@ fn test_feat_floor_time() {
     let source_input = vec![json_oracle];
 
     let test_source =
-        ForeignSource::start(ForeignSourceInput::new_fifo_batch(source_input.clone())).unwrap();
+        ForeignSource::start(ForeignSourceInput::new_fifo_batch(source_input)).unwrap();
     let test_sink = ForeignSink::start().unwrap();
 
     let ddls = vec![
