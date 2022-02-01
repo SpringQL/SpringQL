@@ -6,6 +6,7 @@ mod helper;
 use crate::error::{Result, SpringError};
 use crate::expression::boolean_expression::comparison_function::ComparisonFunction;
 use crate::expression::boolean_expression::BooleanExpression;
+use crate::expression::function_call::FunctionCall;
 use crate::expression::operator::{BinaryOperator, UnaryOperator};
 use crate::expression::Expression;
 use crate::pipeline::field::field_pointer::FieldPointer;
@@ -535,6 +536,12 @@ impl PestParserImpl {
                 None
             }
         })
+        .or(try_parse_child(
+            &mut params,
+            Rule::function_call,
+            Self::parse_function_call,
+            Expression::FunctionCall,
+        )?)
         .ok_or_else(|| {
             SpringError::Sql(anyhow!("Does not match any child rule of sub_expression.",))
         })
@@ -563,6 +570,49 @@ impl PestParserImpl {
             correlation.map(|c| c.to_string()),
             column_name.to_string(),
         ))
+    }
+
+    /*
+     * ----------------------------------------------------------------------------
+     * Function
+     * ----------------------------------------------------------------------------
+     */
+
+    fn parse_function_call(mut params: FnParseParams) -> Result<FunctionCall> {
+        let function_name = parse_child(
+            &mut params,
+            Rule::function_name,
+            Self::parse_function_name,
+            identity,
+        )?;
+        let parameters = parse_child_seq(
+            &mut params,
+            Rule::expression,
+            &Self::parse_expression,
+            &identity,
+        )?;
+
+        match function_name.to_lowercase().as_str() {
+            "floor" => {
+                if parameters.len() == 1 {
+                    Ok(FunctionCall::Floor {
+                        target: Box::new(parameters[0].clone()),
+                    })
+                } else {
+                    Err(SpringError::Sql(anyhow!(
+                        "floor() takes exactly one parameter."
+                    )))
+                }
+            }
+            _ => Err(SpringError::Sql(anyhow!(
+                "unknown function {}",
+                function_name.to_lowercase()
+            ))),
+        }
+    }
+
+    fn parse_function_name(mut params: FnParseParams) -> Result<String> {
+        Ok(self_as_str(&mut params).to_string())
     }
 
     /*
