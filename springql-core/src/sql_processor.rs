@@ -248,35 +248,4 @@ mod tests {
             Command::AlterPipeline(AlterPipelineCommand::CreateSinkWriter(expected_sink))
         );
     }
-
-    #[test]
-    fn test_create_pump() {
-        let processor = SqlProcessor::default();
-        let pipeline = Pipeline::fx_source_sink_no_pump();
-
-        let sql = "
-            CREATE PUMP pu_passthrough AS
-              INSERT INTO st_2 (ts, ticker, amount)
-              SELECT STREAM ts, ticker, amount FROM st_1;
-            ";
-        let command = processor.compile(sql, &pipeline).unwrap();
-
-        let expected_pump = PumpModel::new(
-            PumpName::new("pu_passthrough".to_string()),
-            QueryPlan::fx_collect_projection(
-                StreamName::new("st_1".to_string()),
-                vec![
-                    ColumnName::fx_timestamp(),
-                    ColumnName::fx_ticker(),
-                    ColumnName::fx_amount(),
-                ],
-            ),
-            InsertPlan::fx_trade(StreamName::new("st_2".to_string())),
-        );
-
-        assert_eq!(
-            command,
-            Command::AlterPipeline(AlterPipelineCommand::CreatePump(expected_pump))
-        );
-    }
 }
