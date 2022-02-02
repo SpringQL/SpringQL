@@ -2,12 +2,18 @@
 
 use std::time::Duration;
 
-use crate::pipeline::{field::field_pointer::FieldPointer, name::StreamName};
+use crate::{
+    expression::Expression,
+    pipeline::{field::field_pointer::FieldPointer, name::StreamName},
+};
 
-#[derive(Clone, Eq, PartialEq, Debug)]
+#[derive(Clone, PartialEq, Debug)]
 pub(crate) enum QueryPlanOperation {
     Collect {
         stream: StreamName,
+    },
+    EvalValueExpr {
+        expressions: Vec<Expression>,
     },
     Projection {
         field_pointers: Vec<FieldPointer>,

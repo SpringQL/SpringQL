@@ -11,6 +11,15 @@ use crate::{
 use anyhow::anyhow;
 
 impl SelectSyntaxAnalyzer {
+    pub(in super::super) fn field_expressions(&self) -> Vec<Expression> {
+        let select_fields = &self.select_syntax.fields;
+        select_fields
+            .into_iter()
+            .map(|field| &field.expression)
+            .cloned()
+            .collect()
+    }
+
     pub(in super::super) fn column_references_in_projection(&self) -> Result<Vec<ColumnReference>> {
         let from_item_correlations = self.from_item_streams()?;
         let select_fields = &self.select_syntax.fields;

@@ -15,7 +15,7 @@ use self::field_name::ColumnReference;
 /// Field == SqlValue + FieldName
 #[derive(Clone, PartialEq, Debug, new)]
 pub(crate) struct Field {
-    name: ColumnReference,
+    name: ColumnReference, // TODO use ExprLabel instead
     value: SqlValue,
 }
 
