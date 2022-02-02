@@ -24,7 +24,8 @@ keyword = {
     | ^"ALTER"
     | ^"BIGINT"
     | ^"CREATE"
-    | ^"FLOOR"
+    | ^"DURATION_SECS"
+    | ^"FLOOR_TIME"
     | ^"FOR"
     | ^"FROM"
     | ^"INSERT"
@@ -229,7 +230,8 @@ function_call = {
     ~ ")"
 }
 function_name = {
-    ^"FLOOR"
+    ^"DURATION_SECS"
+    | ^"FLOOR_TIME"
 }
 
 /*

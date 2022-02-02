@@ -52,16 +52,19 @@ impl QueryPlanner {
             .next()
             .expect("collect_ops.len() == 1");
 
+        let eval_value_expr_op = self.create_eval_value_expr_op();
+
         // self.create_window_nodes()?;
         // self.create_join_nodes()?;
         // self.create_aggregation_nodes()?;
         // self.create_sort_node()?;
         // self.create_selection_node()?;
-        let projection_op = self.create_projection_node()?;
+        let projection_op = self.create_projection_op()?;
 
         let mut plan = self.plan;
         plan.add_root(projection_op.clone());
-        plan.add_left(&projection_op, collect_op);
+        plan.add_left(&projection_op, eval_value_expr_op.clone());
+        plan.add_left(&eval_value_expr_op, collect_op);
         Ok(plan)
     }
 
@@ -82,12 +85,17 @@ impl QueryPlanner {
             .collect::<Result<Vec<_>>>()
     }
 
-    fn create_projection_node(&self) -> Result<QueryPlanOperation> {
+    fn create_projection_op(&self) -> Result<QueryPlanOperation> {
         let colrefs = self.analyzer.column_references_in_projection()?;
 
         let projection_op = QueryPlanOperation::Projection {
             field_pointers: colrefs.iter().map(FieldPointer::from).collect(),
         };
         Ok(projection_op)
+    }
+
+    fn create_eval_value_expr_op(&self) -> QueryPlanOperation {
+        let expressions = self.analyzer.all_expressions();
+        QueryPlanOperation::EvalValueExpr { expressions }
     }
 }

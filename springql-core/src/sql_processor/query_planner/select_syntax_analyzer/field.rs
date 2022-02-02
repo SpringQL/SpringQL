@@ -1,7 +1,7 @@
 use super::SelectSyntaxAnalyzer;
 use crate::{
     error::{Result, SpringError},
-    expression::Expression,
+    expression::{function_call::FunctionCall, Expression},
     pipeline::{
         field::{field_name::ColumnReference, field_pointer::FieldPointer},
         name::{AttributeName, ColumnName, StreamName},
@@ -11,6 +11,15 @@ use crate::{
 use anyhow::anyhow;
 
 impl SelectSyntaxAnalyzer {
+    pub(in super::super) fn field_expressions(&self) -> Vec<Expression> {
+        let select_fields = &self.select_syntax.fields;
+        select_fields
+            .into_iter()
+            .map(|field| &field.expression)
+            .cloned()
+            .collect()
+    }
+
     pub(in super::super) fn column_references_in_projection(&self) -> Result<Vec<ColumnReference>> {
         let from_item_correlations = self.from_item_streams()?;
         let select_fields = &self.select_syntax.fields;
@@ -36,7 +45,21 @@ impl SelectSyntaxAnalyzer {
                 unimplemented!("unary/binary operation in select field is not supported currently",)
             }
             Expression::FieldPointer(ptr) => Self::column_reference(ptr, from_item_streams),
-            Expression::FunctionCall(_) => todo!("will use label for projection"),
+            Expression::FunctionCall(fun_call) => match fun_call {
+                FunctionCall::FloorTime { target, .. } => {
+                    // TODO will use label for projection
+                    match target.as_ref() {
+                        Expression::FieldPointer(ptr) => Ok(ColumnReference::new(
+                            from_item_streams.first().unwrap().clone(), // super ugly...
+                            ColumnName::new(ptr.attr().to_string()),
+                        )),
+                        _ => unimplemented!(),
+                    }
+                }
+                FunctionCall::DurationSecs { .. } => {
+                    unreachable!("DURATION_SECS() cannot appear in field list")
+                }
+            },
         }
     }
 
@@ -115,68 +138,5 @@ impl SelectSyntaxAnalyzer {
             from_item_stream,
             ColumnName::new(attr.to_string()),
         ))
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use pretty_assertions::assert_eq;
-
-    #[derive(new)]
-    struct TestDatum {
-        index: FieldPointer,
-        from_item_streams: Vec<StreamName>,
-        expected_result: Result<ColumnReference>,
-    }
-
-    #[test]
-    fn test_field_pointer() {
-        let test_data: Vec<TestDatum> = vec![
-            TestDatum::new(
-                FieldPointer::from("c"),
-                vec![StreamName::factory("t")],
-                Ok(ColumnReference::factory("t", "c")),
-            ),
-            TestDatum::new(
-                FieldPointer::from("t.c"),
-                vec![StreamName::factory("t")],
-                Ok(ColumnReference::factory("t", "c")),
-            ),
-            TestDatum::new(
-                FieldPointer::from("t1.c"),
-                vec![StreamName::factory("t2")],
-                Err(SpringError::Sql(anyhow!(""))),
-            ),
-            TestDatum::new(
-                FieldPointer::from("c"),
-                vec![StreamName::factory("t")],
-                Ok(ColumnReference::factory("t", "c")),
-            ),
-            TestDatum::new(
-                FieldPointer::from("t.c"),
-                vec![StreamName::factory("t")],
-                Ok(ColumnReference::factory("t", "c")),
-            ),
-            TestDatum::new(
-                FieldPointer::from("x.c"),
-                vec![StreamName::factory("t")],
-                Err(SpringError::Sql(anyhow!(""))),
-            ),
-        ];
-
-        for test_datum in test_data {
-            match SelectSyntaxAnalyzer::column_reference(
-                &test_datum.index,
-                &test_datum.from_item_streams,
-            ) {
-                Ok(field_name) => {
-                    assert_eq!(field_name, test_datum.expected_result.unwrap())
-                }
-                Err(e) => {
-                    assert!(matches!(e, SpringError::Sql(_)))
-                }
-            }
-        }
     }
 }

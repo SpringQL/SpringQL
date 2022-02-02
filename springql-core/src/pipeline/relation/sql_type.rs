@@ -22,6 +22,9 @@ pub(crate) enum SqlType {
 
     /// Timestamp types
     TimestampComparable,
+
+    /// Duration types
+    DurationComparable,
 }
 
 impl SqlType {
@@ -51,6 +54,11 @@ impl SqlType {
     /// Constructor of Timestamp
     pub fn timestamp() -> SqlType {
         SqlType::TimestampComparable
+    }
+
+    /// Constructor of Duration
+    pub fn duration() -> SqlType {
+        SqlType::DurationComparable
     }
 }
 

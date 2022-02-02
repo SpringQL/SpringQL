@@ -26,8 +26,8 @@ impl ColumnReference {
     }
 
     /// Whether the prefix part of index matches to this name.
-    fn _prefix_matches(&self, prefix: &str) -> bool {
-        self.stream_name.as_ref() == prefix
+    fn _prefix_matches(&self, _prefix: &str) -> bool {
+        true // FIXME label match
     }
 
     /// Whether both the attr part and prefix part of index match to this name.

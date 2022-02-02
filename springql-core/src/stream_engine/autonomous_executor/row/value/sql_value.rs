@@ -135,6 +135,21 @@ impl SqlValue {
             },
         }
     }
+
+    /// Eval as i64 if possible.
+    ///
+    /// # Failures
+    ///
+    /// - `SpringError::Sql` when:
+    ///   - this SqlValue cannot be evaluated as SQL BIGINT
+    pub(crate) fn to_i64(&self) -> Result<i64> {
+        match self {
+            SqlValue::Null => Err(SpringError::Sql(anyhow!(
+                "NULL cannot be evaluated as BIGINT",
+            ))),
+            SqlValue::NotNull(nn_sql_value) => nn_sql_value.unpack::<i64>(),
+        }
+    }
 }
 
 impl TryFrom<&serde_json::Value> for SqlValue {

@@ -87,6 +87,10 @@ impl QuerySubtask {
                 let tuple = projection_subtask.run(child_tuple)?;
                 Ok(vec![tuple])
             }
+            QuerySubtaskNode::EvalValueExpr(eval_value_expr_subtask) => {
+                let tuple = eval_value_expr_subtask.run(child_tuple)?;
+                Ok(vec![tuple])
+            }
             QuerySubtaskNode::Collect(_) => unreachable!(),
         }
     }

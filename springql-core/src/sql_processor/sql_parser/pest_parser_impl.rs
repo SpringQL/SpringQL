@@ -593,14 +593,26 @@ impl PestParserImpl {
         )?;
 
         match function_name.to_lowercase().as_str() {
-            "floor" => {
+            "duration_secs" => {
                 if parameters.len() == 1 {
-                    Ok(FunctionCall::Floor {
-                        target: Box::new(parameters[0].clone()),
+                    Ok(FunctionCall::DurationSecs {
+                        duration_secs: Box::new(parameters[0].clone()),
                     })
                 } else {
                     Err(SpringError::Sql(anyhow!(
-                        "floor() takes exactly one parameter."
+                        "duration_secs() takes exactly one parameter (duration_secs)."
+                    )))
+                }
+            }
+            "floor_time" => {
+                if parameters.len() == 2 {
+                    Ok(FunctionCall::FloorTime {
+                        target: Box::new(parameters[0].clone()),
+                        resolution: Box::new(parameters[1].clone()),
+                    })
+                } else {
+                    Err(SpringError::Sql(anyhow!(
+                        "floor_time() takes exactly two parameters (target, resolution)."
                     )))
                 }
             }

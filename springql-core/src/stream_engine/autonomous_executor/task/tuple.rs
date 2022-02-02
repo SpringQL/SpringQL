@@ -21,12 +21,14 @@ use crate::{
             value::sql_value::{nn_sql_value::NnSqlValue, sql_compare_result::SqlCompareResult},
             Row,
         },
-        time::timestamp::Timestamp,
+        time::{
+            duration::{event_duration::EventDuration, SpringDuration},
+            timestamp::Timestamp,
+        },
         SqlValue,
     },
 };
 use anyhow::anyhow;
-use chrono::Duration;
 use std::sync::Arc;
 
 /// Tuple is a temporary structure appearing only in task execution.
@@ -157,20 +159,50 @@ impl Tuple {
 
     fn eval_function_call(&self, function_call: FunctionCall) -> Result<SqlValue> {
         match function_call {
-            FunctionCall::Floor { target: expression } => {
-                let sql_value = self.eval_expression(*expression)?;
-                match sql_value {
-                    SqlValue::NotNull(NnSqlValue::Timestamp(ts)) => {
-                        // TODO resolution from syntax
-                        let ts_floor = ts.floor(Duration::seconds(10));
-                        Ok(SqlValue::NotNull(NnSqlValue::Timestamp(ts_floor)))
-                    }
-                    _ => Err(SpringError::Sql(anyhow!(
-                        "floor is only supported for non-NULL TIMESTAMP `{}`",
-                        sql_value
-                    ))),
-                }
+            FunctionCall::FloorTime { target, resolution } => {
+                self.eval_function_floor_time(*target, *resolution)
             }
+            FunctionCall::DurationSecs { duration_secs } => {
+                self.eval_function_duration_secs(*duration_secs)
+            }
+        }
+    }
+
+    fn eval_function_floor_time(
+        &self,
+        target: Expression,
+        resolution: Expression,
+    ) -> Result<SqlValue> {
+        let target_value = self.eval_expression(target)?;
+        let resolution_value = self.eval_expression(resolution)?;
+
+        match (&target_value, &resolution_value) {
+            (
+                SqlValue::NotNull(NnSqlValue::Timestamp(ts)),
+                SqlValue::NotNull(NnSqlValue::Duration(resolution)),
+            ) => {
+                let ts_floor = ts.floor(resolution.to_chrono());
+                Ok(SqlValue::NotNull(NnSqlValue::Timestamp(ts_floor)))
+            }
+            _ => Err(SpringError::Sql(anyhow!(
+                "invalid parameter to FLOOR_TIME: `({}, {})`",
+                target_value,
+                resolution_value
+            ))),
+        }
+    }
+
+    fn eval_function_duration_secs(&self, duration_secs: Expression) -> Result<SqlValue> {
+        let duration_value = self.eval_expression(duration_secs)?;
+        let duration_secs = duration_value.to_i64()?;
+        if duration_secs >= 0 {
+            let duration = EventDuration::from_secs(duration_secs as u64);
+            Ok(SqlValue::NotNull(NnSqlValue::Duration(duration)))
+        } else {
+            Err(SpringError::Sql(anyhow!(
+                "DURATION_SECS should take positive integer but got `{}`",
+                duration_secs
+            )))
         }
     }
 
