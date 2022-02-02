@@ -166,6 +166,7 @@ unary_operator = {
 
 binary_operator = {
     "="
+    | "+"
 }
 
 /*
