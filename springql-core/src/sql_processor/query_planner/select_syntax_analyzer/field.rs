@@ -40,9 +40,16 @@ impl SelectSyntaxAnalyzer {
             Expression::Constant(_) => {
                 unimplemented!("constant in select field is not supported currently",)
             }
-            Expression::UnaryOperator(_, _) | Expression::BooleanExpr(_) => {
+            Expression::UnaryOperator(_, _) => {
                 // TODO Better to shrink expression in this layer.
-                unimplemented!("unary/binary operation in select field is not supported currently",)
+                unimplemented!("unary operation in select field is not supported currently",)
+            }
+            Expression::BooleanExpr(_) => {
+                // TODO will use label for projection
+                Ok(ColumnReference::new(
+                    StreamName::new("_".to_string()),
+                    ColumnName::new("_".to_string()),
+                ))
             }
             Expression::FieldPointer(ptr) => Self::column_reference(ptr, from_item_streams),
             Expression::FunctionCall(fun_call) => match fun_call {

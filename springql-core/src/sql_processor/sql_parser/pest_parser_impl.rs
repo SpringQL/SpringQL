@@ -5,6 +5,7 @@ mod helper;
 
 use crate::error::{Result, SpringError};
 use crate::expression::boolean_expression::comparison_function::ComparisonFunction;
+use crate::expression::boolean_expression::numerical_function::NumericalFunction;
 use crate::expression::boolean_expression::BooleanExpression;
 use crate::expression::function_call::FunctionCall;
 use crate::expression::operator::{BinaryOperator, UnaryOperator};
@@ -157,6 +158,7 @@ impl PestParserImpl {
         let s = self_as_str(&mut params);
         match s.to_lowercase().as_str() {
             "=" => Ok(BinaryOperator::Equal),
+            "+" => Ok(BinaryOperator::Add),
             _ => Err(SpringError::Sql(anyhow!(
                 "Does not match any child rule of binary_operator.",
             ))),
@@ -499,6 +501,12 @@ impl PestParserImpl {
                             right: Box::new(right_expr),
                         },
                     ),
+                )),
+                BinaryOperator::Add => Ok(Expression::BooleanExpr(
+                    BooleanExpression::NumericalFunctionVariant(NumericalFunction::AddVariant {
+                        left: Box::new(expr),
+                        right: Box::new(right_expr),
+                    }),
                 )),
             }
         } else {

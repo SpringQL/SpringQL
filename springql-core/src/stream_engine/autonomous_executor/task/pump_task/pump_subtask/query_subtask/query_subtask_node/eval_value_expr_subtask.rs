@@ -41,9 +41,10 @@ impl EvalValueExprSubtask {
                             unreachable!("DURATION_SECS() cannot appear in field list")
                         }
                     },
-                    _ => {
-                        todo!("use label instead of ColumnReference instead",)
-                    }
+                    _ => ColumnReference::new(
+                        StreamName::new("_".to_string()),
+                        ColumnName::new("_".to_string()),
+                    ),
                 };
                 let value = tuple.eval_expression(expr.clone())?;
                 Ok(Field::new(colref, value))

@@ -10,4 +10,7 @@ pub enum UnaryOperator {
 pub enum BinaryOperator {
     /// =
     Equal,
+
+    /// +
+    Add,
 }

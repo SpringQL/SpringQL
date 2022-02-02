@@ -3,7 +3,7 @@ use crate::{
     expression::{
         boolean_expression::{
             comparison_function::ComparisonFunction, logical_function::LogicalFunction,
-            BooleanExpression,
+            numerical_function::NumericalFunction, BooleanExpression,
         },
         function_call::FunctionCall,
         operator::UnaryOperator,
@@ -149,6 +149,17 @@ impl Tuple {
 
                             let b = left_sql_value.to_bool()? && right_sql_value.to_bool()?;
                             Ok(SqlValue::NotNull(NnSqlValue::Boolean(b)))
+                        }
+                    }
+                }
+                BooleanExpression::NumericalFunctionVariant(numerical_function) => {
+                    match numerical_function {
+                        NumericalFunction::AddVariant { left, right } => {
+                            let left_sql_value = self.eval_expression(*left)?;
+                            let right_sql_value = self.eval_expression(*right)?;
+
+                            let i = left_sql_value.to_i64()? + right_sql_value.to_i64()?;
+                            Ok(SqlValue::NotNull(NnSqlValue::BigInt(i)))
                         }
                     }
                 }
