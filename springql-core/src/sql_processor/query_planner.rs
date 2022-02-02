@@ -17,8 +17,6 @@ use super::sql_parser::syntax::SelectStreamSyntax;
 /// ```text
 /// proj
 ///  |
-/// selection
-///  |
 /// sort
 ///  |
 /// aggregation
@@ -26,11 +24,19 @@ use super::sql_parser::syntax::SelectStreamSyntax;
 /// join
 ///  |
 /// window
+///  |
+/// selection
+///  |
+/// eval value expressions
+///  |
 ///  |--------+
 /// collect  collect
 /// ```
 ///
 /// Nodes are created from bottom to top.
+///
+/// `SelectSyntax` has `ExprSyntax`s inside and query planner translates them into `Expr`s, which are evaluated into `SqlValue` with tuples.
+/// To be more precise, an `Expr::ValueExpr` is evaluated into `SqlValue` with a tuple and `Expr::AggrExpr` is evaluated into `SqlValue` with set of tuples.
 #[derive(Clone, Debug)]
 pub(crate) struct QueryPlanner {
     plan: QueryPlan,
