@@ -1,15 +1,12 @@
 // Copyright (c) 2021 TOYOTA MOTOR CORPORATION. Licensed under MIT OR Apache-2.0.
 
-use crate::expression::Expression;
 use crate::error::Result;
 use crate::expression::function_call::FunctionCall;
-use crate::pipeline::field::Field;
+use crate::expression::Expression;
 use crate::pipeline::field::field_name::ColumnReference;
-use crate::pipeline::name::{StreamName, ColumnName};
-use crate::stream_engine::autonomous_executor::performance_metrics::metrics_update_command::metrics_update_by_task_execution::InQueueMetricsUpdateByTaskExecution;
-use crate::stream_engine::autonomous_executor::task::pump_task::pump_subtask::query_subtask::QuerySubtaskOut;
+use crate::pipeline::field::Field;
+use crate::pipeline::name::{ColumnName, StreamName};
 use crate::stream_engine::autonomous_executor::task::tuple::Tuple;
-use crate::stream_engine::autonomous_executor::task_graph::queue_id::QueueId;
 
 #[derive(Debug, new)]
 pub(in crate::stream_engine::autonomous_executor) struct EvalValueExprSubtask {

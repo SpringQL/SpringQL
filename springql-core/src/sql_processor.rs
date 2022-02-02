@@ -125,18 +125,14 @@ mod tests {
     use super::*;
     use crate::{
         pipeline::{
-            name::{ColumnName, PumpName, SinkWriterName, SourceReaderName, StreamName},
+            name::{SinkWriterName, SourceReaderName, StreamName},
             option::options_builder::OptionsBuilder,
             pipeline_version::PipelineVersion,
-            pump_model::PumpModel,
             sink_writer_model::{sink_writer_type::SinkWriterType, SinkWriterModel},
             source_reader_model::{source_reader_type::SourceReaderType, SourceReaderModel},
             stream_model::{stream_shape::StreamShape, StreamModel},
         },
-        stream_engine::command::{
-            alter_pipeline_command::AlterPipelineCommand, insert_plan::InsertPlan,
-            query_plan::QueryPlan,
-        },
+        stream_engine::command::alter_pipeline_command::AlterPipelineCommand,
     };
     use pretty_assertions::assert_eq;
 
