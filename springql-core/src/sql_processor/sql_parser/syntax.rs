@@ -25,7 +25,7 @@ pub(in crate::sql_processor) struct SelectStreamSyntax {
 
 #[derive(Clone, PartialEq, Debug)]
 pub(in crate::sql_processor) struct SelectFieldSyntax {
-    pub(in crate::sql_processor) expression: Expression,
+    pub(in crate::sql_processor) value_expr: Expression,
     pub(in crate::sql_processor) alias: Option<FieldAlias>,
 }
 

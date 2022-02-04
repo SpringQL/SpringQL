@@ -15,7 +15,7 @@ impl SelectSyntaxAnalyzer {
         let select_fields = &self.select_syntax.fields;
         select_fields
             .into_iter()
-            .map(|field| &field.expression)
+            .map(|field| &field.value_expr)
             .cloned()
             .collect()
     }
@@ -36,7 +36,7 @@ impl SelectSyntaxAnalyzer {
         select_field: &SelectFieldSyntax,
         from_item_streams: &[StreamName],
     ) -> Result<ColumnReference> {
-        match &select_field.expression {
+        match &select_field.value_expr {
             Expression::Constant(_) => {
                 unimplemented!("constant in select field is not supported currently",)
             }

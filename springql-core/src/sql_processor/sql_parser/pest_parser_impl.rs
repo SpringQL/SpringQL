@@ -425,10 +425,10 @@ impl PestParserImpl {
     }
 
     fn parse_select_field(mut params: FnParseParams) -> Result<SelectFieldSyntax> {
-        let expression = parse_child(
+        let value_expr = parse_child(
             &mut params,
-            Rule::expression,
-            Self::parse_expression,
+            Rule::value_expr,
+            Self::parse_value_expr,
             identity,
         )?;
         let alias = try_parse_child(
@@ -437,7 +437,7 @@ impl PestParserImpl {
             Self::parse_field_alias,
             identity,
         )?;
-        Ok(SelectFieldSyntax { expression, alias })
+        Ok(SelectFieldSyntax { value_expr, alias })
     }
 
     fn parse_from_item(mut params: FnParseParams) -> Result<FromItemSyntax> {
@@ -472,11 +472,11 @@ impl PestParserImpl {
      * ================================================================================================
      */
 
-    fn parse_expression(mut params: FnParseParams) -> Result<Expression> {
+    fn parse_value_expr(mut params: FnParseParams) -> Result<Expression> {
         let expr = parse_child(
             &mut params,
-            Rule::sub_expression,
-            Self::parse_sub_expression,
+            Rule::sub_value_expr,
+            Self::parse_sub_value_expr,
             identity,
         )?;
 
@@ -488,8 +488,8 @@ impl PestParserImpl {
         )? {
             let right_expr = parse_child(
                 &mut params,
-                Rule::expression,
-                Self::parse_expression,
+                Rule::value_expr,
+                Self::parse_value_expr,
                 identity,
             )?;
 
@@ -514,7 +514,7 @@ impl PestParserImpl {
         }
     }
 
-    fn parse_sub_expression(mut params: FnParseParams) -> Result<Expression> {
+    fn parse_sub_value_expr(mut params: FnParseParams) -> Result<Expression> {
         try_parse_child(
             &mut params,
             Rule::constant,
@@ -536,8 +536,8 @@ impl PestParserImpl {
             )? {
                 Some(parse_child(
                     &mut params,
-                    Rule::expression,
-                    Self::parse_expression,
+                    Rule::value_expr,
+                    Self::parse_value_expr,
                     |expr| Expression::UnaryOperator(uni_op.clone(), Box::new(expr)),
                 )?)
             } else {
@@ -551,7 +551,7 @@ impl PestParserImpl {
             Expression::FunctionCall,
         )?)
         .ok_or_else(|| {
-            SpringError::Sql(anyhow!("Does not match any child rule of sub_expression.",))
+            SpringError::Sql(anyhow!("Does not match any child rule of sub_value_expr.",))
         })
     }
 
@@ -595,8 +595,8 @@ impl PestParserImpl {
         )?;
         let parameters = parse_child_seq(
             &mut params,
-            Rule::expression,
-            &Self::parse_expression,
+            Rule::value_expr,
+            &Self::parse_value_expr,
             &identity,
         )?;
 
