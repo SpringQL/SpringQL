@@ -1,7 +1,7 @@
 use super::SelectSyntaxAnalyzer;
 use crate::{
     error::{Result, SpringError},
-    expression::{function_call::FunctionCall, Expression},
+    expression::{function_call::FunctionCall, ValueExpr},
     pipeline::{
         field::{field_name::ColumnReference, field_pointer::FieldPointer},
         name::{AttributeName, ColumnName, StreamName},
@@ -11,7 +11,7 @@ use crate::{
 use anyhow::anyhow;
 
 impl SelectSyntaxAnalyzer {
-    pub(in super::super) fn field_expressions(&self) -> Vec<Expression> {
+    pub(in super::super) fn field_expressions(&self) -> Vec<ValueExpr> {
         let select_fields = &self.select_syntax.fields;
         select_fields
             .into_iter()
@@ -37,26 +37,26 @@ impl SelectSyntaxAnalyzer {
         from_item_streams: &[StreamName],
     ) -> Result<ColumnReference> {
         match &select_field.value_expr {
-            Expression::Constant(_) => {
+            ValueExpr::Constant(_) => {
                 unimplemented!("constant in select field is not supported currently",)
             }
-            Expression::UnaryOperator(_, _) => {
+            ValueExpr::UnaryOperator(_, _) => {
                 // TODO Better to shrink expression in this layer.
                 unimplemented!("unary operation in select field is not supported currently",)
             }
-            Expression::BooleanExpr(_) => {
+            ValueExpr::BooleanExpr(_) => {
                 // TODO will use label for projection
                 Ok(ColumnReference::new(
                     StreamName::new("_".to_string()),
                     ColumnName::new("_".to_string()),
                 ))
             }
-            Expression::FieldPointer(ptr) => Self::column_reference(ptr, from_item_streams),
-            Expression::FunctionCall(fun_call) => match fun_call {
+            ValueExpr::FieldPointer(ptr) => Self::column_reference(ptr, from_item_streams),
+            ValueExpr::FunctionCall(fun_call) => match fun_call {
                 FunctionCall::FloorTime { target, .. } => {
                     // TODO will use label for projection
                     match target.as_ref() {
-                        Expression::FieldPointer(ptr) => Ok(ColumnReference::new(
+                        ValueExpr::FieldPointer(ptr) => Ok(ColumnReference::new(
                             from_item_streams.first().unwrap().clone(), // super ugly...
                             ColumnName::new(ptr.attr().to_string()),
                         )),

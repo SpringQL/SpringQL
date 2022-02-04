@@ -3,7 +3,7 @@
 use std::time::Duration;
 
 use crate::{
-    expression::Expression,
+    expression::ValueExpr,
     pipeline::{field::field_pointer::FieldPointer, name::StreamName},
 };
 
@@ -13,7 +13,7 @@ pub(crate) enum QueryPlanOperation {
         stream: StreamName,
     },
     EvalValueExpr {
-        expressions: Vec<Expression>,
+        expressions: Vec<ValueExpr>,
     },
     Projection {
         field_pointers: Vec<FieldPointer>,

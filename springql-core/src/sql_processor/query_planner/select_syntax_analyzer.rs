@@ -1,4 +1,4 @@
-use crate::{expression::Expression, sql_processor::sql_parser::syntax::SelectStreamSyntax};
+use crate::{expression::ValueExpr, sql_processor::sql_parser::syntax::SelectStreamSyntax};
 
 mod field;
 mod from_item;
@@ -9,7 +9,7 @@ pub(in crate::sql_processor) struct SelectSyntaxAnalyzer {
 }
 
 impl SelectSyntaxAnalyzer {
-    pub(in crate::sql_processor) fn all_expressions(&self) -> Vec<Expression> {
+    pub(in crate::sql_processor) fn all_expressions(&self) -> Vec<ValueExpr> {
         let mut expressions = self.field_expressions();
         expressions.append(&mut self.from_item_expressions());
         expressions

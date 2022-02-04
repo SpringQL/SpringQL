@@ -8,17 +8,19 @@ use self::{
     boolean_expression::BooleanExpression, function_call::FunctionCall, operator::UnaryOperator,
 };
 
-/// Expression.
+/// Value Expression.
+///
+/// A value expression can be evaluated into SqlValue with a tuple (to resolve column reference).
 #[derive(Clone, PartialEq, Hash, Debug)]
-pub(crate) enum Expression {
+pub(crate) enum ValueExpr {
     Constant(SqlValue),
     FieldPointer(FieldPointer),
-    UnaryOperator(UnaryOperator, Box<Expression>),
+    UnaryOperator(UnaryOperator, Box<ValueExpr>),
     BooleanExpr(BooleanExpression),
     FunctionCall(FunctionCall),
 }
 
-impl From<SqlValue> for Expression {
+impl From<SqlValue> for ValueExpr {
     fn from(sql_val: SqlValue) -> Self {
         Self::Constant(sql_val)
     }

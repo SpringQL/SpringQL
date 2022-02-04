@@ -1,11 +1,11 @@
 use super::SelectSyntaxAnalyzer;
 use crate::error::Result;
-use crate::expression::Expression;
+use crate::expression::ValueExpr;
 use crate::pipeline::name::StreamName;
 use crate::sql_processor::sql_parser::syntax::FromItemSyntax;
 
 impl SelectSyntaxAnalyzer {
-    pub(in super::super) fn from_item_expressions(&self) -> Vec<Expression> {
+    pub(in super::super) fn from_item_expressions(&self) -> Vec<ValueExpr> {
         vec![]
     }
 
