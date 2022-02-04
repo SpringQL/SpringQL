@@ -10,6 +10,7 @@ use self::{
 use super::ValueExpr;
 
 /// Boolean expression.
+#[allow(clippy::enum_variant_names)]
 #[derive(Clone, PartialEq, Hash, Debug)]
 pub(crate) enum BooleanExpr<E>
 where
