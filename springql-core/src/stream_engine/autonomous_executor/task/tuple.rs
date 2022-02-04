@@ -7,7 +7,7 @@ use crate::{
         },
         function_call::FunctionCall,
         operator::UnaryOperator,
-        Expression,
+        ValueExpr,
     },
     pipeline::{
         field::{field_name::ColumnReference, field_pointer::FieldPointer, Field},
@@ -109,11 +109,11 @@ impl Tuple {
         sql_value.ok_or_else(|| SpringError::Sql(anyhow!("cannot find field `{}`", field_pointer)))
     }
 
-    pub(super) fn eval_expression(&self, expr: Expression) -> Result<SqlValue> {
+    pub(super) fn eval_expression(&self, expr: ValueExpr) -> Result<SqlValue> {
         match expr {
-            Expression::Constant(sql_value) => Ok(sql_value),
-            Expression::FieldPointer(ptr) => self.get_value(&ptr),
-            Expression::UnaryOperator(uni_op, child) => {
+            ValueExpr::Constant(sql_value) => Ok(sql_value),
+            ValueExpr::FieldPointer(ptr) => self.get_value(&ptr),
+            ValueExpr::UnaryOperator(uni_op, child) => {
                 let child_sql_value = self.eval_expression(*child)?;
                 match (uni_op, child_sql_value) {
                     (UnaryOperator::Minus, SqlValue::Null) => Ok(SqlValue::Null),
@@ -122,7 +122,7 @@ impl Tuple {
                     }
                 }
             }
-            Expression::BooleanExpr(bool_expr) => match bool_expr {
+            ValueExpr::BooleanExpr(bool_expr) => match bool_expr {
                 BooleanExpression::ComparisonFunctionVariant(comparison_function) => {
                     match comparison_function {
                         ComparisonFunction::EqualVariant { left, right } => {
@@ -143,9 +143,9 @@ impl Tuple {
                     match logical_function {
                         LogicalFunction::AndVariant { left, right } => {
                             let left_sql_value =
-                                self.eval_expression(Expression::BooleanExpr(*left))?;
+                                self.eval_expression(ValueExpr::BooleanExpr(*left))?;
                             let right_sql_value =
-                                self.eval_expression(Expression::BooleanExpr(*right))?;
+                                self.eval_expression(ValueExpr::BooleanExpr(*right))?;
 
                             let b = left_sql_value.to_bool()? && right_sql_value.to_bool()?;
                             Ok(SqlValue::NotNull(NnSqlValue::Boolean(b)))
@@ -164,7 +164,7 @@ impl Tuple {
                     }
                 }
             },
-            Expression::FunctionCall(function_call) => self.eval_function_call(function_call),
+            ValueExpr::FunctionCall(function_call) => self.eval_function_call(function_call),
         }
     }
 
@@ -181,8 +181,8 @@ impl Tuple {
 
     fn eval_function_floor_time(
         &self,
-        target: Expression,
-        resolution: Expression,
+        target: ValueExpr,
+        resolution: ValueExpr,
     ) -> Result<SqlValue> {
         let target_value = self.eval_expression(target)?;
         let resolution_value = self.eval_expression(resolution)?;
@@ -203,7 +203,7 @@ impl Tuple {
         }
     }
 
-    fn eval_function_duration_secs(&self, duration_secs: Expression) -> Result<SqlValue> {
+    fn eval_function_duration_secs(&self, duration_secs: ValueExpr) -> Result<SqlValue> {
         let duration_value = self.eval_expression(duration_secs)?;
         let duration_secs = duration_value.to_i64()?;
         if duration_secs >= 0 {
@@ -261,7 +261,7 @@ mod tests {
     fn test_to_sql_value() {
         #[derive(new)]
         struct TestDatum {
-            in_expr: Expression,
+            in_expr: ValueExpr,
             tuple: Tuple,
             expected_sql_value: SqlValue,
         }
@@ -269,67 +269,67 @@ mod tests {
         let test_data: Vec<TestDatum> = vec![
             // constants
             TestDatum::new(
-                Expression::factory_integer(1),
+                ValueExpr::factory_integer(1),
                 Tuple::fx_trade_oracle(),
                 SqlValue::factory_integer(1),
             ),
             // unary op
             TestDatum::new(
-                Expression::factory_uni_op(UnaryOperator::Minus, Expression::factory_integer(1)),
+                ValueExpr::factory_uni_op(UnaryOperator::Minus, ValueExpr::factory_integer(1)),
                 Tuple::fx_trade_oracle(),
                 SqlValue::factory_integer(-1),
             ),
             // FieldPointer
             TestDatum::new(
-                Expression::FieldPointer(FieldPointer::from("amount")),
+                ValueExpr::FieldPointer(FieldPointer::from("amount")),
                 Tuple::factory_trade(Timestamp::fx_ts1(), "ORCL", 1),
                 SqlValue::factory_integer(1),
             ),
             // BooleanExpression
             TestDatum::new(
-                Expression::factory_eq(Expression::factory_null(), Expression::factory_null()),
+                ValueExpr::factory_eq(ValueExpr::factory_null(), ValueExpr::factory_null()),
                 Tuple::fx_trade_oracle(),
                 SqlValue::factory_bool(false),
             ),
             TestDatum::new(
-                Expression::factory_eq(
-                    Expression::factory_integer(123),
-                    Expression::factory_integer(123),
+                ValueExpr::factory_eq(
+                    ValueExpr::factory_integer(123),
+                    ValueExpr::factory_integer(123),
                 ),
                 Tuple::fx_trade_oracle(),
                 SqlValue::factory_bool(true),
             ),
             TestDatum::new(
-                Expression::factory_eq(
-                    Expression::factory_integer(123),
-                    Expression::factory_integer(-123),
+                ValueExpr::factory_eq(
+                    ValueExpr::factory_integer(123),
+                    ValueExpr::factory_integer(-123),
                 ),
                 Tuple::fx_trade_oracle(),
                 SqlValue::factory_bool(false),
             ),
             TestDatum::new(
-                Expression::factory_and(
+                ValueExpr::factory_and(
                     BooleanExpression::factory_eq(
-                        Expression::factory_integer(123),
-                        Expression::factory_integer(123),
+                        ValueExpr::factory_integer(123),
+                        ValueExpr::factory_integer(123),
                     ),
                     BooleanExpression::factory_eq(
-                        Expression::factory_integer(456),
-                        Expression::factory_integer(456),
+                        ValueExpr::factory_integer(456),
+                        ValueExpr::factory_integer(456),
                     ),
                 ),
                 Tuple::fx_trade_oracle(),
                 SqlValue::factory_bool(true),
             ),
             TestDatum::new(
-                Expression::factory_and(
+                ValueExpr::factory_and(
                     BooleanExpression::factory_eq(
-                        Expression::factory_integer(-123),
-                        Expression::factory_integer(123),
+                        ValueExpr::factory_integer(-123),
+                        ValueExpr::factory_integer(123),
                     ),
                     BooleanExpression::factory_eq(
-                        Expression::factory_integer(456),
-                        Expression::factory_integer(456),
+                        ValueExpr::factory_integer(456),
+                        ValueExpr::factory_integer(456),
                     ),
                 ),
                 Tuple::fx_trade_oracle(),

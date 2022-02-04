@@ -207,17 +207,17 @@ identifier_part = _{
  */
 
 condition = {
-    expression
+    value_expr
 }
 
-expression = {
-    sub_expression ~ (binary_operator ~ expression)?
+value_expr = {
+    sub_value_expr ~ (binary_operator ~ value_expr)?
 }
 // To avoid left-recursion
-sub_expression = {
+sub_value_expr = {
     constant
     | field_pointer
-    | (unary_operator ~ expression)
+    | (unary_operator ~ value_expr)
     | function_call
 }
 
@@ -227,7 +227,7 @@ field_pointer = {
 
 function_call = {
     function_name ~ "("
-    ~ expression ~ ("," ~ expression)*
+    ~ value_expr ~ ("," ~ value_expr)*
     ~ ")"
 }
 function_name = {
@@ -391,7 +391,7 @@ select_stream_command = {
 }
 
 select_field = {
-    expression ~ (^"AS"? ~ field_alias)?
+    value_expr ~ (^"AS"? ~ field_alias)?
 }
 
 from_item = {
