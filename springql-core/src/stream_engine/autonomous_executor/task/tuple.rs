@@ -1,14 +1,5 @@
 use crate::{
     error::{Result, SpringError},
-    expression::{
-        boolean_expression::{
-            comparison_function::ComparisonFunction, logical_function::LogicalFunction,
-            numerical_function::NumericalFunction, BooleanExpr,
-        },
-        function_call::FunctionCall,
-        operator::UnaryOperator,
-        ValueExprPh1,
-    },
     pipeline::{
         field::{field_name::ColumnReference, field_pointer::FieldPointer, Field},
         name::ColumnName,
@@ -16,15 +7,9 @@ use crate::{
     },
     stream_engine::{
         autonomous_executor::row::{
-            column::stream_column::StreamColumns,
-            column_values::ColumnValues,
-            value::sql_value::{nn_sql_value::NnSqlValue, sql_compare_result::SqlCompareResult},
-            Row,
+            column::stream_column::StreamColumns, column_values::ColumnValues, Row,
         },
-        time::{
-            duration::{event_duration::EventDuration, SpringDuration},
-            timestamp::Timestamp,
-        },
+        time::timestamp::Timestamp,
         SqlValue,
     },
 };
@@ -147,6 +132,10 @@ impl Tuple {
 
 #[cfg(test)]
 mod tests {
+    use crate::expression::{
+        boolean_expression::BooleanExpr, operator::UnaryOperator, ValueExprPh1,
+    };
+
     use super::*;
 
     #[test]
