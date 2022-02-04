@@ -1,14 +1,5 @@
 use crate::{
     error::{Result, SpringError},
-    expression::{
-        boolean_expression::{
-            comparison_function::ComparisonFunction, logical_function::LogicalFunction,
-            numerical_function::NumericalFunction, BooleanExpression,
-        },
-        function_call::FunctionCall,
-        operator::UnaryOperator,
-        ValueExpr,
-    },
     pipeline::{
         field::{field_name::ColumnReference, field_pointer::FieldPointer, Field},
         name::ColumnName,
@@ -16,15 +7,9 @@ use crate::{
     },
     stream_engine::{
         autonomous_executor::row::{
-            column::stream_column::StreamColumns,
-            column_values::ColumnValues,
-            value::sql_value::{nn_sql_value::NnSqlValue, sql_compare_result::SqlCompareResult},
-            Row,
+            column::stream_column::StreamColumns, column_values::ColumnValues, Row,
         },
-        time::{
-            duration::{event_duration::EventDuration, SpringDuration},
-            timestamp::Timestamp,
-        },
+        time::timestamp::Timestamp,
         SqlValue,
     },
 };
@@ -39,7 +24,7 @@ use std::sync::Arc;
 ///
 /// Unlike rows, tuples may have not only stream's columns but also fields derived from expressions.
 #[derive(Clone, PartialEq, Debug, new)]
-pub(in crate::stream_engine::autonomous_executor) struct Tuple {
+pub(crate) struct Tuple {
     /// Either be an event-time or a process-time.
     /// If a row this tuple is constructed from has a ROWTIME column, `rowtime` has duplicate value with one of `fields`.
     rowtime: Timestamp,
@@ -98,7 +83,7 @@ impl Tuple {
     /// # Failures
     ///
     /// `SpringError::Sql` if `field_pointer` does not match any field.
-    pub(super) fn get_value(&self, field_pointer: &FieldPointer) -> Result<SqlValue> {
+    pub(crate) fn get_value(&self, field_pointer: &FieldPointer) -> Result<SqlValue> {
         let sql_value = self.fields.iter().find_map(|field| {
             let colrefs = field.name();
             colrefs
@@ -107,114 +92,6 @@ impl Tuple {
         });
 
         sql_value.ok_or_else(|| SpringError::Sql(anyhow!("cannot find field `{}`", field_pointer)))
-    }
-
-    pub(super) fn eval_expression(&self, expr: ValueExpr) -> Result<SqlValue> {
-        match expr {
-            ValueExpr::Constant(sql_value) => Ok(sql_value),
-            ValueExpr::FieldPointer(ptr) => self.get_value(&ptr),
-            ValueExpr::UnaryOperator(uni_op, child) => {
-                let child_sql_value = self.eval_expression(*child)?;
-                match (uni_op, child_sql_value) {
-                    (UnaryOperator::Minus, SqlValue::Null) => Ok(SqlValue::Null),
-                    (UnaryOperator::Minus, SqlValue::NotNull(nn_sql_value)) => {
-                        Ok(SqlValue::NotNull(nn_sql_value.negate()?))
-                    }
-                }
-            }
-            ValueExpr::BooleanExpr(bool_expr) => match bool_expr {
-                BooleanExpression::ComparisonFunctionVariant(comparison_function) => {
-                    match comparison_function {
-                        ComparisonFunction::EqualVariant { left, right } => {
-                            let left_sql_value = self.eval_expression(*left)?;
-                            let right_sql_value = self.eval_expression(*right)?;
-                            left_sql_value
-                                .sql_compare(&right_sql_value)
-                                .map(|sql_compare_result| {
-                                    SqlValue::NotNull(NnSqlValue::Boolean(matches!(
-                                        sql_compare_result,
-                                        SqlCompareResult::Eq
-                                    )))
-                                })
-                        }
-                    }
-                }
-                BooleanExpression::LogicalFunctionVariant(logical_function) => {
-                    match logical_function {
-                        LogicalFunction::AndVariant { left, right } => {
-                            let left_sql_value =
-                                self.eval_expression(ValueExpr::BooleanExpr(*left))?;
-                            let right_sql_value =
-                                self.eval_expression(ValueExpr::BooleanExpr(*right))?;
-
-                            let b = left_sql_value.to_bool()? && right_sql_value.to_bool()?;
-                            Ok(SqlValue::NotNull(NnSqlValue::Boolean(b)))
-                        }
-                    }
-                }
-                BooleanExpression::NumericalFunctionVariant(numerical_function) => {
-                    match numerical_function {
-                        NumericalFunction::AddVariant { left, right } => {
-                            let left_sql_value = self.eval_expression(*left)?;
-                            let right_sql_value = self.eval_expression(*right)?;
-
-                            let i = left_sql_value.to_i64()? + right_sql_value.to_i64()?;
-                            Ok(SqlValue::NotNull(NnSqlValue::BigInt(i)))
-                        }
-                    }
-                }
-            },
-            ValueExpr::FunctionCall(function_call) => self.eval_function_call(function_call),
-        }
-    }
-
-    fn eval_function_call(&self, function_call: FunctionCall) -> Result<SqlValue> {
-        match function_call {
-            FunctionCall::FloorTime { target, resolution } => {
-                self.eval_function_floor_time(*target, *resolution)
-            }
-            FunctionCall::DurationSecs { duration_secs } => {
-                self.eval_function_duration_secs(*duration_secs)
-            }
-        }
-    }
-
-    fn eval_function_floor_time(
-        &self,
-        target: ValueExpr,
-        resolution: ValueExpr,
-    ) -> Result<SqlValue> {
-        let target_value = self.eval_expression(target)?;
-        let resolution_value = self.eval_expression(resolution)?;
-
-        match (&target_value, &resolution_value) {
-            (
-                SqlValue::NotNull(NnSqlValue::Timestamp(ts)),
-                SqlValue::NotNull(NnSqlValue::Duration(resolution)),
-            ) => {
-                let ts_floor = ts.floor(resolution.to_chrono());
-                Ok(SqlValue::NotNull(NnSqlValue::Timestamp(ts_floor)))
-            }
-            _ => Err(SpringError::Sql(anyhow!(
-                "invalid parameter to FLOOR_TIME: `({}, {})`",
-                target_value,
-                resolution_value
-            ))),
-        }
-    }
-
-    fn eval_function_duration_secs(&self, duration_secs: ValueExpr) -> Result<SqlValue> {
-        let duration_value = self.eval_expression(duration_secs)?;
-        let duration_secs = duration_value.to_i64()?;
-        if duration_secs >= 0 {
-            let duration = EventDuration::from_secs(duration_secs as u64);
-            Ok(SqlValue::NotNull(NnSqlValue::Duration(duration)))
-        } else {
-            Err(SpringError::Sql(anyhow!(
-                "DURATION_SECS should take positive integer but got `{}`",
-                duration_secs
-            )))
-        }
     }
 
     /// # Failure
@@ -255,13 +132,17 @@ impl Tuple {
 
 #[cfg(test)]
 mod tests {
+    use crate::expression::{
+        boolean_expression::BooleanExpr, operator::UnaryOperator, ValueExprPh1,
+    };
+
     use super::*;
 
     #[test]
     fn test_to_sql_value() {
         #[derive(new)]
         struct TestDatum {
-            in_expr: ValueExpr,
+            in_expr: ValueExprPh1,
             tuple: Tuple,
             expected_sql_value: SqlValue,
         }
@@ -269,67 +150,73 @@ mod tests {
         let test_data: Vec<TestDatum> = vec![
             // constants
             TestDatum::new(
-                ValueExpr::factory_integer(1),
+                ValueExprPh1::factory_integer(1),
                 Tuple::fx_trade_oracle(),
                 SqlValue::factory_integer(1),
             ),
             // unary op
             TestDatum::new(
-                ValueExpr::factory_uni_op(UnaryOperator::Minus, ValueExpr::factory_integer(1)),
+                ValueExprPh1::factory_uni_op(
+                    UnaryOperator::Minus,
+                    ValueExprPh1::factory_integer(1),
+                ),
                 Tuple::fx_trade_oracle(),
                 SqlValue::factory_integer(-1),
             ),
             // FieldPointer
             TestDatum::new(
-                ValueExpr::FieldPointer(FieldPointer::from("amount")),
+                ValueExprPh1::FieldPointer(FieldPointer::from("amount")),
                 Tuple::factory_trade(Timestamp::fx_ts1(), "ORCL", 1),
                 SqlValue::factory_integer(1),
             ),
             // BooleanExpression
             TestDatum::new(
-                ValueExpr::factory_eq(ValueExpr::factory_null(), ValueExpr::factory_null()),
-                Tuple::fx_trade_oracle(),
-                SqlValue::factory_bool(false),
-            ),
-            TestDatum::new(
-                ValueExpr::factory_eq(
-                    ValueExpr::factory_integer(123),
-                    ValueExpr::factory_integer(123),
-                ),
-                Tuple::fx_trade_oracle(),
-                SqlValue::factory_bool(true),
-            ),
-            TestDatum::new(
-                ValueExpr::factory_eq(
-                    ValueExpr::factory_integer(123),
-                    ValueExpr::factory_integer(-123),
+                ValueExprPh1::factory_eq(
+                    ValueExprPh1::factory_null(),
+                    ValueExprPh1::factory_null(),
                 ),
                 Tuple::fx_trade_oracle(),
                 SqlValue::factory_bool(false),
             ),
             TestDatum::new(
-                ValueExpr::factory_and(
-                    BooleanExpression::factory_eq(
-                        ValueExpr::factory_integer(123),
-                        ValueExpr::factory_integer(123),
+                ValueExprPh1::factory_eq(
+                    ValueExprPh1::factory_integer(123),
+                    ValueExprPh1::factory_integer(123),
+                ),
+                Tuple::fx_trade_oracle(),
+                SqlValue::factory_bool(true),
+            ),
+            TestDatum::new(
+                ValueExprPh1::factory_eq(
+                    ValueExprPh1::factory_integer(123),
+                    ValueExprPh1::factory_integer(-123),
+                ),
+                Tuple::fx_trade_oracle(),
+                SqlValue::factory_bool(false),
+            ),
+            TestDatum::new(
+                ValueExprPh1::factory_and(
+                    BooleanExpr::factory_eq(
+                        ValueExprPh1::factory_integer(123),
+                        ValueExprPh1::factory_integer(123),
                     ),
-                    BooleanExpression::factory_eq(
-                        ValueExpr::factory_integer(456),
-                        ValueExpr::factory_integer(456),
+                    BooleanExpr::factory_eq(
+                        ValueExprPh1::factory_integer(456),
+                        ValueExprPh1::factory_integer(456),
                     ),
                 ),
                 Tuple::fx_trade_oracle(),
                 SqlValue::factory_bool(true),
             ),
             TestDatum::new(
-                ValueExpr::factory_and(
-                    BooleanExpression::factory_eq(
-                        ValueExpr::factory_integer(-123),
-                        ValueExpr::factory_integer(123),
+                ValueExprPh1::factory_and(
+                    BooleanExpr::factory_eq(
+                        ValueExprPh1::factory_integer(-123),
+                        ValueExprPh1::factory_integer(123),
                     ),
-                    BooleanExpression::factory_eq(
-                        ValueExpr::factory_integer(456),
-                        ValueExpr::factory_integer(456),
+                    BooleanExpr::factory_eq(
+                        ValueExprPh1::factory_integer(456),
+                        ValueExprPh1::factory_integer(456),
                     ),
                 ),
                 Tuple::fx_trade_oracle(),
@@ -338,7 +225,8 @@ mod tests {
         ];
 
         for t in test_data {
-            let sql_value = t.tuple.eval_expression(t.in_expr).unwrap();
+            let expr_ph2 = t.in_expr.resolve_colref(&t.tuple).unwrap();
+            let sql_value = expr_ph2.eval().unwrap();
             assert_eq!(sql_value, t.expected_sql_value);
         }
     }

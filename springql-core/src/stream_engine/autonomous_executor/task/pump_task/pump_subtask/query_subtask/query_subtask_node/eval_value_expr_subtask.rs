@@ -2,7 +2,7 @@
 
 use crate::error::Result;
 use crate::expression::function_call::FunctionCall;
-use crate::expression::ValueExpr;
+use crate::expression::ValueExprPh1;
 use crate::pipeline::field::field_name::ColumnReference;
 use crate::pipeline::field::Field;
 use crate::pipeline::name::{ColumnName, StreamName};
@@ -10,7 +10,7 @@ use crate::stream_engine::autonomous_executor::task::tuple::Tuple;
 
 #[derive(Debug, new)]
 pub(in crate::stream_engine::autonomous_executor) struct EvalValueExprSubtask {
-    expressions: Vec<ValueExpr>, // TODO include both ValueExpr and AggrExpr (enum?)
+    expressions: Vec<ValueExprPh1>, // TODO include both ValueExpr and AggrExpr (enum?)
 }
 
 impl EvalValueExprSubtask {
@@ -20,17 +20,17 @@ impl EvalValueExprSubtask {
         let new_fields = self
             .expressions
             .iter()
-            .map(|expr| {
-                let colref = match expr {
-                    ValueExpr::FieldPointer(ptr) => ColumnReference::new(
+            .map(|expr_ph1| {
+                let colref = match expr_ph1 {
+                    ValueExprPh1::FieldPointer(ptr) => ColumnReference::new(
                         StreamName::new("_".to_string()), // super ugly...
                         ColumnName::new(ptr.attr().to_string()),
                     ),
-                    ValueExpr::FunctionCall(fun_call) => match fun_call {
+                    ValueExprPh1::FunctionCall(fun_call) => match fun_call {
                         FunctionCall::FloorTime { target, .. } => {
                             // TODO will use label for projection
                             match target.as_ref() {
-                                ValueExpr::FieldPointer(ptr) => ColumnReference::new(
+                                ValueExprPh1::FieldPointer(ptr) => ColumnReference::new(
                                     StreamName::new("_".to_string()), // super ugly...
                                     ColumnName::new(ptr.attr().to_string()),
                                 ),
@@ -46,7 +46,10 @@ impl EvalValueExprSubtask {
                         ColumnName::new("_".to_string()),
                     ),
                 };
-                let value = tuple.eval_expression(expr.clone())?;
+
+                let expr_ph2 = expr_ph1.clone().resolve_colref(&tuple)?;
+                let value = expr_ph2.eval()?;
+
                 Ok(Field::new(colref, value))
             })
             .collect::<Result<Vec<_>>>()?;

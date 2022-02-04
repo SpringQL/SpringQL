@@ -1,10 +1,10 @@
 use crate::expression::ValueExpr;
 
 #[derive(Clone, PartialEq, Hash, Debug)]
-pub(crate) enum NumericalFunction {
+pub(crate) enum NumericalFunction<E>
+where
+    E: ValueExpr,
+{
     /// `+` operation
-    AddVariant {
-        left: Box<ValueExpr>,
-        right: Box<ValueExpr>,
-    },
+    AddVariant { left: Box<E>, right: Box<E> },
 }

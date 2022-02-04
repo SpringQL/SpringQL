@@ -1,13 +1,18 @@
-use super::BooleanExpression;
+use crate::expression::ValueExpr;
+
+use super::BooleanExpr;
 
 /// AND, OR, NOT
 #[derive(Clone, PartialEq, Hash, Debug)]
-pub(crate) enum LogicalFunction {
+pub(crate) enum LogicalFunction<E>
+where
+    E: ValueExpr,
+{
     /// `AND` operation
     AndVariant {
         /// Left operand
-        left: Box<BooleanExpression>,
+        left: Box<BooleanExpr<E>>,
         /// Right operand
-        right: Box<BooleanExpression>,
+        right: Box<BooleanExpr<E>>,
     },
 }
