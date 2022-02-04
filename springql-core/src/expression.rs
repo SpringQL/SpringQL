@@ -21,9 +21,3 @@ pub(crate) enum ValueExprPh1 {
     BooleanExpr(BooleanExpression),
     FunctionCall(FunctionCall),
 }
-
-impl From<SqlValue> for ValueExprPh1 {
-    fn from(sql_val: SqlValue) -> Self {
-        Self::Constant(sql_val)
-    }
-}
