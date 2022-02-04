@@ -3,11 +3,10 @@
 use crate::{
     expression::{
         boolean_expression::{
-            comparison_function::ComparisonFunction, logical_function::LogicalFunction,
-            BooleanExpression,
+            comparison_function::ComparisonFunction, logical_function::LogicalFunction, BooleanExpr,
         },
         operator::UnaryOperator,
-        ValueExprPh1,
+        ValueExpr, ValueExprPh1,
     },
     pipeline::{
         field::field_name::ColumnReference,
@@ -42,11 +41,11 @@ impl ValueExprPh1 {
     }
 
     pub fn factory_eq(left: ValueExprPh1, right: ValueExprPh1) -> Self {
-        Self::BooleanExpr(BooleanExpression::factory_eq(left, right))
+        Self::BooleanExpr(BooleanExpr::factory_eq(left, right))
     }
 
-    pub fn factory_and(left: BooleanExpression, right: BooleanExpression) -> Self {
-        Self::BooleanExpr(BooleanExpression::LogicalFunctionVariant(
+    pub fn factory_and(left: BooleanExpr<Self>, right: BooleanExpr<Self>) -> Self {
+        Self::BooleanExpr(BooleanExpr::LogicalFunctionVariant(
             LogicalFunction::AndVariant {
                 left: Box::new(left),
                 right: Box::new(right),
@@ -55,9 +54,9 @@ impl ValueExprPh1 {
     }
 }
 
-impl BooleanExpression {
-    pub fn factory_eq(left: ValueExprPh1, right: ValueExprPh1) -> Self {
-        BooleanExpression::ComparisonFunctionVariant(ComparisonFunction::EqualVariant {
+impl<E: ValueExpr> BooleanExpr<E> {
+    pub fn factory_eq(left: E, right: E) -> Self {
+        BooleanExpr::ComparisonFunctionVariant(ComparisonFunction::EqualVariant {
             left: Box::new(left),
             right: Box::new(right),
         })

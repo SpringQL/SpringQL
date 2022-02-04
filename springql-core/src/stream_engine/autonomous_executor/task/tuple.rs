@@ -3,7 +3,7 @@ use crate::{
     expression::{
         boolean_expression::{
             comparison_function::ComparisonFunction, logical_function::LogicalFunction,
-            numerical_function::NumericalFunction, BooleanExpression,
+            numerical_function::NumericalFunction, BooleanExpr,
         },
         function_call::FunctionCall,
         operator::UnaryOperator,
@@ -123,7 +123,7 @@ impl Tuple {
                 }
             }
             ValueExprPh1::BooleanExpr(bool_expr) => match bool_expr {
-                BooleanExpression::ComparisonFunctionVariant(comparison_function) => {
+                BooleanExpr::ComparisonFunctionVariant(comparison_function) => {
                     match comparison_function {
                         ComparisonFunction::EqualVariant { left, right } => {
                             let left_sql_value = self.eval_expression(*left)?;
@@ -139,20 +139,18 @@ impl Tuple {
                         }
                     }
                 }
-                BooleanExpression::LogicalFunctionVariant(logical_function) => {
-                    match logical_function {
-                        LogicalFunction::AndVariant { left, right } => {
-                            let left_sql_value =
-                                self.eval_expression(ValueExprPh1::BooleanExpr(*left))?;
-                            let right_sql_value =
-                                self.eval_expression(ValueExprPh1::BooleanExpr(*right))?;
+                BooleanExpr::LogicalFunctionVariant(logical_function) => match logical_function {
+                    LogicalFunction::AndVariant { left, right } => {
+                        let left_sql_value =
+                            self.eval_expression(ValueExprPh1::BooleanExpr(*left))?;
+                        let right_sql_value =
+                            self.eval_expression(ValueExprPh1::BooleanExpr(*right))?;
 
-                            let b = left_sql_value.to_bool()? && right_sql_value.to_bool()?;
-                            Ok(SqlValue::NotNull(NnSqlValue::Boolean(b)))
-                        }
+                        let b = left_sql_value.to_bool()? && right_sql_value.to_bool()?;
+                        Ok(SqlValue::NotNull(NnSqlValue::Boolean(b)))
                     }
-                }
-                BooleanExpression::NumericalFunctionVariant(numerical_function) => {
+                },
+                BooleanExpr::NumericalFunctionVariant(numerical_function) => {
                     match numerical_function {
                         NumericalFunction::AddVariant { left, right } => {
                             let left_sql_value = self.eval_expression(*left)?;
@@ -275,7 +273,10 @@ mod tests {
             ),
             // unary op
             TestDatum::new(
-                ValueExprPh1::factory_uni_op(UnaryOperator::Minus, ValueExprPh1::factory_integer(1)),
+                ValueExprPh1::factory_uni_op(
+                    UnaryOperator::Minus,
+                    ValueExprPh1::factory_integer(1),
+                ),
                 Tuple::fx_trade_oracle(),
                 SqlValue::factory_integer(-1),
             ),
@@ -287,7 +288,10 @@ mod tests {
             ),
             // BooleanExpression
             TestDatum::new(
-                ValueExprPh1::factory_eq(ValueExprPh1::factory_null(), ValueExprPh1::factory_null()),
+                ValueExprPh1::factory_eq(
+                    ValueExprPh1::factory_null(),
+                    ValueExprPh1::factory_null(),
+                ),
                 Tuple::fx_trade_oracle(),
                 SqlValue::factory_bool(false),
             ),
@@ -309,11 +313,11 @@ mod tests {
             ),
             TestDatum::new(
                 ValueExprPh1::factory_and(
-                    BooleanExpression::factory_eq(
+                    BooleanExpr::factory_eq(
                         ValueExprPh1::factory_integer(123),
                         ValueExprPh1::factory_integer(123),
                     ),
-                    BooleanExpression::factory_eq(
+                    BooleanExpr::factory_eq(
                         ValueExprPh1::factory_integer(456),
                         ValueExprPh1::factory_integer(456),
                     ),
@@ -323,11 +327,11 @@ mod tests {
             ),
             TestDatum::new(
                 ValueExprPh1::factory_and(
-                    BooleanExpression::factory_eq(
+                    BooleanExpr::factory_eq(
                         ValueExprPh1::factory_integer(-123),
                         ValueExprPh1::factory_integer(123),
                     ),
-                    BooleanExpression::factory_eq(
+                    BooleanExpr::factory_eq(
                         ValueExprPh1::factory_integer(456),
                         ValueExprPh1::factory_integer(456),
                     ),

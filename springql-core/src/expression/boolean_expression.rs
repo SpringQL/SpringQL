@@ -7,14 +7,19 @@ use self::{
     numerical_function::NumericalFunction,
 };
 
+use super::ValueExpr;
+
 /// Boolean expression.
 #[derive(Clone, PartialEq, Hash, Debug)]
-pub(crate) enum BooleanExpression {
+pub(crate) enum BooleanExpr<E>
+where
+    E: ValueExpr,
+{
     /// AND, OR, NOT
-    LogicalFunctionVariant(LogicalFunction),
+    LogicalFunctionVariant(LogicalFunction<E>),
 
     /// Comparison functions
-    ComparisonFunctionVariant(ComparisonFunction),
+    ComparisonFunctionVariant(ComparisonFunction<E>),
 
-    NumericalFunctionVariant(NumericalFunction),
+    NumericalFunctionVariant(NumericalFunction<E>),
 }
