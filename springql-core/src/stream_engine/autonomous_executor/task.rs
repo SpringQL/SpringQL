@@ -1,10 +1,11 @@
 // Copyright (c) 2021 TOYOTA MOTOR CORPORATION. Licensed under MIT OR Apache-2.0.
 
+pub(crate) mod tuple;
+
 pub(super) mod pump_task;
 pub(super) mod sink_task;
 pub(super) mod source_task;
 pub(super) mod task_context;
-pub(super) mod tuple;
 pub(super) mod window;
 
 use crate::{

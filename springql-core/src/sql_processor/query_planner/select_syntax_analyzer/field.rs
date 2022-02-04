@@ -14,7 +14,7 @@ impl SelectSyntaxAnalyzer {
     pub(in super::super) fn field_expressions(&self) -> Vec<ValueExprPh1> {
         let select_fields = &self.select_syntax.fields;
         select_fields
-            .into_iter()
+            .iter()
             .map(|field| &field.value_expr)
             .cloned()
             .collect()

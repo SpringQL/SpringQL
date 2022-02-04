@@ -20,8 +20,8 @@ impl EvalValueExprSubtask {
         let new_fields = self
             .expressions
             .iter()
-            .map(|expr| {
-                let colref = match expr {
+            .map(|expr_ph1| {
+                let colref = match expr_ph1 {
                     ValueExprPh1::FieldPointer(ptr) => ColumnReference::new(
                         StreamName::new("_".to_string()), // super ugly...
                         ColumnName::new(ptr.attr().to_string()),
@@ -46,7 +46,10 @@ impl EvalValueExprSubtask {
                         ColumnName::new("_".to_string()),
                     ),
                 };
-                let value = tuple.eval_expression(expr.clone())?;
+
+                let expr_ph2 = expr_ph1.clone().resolve_colref(&tuple)?;
+                let value = expr_ph2.eval()?;
+
                 Ok(Field::new(colref, value))
             })
             .collect::<Result<Vec<_>>>()?;

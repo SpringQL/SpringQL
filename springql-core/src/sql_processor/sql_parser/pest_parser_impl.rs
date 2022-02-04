@@ -495,12 +495,10 @@ impl PestParserImpl {
 
             match bin_op {
                 BinaryOperator::Equal => Ok(ValueExprPh1::BooleanExpr(
-                    BooleanExpr::ComparisonFunctionVariant(
-                        ComparisonFunction::EqualVariant {
-                            left: Box::new(expr),
-                            right: Box::new(right_expr),
-                        },
-                    ),
+                    BooleanExpr::ComparisonFunctionVariant(ComparisonFunction::EqualVariant {
+                        left: Box::new(expr),
+                        right: Box::new(right_expr),
+                    }),
                 )),
                 BinaryOperator::Add => Ok(ValueExprPh1::BooleanExpr(
                     BooleanExpr::NumericalFunctionVariant(NumericalFunction::AddVariant {
@@ -586,7 +584,7 @@ impl PestParserImpl {
      * ----------------------------------------------------------------------------
      */
 
-    fn parse_function_call(mut params: FnParseParams) -> Result<FunctionCall> {
+    fn parse_function_call(mut params: FnParseParams) -> Result<FunctionCall<ValueExprPh1>> {
         let function_name = parse_child(
             &mut params,
             Rule::function_name,

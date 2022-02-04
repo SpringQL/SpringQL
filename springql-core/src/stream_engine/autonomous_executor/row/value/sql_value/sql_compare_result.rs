@@ -6,7 +6,7 @@ use serde::{Deserialize, Serialize};
 
 /// Comparison result of two [SqlValue](crate::SqlValue)s.
 #[derive(Clone, Eq, PartialEq, Hash, Debug, Serialize, Deserialize)]
-pub enum SqlCompareResult {
+pub(crate) enum SqlCompareResult {
     /// v1 = v2
     Eq,
 
