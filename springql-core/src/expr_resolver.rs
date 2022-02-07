@@ -1,10 +1,12 @@
 pub(crate) mod expr_label;
 
-use crate::error::Result;
+use crate::error::{Result, SpringError};
 use crate::expression::ValueExpr;
 use crate::pipeline::name::ValueAlias;
 use crate::sql_processor::sql_parser::syntax::SelectFieldSyntax;
 use crate::stream_engine::{SqlValue, Tuple};
+use anyhow::anyhow;
+use std::collections::HashMap;
 
 use self::expr_label::{ExprLabel, ExprLabelGenerator};
 
@@ -16,6 +18,13 @@ use self::expr_label::{ExprLabel, ExprLabelGenerator};
 #[derive(Debug)]
 pub(crate) struct ExprResolver {
     label_gen: ExprLabelGenerator,
+
+    /// not evaluated yet
+    value_expressions: HashMap<ExprLabel, ValueExpr>,
+    /// evaluated
+    values_cache: HashMap<ExprLabel, SqlValue>,
+
+    value_aliased_labels: HashMap<ValueAlias, ExprLabel>,
 }
 
 impl ExprResolver {
@@ -23,33 +32,85 @@ impl ExprResolver {
     ///
     /// `(instance, labels in select_list)
     pub(crate) fn new(select_list: Vec<SelectFieldSyntax>) -> (Self, Vec<ExprLabel>) {
-        unimplemented!()
+        let mut label_gen = ExprLabelGenerator::default();
+        let mut value_expressions = HashMap::new();
+        let mut value_aliased_labels = HashMap::new();
+
+        let labels = select_list
+            .into_iter()
+            .map(|select_field| {
+                let value_expr = select_field.value_expr;
+                let label = label_gen.next();
+
+                value_expressions.insert(label, value_expr);
+                if let Some(alias) = select_field.alias {
+                    value_aliased_labels.insert(alias, label);
+                }
+
+                label
+            })
+            .collect();
+
+        (
+            Self {
+                label_gen,
+                value_expressions,
+                values_cache: HashMap::new(),
+                value_aliased_labels,
+            },
+            labels,
+        )
     }
 
     /// # Failures
     ///
     /// - `SpringError::Sql` if alias is not in select_list.
-    pub(crate) fn resolve_value_alias(&mut self, value_alias: ValueAlias) -> Result<ExprLabel> {
-        unimplemented!()
+    pub(crate) fn resolve_value_alias(&self, value_alias: ValueAlias) -> Result<ExprLabel> {
+        self.value_aliased_labels
+            .get(&value_alias)
+            .cloned()
+            .ok_or_else(|| {
+                SpringError::Sql(anyhow!(
+                    "Value alias `{}` is not in select list.",
+                    value_alias
+                ))
+            })
     }
 
     /// Register expression which is not in select_list
     pub(crate) fn register(&mut self, value_expr: ValueExpr) -> ExprLabel {
-        unimplemented!()
+        let label = self.label_gen.next();
+        self.value_expressions.insert(label, value_expr);
+        label
     }
 
     /// label -> (internal) expression + tuple (for ColumnReference) -> SqlValue.
     ///
     /// SqlValue is cached and not calculated twice.
     ///
+    /// # Panics
+    ///
+    /// -  `label` is not found
+    ///
     /// # Failures
     ///
     /// - `SpringError::Sql` when:
-    ///   -  `label` is alias is not found
     ///   - column reference in expression is not found in `tuple`.
     ///   - somehow failed to eval expression.
     pub(crate) fn eval(&mut self, label: ExprLabel, tuple: &Tuple) -> Result<SqlValue> {
-        unimplemented!()
+        if let Some(v) = self.values_cache.get(&label) {
+            Ok(v.clone())
+        } else {
+            let value_expr = self
+                .value_expressions
+                .remove(&label)
+                .unwrap_or_else(|| panic!("label {:?} not found", label));
+
+            let value_expr_ph2 = value_expr.resolve_colref(tuple)?;
+            let v = value_expr_ph2.eval()?;
+            self.values_cache.insert(label, v.clone());
+            Ok(v)
+        }
     }
 }
 
