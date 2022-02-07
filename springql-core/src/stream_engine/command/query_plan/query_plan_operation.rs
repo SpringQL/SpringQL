@@ -4,7 +4,7 @@ use std::time::Duration;
 
 use crate::{
     expression::ValueExprPh1,
-    pipeline::{field::field_pointer::FieldPointer, name::StreamName},
+    pipeline::{field::field_name::ColumnReference, name::StreamName},
 };
 
 #[derive(Clone, PartialEq, Debug)]
@@ -16,7 +16,7 @@ pub(crate) enum QueryPlanOperation {
         expressions: Vec<ValueExprPh1>,
     },
     Projection {
-        field_pointers: Vec<FieldPointer>,
+        column_references: Vec<ColumnReference>,
     },
     TimeBasedSlidingWindow {
         /// cannot use chrono::Duration here: <https://github.com/chronotope/chrono/issues/117>

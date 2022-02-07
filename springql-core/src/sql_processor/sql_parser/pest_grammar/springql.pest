@@ -216,13 +216,13 @@ value_expr = {
 // To avoid left-recursion
 sub_value_expr = {
     constant
-    | field_pointer
+    | column_reference
     | (unary_operator ~ value_expr)
     | function_call
 }
 
-field_pointer = {
-    (correlation ~ ".")? ~ column_name
+column_reference = {
+    correlation ~ "." ~ column_name
 }
 
 function_call = {

@@ -47,7 +47,7 @@ fn test_feat_floor_time() {
         "
         CREATE PUMP pu_floor_time AS
           INSERT INTO sink_trade (ts, ticker, amount)
-          SELECT STREAM FLOOR_TIME(ts, DURATION_SECS(1)), ticker, amount FROM source_trade;
+          SELECT STREAM FLOOR_TIME(source_trade.ts, DURATION_SECS(1)), source_trade.ticker, source_trade.amount FROM source_trade;
         "
         .to_string(),
         format!(

@@ -6,7 +6,6 @@
 //! - other expressions (e.g. `c1 + 1 AS c1p`).
 
 pub(crate) mod field_name;
-pub(crate) mod field_pointer;
 
 use crate::stream_engine::SqlValue;
 

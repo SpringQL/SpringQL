@@ -2,7 +2,7 @@ mod select_syntax_analyzer;
 
 use crate::{
     error::Result,
-    pipeline::{field::field_pointer::FieldPointer, Pipeline},
+    pipeline::Pipeline,
     stream_engine::command::query_plan::{query_plan_operation::QueryPlanOperation, QueryPlan},
 };
 
@@ -92,11 +92,9 @@ impl QueryPlanner {
     }
 
     fn create_projection_op(&self) -> Result<QueryPlanOperation> {
-        let colrefs = self.analyzer.column_references_in_projection()?;
+        let column_references = self.analyzer.column_references_in_projection()?;
 
-        let projection_op = QueryPlanOperation::Projection {
-            field_pointers: colrefs.iter().map(FieldPointer::from).collect(),
-        };
+        let projection_op = QueryPlanOperation::Projection { column_references };
         Ok(projection_op)
     }
 

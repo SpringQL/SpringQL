@@ -27,7 +27,7 @@ impl From<&QueryPlanOperation> for QuerySubtaskNode {
             QueryPlanOperation::EvalValueExpr { expressions } => {
                 QuerySubtaskNode::EvalValueExpr(EvalValueExprSubtask::new(expressions.clone()))
             }
-            QueryPlanOperation::Projection { field_pointers } => {
+            QueryPlanOperation::Projection { column_references: field_pointers } => {
                 QuerySubtaskNode::Projection(ProjectionSubtask::new(field_pointers.to_vec()))
             }
             QueryPlanOperation::TimeBasedSlidingWindow { .. } => {

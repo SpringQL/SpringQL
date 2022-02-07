@@ -1,7 +1,7 @@
 use crate::{
     error::{Result, SpringError},
     pipeline::{
-        field::{field_name::ColumnReference, field_pointer::FieldPointer, Field},
+        field::{field_name::ColumnReference, Field},
         name::ColumnName,
         stream_model::StreamModel,
     },
@@ -82,33 +82,30 @@ impl Tuple {
 
     /// # Failures
     ///
-    /// `SpringError::Sql` if `field_pointer` does not match any field.
-    pub(crate) fn get_value(&self, field_pointer: &FieldPointer) -> Result<SqlValue> {
+    /// `SpringError::Sql` if `column_reference` does not match any field.
+    pub(crate) fn get_value(&self, column_reference: &ColumnReference) -> Result<SqlValue> {
         let sql_value = self.fields.iter().find_map(|field| {
-            let colrefs = field.name();
-            colrefs
-                .matches(field_pointer)
-                .then(|| field.sql_value().clone())
+            let colref = field.name();
+            (colref == column_reference).then(|| field.sql_value().clone())
         });
 
-        sql_value.ok_or_else(|| SpringError::Sql(anyhow!("cannot find field `{}`", field_pointer)))
+        sql_value
+            .ok_or_else(|| SpringError::Sql(anyhow!("cannot find field `{:?}`", column_reference)))
     }
 
     /// # Failure
     ///
     /// - [SpringError::Sql](crate::error::SpringError::Sql) when:
-    ///   - No field named `field_pointer` is found from this tuple.
-    pub(super) fn projection(self, field_pointers: &[FieldPointer]) -> Result<Self> {
+    ///   - No field named `colrefs` is found from this tuple.
+    pub(super) fn projection(self, colrefs: &[ColumnReference]) -> Result<Self> {
         let mut fields = self.fields.into_iter();
 
-        let new_fields = field_pointers
+        let new_fields = colrefs
             .iter()
-            .map(|pointer| {
-                fields
-                    .find(|field| field.name().matches(pointer))
-                    .ok_or_else(|| {
-                        SpringError::Sql(anyhow!("cannot find field `{}` in tuple", pointer))
-                    })
+            .map(|colref| {
+                fields.find(|field| field.name() == colref).ok_or_else(|| {
+                    SpringError::Sql(anyhow!("cannot find field `{:?}` in tuple", colref))
+                })
             })
             .collect::<Result<Vec<_>>>()?;
         Ok(Self {
@@ -163,9 +160,9 @@ mod tests {
                 Tuple::fx_trade_oracle(),
                 SqlValue::factory_integer(-1),
             ),
-            // FieldPointer
+            // ColumnReference
             TestDatum::new(
-                ValueExprPh1::FieldPointer(FieldPointer::from("amount")),
+                ValueExprPh1::ColumnReference(ColumnReference::factory("trade", "amount")),
                 Tuple::factory_trade(Timestamp::fx_ts1(), "ORCL", 1),
                 SqlValue::factory_integer(1),
             ),

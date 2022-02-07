@@ -42,7 +42,7 @@ fn test_feat_add() {
         "
         CREATE PUMP pu_add AS
           INSERT INTO sink_1 (ts, answer)
-          SELECT STREAM ts, 1+1 AS two FROM source_1;
+          SELECT STREAM source_1.ts, 1+1 AS two FROM source_1;
         "
         .to_string(),
         format!(
