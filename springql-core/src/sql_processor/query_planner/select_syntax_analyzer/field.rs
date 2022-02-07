@@ -3,7 +3,7 @@ use crate::{
     error::{Result, SpringError},
     expression::{function_call::FunctionCall, ValueExprPh1},
     pipeline::{
-        field::{field_name::ColumnReference, field_pointer::FieldPointer},
+        field::field_name::ColumnReference,
         name::{AttributeName, ColumnName, StreamName},
     },
     sql_processor::sql_parser::syntax::SelectFieldSyntax,
@@ -65,59 +65,5 @@ impl SelectSyntaxAnalyzer {
                 }
             },
         }
-    }
-
-    /// # Failures
-    ///
-    /// - `SpringError::Sql` when:
-    ///   - `prefix` does not match any of `from_item_correlations`.
-    fn field_name_with_prefix(
-        prefix: &str,
-        attr: &str,
-        from_item_streams: &[StreamName],
-    ) -> Result<ColumnReference> {
-        assert!(!from_item_streams.is_empty());
-
-        let attr = AttributeName::new(attr.to_string());
-        let pointer = FieldPointer::from(format!("{}.{}", prefix, attr).as_str());
-
-        // SELECT T.C FROM ...;
-        from_item_streams
-            .iter()
-            .find_map(|stream_name| {
-                // creates ColumnReference to use .matches()
-                let colref_candidate =
-                    ColumnReference::new(stream_name.clone(), ColumnName::new(attr.to_string()));
-                colref_candidate.matches(&pointer).then(|| colref_candidate)
-            })
-            .ok_or_else(|| {
-                SpringError::Sql(anyhow!(
-                    "`{}` does not match any of FROM items: {:?}",
-                    pointer,
-                    from_item_streams
-                ))
-            })
-    }
-
-    fn field_name_without_prefix(
-        attr: &str,
-        from_item_streams: &[StreamName],
-    ) -> Result<ColumnReference> {
-        assert!(!from_item_streams.is_empty());
-        if from_item_streams.len() > 1 {
-            return Err(SpringError::Sql(anyhow!(
-                "needs pipeline info to detect which stream has the column `{:?}`",
-                attr
-            )));
-        }
-
-        // SELECT C FROM T (AS a)?;
-        // -> C is from T
-        let from_item_stream = from_item_streams[0].clone();
-        let attr = AttributeName::new(attr.to_string());
-        Ok(ColumnReference::new(
-            from_item_stream,
-            ColumnName::new(attr.to_string()),
-        ))
     }
 }

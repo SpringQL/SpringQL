@@ -5,7 +5,7 @@ use std::{net::IpAddr, sync::Arc};
 use crate::{
     low_level_rs::{SpringConfig, SpringSinkWriterConfig, SpringSourceReaderConfig},
     pipeline::{
-        field::{field_name::ColumnReference, field_pointer::FieldPointer},
+        field::field_name::ColumnReference,
         name::{ColumnName, PumpName, SinkWriterName, SourceReaderName, StreamName},
         option::{options_builder::OptionsBuilder, Options},
         pipeline_version::PipelineVersion,
@@ -438,10 +438,9 @@ impl QueryPlan {
             .into_iter()
             .map(|column_name| ColumnReference::new(upstream.clone(), column_name))
             .collect::<Vec<ColumnReference>>();
-        let field_pointers = colrefs.iter().map(FieldPointer::from).collect();
 
         let collection_op = QueryPlanOperation::fx_collect(upstream);
-        let projection_op = QueryPlanOperation::fx_projection(field_pointers);
+        let projection_op = QueryPlanOperation::fx_projection(colrefs);
 
         query_plan.add_root(projection_op.clone());
         query_plan.add_left(&projection_op, collection_op);
@@ -454,8 +453,8 @@ impl QueryPlanOperation {
         Self::Collect { stream: upstream }
     }
 
-    pub(crate) fn fx_projection(field_pointers: Vec<FieldPointer>) -> Self {
-        Self::Projection { field_pointers }
+    pub(crate) fn fx_projection(column_references: Vec<ColumnReference>) -> Self {
+        Self::Projection { column_references }
     }
 }
 

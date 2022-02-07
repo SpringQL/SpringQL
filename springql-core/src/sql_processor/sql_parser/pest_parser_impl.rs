@@ -11,7 +11,6 @@ use crate::expression::function_call::FunctionCall;
 use crate::expression::operator::{BinaryOperator, UnaryOperator};
 use crate::expression::ValueExprPh1;
 use crate::pipeline::field::field_name::ColumnReference;
-use crate::pipeline::field::field_pointer::FieldPointer;
 use crate::pipeline::name::{
     ColumnName, CorrelationAlias, PumpName, SinkWriterName, SourceReaderName, StreamName,
     ValueAlias,

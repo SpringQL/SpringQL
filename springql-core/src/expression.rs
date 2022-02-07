@@ -14,7 +14,7 @@ use anyhow::anyhow;
 
 use crate::{
     error::{Result, SpringError},
-    pipeline::field::{field_name::ColumnReference, field_pointer::FieldPointer},
+    pipeline::field::field_name::ColumnReference,
     stream_engine::{
         time::duration::{event_duration::EventDuration, SpringDuration},
         NnSqlValue, SqlCompareResult, SqlValue, Tuple,

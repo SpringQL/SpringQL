@@ -4,7 +4,7 @@ use std::collections::HashMap;
 
 use crate::{
     pipeline::{
-        field::{field_name::ColumnReference, field_pointer::FieldPointer, Field},
+        field::{field_name::ColumnReference, Field},
         name::{ColumnName, StreamName},
         pump_model::window_operation_parameter::aggregate::{
             AggregateFunctionParameter, GroupAggregateParameter,

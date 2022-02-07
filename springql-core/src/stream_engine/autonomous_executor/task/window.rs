@@ -65,7 +65,7 @@ mod tests {
 
     use crate::{
         pipeline::{
-            field::{field_name::ColumnReference, field_pointer::FieldPointer},
+            field::field_name::ColumnReference,
             name::{ColumnName, StreamName, ValueAlias},
             pump_model::window_operation_parameter::aggregate::{
                 AggregateFunctionParameter, AggregateParameter, GroupAggregateParameter,

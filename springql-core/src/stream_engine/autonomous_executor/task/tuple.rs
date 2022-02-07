@@ -1,7 +1,7 @@
 use crate::{
     error::{Result, SpringError},
     pipeline::{
-        field::{field_name::ColumnReference, field_pointer::FieldPointer, Field},
+        field::{field_name::ColumnReference, Field},
         name::ColumnName,
         stream_model::StreamModel,
     },
@@ -96,18 +96,16 @@ impl Tuple {
     /// # Failure
     ///
     /// - [SpringError::Sql](crate::error::SpringError::Sql) when:
-    ///   - No field named `field_pointer` is found from this tuple.
-    pub(super) fn projection(self, field_pointers: &[FieldPointer]) -> Result<Self> {
+    ///   - No field named `colrefs` is found from this tuple.
+    pub(super) fn projection(self, colrefs: &[ColumnReference]) -> Result<Self> {
         let mut fields = self.fields.into_iter();
 
-        let new_fields = field_pointers
+        let new_fields = colrefs
             .iter()
-            .map(|pointer| {
-                fields
-                    .find(|field| field.name().matches(pointer))
-                    .ok_or_else(|| {
-                        SpringError::Sql(anyhow!("cannot find field `{}` in tuple", pointer))
-                    })
+            .map(|colref| {
+                fields.find(|field| field.name() == colref).ok_or_else(|| {
+                    SpringError::Sql(anyhow!("cannot find field `{:?}` in tuple", colref))
+                })
             })
             .collect::<Result<Vec<_>>>()?;
         Ok(Self {
