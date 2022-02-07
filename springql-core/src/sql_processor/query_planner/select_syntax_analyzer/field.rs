@@ -1,14 +1,13 @@
 use super::SelectSyntaxAnalyzer;
 use crate::{
-    error::{Result, SpringError},
+    error::Result,
     expression::{function_call::FunctionCall, ValueExprPh1},
     pipeline::{
         field::field_name::ColumnReference,
-        name::{AttributeName, ColumnName, StreamName},
+        name::{ColumnName, StreamName},
     },
     sql_processor::sql_parser::syntax::SelectFieldSyntax,
 };
-use anyhow::anyhow;
 
 impl SelectSyntaxAnalyzer {
     pub(in super::super) fn field_expressions(&self) -> Vec<ValueExprPh1> {
