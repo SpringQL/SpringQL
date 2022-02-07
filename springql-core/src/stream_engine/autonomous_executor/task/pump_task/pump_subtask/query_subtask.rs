@@ -15,7 +15,6 @@ use crate::{
     stream_engine::command::query_plan::{child_direction::ChildDirection, QueryPlan},
 };
 
-mod interm_row;
 mod query_subtask_node;
 
 /// Process input row 1-by-1.

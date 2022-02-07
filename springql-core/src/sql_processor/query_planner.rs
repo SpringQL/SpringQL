@@ -51,7 +51,7 @@
 //! (leaf)
 //! ```
 //!
-//! Projection operator emits a `Row` by evaluating its expressions (via `ExprLabel`) using `Tuple` for column references.
+//! Projection operator emits a `SqlValues` by evaluating its expressions (via `ExprLabel`) using `Tuple` for column references.
 
 mod select_syntax_analyzer;
 
