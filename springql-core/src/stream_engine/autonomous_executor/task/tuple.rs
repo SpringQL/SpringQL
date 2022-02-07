@@ -48,34 +48,6 @@ impl Tuple {
         Self { rowtime, fields }
     }
 
-    /// ```text
-    /// column_order = (c2, c3, c1)
-    /// stream_shape = (c1, c2, c3)
-    ///
-    /// |
-    /// v
-    ///
-    /// (fields[1], fields[2], fields[0])
-    /// ```
-    ///
-    /// # Panics
-    ///
-    /// - Tuple fields and column_order have different length.
-    /// - Type mismatch between `self.fields` (ordered) and `stream_shape`
-    /// - Duplicate column names in `column_order`
-    pub(super) fn into_row(
-        self,
-        stream_model: Arc<StreamModel>,
-        column_order: Vec<ColumnName>,
-    ) -> Row {
-        assert_eq!(self.fields.len(), column_order.len());
-
-        let column_values = self.mk_column_values(column_order);
-        let stream_columns = StreamColumns::new(stream_model, column_values)
-            .expect("type or shape mismatch? must be checked on pump creation");
-        Row::new(stream_columns)
-    }
-
     pub(in crate::stream_engine::autonomous_executor) fn rowtime(&self) -> &Timestamp {
         &self.rowtime
     }
@@ -113,25 +85,11 @@ impl Tuple {
             fields: new_fields,
         })
     }
-
-    fn mk_column_values(self, column_order: Vec<ColumnName>) -> ColumnValues {
-        let mut column_values = ColumnValues::default();
-
-        for (column_name, field) in column_order.into_iter().zip(self.fields.into_iter()) {
-            column_values
-                .insert(column_name, field.into_sql_value())
-                .expect("duplicate column name");
-        }
-
-        column_values
-    }
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::expression::{
-        boolean_expression::BooleanExpr, operator::UnaryOperator, ValueExpr,
-    };
+    use crate::expression::{boolean_expression::BooleanExpr, operator::UnaryOperator, ValueExpr};
 
     use super::*;
 
@@ -153,10 +111,7 @@ mod tests {
             ),
             // unary op
             TestDatum::new(
-                ValueExpr::factory_uni_op(
-                    UnaryOperator::Minus,
-                    ValueExpr::factory_integer(1),
-                ),
+                ValueExpr::factory_uni_op(UnaryOperator::Minus, ValueExpr::factory_integer(1)),
                 Tuple::fx_trade_oracle(),
                 SqlValue::factory_integer(-1),
             ),
@@ -168,10 +123,7 @@ mod tests {
             ),
             // BooleanExpression
             TestDatum::new(
-                ValueExpr::factory_eq(
-                    ValueExpr::factory_null(),
-                    ValueExpr::factory_null(),
-                ),
+                ValueExpr::factory_eq(ValueExpr::factory_null(), ValueExpr::factory_null()),
                 Tuple::fx_trade_oracle(),
                 SqlValue::factory_bool(false),
             ),

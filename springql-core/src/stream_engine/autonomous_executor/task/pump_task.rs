@@ -64,7 +64,7 @@ impl PumpTask {
         Vec<OutQueueMetricsUpdateByTaskExecution>,
     )> {
         if let Some(query_subtask_out) = self.query_subtask.run(context)? {
-            let insert_subtask_out = self.insert_subtask.run(query_subtask_out.tuples, context);
+            let insert_subtask_out = self.insert_subtask.run(query_subtask_out.values_seq, context);
             Ok((
                 Some(query_subtask_out.in_queue_metrics_update),
                 insert_subtask_out.out_queues_metrics_update,

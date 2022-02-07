@@ -1,5 +1,7 @@
 // Copyright (c) 2021 TOYOTA MOTOR CORPORATION. Licensed under MIT OR Apache-2.0.
 
+use std::sync::Arc;
+
 use petgraph::{
     graph::{DiGraph, NodeIndex},
     visit::{EdgeRef, IntoNodeReferences},
@@ -8,11 +10,20 @@ use petgraph::{
 use self::query_subtask_node::QuerySubtaskNode;
 use crate::{
     error::Result,
-    stream_engine::autonomous_executor::{
-        performance_metrics::metrics_update_command::metrics_update_by_task_execution::InQueueMetricsUpdateByTaskExecution,
-        task::{task_context::TaskContext, tuple::Tuple},
+    pipeline::{name::ColumnName, stream_model::StreamModel},
+    stream_engine::{
+        autonomous_executor::row::{
+            column::stream_column::StreamColumns, column_values::ColumnValues, Row,
+        },
+        command::query_plan::{child_direction::ChildDirection, QueryPlan},
     },
-    stream_engine::command::query_plan::{child_direction::ChildDirection, QueryPlan},
+    stream_engine::{
+        autonomous_executor::{
+            performance_metrics::metrics_update_command::metrics_update_by_task_execution::InQueueMetricsUpdateByTaskExecution,
+            task::{task_context::TaskContext, tuple::Tuple},
+        },
+        SqlValue,
+    },
 };
 
 mod query_subtask_node;
@@ -23,9 +34,53 @@ pub(in crate::stream_engine::autonomous_executor) struct QuerySubtask {
     tree: DiGraph<QuerySubtaskNode, ChildDirection>,
 }
 
+#[derive(Clone, Debug)]
+pub(in crate::stream_engine::autonomous_executor) struct SqlValues(Vec<SqlValue>);
+impl SqlValues {
+    /// ```text
+    /// column_order = (c2, c3, c1)
+    /// stream_shape = (c1, c2, c3)
+    ///
+    /// |
+    /// v
+    ///
+    /// (fields[1], fields[2], fields[0])
+    /// ```
+    ///
+    /// # Panics
+    ///
+    /// - Tuple fields and column_order have different length.
+    /// - Type mismatch between `self.fields` (ordered) and `stream_shape`
+    /// - Duplicate column names in `column_order`
+    pub(in crate::stream_engine::autonomous_executor) fn into_row(
+        self,
+        stream_model: Arc<StreamModel>,
+        column_order: Vec<ColumnName>,
+    ) -> Row {
+        assert_eq!(self.0.len(), column_order.len());
+
+        let column_values = self.mk_column_values(column_order);
+        let stream_columns = StreamColumns::new(stream_model, column_values)
+            .expect("type or shape mismatch? must be checked on pump creation");
+        Row::new(stream_columns)
+    }
+
+    fn mk_column_values(self, column_order: Vec<ColumnName>) -> ColumnValues {
+        let mut column_values = ColumnValues::default();
+
+        for (column_name, value) in column_order.into_iter().zip(self.0.into_iter()) {
+            column_values
+                .insert(column_name, value)
+                .expect("duplicate column name");
+        }
+
+        column_values
+    }
+}
+
 #[derive(Debug, new)]
 pub(in crate::stream_engine::autonomous_executor) struct QuerySubtaskOut {
-    pub(in crate::stream_engine::autonomous_executor) tuples: Vec<Tuple>,
+    pub(in crate::stream_engine::autonomous_executor) values_seq: Vec<SqlValues>,
     pub(in crate::stream_engine::autonomous_executor) in_queue_metrics_update:
         InQueueMetricsUpdateByTaskExecution,
 }
@@ -58,7 +113,7 @@ impl QuerySubtask {
         match self.run_leaf(next_idx, context) {
             None => Ok(None),
             Some(leaf_query_subtask_out) => {
-                let mut next_tuples = leaf_query_subtask_out.tuples;
+                let mut next_tuples = leaf_query_subtask_out.values_seq;
                 while let Some(parent_idx) = self.parent_node_idx(next_idx) {
                     next_idx = parent_idx;
                     next_tuples = next_tuples
