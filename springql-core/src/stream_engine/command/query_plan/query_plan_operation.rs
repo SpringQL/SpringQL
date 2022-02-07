@@ -3,6 +3,7 @@
 use std::time::Duration;
 
 use crate::{
+    expr_resolver::expr_label::ExprLabel,
     expression::ValueExpr,
     pipeline::{field::field_name::ColumnReference, name::StreamName},
 };
@@ -16,7 +17,7 @@ pub(crate) enum QueryPlanOperation {
         expressions: Vec<ValueExpr>,
     },
     Projection {
-        column_references: Vec<ColumnReference>,
+        expr_labels: Vec<ExprLabel>,
     },
     TimeBasedSlidingWindow {
         /// cannot use chrono::Duration here: <https://github.com/chronotope/chrono/issues/117>

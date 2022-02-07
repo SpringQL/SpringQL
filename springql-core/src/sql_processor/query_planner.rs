@@ -40,17 +40,17 @@
 //!
 //! ```text
 //! (root)
-//! 
+//!
 //! projection
 //!  ^
 //!  |
 //! group aggregation (window)
-//! 
+//!
 //! Tuple
-//! 
+//!
 //! (leaf)
 //! ```
-//! 
+//!
 //! Projection operator emits a `Row` by evaluating its expressions (via `ExprLabel`) using `Tuple` for column references.
 
 mod select_syntax_analyzer;
@@ -120,10 +120,7 @@ impl QueryPlanner {
     }
 
     fn create_projection_op(&self) -> Result<QueryPlanOperation> {
-        let column_references = self.analyzer.column_references_in_projection()?;
-
-        let projection_op = QueryPlanOperation::Projection { column_references };
-        Ok(projection_op)
+        todo!()
     }
 
     fn create_eval_value_expr_op(&self) -> QueryPlanOperation {
