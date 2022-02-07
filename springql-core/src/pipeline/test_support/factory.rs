@@ -6,7 +6,7 @@ use crate::{
             comparison_function::ComparisonFunction, logical_function::LogicalFunction, BooleanExpr,
         },
         operator::UnaryOperator,
-        ValueExpr, ValueExprPh1,
+        ValueExprType, ValueExpr,
     },
     pipeline::{
         field::field_name::ColumnReference,
@@ -27,7 +27,7 @@ impl PumpName {
     }
 }
 
-impl ValueExprPh1 {
+impl ValueExpr {
     pub fn factory_null() -> Self {
         Self::Constant(SqlValue::Null)
     }
@@ -36,11 +36,11 @@ impl ValueExprPh1 {
         Self::Constant(SqlValue::factory_integer(integer))
     }
 
-    pub fn factory_uni_op(unary_operator: UnaryOperator, expression: ValueExprPh1) -> Self {
+    pub fn factory_uni_op(unary_operator: UnaryOperator, expression: ValueExpr) -> Self {
         Self::UnaryOperator(unary_operator, Box::new(expression))
     }
 
-    pub fn factory_eq(left: ValueExprPh1, right: ValueExprPh1) -> Self {
+    pub fn factory_eq(left: ValueExpr, right: ValueExpr) -> Self {
         Self::BooleanExpr(BooleanExpr::factory_eq(left, right))
     }
 
@@ -54,7 +54,7 @@ impl ValueExprPh1 {
     }
 }
 
-impl<E: ValueExpr> BooleanExpr<E> {
+impl<E: ValueExprType> BooleanExpr<E> {
     pub fn factory_eq(left: E, right: E) -> Self {
         BooleanExpr::ComparisonFunctionVariant(ComparisonFunction::EqualVariant {
             left: Box::new(left),

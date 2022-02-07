@@ -2,7 +2,7 @@
 
 use crate::error::Result;
 use crate::expression::function_call::FunctionCall;
-use crate::expression::ValueExprPh1;
+use crate::expression::ValueExpr;
 use crate::pipeline::field::field_name::ColumnReference;
 use crate::pipeline::field::Field;
 use crate::pipeline::name::{ColumnName, StreamName};
@@ -10,7 +10,7 @@ use crate::stream_engine::autonomous_executor::task::tuple::Tuple;
 
 #[derive(Debug, new)]
 pub(in crate::stream_engine::autonomous_executor) struct EvalValueExprSubtask {
-    expressions: Vec<ValueExprPh1>, // TODO include both ValueExpr and AggrExpr (enum?)
+    expressions: Vec<ValueExpr>, // TODO include both ValueExpr and AggrExpr (enum?)
 }
 
 impl EvalValueExprSubtask {
@@ -22,12 +22,12 @@ impl EvalValueExprSubtask {
             .iter()
             .map(|expr_ph1| {
                 let colref = match expr_ph1 {
-                    ValueExprPh1::ColumnReference(colref) => colref.clone(),
-                    ValueExprPh1::FunctionCall(fun_call) => match fun_call {
+                    ValueExpr::ColumnReference(colref) => colref.clone(),
+                    ValueExpr::FunctionCall(fun_call) => match fun_call {
                         FunctionCall::FloorTime { target, .. } => {
                             // TODO will use label for projection
                             match target.as_ref() {
-                                ValueExprPh1::ColumnReference(colref) => colref.clone(),
+                                ValueExpr::ColumnReference(colref) => colref.clone(),
                                 _ => unimplemented!(),
                             }
                         }

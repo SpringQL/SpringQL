@@ -1,9 +1,9 @@
-use super::ValueExpr;
+use super::ValueExprType;
 
 #[derive(Clone, PartialEq, Hash, Debug)]
 pub(crate) enum FunctionCall<E>
 where
-    E: ValueExpr,
+    E: ValueExprType,
 {
     /// ```text
     /// DURATION_SECS(1) -> EventDuration::from_secs(1)

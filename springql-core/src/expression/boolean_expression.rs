@@ -7,14 +7,14 @@ use self::{
     numerical_function::NumericalFunction,
 };
 
-use super::ValueExpr;
+use super::ValueExprType;
 
 /// Boolean expression.
 #[allow(clippy::enum_variant_names)]
 #[derive(Clone, PartialEq, Hash, Debug)]
 pub(crate) enum BooleanExpr<E>
 where
-    E: ValueExpr,
+    E: ValueExprType,
 {
     /// AND, OR, NOT
     LogicalFunctionVariant(LogicalFunction<E>),

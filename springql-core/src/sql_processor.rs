@@ -1,7 +1,8 @@
 // Copyright (c) 2021 TOYOTA MOTOR CORPORATION. Licensed under MIT OR Apache-2.0.
 
+pub(crate) mod sql_parser;
+
 mod query_planner;
-mod sql_parser;
 
 use self::{
     query_planner::QueryPlanner,

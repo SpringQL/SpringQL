@@ -1,4 +1,4 @@
-use crate::expression::ValueExpr;
+use crate::expression::ValueExprType;
 
 use super::BooleanExpr;
 
@@ -6,7 +6,7 @@ use super::BooleanExpr;
 #[derive(Clone, PartialEq, Hash, Debug)]
 pub(crate) enum LogicalFunction<E>
 where
-    E: ValueExpr,
+    E: ValueExprType,
 {
     /// `AND` operation
     AndVariant {

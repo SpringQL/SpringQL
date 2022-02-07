@@ -11,6 +11,7 @@
 #[macro_use]
 extern crate derive_new;
 
+pub(crate) mod expr_resolver;
 pub(crate) mod expression;
 pub(crate) mod mem_size;
 pub(crate) mod pipeline;

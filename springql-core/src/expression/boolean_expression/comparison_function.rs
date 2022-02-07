@@ -1,10 +1,10 @@
-use crate::expression::ValueExpr;
+use crate::expression::ValueExprType;
 
 /// Comparison function and its operands
 #[derive(Clone, PartialEq, Hash, Debug)]
 pub(crate) enum ComparisonFunction<E>
 where
-    E: ValueExpr,
+    E: ValueExprType,
 {
     /// `=` operation
     EqualVariant {
