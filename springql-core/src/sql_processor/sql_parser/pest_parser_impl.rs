@@ -433,8 +433,8 @@ impl PestParserImpl {
         )?;
         let alias = try_parse_child(
             &mut params,
-            Rule::field_alias,
-            Self::parse_field_alias,
+            Rule::value_alias,
+            Self::parse_value_alias,
             identity,
         )?;
         Ok(SelectFieldSyntax { value_expr, alias })
@@ -804,7 +804,7 @@ impl PestParserImpl {
         )
     }
 
-    fn parse_field_alias(mut params: FnParseParams) -> Result<FieldAlias> {
+    fn parse_value_alias(mut params: FnParseParams) -> Result<FieldAlias> {
         parse_child(
             &mut params,
             Rule::identifier,
