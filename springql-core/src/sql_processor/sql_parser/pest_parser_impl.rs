@@ -12,7 +12,7 @@ use crate::expression::operator::{BinaryOperator, UnaryOperator};
 use crate::expression::ValueExprPh1;
 use crate::pipeline::field::field_pointer::FieldPointer;
 use crate::pipeline::name::{
-    ColumnName, CorrelationAlias, FieldAlias, PumpName, SinkWriterName, SourceReaderName,
+    ColumnName, CorrelationAlias, ValueAlias, PumpName, SinkWriterName, SourceReaderName,
     StreamName,
 };
 use crate::pipeline::option::options_builder::OptionsBuilder;
@@ -433,8 +433,8 @@ impl PestParserImpl {
         )?;
         let alias = try_parse_child(
             &mut params,
-            Rule::field_alias,
-            Self::parse_field_alias,
+            Rule::value_alias,
+            Self::parse_value_alias,
             identity,
         )?;
         Ok(SelectFieldSyntax { value_expr, alias })
@@ -804,12 +804,12 @@ impl PestParserImpl {
         )
     }
 
-    fn parse_field_alias(mut params: FnParseParams) -> Result<FieldAlias> {
+    fn parse_value_alias(mut params: FnParseParams) -> Result<ValueAlias> {
         parse_child(
             &mut params,
             Rule::identifier,
             Self::parse_identifier,
-            FieldAlias::new,
+            ValueAlias::new,
         )
     }
 

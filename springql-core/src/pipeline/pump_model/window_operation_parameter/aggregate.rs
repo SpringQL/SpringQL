@@ -1,4 +1,4 @@
-use crate::pipeline::{field::field_name::ColumnReference, name::FieldAlias};
+use crate::pipeline::{field::field_name::ColumnReference, name::ValueAlias};
 
 /// TODO [support complex expression with aggregations](https://gh01.base.toyota-tokyo.tech/SpringQL-internal/SpringQL/issues/152)
 ///
@@ -17,7 +17,7 @@ pub(crate) struct GroupAggregateParameter {
 #[derive(Clone, Eq, PartialEq, Debug, new)]
 pub(crate) struct AggregateParameter {
     pub(crate) aggregated: ColumnReference,
-    pub(crate) aggregated_alias: FieldAlias,
+    pub(crate) aggregated_alias: ValueAlias,
     pub(crate) aggregate_function: AggregateFunctionParameter,
 }
 

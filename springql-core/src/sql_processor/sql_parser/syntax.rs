@@ -2,7 +2,7 @@
 
 use crate::{
     expression::ValueExprPh1,
-    pipeline::name::{CorrelationAlias, FieldAlias, StreamName},
+    pipeline::name::{CorrelationAlias, ValueAlias, StreamName},
 };
 
 #[derive(Clone, Eq, PartialEq, Debug)]
@@ -26,7 +26,7 @@ pub(in crate::sql_processor) struct SelectStreamSyntax {
 #[derive(Clone, PartialEq, Debug)]
 pub(in crate::sql_processor) struct SelectFieldSyntax {
     pub(in crate::sql_processor) value_expr: ValueExprPh1,
-    pub(in crate::sql_processor) alias: Option<FieldAlias>,
+    pub(in crate::sql_processor) alias: Option<ValueAlias>,
 }
 
 #[derive(Clone, Eq, PartialEq, Debug)]

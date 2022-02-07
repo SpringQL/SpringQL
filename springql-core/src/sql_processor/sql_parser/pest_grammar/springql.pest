@@ -391,7 +391,7 @@ select_stream_command = {
 }
 
 select_field = {
-    value_expr ~ (^"AS"? ~ field_alias)?
+    value_expr ~ (^"AS"? ~ value_alias)?
 }
 
 from_item = {
@@ -446,7 +446,7 @@ correlation_alias = {
     identifier
 }
 
-field_alias = {
+value_alias = {
     identifier
 }
 
