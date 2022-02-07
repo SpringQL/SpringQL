@@ -11,18 +11,12 @@ use crate::{
     },
     pipeline::{
         field::field_name::ColumnReference,
-        name::{AttributeName, ColumnName, CorrelationAlias, PumpName, StreamName},
+        name::{ColumnName, StreamName},
     },
     stream_engine::SqlValue,
 };
 
 impl StreamName {
-    pub(crate) fn factory(name: &str) -> Self {
-        Self::new(name.to_string())
-    }
-}
-
-impl PumpName {
     pub(crate) fn factory(name: &str) -> Self {
         Self::new(name.to_string())
     }
@@ -80,17 +74,5 @@ impl ColumnReference {
             StreamName::factory(stream_name),
             ColumnName::new(column_name.to_string()),
         )
-    }
-}
-
-impl CorrelationAlias {
-    pub(crate) fn factory(correlation_alias: &str) -> Self {
-        Self::new(correlation_alias.to_string())
-    }
-}
-
-impl AttributeName {
-    pub(crate) fn factory(column_name: &str) -> Self {
-        Self::new(column_name.to_string())
     }
 }

@@ -5,11 +5,9 @@ use std::{net::IpAddr, sync::Arc};
 use crate::{
     low_level_rs::{SpringConfig, SpringSinkWriterConfig, SpringSourceReaderConfig},
     pipeline::{
-        field::field_name::ColumnReference,
-        name::{ColumnName, PumpName, SinkWriterName, SourceReaderName, StreamName},
+        name::{ColumnName, SinkWriterName, SourceReaderName, StreamName},
         option::{options_builder::OptionsBuilder, Options},
         pipeline_version::PipelineVersion,
-        pump_model::PumpModel,
         relation::{
             column::{
                 column_constraint::ColumnConstraint, column_data_type::ColumnDataType,
@@ -21,10 +19,6 @@ use crate::{
         source_reader_model::{source_reader_type::SourceReaderType, SourceReaderModel},
         stream_model::{stream_shape::StreamShape, StreamModel},
         Pipeline,
-    },
-    stream_engine::command::{
-        insert_plan::InsertPlan,
-        query_plan::{query_plan_operation::QueryPlanOperation, QueryPlan},
     },
 };
 
@@ -128,65 +122,6 @@ impl SinkWriterModel {
             SinkWriterType::Net,
             stream_name,
             Options::fx_net(remote_host, remote_port),
-        )
-    }
-}
-
-impl PumpModel {
-    pub(crate) fn fx_trade(name: PumpName, upstream: StreamName, downstream: StreamName) -> Self {
-        let select_columns = vec![
-            ColumnName::fx_timestamp(),
-            ColumnName::fx_ticker(),
-            ColumnName::fx_amount(),
-        ];
-        Self::new(
-            name,
-            QueryPlan::fx_collect_projection(upstream, select_columns),
-            InsertPlan::fx_trade(downstream),
-        )
-    }
-}
-
-impl QueryPlan {
-    pub(crate) fn fx_collect_projection(
-        upstream: StreamName,
-        column_names: Vec<ColumnName>,
-    ) -> Self {
-        let mut query_plan = QueryPlan::default();
-
-        let colrefs = column_names
-            .into_iter()
-            .map(|column_name| ColumnReference::new(upstream.clone(), column_name))
-            .collect::<Vec<ColumnReference>>();
-
-        let collection_op = QueryPlanOperation::fx_collect(upstream);
-        let projection_op = QueryPlanOperation::fx_projection(colrefs);
-
-        query_plan.add_root(projection_op.clone());
-        query_plan.add_left(&projection_op, collection_op);
-        query_plan
-    }
-}
-
-impl QueryPlanOperation {
-    pub(crate) fn fx_collect(upstream: StreamName) -> Self {
-        Self::Collect { stream: upstream }
-    }
-
-    pub(crate) fn fx_projection(column_references: Vec<ColumnReference>) -> Self {
-        Self::Projection { column_references }
-    }
-}
-
-impl InsertPlan {
-    pub(crate) fn fx_trade(downstream: StreamName) -> Self {
-        Self::new(
-            downstream,
-            vec![
-                ColumnName::fx_timestamp(),
-                ColumnName::fx_ticker(),
-                ColumnName::fx_amount(),
-            ],
         )
     }
 }
