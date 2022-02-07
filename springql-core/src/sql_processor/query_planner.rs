@@ -1,3 +1,58 @@
+//! Translates `SelectSyntax` into `ExprResolver` and `QueryPlan`.
+//!
+//! `ExprResolver` is to resolve aliases in select_list. Each operation only has `ExprLabel` returned from `ExprResolver`.
+//!
+//! Query plan is represented by binary tree of operator nodes; most nodes have only a child but JOIN node has two children.
+//!
+//! Query plan firstly collect `Row`s from streams and they are converted into simplified `Tuple`s who have `Map<ColumnReference, SqlValue>` structure.
+//! A tuple may be firstly dropped by single stream selection.
+//! Then tuples may be joined.
+//! And finally tuples may be dropped again by multi stream selection.
+//!
+//! ```text
+//! (root)
+//!
+//!  ^
+//!  | Tuple (0~)
+//!  |
+//! multi stream selection
+//!  ^
+//!  | Tuple (0~)
+//!  |
+//! join (window)  <--- Option<Tuple> --- ....
+//!  ^
+//!  | Tuple (0/1)
+//!  |
+//! single stream selection
+//!  ^
+//!  | Tuple
+//!  |
+//! row to tuple
+//!  ^
+//!  | Row
+//!  |
+//! collect
+//!
+//! (leaf)
+//! ```
+//!
+//! Ascendant operators of multi stream selection operator do not modify tuples' structure but just reference them to resolve ColumnReference in expressions.
+//!
+//! ```text
+//! (root)
+//! 
+//! projection
+//!  ^
+//!  |
+//! group aggregation (window)
+//! 
+//! Tuple
+//! 
+//! (leaf)
+//! ```
+//! 
+//! Projection operator emits a `Row` by evaluating its expressions (via `ExprLabel`) using `Tuple` for column references.
+
 mod select_syntax_analyzer;
 
 use crate::{
@@ -10,33 +65,6 @@ use self::select_syntax_analyzer::SelectSyntaxAnalyzer;
 
 use super::sql_parser::syntax::SelectStreamSyntax;
 
-/// Translates `SelectSyntax` into `QueryPlan`.
-///
-/// Output tree has the following form:
-///
-/// ```text
-/// proj
-///  |
-/// sort
-///  |
-/// aggregation
-///  |
-/// join
-///  |
-/// window
-///  |
-/// selection
-///  |
-/// eval value expressions
-///  |
-///  |--------+
-/// collect  collect
-/// ```
-///
-/// Nodes are created from bottom to top.
-///
-/// `SelectSyntax` has `ExprSyntax`s inside and query planner translates them into `Expr`s, which are evaluated into `SqlValue` with tuples.
-/// To be more precise, an `Expr::ValueExpr` is evaluated into `SqlValue` with a tuple and `Expr::AggrExpr` is evaluated into `SqlValue` with set of tuples.
 #[derive(Clone, Debug)]
 pub(crate) struct QueryPlanner {
     plan: QueryPlan,
