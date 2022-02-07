@@ -1,9 +1,9 @@
-use crate::expression::ValueExpr;
+use crate::expression::ValueExprType;
 
 #[derive(Clone, PartialEq, Hash, Debug)]
 pub(crate) enum NumericalFunction<E>
 where
-    E: ValueExpr,
+    E: ValueExprType,
 {
     /// `+` operation
     AddVariant { left: Box<E>, right: Box<E> },

@@ -9,7 +9,7 @@ use crate::expression::boolean_expression::numerical_function::NumericalFunction
 use crate::expression::boolean_expression::BooleanExpr;
 use crate::expression::function_call::FunctionCall;
 use crate::expression::operator::{BinaryOperator, UnaryOperator};
-use crate::expression::ValueExprPh1;
+use crate::expression::ValueExpr;
 use crate::pipeline::field::field_name::ColumnReference;
 use crate::pipeline::name::{
     ColumnName, CorrelationAlias, PumpName, SinkWriterName, SourceReaderName, StreamName,
@@ -472,7 +472,7 @@ impl PestParserImpl {
      * ================================================================================================
      */
 
-    fn parse_value_expr(mut params: FnParseParams) -> Result<ValueExprPh1> {
+    fn parse_value_expr(mut params: FnParseParams) -> Result<ValueExpr> {
         let expr = parse_child(
             &mut params,
             Rule::sub_value_expr,
@@ -494,13 +494,13 @@ impl PestParserImpl {
             )?;
 
             match bin_op {
-                BinaryOperator::Equal => Ok(ValueExprPh1::BooleanExpr(
+                BinaryOperator::Equal => Ok(ValueExpr::BooleanExpr(
                     BooleanExpr::ComparisonFunctionVariant(ComparisonFunction::EqualVariant {
                         left: Box::new(expr),
                         right: Box::new(right_expr),
                     }),
                 )),
-                BinaryOperator::Add => Ok(ValueExprPh1::BooleanExpr(
+                BinaryOperator::Add => Ok(ValueExpr::BooleanExpr(
                     BooleanExpr::NumericalFunctionVariant(NumericalFunction::AddVariant {
                         left: Box::new(expr),
                         right: Box::new(right_expr),
@@ -512,18 +512,18 @@ impl PestParserImpl {
         }
     }
 
-    fn parse_sub_value_expr(mut params: FnParseParams) -> Result<ValueExprPh1> {
+    fn parse_sub_value_expr(mut params: FnParseParams) -> Result<ValueExpr> {
         try_parse_child(
             &mut params,
             Rule::constant,
             Self::parse_constant,
-            ValueExprPh1::Constant,
+            ValueExpr::Constant,
         )?
         .or(try_parse_child(
             &mut params,
             Rule::column_reference,
             Self::parse_column_reference,
-            ValueExprPh1::ColumnReference,
+            ValueExpr::ColumnReference,
         )?)
         .or({
             if let Some(uni_op) = try_parse_child(
@@ -536,7 +536,7 @@ impl PestParserImpl {
                     &mut params,
                     Rule::value_expr,
                     Self::parse_value_expr,
-                    |expr| ValueExprPh1::UnaryOperator(uni_op.clone(), Box::new(expr)),
+                    |expr| ValueExpr::UnaryOperator(uni_op.clone(), Box::new(expr)),
                 )?)
             } else {
                 None
@@ -546,7 +546,7 @@ impl PestParserImpl {
             &mut params,
             Rule::function_call,
             Self::parse_function_call,
-            ValueExprPh1::FunctionCall,
+            ValueExpr::FunctionCall,
         )?)
         .ok_or_else(|| {
             SpringError::Sql(anyhow!("Does not match any child rule of sub_value_expr.",))
@@ -581,7 +581,7 @@ impl PestParserImpl {
      * ----------------------------------------------------------------------------
      */
 
-    fn parse_function_call(mut params: FnParseParams) -> Result<FunctionCall<ValueExprPh1>> {
+    fn parse_function_call(mut params: FnParseParams) -> Result<FunctionCall<ValueExpr>> {
         let function_name = parse_child(
             &mut params,
             Rule::function_name,

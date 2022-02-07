@@ -3,10 +3,11 @@
 use crate::{
     expression::{
         boolean_expression::{
-            comparison_function::ComparisonFunction, logical_function::LogicalFunction, BooleanExpr,
+            comparison_function::ComparisonFunction, logical_function::LogicalFunction,
+            numerical_function::NumericalFunction, BooleanExpr,
         },
         operator::UnaryOperator,
-        ValueExpr, ValueExprPh1,
+        ValueExpr, ValueExprType,
     },
     pipeline::{
         field::field_name::ColumnReference,
@@ -27,7 +28,7 @@ impl PumpName {
     }
 }
 
-impl ValueExprPh1 {
+impl ValueExpr {
     pub fn factory_null() -> Self {
         Self::Constant(SqlValue::Null)
     }
@@ -36,12 +37,16 @@ impl ValueExprPh1 {
         Self::Constant(SqlValue::factory_integer(integer))
     }
 
-    pub fn factory_uni_op(unary_operator: UnaryOperator, expression: ValueExprPh1) -> Self {
+    pub fn factory_uni_op(unary_operator: UnaryOperator, expression: ValueExpr) -> Self {
         Self::UnaryOperator(unary_operator, Box::new(expression))
     }
 
-    pub fn factory_eq(left: ValueExprPh1, right: ValueExprPh1) -> Self {
+    pub fn factory_eq(left: ValueExpr, right: ValueExpr) -> Self {
         Self::BooleanExpr(BooleanExpr::factory_eq(left, right))
+    }
+
+    pub fn factory_add(left: ValueExpr, right: ValueExpr) -> Self {
+        Self::BooleanExpr(BooleanExpr::factory_add(left, right))
     }
 
     pub fn factory_and(left: BooleanExpr<Self>, right: BooleanExpr<Self>) -> Self {
@@ -54,9 +59,15 @@ impl ValueExprPh1 {
     }
 }
 
-impl<E: ValueExpr> BooleanExpr<E> {
+impl<E: ValueExprType> BooleanExpr<E> {
     pub fn factory_eq(left: E, right: E) -> Self {
         BooleanExpr::ComparisonFunctionVariant(ComparisonFunction::EqualVariant {
+            left: Box::new(left),
+            right: Box::new(right),
+        })
+    }
+    pub fn factory_add(left: E, right: E) -> Self {
+        BooleanExpr::NumericalFunctionVariant(NumericalFunction::AddVariant {
             left: Box::new(left),
             right: Box::new(right),
         })

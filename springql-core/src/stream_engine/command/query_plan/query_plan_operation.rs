@@ -3,7 +3,7 @@
 use std::time::Duration;
 
 use crate::{
-    expression::ValueExprPh1,
+    expression::ValueExpr,
     pipeline::{field::field_name::ColumnReference, name::StreamName},
 };
 
@@ -13,7 +13,7 @@ pub(crate) enum QueryPlanOperation {
         stream: StreamName,
     },
     EvalValueExpr {
-        expressions: Vec<ValueExprPh1>,
+        expressions: Vec<ValueExpr>,
     },
     Projection {
         column_references: Vec<ColumnReference>,

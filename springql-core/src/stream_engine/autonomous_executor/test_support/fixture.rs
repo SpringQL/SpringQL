@@ -46,13 +46,13 @@ use crate::{
 };
 
 impl Timestamp {
-    pub(in crate::stream_engine) fn fx_ts1() -> Self {
+    pub(crate) fn fx_ts1() -> Self {
         "2021-01-01 13:00:00.000000001".parse().unwrap()
     }
-    pub(in crate::stream_engine) fn fx_ts2() -> Self {
+    pub(crate) fn fx_ts2() -> Self {
         "2021-01-01 13:00:00.000000002".parse().unwrap()
     }
-    pub(in crate::stream_engine) fn fx_ts3() -> Self {
+    pub(crate) fn fx_ts3() -> Self {
         "2021-01-01 13:00:00.000000003".parse().unwrap()
     }
 }

@@ -130,7 +130,7 @@ impl Tuple {
 #[cfg(test)]
 mod tests {
     use crate::expression::{
-        boolean_expression::BooleanExpr, operator::UnaryOperator, ValueExprPh1,
+        boolean_expression::BooleanExpr, operator::UnaryOperator, ValueExpr,
     };
 
     use super::*;
@@ -139,7 +139,7 @@ mod tests {
     fn test_to_sql_value() {
         #[derive(new)]
         struct TestDatum {
-            in_expr: ValueExprPh1,
+            in_expr: ValueExpr,
             tuple: Tuple,
             expected_sql_value: SqlValue,
         }
@@ -147,73 +147,73 @@ mod tests {
         let test_data: Vec<TestDatum> = vec![
             // constants
             TestDatum::new(
-                ValueExprPh1::factory_integer(1),
+                ValueExpr::factory_integer(1),
                 Tuple::fx_trade_oracle(),
                 SqlValue::factory_integer(1),
             ),
             // unary op
             TestDatum::new(
-                ValueExprPh1::factory_uni_op(
+                ValueExpr::factory_uni_op(
                     UnaryOperator::Minus,
-                    ValueExprPh1::factory_integer(1),
+                    ValueExpr::factory_integer(1),
                 ),
                 Tuple::fx_trade_oracle(),
                 SqlValue::factory_integer(-1),
             ),
             // ColumnReference
             TestDatum::new(
-                ValueExprPh1::ColumnReference(ColumnReference::factory("trade", "amount")),
+                ValueExpr::ColumnReference(ColumnReference::factory("trade", "amount")),
                 Tuple::factory_trade(Timestamp::fx_ts1(), "ORCL", 1),
                 SqlValue::factory_integer(1),
             ),
             // BooleanExpression
             TestDatum::new(
-                ValueExprPh1::factory_eq(
-                    ValueExprPh1::factory_null(),
-                    ValueExprPh1::factory_null(),
+                ValueExpr::factory_eq(
+                    ValueExpr::factory_null(),
+                    ValueExpr::factory_null(),
                 ),
                 Tuple::fx_trade_oracle(),
                 SqlValue::factory_bool(false),
             ),
             TestDatum::new(
-                ValueExprPh1::factory_eq(
-                    ValueExprPh1::factory_integer(123),
-                    ValueExprPh1::factory_integer(123),
+                ValueExpr::factory_eq(
+                    ValueExpr::factory_integer(123),
+                    ValueExpr::factory_integer(123),
                 ),
                 Tuple::fx_trade_oracle(),
                 SqlValue::factory_bool(true),
             ),
             TestDatum::new(
-                ValueExprPh1::factory_eq(
-                    ValueExprPh1::factory_integer(123),
-                    ValueExprPh1::factory_integer(-123),
+                ValueExpr::factory_eq(
+                    ValueExpr::factory_integer(123),
+                    ValueExpr::factory_integer(-123),
                 ),
                 Tuple::fx_trade_oracle(),
                 SqlValue::factory_bool(false),
             ),
             TestDatum::new(
-                ValueExprPh1::factory_and(
+                ValueExpr::factory_and(
                     BooleanExpr::factory_eq(
-                        ValueExprPh1::factory_integer(123),
-                        ValueExprPh1::factory_integer(123),
+                        ValueExpr::factory_integer(123),
+                        ValueExpr::factory_integer(123),
                     ),
                     BooleanExpr::factory_eq(
-                        ValueExprPh1::factory_integer(456),
-                        ValueExprPh1::factory_integer(456),
+                        ValueExpr::factory_integer(456),
+                        ValueExpr::factory_integer(456),
                     ),
                 ),
                 Tuple::fx_trade_oracle(),
                 SqlValue::factory_bool(true),
             ),
             TestDatum::new(
-                ValueExprPh1::factory_and(
+                ValueExpr::factory_and(
                     BooleanExpr::factory_eq(
-                        ValueExprPh1::factory_integer(-123),
-                        ValueExprPh1::factory_integer(123),
+                        ValueExpr::factory_integer(-123),
+                        ValueExpr::factory_integer(123),
                     ),
                     BooleanExpr::factory_eq(
-                        ValueExprPh1::factory_integer(456),
-                        ValueExprPh1::factory_integer(456),
+                        ValueExpr::factory_integer(456),
+                        ValueExpr::factory_integer(456),
                     ),
                 ),
                 Tuple::fx_trade_oracle(),

@@ -1,7 +1,7 @@
 use super::SelectSyntaxAnalyzer;
 use crate::{
     error::Result,
-    expression::{function_call::FunctionCall, ValueExprPh1},
+    expression::{function_call::FunctionCall, ValueExpr},
     pipeline::{
         field::field_name::ColumnReference,
         name::{ColumnName, StreamName},
@@ -10,7 +10,7 @@ use crate::{
 };
 
 impl SelectSyntaxAnalyzer {
-    pub(in super::super) fn field_expressions(&self) -> Vec<ValueExprPh1> {
+    pub(in super::super) fn field_expressions(&self) -> Vec<ValueExpr> {
         let select_fields = &self.select_syntax.fields;
         select_fields
             .iter()
@@ -36,26 +36,26 @@ impl SelectSyntaxAnalyzer {
         from_item_streams: &[StreamName],
     ) -> Result<ColumnReference> {
         match &select_field.value_expr {
-            ValueExprPh1::Constant(_) => {
+            ValueExpr::Constant(_) => {
                 unimplemented!("constant in select field is not supported currently",)
             }
-            ValueExprPh1::UnaryOperator(_, _) => {
+            ValueExpr::UnaryOperator(_, _) => {
                 // TODO Better to shrink expression in this layer.
                 unimplemented!("unary operation in select field is not supported currently",)
             }
-            ValueExprPh1::BooleanExpr(_) => {
+            ValueExpr::BooleanExpr(_) => {
                 // TODO will use label for projection
                 Ok(ColumnReference::new(
                     StreamName::new("_".to_string()),
                     ColumnName::new("_".to_string()),
                 ))
             }
-            ValueExprPh1::ColumnReference(colref) => Ok(colref.clone()),
-            ValueExprPh1::FunctionCall(fun_call) => match fun_call {
+            ValueExpr::ColumnReference(colref) => Ok(colref.clone()),
+            ValueExpr::FunctionCall(fun_call) => match fun_call {
                 FunctionCall::FloorTime { target, .. } => {
                     // TODO will use label for projection
                     match target.as_ref() {
-                        ValueExprPh1::ColumnReference(colref) => Ok(colref.clone()),
+                        ValueExpr::ColumnReference(colref) => Ok(colref.clone()),
                         _ => unimplemented!(),
                     }
                 }

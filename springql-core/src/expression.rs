@@ -30,15 +30,14 @@ use self::{
     operator::UnaryOperator,
 };
 
-pub(crate) trait ValueExpr {}
+pub(crate) trait ValueExprType {}
 
-/// Value Expression (phase1).
+/// Value Expression.
 ///
-/// A value expression (phase1) can be evaluated into SqlValue with a tuple (to resolve column reference).
-///
-/// ValueExprPh1 may contain column references to resolve from a row.
+/// A value expression can be evaluated into SqlValue with a tuple (to resolve column reference).
+/// ValueExpr may contain column references to resolve from a row.
 #[derive(Clone, PartialEq, Hash, Debug)]
-pub(crate) enum ValueExprPh1 {
+pub(crate) enum ValueExpr {
     Constant(SqlValue),
     UnaryOperator(UnaryOperator, Box<Self>),
     BooleanExpr(BooleanExpr<Self>),
@@ -46,9 +45,9 @@ pub(crate) enum ValueExprPh1 {
 
     ColumnReference(ColumnReference),
 }
-impl ValueExpr for ValueExprPh1 {}
+impl ValueExprType for ValueExpr {}
 
-impl ValueExprPh1 {
+impl ValueExpr {
     pub(crate) fn resolve_colref(self, tuple: &Tuple) -> Result<ValueExprPh2> {
         match self {
             Self::Constant(value) => Ok(ValueExprPh2::Constant(value)),
@@ -144,7 +143,7 @@ pub(crate) enum ValueExprPh2 {
     BooleanExpr(BooleanExpr<Self>),
     FunctionCall(FunctionCall<Self>),
 }
-impl ValueExpr for ValueExprPh2 {}
+impl ValueExprType for ValueExprPh2 {}
 
 impl ValueExprPh2 {
     pub(crate) fn eval(self) -> Result<SqlValue> {
