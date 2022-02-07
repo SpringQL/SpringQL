@@ -51,15 +51,12 @@ impl SelectSyntaxAnalyzer {
                     ColumnName::new("_".to_string()),
                 ))
             }
-            ValueExprPh1::FieldPointer(ptr) => Self::column_reference(ptr, from_item_streams),
+            ValueExprPh1::ColumnReference(colref) => Ok(colref.clone()),
             ValueExprPh1::FunctionCall(fun_call) => match fun_call {
                 FunctionCall::FloorTime { target, .. } => {
                     // TODO will use label for projection
                     match target.as_ref() {
-                        ValueExprPh1::FieldPointer(ptr) => Ok(ColumnReference::new(
-                            from_item_streams.first().unwrap().clone(), // super ugly...
-                            ColumnName::new(ptr.attr().to_string()),
-                        )),
+                        ValueExprPh1::ColumnReference(colref) => Ok(colref.clone()),
                         _ => unimplemented!(),
                     }
                 }
@@ -67,29 +64,6 @@ impl SelectSyntaxAnalyzer {
                     unreachable!("DURATION_SECS() cannot appear in field list")
                 }
             },
-        }
-    }
-
-    /// TODO may need Pipeline when:
-    /// - pointer does not have prefix part and
-    /// - from_item_correlations are more than 1
-    /// because this function has to determine which of `from1` or `from2` `field1` is from.
-    ///
-    /// # Failures
-    ///
-    /// - `SpringError::Sql` when:
-    ///   - none of `from_item_correlations` has field named `pointer.column_name`
-    ///   - `pointer` has a correlation but it is not any of `from_item_correlations`.
-    pub(super) fn column_reference(
-        pointer: &FieldPointer,
-        from_item_streams: &[StreamName],
-    ) -> Result<ColumnReference> {
-        if from_item_streams.is_empty() {
-            unreachable!("SQL parser must handle this case")
-        } else if let Some(corr) = pointer.prefix() {
-            Self::field_name_with_prefix(corr, pointer.attr(), from_item_streams)
-        } else {
-            Self::field_name_without_prefix(pointer.attr(), from_item_streams)
         }
     }
 

@@ -10,10 +10,11 @@ use crate::expression::boolean_expression::BooleanExpr;
 use crate::expression::function_call::FunctionCall;
 use crate::expression::operator::{BinaryOperator, UnaryOperator};
 use crate::expression::ValueExprPh1;
+use crate::pipeline::field::field_name::ColumnReference;
 use crate::pipeline::field::field_pointer::FieldPointer;
 use crate::pipeline::name::{
-    ColumnName, CorrelationAlias, ValueAlias, PumpName, SinkWriterName, SourceReaderName,
-    StreamName,
+    ColumnName, CorrelationAlias, PumpName, SinkWriterName, SourceReaderName, StreamName,
+    ValueAlias,
 };
 use crate::pipeline::option::options_builder::OptionsBuilder;
 use crate::pipeline::relation::column::column_constraint::ColumnConstraint;
@@ -521,9 +522,9 @@ impl PestParserImpl {
         )?
         .or(try_parse_child(
             &mut params,
-            Rule::field_pointer,
-            Self::parse_field_pointer,
-            ValueExprPh1::FieldPointer,
+            Rule::column_reference,
+            Self::parse_column_reference,
+            ValueExprPh1::ColumnReference,
         )?)
         .or({
             if let Some(uni_op) = try_parse_child(
@@ -555,12 +556,12 @@ impl PestParserImpl {
 
     /*
      * ----------------------------------------------------------------------------
-     * Field Pointer
+     * Column Reference
      * ----------------------------------------------------------------------------
      */
 
-    fn parse_field_pointer(mut params: FnParseParams) -> Result<FieldPointer> {
-        let correlation = try_parse_child(
+    fn parse_column_reference(mut params: FnParseParams) -> Result<ColumnReference> {
+        let correlation = parse_child(
             &mut params,
             Rule::correlation,
             Self::parse_correlation,
@@ -572,10 +573,7 @@ impl PestParserImpl {
             Self::parse_column_name,
             identity,
         )?;
-        Ok(FieldPointer::new(
-            correlation.map(|c| c.to_string()),
-            column_name.to_string(),
-        ))
+        Ok(ColumnReference::new(correlation, column_name))
     }
 
     /*

@@ -14,7 +14,7 @@ use anyhow::anyhow;
 
 use crate::{
     error::{Result, SpringError},
-    pipeline::field::field_pointer::FieldPointer,
+    pipeline::field::{field_name::ColumnReference, field_pointer::FieldPointer},
     stream_engine::{
         time::duration::{event_duration::EventDuration, SpringDuration},
         NnSqlValue, SqlCompareResult, SqlValue, Tuple,
@@ -44,7 +44,7 @@ pub(crate) enum ValueExprPh1 {
     BooleanExpr(BooleanExpr<Self>),
     FunctionCall(FunctionCall<Self>),
 
-    FieldPointer(FieldPointer),
+    ColumnReference(ColumnReference),
 }
 impl ValueExpr for ValueExprPh1 {}
 
@@ -53,8 +53,8 @@ impl ValueExprPh1 {
         match self {
             Self::Constant(value) => Ok(ValueExprPh2::Constant(value)),
 
-            Self::FieldPointer(field_pointer) => {
-                let value = tuple.get_value(&field_pointer)?;
+            Self::ColumnReference(colref) => {
+                let value = tuple.get_value(&colref)?;
                 Ok(ValueExprPh2::Constant(value))
             }
 

@@ -82,16 +82,15 @@ impl Tuple {
 
     /// # Failures
     ///
-    /// `SpringError::Sql` if `field_pointer` does not match any field.
-    pub(crate) fn get_value(&self, field_pointer: &FieldPointer) -> Result<SqlValue> {
+    /// `SpringError::Sql` if `column_reference` does not match any field.
+    pub(crate) fn get_value(&self, column_reference: &ColumnReference) -> Result<SqlValue> {
         let sql_value = self.fields.iter().find_map(|field| {
-            let colrefs = field.name();
-            colrefs
-                .matches(field_pointer)
-                .then(|| field.sql_value().clone())
+            let colref = field.name();
+            (colref == column_reference).then(|| field.sql_value().clone())
         });
 
-        sql_value.ok_or_else(|| SpringError::Sql(anyhow!("cannot find field `{}`", field_pointer)))
+        sql_value
+            .ok_or_else(|| SpringError::Sql(anyhow!("cannot find field `{:?}`", column_reference)))
     }
 
     /// # Failure
@@ -163,9 +162,9 @@ mod tests {
                 Tuple::fx_trade_oracle(),
                 SqlValue::factory_integer(-1),
             ),
-            // FieldPointer
+            // ColumnReference
             TestDatum::new(
-                ValueExprPh1::FieldPointer(FieldPointer::from("amount")),
+                ValueExprPh1::ColumnReference(ColumnReference::factory("trade", "amount")),
                 Tuple::factory_trade(Timestamp::fx_ts1(), "ORCL", 1),
                 SqlValue::factory_integer(1),
             ),

@@ -66,7 +66,7 @@ mod tests {
     use crate::{
         pipeline::{
             field::{field_name::ColumnReference, field_pointer::FieldPointer},
-            name::{ColumnName, ValueAlias, StreamName},
+            name::{ColumnName, StreamName, ValueAlias},
             pump_model::window_operation_parameter::aggregate::{
                 AggregateFunctionParameter, AggregateParameter, GroupAggregateParameter,
             },
@@ -82,7 +82,9 @@ mod tests {
     };
 
     fn t_expect(tuple: &Tuple, expected_ticker: &str, expected_avg_amount: i16) {
-        let ticker = tuple.get_value(&FieldPointer::from("ticker")).unwrap();
+        let ticker = tuple
+            .get_value(&ColumnReference::factory("trade", "ticker"))
+            .unwrap();
         if let SqlValue::NotNull(ticker) = ticker {
             assert_eq!(
                 ticker.unpack::<String>().unwrap(),
@@ -92,7 +94,9 @@ mod tests {
             unreachable!("not null")
         }
 
-        let avg_amount = tuple.get_value(&FieldPointer::from("avg_amount")).unwrap();
+        let avg_amount = tuple
+            .get_value(&ColumnReference::factory("_", "avg_amount"))
+            .unwrap();
         if let SqlValue::NotNull(avg_amount) = avg_amount {
             assert_eq!(avg_amount.unpack::<i16>().unwrap(), expected_avg_amount);
         } else {
@@ -158,7 +162,7 @@ mod tests {
         assert_eq!(out.len(), 2);
         out.sort_by_key(|tuple| {
             tuple
-                .get_value(&FieldPointer::from("ticker"))
+                .get_value(&ColumnReference::factory("trade", "ticker"))
                 .unwrap()
                 .unwrap()
                 .unpack::<String>()
@@ -211,7 +215,7 @@ mod tests {
         assert_eq!(out.len(), 2);
         out.sort_by_key(|tuple| {
             tuple
-                .get_value(&FieldPointer::from("ticker"))
+                .get_value(&ColumnReference::factory("trade", "ticker"))
                 .unwrap()
                 .unwrap()
                 .unpack::<String>()
@@ -326,7 +330,7 @@ mod tests {
         assert_eq!(out.len(), 2);
         out.sort_by_key(|tuple| {
             tuple
-                .get_value(&FieldPointer::from("ticker"))
+                .get_value(&ColumnReference::factory("trade", "ticker"))
                 .unwrap()
                 .unwrap()
                 .unpack::<String>()

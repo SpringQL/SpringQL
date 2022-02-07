@@ -52,13 +52,12 @@ impl Pane {
                 group_aggregation_parameter,
                 states,
             } => {
-                let group_by_pointer = FieldPointer::from(&group_aggregation_parameter.group_by);
-                let aggregated_pointer = FieldPointer::from(
-                    &group_aggregation_parameter.aggregation_parameter.aggregated,
-                );
+                let group_by_pointer = &group_aggregation_parameter.group_by;
+                let aggregated_pointer =
+                    &group_aggregation_parameter.aggregation_parameter.aggregated;
 
                 let group_by_value = tuple
-                    .get_value(&group_by_pointer)
+                    .get_value(group_by_pointer)
                     .expect("field pointer for GROUP BY must be checked before");
                 let group_by_value = if let SqlValue::NotNull(v) = group_by_value {
                     v
@@ -67,7 +66,7 @@ impl Pane {
                 };
 
                 let aggregated_value = tuple
-                    .get_value(&aggregated_pointer)
+                    .get_value(aggregated_pointer)
                     .expect("field pointer for aggregated value must be checked before");
                 let aggregated_value = if let SqlValue::NotNull(v) = aggregated_value {
                     v

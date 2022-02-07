@@ -22,18 +22,12 @@ impl EvalValueExprSubtask {
             .iter()
             .map(|expr_ph1| {
                 let colref = match expr_ph1 {
-                    ValueExprPh1::FieldPointer(ptr) => ColumnReference::new(
-                        StreamName::new("_".to_string()), // super ugly...
-                        ColumnName::new(ptr.attr().to_string()),
-                    ),
+                    ValueExprPh1::ColumnReference(colref) => colref.clone(),
                     ValueExprPh1::FunctionCall(fun_call) => match fun_call {
                         FunctionCall::FloorTime { target, .. } => {
                             // TODO will use label for projection
                             match target.as_ref() {
-                                ValueExprPh1::FieldPointer(ptr) => ColumnReference::new(
-                                    StreamName::new("_".to_string()), // super ugly...
-                                    ColumnName::new(ptr.attr().to_string()),
-                                ),
+                                ValueExprPh1::ColumnReference(colref) => colref.clone(),
                                 _ => unimplemented!(),
                             }
                         }

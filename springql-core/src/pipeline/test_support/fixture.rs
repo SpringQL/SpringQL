@@ -525,7 +525,7 @@ impl ColumnDataType {
 
 impl StreamName {
     pub(crate) fn fx_trade() -> Self {
-        Self::new("city_temperature".to_string())
+        Self::new("trade".to_string())
     }
     pub(crate) fn fx_city_temperature() -> Self {
         Self::new("city_temperature".to_string())
