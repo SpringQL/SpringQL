@@ -6,12 +6,9 @@ use serde_json::json;
 
 use crate::{
     pipeline::{
-        name::{PumpName, StreamName},
-        pipeline_version::PipelineVersion,
-        pump_model::{pump_input_type::PumpInputType, PumpModel},
-        sink_writer_model::SinkWriterModel,
-        source_reader_model::SourceReaderModel,
-        stream_model::StreamModel,
+        name::StreamName, pipeline_version::PipelineVersion,
+        pump_model::pump_input_type::PumpInputType, sink_writer_model::SinkWriterModel,
+        source_reader_model::SourceReaderModel, stream_model::StreamModel,
     },
     stream_engine::{
         autonomous_executor::{
@@ -237,15 +234,6 @@ impl AlterPipelineCommand {
     ) -> Self {
         let sink = SinkWriterModel::fx_net(stream_name, sink_server_host, sink_server_port);
         Self::CreateSinkWriter(sink)
-    }
-
-    pub(in crate::stream_engine) fn fx_create_pump(
-        pump_name: PumpName,
-        upstream: StreamName,
-        downstream: StreamName,
-    ) -> Self {
-        let pump = PumpModel::fx_trade(pump_name, upstream, downstream);
-        Self::CreatePump(pump)
     }
 }
 
