@@ -133,7 +133,7 @@ mod tests {
     use crate::{
         pipeline::{
             field::field_name::ColumnReference,
-            name::FieldAlias,
+            name::ValueAlias,
             pump_model::window_operation_parameter::aggregate::{
                 AggregateFunctionParameter, AggregateParameter, GroupAggregateParameter,
             },
@@ -148,7 +148,7 @@ mod tests {
         WindowOperationParameter::GroupAggregation(GroupAggregateParameter {
             aggregation_parameter: AggregateParameter::new(
                 ColumnReference::factory("dontcare", "dontcare"),
-                FieldAlias::new("".to_string()),
+                ValueAlias::new("".to_string()),
                 AggregateFunctionParameter::Avg,
             ),
             group_by: ColumnReference::factory("dontcare", "dontcare"),

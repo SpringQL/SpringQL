@@ -66,7 +66,7 @@ mod tests {
     use crate::{
         pipeline::{
             field::{field_name::ColumnReference, field_pointer::FieldPointer},
-            name::{ColumnName, FieldAlias, StreamName},
+            name::{ColumnName, ValueAlias, StreamName},
             pump_model::window_operation_parameter::aggregate::{
                 AggregateFunctionParameter, AggregateParameter, GroupAggregateParameter,
             },
@@ -121,7 +121,7 @@ mod tests {
                         StreamName::fx_trade(),
                         ColumnName::fx_amount(),
                     ),
-                    aggregated_alias: FieldAlias::new("avg_amount".to_string()),
+                    aggregated_alias: ValueAlias::new("avg_amount".to_string()),
                     aggregate_function: AggregateFunctionParameter::Avg,
                 },
                 group_by: ColumnReference::new(StreamName::fx_trade(), ColumnName::fx_ticker()),
@@ -255,7 +255,7 @@ mod tests {
                         StreamName::fx_trade(),
                         ColumnName::fx_amount(),
                     ),
-                    aggregated_alias: FieldAlias::new("avg_amount".to_string()),
+                    aggregated_alias: ValueAlias::new("avg_amount".to_string()),
                     aggregate_function: AggregateFunctionParameter::Avg,
                 },
                 group_by: ColumnReference::new(StreamName::fx_trade(), ColumnName::fx_ticker()),
