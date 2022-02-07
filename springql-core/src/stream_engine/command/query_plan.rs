@@ -16,11 +16,13 @@ use self::{child_direction::ChildDirection, query_plan_operation::QueryPlanOpera
 ///
 /// This is a binary tree because every SELECT operation can break down into unary or binary operations.
 #[derive(Clone, Debug, Default)]
-pub(crate) struct QueryPlan(DiGraph<QueryPlanOperation, ChildDirection>);
+pub(crate) struct QueryPlan {
+    tree: DiGraph<QueryPlanOperation, ChildDirection>,
+}
 
 impl PartialEq for QueryPlan {
     fn eq(&self, other: &Self) -> bool {
-        graph_eq::graph_eq(&self.0, &other.0)
+        graph_eq::graph_eq(&self.tree, &other.tree)
     }
 }
 impl Eq for QueryPlan {}
@@ -32,7 +34,7 @@ impl QueryPlan {
     }
 
     pub(crate) fn add_root(&mut self, op: QueryPlanOperation) {
-        self.0.add_node(op);
+        self.tree.add_node(op);
     }
 
     /// # Panics
@@ -43,7 +45,7 @@ impl QueryPlan {
     }
 
     pub(crate) fn upstreams(&self) -> Vec<&StreamName> {
-        self.0
+        self.tree
             .node_weights()
             .filter_map(|op| match op {
                 QueryPlanOperation::Collect { stream, .. } => Some(stream),
@@ -55,7 +57,7 @@ impl QueryPlan {
     pub(in crate::stream_engine) fn as_petgraph(
         &self,
     ) -> &DiGraph<QueryPlanOperation, ChildDirection> {
-        &self.0
+        &self.tree
     }
 
     fn add_child(
@@ -64,18 +66,18 @@ impl QueryPlan {
         child_op: QueryPlanOperation,
         lr: ChildDirection,
     ) {
-        let child_node = self.0.add_node(child_op);
+        let child_node = self.tree.add_node(child_op);
         let parent_node = self
-            .0
+            .tree
             .node_indices()
             .find(|i| {
-                self.0
+                self.tree
                     .node_weight(*i)
                     .expect("parent does not exist in tree")
                     == parent_op
             })
             .unwrap();
 
-        self.0.add_edge(parent_node, child_node, lr);
+        self.tree.add_edge(parent_node, child_node, lr);
     }
 }
