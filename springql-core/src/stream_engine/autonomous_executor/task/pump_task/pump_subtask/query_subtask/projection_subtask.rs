@@ -13,7 +13,7 @@ pub(in crate::stream_engine::autonomous_executor) struct ProjectionSubtask(Vec<E
 impl ProjectionSubtask {
     pub(in crate::stream_engine::autonomous_executor) fn run(
         &self,
-        expr_resolver: &mut ExprResolver,
+        expr_resolver: &ExprResolver,
         tuple: &Tuple,
     ) -> Result<SqlValues> {
         let values = self

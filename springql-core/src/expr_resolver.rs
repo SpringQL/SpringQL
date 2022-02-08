@@ -14,16 +14,12 @@ use self::expr_label::{ExprLabel, ExprLabelGenerator};
 ///
 /// 1. register ValueExpr / AggrExpr in select_list with their (optional) alias and get new ExprLabel.
 /// 2. resolve alias in ValueExprOrAlias / AggrExprAlias and get existing ExprLabel.
-/// 3. evaluate expression or get cached SqlValue from ExprLabel.
+/// 3. evaluate expression into SqlValue from ExprLabel.
 #[derive(Clone, PartialEq, Debug)]
 pub(crate) struct ExprResolver {
     label_gen: ExprLabelGenerator,
 
-    /// not evaluated yet
     value_expressions: HashMap<ExprLabel, ValueExpr>,
-    /// evaluated
-    values_cache: HashMap<ExprLabel, SqlValue>,
-
     value_aliased_labels: HashMap<ValueAlias, ExprLabel>,
 }
 
@@ -55,7 +51,6 @@ impl ExprResolver {
             Self {
                 label_gen,
                 value_expressions,
-                values_cache: HashMap::new(),
                 value_aliased_labels,
             },
             labels,
@@ -86,8 +81,6 @@ impl ExprResolver {
 
     /// label -> (internal) expression + tuple (for ColumnReference) -> SqlValue.
     ///
-    /// SqlValue is cached and not calculated twice.
-    ///
     /// # Panics
     ///
     /// -  `label` is not found
@@ -97,20 +90,15 @@ impl ExprResolver {
     /// - `SpringError::Sql` when:
     ///   - column reference in expression is not found in `tuple`.
     ///   - somehow failed to eval expression.
-    pub(crate) fn eval(&mut self, label: ExprLabel, tuple: &Tuple) -> Result<SqlValue> {
-        if let Some(v) = self.values_cache.get(&label) {
-            Ok(v.clone())
-        } else {
-            let value_expr = self
-                .value_expressions
-                .remove(&label)
-                .unwrap_or_else(|| panic!("label {:?} not found", label));
+    pub(crate) fn eval(&self, label: ExprLabel, tuple: &Tuple) -> Result<SqlValue> {
+        let value_expr = self
+            .value_expressions
+            .get(&label)
+            .cloned()
+            .unwrap_or_else(|| panic!("label {:?} not found", label));
 
-            let value_expr_ph2 = value_expr.resolve_colref(tuple)?;
-            let v = value_expr_ph2.eval()?;
-            self.values_cache.insert(label, v.clone());
-            Ok(v)
-        }
+        let value_expr_ph2 = value_expr.resolve_colref(tuple)?;
+        value_expr_ph2.eval()
     }
 }
 

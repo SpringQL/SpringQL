@@ -104,7 +104,7 @@ impl QuerySubtask {
     ///
     /// TODO
     pub(in crate::stream_engine::autonomous_executor) fn run(
-        &mut self,
+        &self,
         context: &TaskContext,
     ) -> Result<Option<QuerySubtaskOut>> {
         match self.run_lower_ops(context) {
@@ -120,7 +120,7 @@ impl QuerySubtask {
         }
     }
 
-    fn run_upper_ops(&mut self, tuples: Vec<Tuple>) -> Result<Vec<SqlValues>> {
+    fn run_upper_ops(&self, tuples: Vec<Tuple>) -> Result<Vec<SqlValues>> {
         tuples
             .into_iter()
             .map(|tuple| self.run_projection_op(&tuple))
@@ -137,8 +137,8 @@ impl QuerySubtask {
         self.run_collect_op(context)
     }
 
-    fn run_projection_op(&mut self, tuple: &Tuple) -> Result<SqlValues> {
-        self.projection_subtask.run(&mut self.expr_resolver, tuple)
+    fn run_projection_op(&self, tuple: &Tuple) -> Result<SqlValues> {
+        self.projection_subtask.run(&self.expr_resolver, tuple)
     }
 
     fn run_collect_op(
