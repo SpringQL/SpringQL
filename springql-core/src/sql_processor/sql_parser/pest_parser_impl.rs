@@ -551,11 +551,11 @@ impl PestParserImpl {
         Ok(FromItemSyntax::StreamVariant { stream_name, alias })
     }
 
-    fn parse_grouping_element(mut params: FnParseParams) -> Result<FieldPointer> {
+    fn parse_grouping_element(mut params: FnParseParams) -> Result<ValueExpr> {
         parse_child(
             &mut params,
-            Rule::field_pointer,
-            Self::parse_field_pointer,
+            Rule::value_expr,
+            Self::parse_value_expr,
             identity,
         )
     }
@@ -750,6 +750,7 @@ impl PestParserImpl {
                     )))
                 }
             }
+            "floor" => unimplemented!(),
             _ => Err(SpringError::Sql(anyhow!(
                 "unknown function {}",
                 function_name.to_lowercase()
@@ -759,45 +760,6 @@ impl PestParserImpl {
 
     fn parse_function_name(mut params: FnParseParams) -> Result<String> {
         Ok(self_as_str(&mut params).to_string())
-    }
-
-    /*
-     * ----------------------------------------------------------------------------
-     * Function
-     * ----------------------------------------------------------------------------
-     */
-
-    fn parse_function_call(mut params: FnParseParams) -> Result<FunctionCall> {
-        let function_name = parse_child(
-            &mut params,
-            Rule::function_name,
-            Self::parse_function_name,
-            identity,
-        )?;
-        let parameters = parse_child_seq(
-            &mut params,
-            Rule::expression,
-            &Self::parse_expression,
-            &identity,
-        )?;
-
-        match function_name.to_lowercase().as_str() {
-            "floor" => {
-                if parameters.len() == 1 {
-                    Ok(FunctionCall::Floor {
-                        target: Box::new(parameters[0].clone()),
-                    })
-                } else {
-                    Err(SpringError::Sql(anyhow!(
-                        "floor() takes exactly one parameter."
-                    )))
-                }
-            }
-            _ => Err(SpringError::Sql(anyhow!(
-                "unknown function {}",
-                function_name.to_lowercase()
-            ))),
-        }
     }
 
     /*
@@ -1032,10 +994,6 @@ impl PestParserImpl {
             Self::parse_identifier,
             CorrelationAlias::new,
         )
-    }
-
-    fn parse_function_name(mut params: FnParseParams) -> Result<String> {
-        Ok(self_as_str(&mut params).to_string())
     }
 
     fn parse_option_name(mut params: FnParseParams) -> Result<String> {
