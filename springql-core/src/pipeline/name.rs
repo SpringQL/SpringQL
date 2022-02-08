@@ -143,10 +143,6 @@ impl StreamName {
     pub(crate) fn virtual_root() -> Self {
         Self::new("__st_virtual_root__".to_string())
     }
-
-    pub(crate) fn virtual_leaf(sink_stream: StreamName) -> Self {
-        Self::new(format!("__st_virtual_leaf__{}__", sink_stream))
-    }
 }
 
 impl SinkWriterName {

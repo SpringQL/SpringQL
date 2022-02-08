@@ -154,7 +154,7 @@ mod tests {
             aggr_expr,
             alias: None,
         }];
-        let (mut expr_resolver, value_labels_select_list, aggr_labels_select_list) =
+        let (mut expr_resolver, _, aggr_labels_select_list) =
             ExprResolver::new(select_list);
 
         let group_by_label = expr_resolver.register_value_expr(group_by_expr);
