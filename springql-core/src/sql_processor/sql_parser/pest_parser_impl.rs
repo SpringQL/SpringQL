@@ -95,6 +95,12 @@ impl PestParserImpl {
             Self::parse_string_constant,
             identity,
         )?)
+        .or(try_parse_child(
+            &mut params,
+            Rule::duration_constant,
+            Self::parse_duration_constant,
+            identity,
+        )?)
         .ok_or_else(|| SpringError::Sql(anyhow!("Does not match any child rule of constant.",)))
     }
 
@@ -142,7 +148,7 @@ impl PestParserImpl {
         Ok(s.into())
     }
 
-    fn parse_duration_constant(mut params: FnParseParams) -> Result<EventDuration> {
+    fn parse_duration_constant(mut params: FnParseParams) -> Result<SqlValue> {
         let duration_function = parse_child(
             &mut params,
             Rule::duration_function,
@@ -156,11 +162,13 @@ impl PestParserImpl {
             identity,
         )?;
 
-        match duration_function {
+        let event_duration = match duration_function {
             DurationFunction::Secs => {
                 Ok(EventDuration::from_secs(integer_constant.to_i64()? as u64))
             }
-        }
+        }?;
+
+        Ok(SqlValue::NotNull(NnSqlValue::Duration(event_duration)))
     }
 
     fn parse_duration_function(mut params: FnParseParams) -> Result<DurationFunction> {
@@ -572,12 +580,15 @@ impl PestParserImpl {
             Self::parse_window_length,
             identity,
         )?;
+        let length = length.to_event_duration()?;
+
         let allowed_delay = parse_child(
             &mut params,
             Rule::allowed_delay,
             Self::parse_allowed_delay,
             identity,
         )?;
+        let allowed_delay = allowed_delay.to_event_duration()?;
 
         Ok(WindowParameter::TimedFixedWindow {
             length,
@@ -585,7 +596,7 @@ impl PestParserImpl {
         })
     }
 
-    fn parse_window_length(mut params: FnParseParams) -> Result<EventDuration> {
+    fn parse_window_length(mut params: FnParseParams) -> Result<SqlValue> {
         parse_child(
             &mut params,
             Rule::duration_constant,
@@ -593,7 +604,7 @@ impl PestParserImpl {
             identity,
         )
     }
-    fn parse_allowed_delay(mut params: FnParseParams) -> Result<EventDuration> {
+    fn parse_allowed_delay(mut params: FnParseParams) -> Result<SqlValue> {
         parse_child(
             &mut params,
             Rule::duration_constant,
