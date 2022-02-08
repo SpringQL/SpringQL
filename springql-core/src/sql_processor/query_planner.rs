@@ -74,7 +74,6 @@ use crate::{
         QueryPlan,
     },
 };
-use anyhow::anyhow;
 
 use self::select_syntax_analyzer::SelectSyntaxAnalyzer;
 
