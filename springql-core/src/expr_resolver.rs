@@ -111,14 +111,14 @@ mod tests {
     #[test]
     fn test_expr_resolver() {
         let select_list = vec![
-            SelectFieldSyntax {
+            SelectFieldSyntax::ValueExpr {
                 value_expr: ValueExpr::factory_add(
                     ValueExpr::factory_integer(1),
                     ValueExpr::factory_integer(1),
                 ),
                 alias: None,
             },
-            SelectFieldSyntax {
+            SelectFieldSyntax::ValueExpr {
                 value_expr: ValueExpr::factory_add(
                     ValueExpr::factory_integer(2),
                     ValueExpr::factory_integer(2),
