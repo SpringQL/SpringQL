@@ -64,13 +64,16 @@ mod tests {
     use std::str::FromStr;
 
     use crate::{
+        expr_resolver::ExprResolver,
+        expression::{AggrExpr, ValueExpr},
         pipeline::{
             field::field_name::ColumnReference,
-            name::{ColumnName, StreamName, ValueAlias},
+            name::{AggrAlias, ColumnName, StreamName, ValueAlias},
             pump_model::window_operation_parameter::aggregate::{
                 AggregateFunctionParameter, GroupAggregateParameter,
             },
         },
+        sql_processor::sql_parser::syntax::SelectFieldSyntax,
         stream_engine::{
             autonomous_executor::task::tuple::Tuple,
             time::{
@@ -108,10 +111,41 @@ mod tests {
     fn test_timed_sliding_window_aggregation() {
         setup_test_logger();
 
-        // SELECT ticker, AVG(amount) AS avg_amount
+        // SELECT ticker AS tick, AVG(amount) AS avg_amount
         //   FROM trade
         //   SLIDING WINDOW duration_secs(10), duration_secs(5), duration_secs(1)
         //   GROUP BY ticker;
+
+        let ticker_expr = ValueExpr::factory_colref(
+            StreamName::fx_trade().as_ref(),
+            ColumnName::fx_ticker().as_ref(),
+        );
+        let avg_amount_expr = AggrExpr {
+            func: AggregateFunctionParameter::Avg,
+            aggregated: ValueExpr::factory_colref(
+                StreamName::fx_trade().as_ref(),
+                ColumnName::fx_amount().as_ref(),
+            ),
+        };
+
+        let select_list = vec![
+            SelectFieldSyntax::ValueExpr {
+                value_expr: ticker_expr,
+                alias: None,
+            },
+            SelectFieldSyntax::AggrExpr {
+                aggr_expr: avg_amount_expr,
+                alias: Some(AggrAlias::new("avg_amount".to_string())),
+            },
+        ];
+
+        let (mut expr_resolver, labels_select_list) = ExprResolver::new(select_list);
+
+        let group_by_expr = ValueExpr::factory_colref(
+            StreamName::fx_trade().as_ref(),
+            ColumnName::fx_ticker().as_ref(),
+        );
+        let group_by_label = expr_resolver.register_value_expr(group_by_expr);
 
         let mut window = Window::new(
             WindowParameter::TimedSlidingWindow {
@@ -120,15 +154,8 @@ mod tests {
                 allowed_delay: EventDuration::from_secs(1),
             },
             WindowOperationParameter::GroupAggregation(GroupAggregateParameter {
-                aggr_expr: AggregateParameter {
-                    aggregated: ColumnReference::new(
-                        StreamName::fx_trade(),
-                        ColumnName::fx_amount(),
-                    ),
-                    aggregated_alias: ValueAlias::new("avg_amount".to_string()),
-                    aggregate_function: AggregateFunctionParameter::Avg,
-                },
-                group_by: ColumnReference::new(StreamName::fx_trade(), ColumnName::fx_ticker()),
+                aggr_expr: labels_select_list[1],
+                group_by: group_by_label,
             }),
         );
 
@@ -248,21 +275,45 @@ mod tests {
         //   FIXED WINDOW duration_secs(10), duration_secs(1)
         //   GROUP BY ticker;
 
+        let ticker_expr = ValueExpr::factory_colref(
+            StreamName::fx_trade().as_ref(),
+            ColumnName::fx_ticker().as_ref(),
+        );
+        let avg_amount_expr = AggrExpr {
+            func: AggregateFunctionParameter::Avg,
+            aggregated: ValueExpr::factory_colref(
+                StreamName::fx_trade().as_ref(),
+                ColumnName::fx_amount().as_ref(),
+            ),
+        };
+
+        let select_list = vec![
+            SelectFieldSyntax::ValueExpr {
+                value_expr: ticker_expr,
+                alias: None,
+            },
+            SelectFieldSyntax::AggrExpr {
+                aggr_expr: avg_amount_expr,
+                alias: Some(AggrAlias::new("avg_amount".to_string())),
+            },
+        ];
+
+        let (mut expr_resolver, labels_select_list) = ExprResolver::new(select_list);
+
+        let group_by_expr = ValueExpr::factory_colref(
+            StreamName::fx_trade().as_ref(),
+            ColumnName::fx_ticker().as_ref(),
+        );
+        let group_by_label = expr_resolver.register_value_expr(group_by_expr);
+
         let mut window = Window::new(
             WindowParameter::TimedFixedWindow {
                 length: EventDuration::from_secs(10),
                 allowed_delay: EventDuration::from_secs(1),
             },
             WindowOperationParameter::GroupAggregation(GroupAggregateParameter {
-                aggr_expr: AggregateParameter {
-                    aggregated: ColumnReference::new(
-                        StreamName::fx_trade(),
-                        ColumnName::fx_amount(),
-                    ),
-                    aggregated_alias: ValueAlias::new("avg_amount".to_string()),
-                    aggregate_function: AggregateFunctionParameter::Avg,
-                },
-                group_by: ColumnReference::new(StreamName::fx_trade(), ColumnName::fx_ticker()),
+                aggr_expr: labels_select_list[1],
+                group_by: group_by_label,
             }),
         );
 

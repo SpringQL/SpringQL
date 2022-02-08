@@ -27,6 +27,11 @@ impl ValueExpr {
         Self::Constant(SqlValue::Null)
     }
 
+    pub fn factory_colref(stream_name: &str, column_name: &str) -> Self {
+        let colref = ColumnReference::factory(stream_name, column_name);
+        Self::ColumnReference(colref)
+    }
+
     pub fn factory_integer(integer: i32) -> Self {
         Self::Constant(SqlValue::factory_integer(integer))
     }
