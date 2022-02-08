@@ -25,7 +25,7 @@ impl PumpTask {
         pipeline_graph: &PipelineGraph,
     ) -> Self {
         let id = TaskId::from_pump(pump);
-        let query_subtask = QuerySubtask::from(pump.query_plan());
+        let query_subtask = QuerySubtask::new(pump.query_plan().clone());
         let insert_subtask = InsertSubtask::new(pump.insert_plan(), pipeline_graph);
         Self {
             id,
