@@ -129,7 +129,7 @@ impl QueryPlanner {
     }
 
     fn create_window_param(&self) -> Option<WindowParameter> {
-        todo!()
+        self.analyzer.window_parameter()
     }
 
     fn create_group_aggr_param(
