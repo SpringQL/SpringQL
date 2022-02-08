@@ -57,7 +57,7 @@ impl PumpTask {
     }
 
     fn run_query_insert(
-        &self,
+        &mut self,
         context: &TaskContext,
     ) -> Result<(
         Option<InQueueMetricsUpdateByTaskExecution>,

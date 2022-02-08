@@ -17,7 +17,7 @@ impl CollectSubtask {
     pub(in crate::stream_engine::autonomous_executor) fn run(
         &self,
         context: &TaskContext,
-    ) -> Option<QuerySubtaskOut> {
+    ) -> Option<(Vec<Tuple>, InQueueMetricsUpdateByTaskExecution)> {
         context
             .input_queue()
             .map(|queue_id| {
@@ -32,7 +32,7 @@ impl CollectSubtask {
                             let bytes_used = row.mem_size();
                             let tuple = Tuple::from_row(row);
 
-                            QuerySubtaskOut::new(
+                            (
                                 vec![tuple],
                                 InQueueMetricsUpdateByTaskExecution::Row {
                                     queue_id,

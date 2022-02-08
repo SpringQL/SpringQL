@@ -15,7 +15,7 @@ use self::expr_label::{ExprLabel, ExprLabelGenerator};
 /// 1. register ValueExpr / AggrExpr in select_list with their (optional) alias and get new ExprLabel.
 /// 2. resolve alias in ValueExprOrAlias / AggrExprAlias and get existing ExprLabel.
 /// 3. evaluate expression or get cached SqlValue from ExprLabel.
-#[derive(Debug)]
+#[derive(Clone, PartialEq, Debug)]
 pub(crate) struct ExprResolver {
     label_gen: ExprLabelGenerator,
 

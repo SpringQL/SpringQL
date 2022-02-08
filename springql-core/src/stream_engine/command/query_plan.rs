@@ -4,7 +4,10 @@ pub(crate) mod query_plan_operation;
 
 pub(in crate::stream_engine) mod child_direction;
 
-use crate::pipeline::{name::StreamName, pump_model::pump_input_type::PumpInputType};
+use crate::{
+    expr_resolver::ExprResolver,
+    pipeline::{name::StreamName, pump_model::pump_input_type::PumpInputType},
+};
 
 use self::query_plan_operation::{LowerOps, UpperOps};
 
@@ -13,6 +16,8 @@ use self::query_plan_operation::{LowerOps, UpperOps};
 pub(crate) struct QueryPlan {
     pub(crate) upper_ops: UpperOps,
     pub(crate) lower_ops: LowerOps,
+
+    pub(crate) expr_resolver: ExprResolver,
 }
 
 impl QueryPlan {

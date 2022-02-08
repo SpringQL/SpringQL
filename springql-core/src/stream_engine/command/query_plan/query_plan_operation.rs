@@ -11,7 +11,6 @@ use crate::{
 #[derive(Clone, PartialEq, Debug)]
 pub(crate) struct UpperOps {
     pub(crate) projection: ProjectionOp,
-    pub(crate) eval_value_expr: EvalValueExprOp,
     // TODO option group_aggregate
 }
 
@@ -24,11 +23,6 @@ pub(crate) struct LowerOps {
 #[derive(Clone, PartialEq, Debug)]
 pub(crate) struct ProjectionOp {
     pub(crate) expr_labels: Vec<ExprLabel>,
-}
-
-#[derive(Clone, PartialEq, Debug)]
-pub(crate) struct EvalValueExprOp {
-    pub(crate) expressions: Vec<ValueExpr>,
 }
 
 #[derive(Clone, PartialEq, Debug)]

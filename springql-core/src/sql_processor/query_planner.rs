@@ -57,10 +57,10 @@ mod select_syntax_analyzer;
 
 use crate::{
     error::Result,
-    expr_resolver::{self, ExprResolver},
+    expr_resolver::ExprResolver,
     pipeline::Pipeline,
     stream_engine::command::query_plan::{
-        query_plan_operation::{CollectOp, EvalValueExprOp, LowerOps, ProjectionOp, UpperOps},
+        query_plan_operation::{CollectOp, LowerOps, ProjectionOp, UpperOps},
         QueryPlan,
     },
 };
@@ -95,13 +95,9 @@ impl QueryPlanner {
             .expect("collect_ops.len() == 1");
         let lower_ops = LowerOps { collect };
 
-        let eval_value_expr = self.create_eval_value_expr_op();
-        let upper_ops = UpperOps {
-            projection,
-            eval_value_expr,
-        };
+        let upper_ops = UpperOps { projection };
 
-        Ok(QueryPlan::new(upper_ops, lower_ops))
+        Ok(QueryPlan::new(upper_ops, lower_ops, expr_resolver))
     }
 
     fn create_collect_ops(&self) -> Result<Vec<CollectOp>> {
@@ -119,10 +115,5 @@ impl QueryPlanner {
             .into_iter()
             .map(|stream| Ok(CollectOp { stream }))
             .collect::<Result<Vec<_>>>()
-    }
-
-    fn create_eval_value_expr_op(&self) -> EvalValueExprOp {
-        let expressions = self.analyzer.all_expressions();
-        EvalValueExprOp { expressions }
     }
 }

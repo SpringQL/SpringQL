@@ -1,13 +1,13 @@
 // Copyright (c) 2021 TOYOTA MOTOR CORPORATION. Licensed under MIT OR Apache-2.0.
 
 pub(super) mod collect_subtask;
-pub(super) mod eval_value_expr_subtask;
 pub(super) mod projection_subtask;
 
 use std::sync::Arc;
 
 use crate::{
     error::Result,
+    expr_resolver::ExprResolver,
     pipeline::{name::ColumnName, stream_model::StreamModel},
     stream_engine::autonomous_executor::row::{
         column::stream_column::StreamColumns, column_values::ColumnValues, Row,
@@ -22,21 +22,18 @@ use crate::{
     },
 };
 
-use self::{
-    collect_subtask::CollectSubtask, eval_value_expr_subtask::EvalValueExprSubtask,
-    projection_subtask::ProjectionSubtask,
-};
+use self::{collect_subtask::CollectSubtask, projection_subtask::ProjectionSubtask};
 
 /// Process input row 1-by-1.
 #[derive(Debug)]
 pub(in crate::stream_engine::autonomous_executor) struct QuerySubtask {
+    expr_resolver: ExprResolver,
+
     projection_subtask: ProjectionSubtask,
     collect_subtask: CollectSubtask,
-
-    eval_value_expr_subtask: EvalValueExprSubtask, // TODO rm
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, new)]
 pub(in crate::stream_engine::autonomous_executor) struct SqlValues(Vec<SqlValue>);
 impl SqlValues {
     /// ```text
@@ -91,13 +88,11 @@ impl QuerySubtask {
     pub(in crate::stream_engine::autonomous_executor) fn new(plan: QueryPlan) -> Self {
         let projection_subtask = ProjectionSubtask::new(plan.upper_ops.projection.expr_labels);
         let collect_subtask = CollectSubtask::new();
-        let eval_value_expr_subtask =
-            EvalValueExprSubtask::new(plan.upper_ops.eval_value_expr.expressions);
 
         Self {
+            expr_resolver: plan.expr_resolver,
             projection_subtask,
             collect_subtask,
-            eval_value_expr_subtask,
         }
     }
 
@@ -109,48 +104,47 @@ impl QuerySubtask {
     ///
     /// TODO
     pub(in crate::stream_engine::autonomous_executor) fn run(
-        &self,
+        &mut self,
         context: &TaskContext,
     ) -> Result<Option<QuerySubtaskOut>> {
         match self.run_lower_ops(context) {
             None => Ok(None),
-            Some(lower_query_subtask_out) => {
-                let values_seq = self.run_upper_ops(lower_query_subtask_out.values_seq)?;
+            Some((lower_tuples, in_queue_metrics_update)) => {
+                let values_seq = self.run_upper_ops(lower_tuples)?;
 
                 Ok(Some(QuerySubtaskOut::new(
                     values_seq,
-                    lower_query_subtask_out.in_queue_metrics_update, // leaf subtask decides in queue metrics change
+                    in_queue_metrics_update, // leaf subtask decides in queue metrics change
                 )))
             }
         }
     }
 
-    fn run_upper_ops(&self, values_seq: Vec<SqlValues>) -> Result<Vec<SqlValues>> {
-        values_seq
+    fn run_upper_ops(&mut self, tuples: Vec<Tuple>) -> Result<Vec<SqlValues>> {
+        tuples
             .into_iter()
-            .map(|values| {
-                let tuple = self.run_eval_value_expr_op(values)?;
-                self.run_projection_op(tuple)
-            })
+            .map(|tuple| self.run_projection_op(&tuple))
             .collect()
     }
 
     /// # Returns
     ///
     /// None when input queue does not exist or is empty or JOIN op does not emit output yet.
-    fn run_lower_ops(&self, context: &TaskContext) -> Option<QuerySubtaskOut> {
+    fn run_lower_ops(
+        &self,
+        context: &TaskContext,
+    ) -> Option<(Vec<Tuple>, InQueueMetricsUpdateByTaskExecution)> {
         self.run_collect_op(context)
     }
 
-    fn run_eval_value_expr_op(&self, tuple: Tuple) -> Result<Tuple> {
-        self.eval_value_expr_subtask.run(tuple)
+    fn run_projection_op(&mut self, tuple: &Tuple) -> Result<SqlValues> {
+        self.projection_subtask.run(&mut self.expr_resolver, tuple)
     }
 
-    fn run_projection_op(&self, tuple: Tuple) -> Result<Tuple> {
-        self.projection_subtask.run(tuple)
-    }
-
-    fn run_collect_op(&self, context: &TaskContext) -> Option<QuerySubtaskOut> {
+    fn run_collect_op(
+        &self,
+        context: &TaskContext,
+    ) -> Option<(Vec<Tuple>, InQueueMetricsUpdateByTaskExecution)> {
         self.collect_subtask.run(context)
     }
 }

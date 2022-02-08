@@ -4,7 +4,8 @@ use crate::error::Result;
 use crate::expr_resolver::expr_label::ExprLabel;
 use crate::expr_resolver::ExprResolver;
 use crate::stream_engine::autonomous_executor::task::tuple::Tuple;
-use crate::stream_engine::SqlValue;
+
+use super::SqlValues;
 
 #[derive(Debug, new)]
 pub(in crate::stream_engine::autonomous_executor) struct ProjectionSubtask(Vec<ExprLabel>);
@@ -14,10 +15,12 @@ impl ProjectionSubtask {
         &self,
         expr_resolver: &mut ExprResolver,
         tuple: &Tuple,
-    ) -> Result<Vec<SqlValue>> {
-        self.0
+    ) -> Result<SqlValues> {
+        let values = self
+            .0
             .iter()
             .map(|label| expr_resolver.eval(*label, tuple))
-            .collect()
+            .collect::<Result<Vec<_>>>()?;
+        Ok(SqlValues::new(values))
     }
 }
