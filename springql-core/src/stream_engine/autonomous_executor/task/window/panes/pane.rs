@@ -54,7 +54,7 @@ impl Pane {
             } => {
                 let group_by_pointer = &group_aggregation_parameter.group_by;
                 let aggregated_pointer =
-                    &group_aggregation_parameter.aggregation_parameter.aggregated;
+                    &group_aggregation_parameter.aggr_expr.aggregated;
 
                 let group_by_value = tuple
                     .get_value(group_by_pointer)
@@ -102,7 +102,7 @@ impl Pane {
                             StreamName::new("_".to_string()),
                             ColumnName::new(
                                 group_aggregation_parameter
-                                    .aggregation_parameter
+                                    .aggr_expr
                                     .aggregated_alias
                                     .to_string(),
                             ),
@@ -136,7 +136,7 @@ impl PaneInner {
         group_aggregation_parameter: GroupAggregateParameter,
     ) -> Self {
         match group_aggregation_parameter
-            .aggregation_parameter
+            .aggr_expr
             .aggregate_function
         {
             AggregateFunctionParameter::Avg => {

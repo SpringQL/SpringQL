@@ -1,8 +1,8 @@
 pub(crate) mod expr_label;
 
 use crate::error::{Result, SpringError};
-use crate::expression::ValueExpr;
-use crate::pipeline::name::ValueAlias;
+use crate::expression::{AggrExpr, ValueExpr};
+use crate::pipeline::name::{AggrAlias, ValueAlias};
 use crate::sql_processor::sql_parser::syntax::SelectFieldSyntax;
 use crate::stream_engine::{SqlValue, Tuple};
 use anyhow::anyhow;
@@ -21,6 +21,9 @@ pub(crate) struct ExprResolver {
 
     value_expressions: HashMap<ExprLabel, ValueExpr>,
     value_aliased_labels: HashMap<ValueAlias, ExprLabel>,
+
+    aggr_expressions: HashMap<ExprLabel, AggrExpr>,
+    aggr_aliased_labels: HashMap<AggrAlias, ExprLabel>,
 }
 
 impl ExprResolver {
@@ -31,16 +34,27 @@ impl ExprResolver {
         let mut label_gen = ExprLabelGenerator::default();
         let mut value_expressions = HashMap::new();
         let mut value_aliased_labels = HashMap::new();
+        let mut aggr_expressions = HashMap::new();
+        let mut aggr_aliased_labels = HashMap::new();
 
         let labels = select_list
             .into_iter()
             .map(|select_field| {
-                let value_expr = select_field.value_expr;
                 let label = label_gen.next();
 
-                value_expressions.insert(label, value_expr);
-                if let Some(alias) = select_field.alias {
-                    value_aliased_labels.insert(alias, label);
+                match select_field {
+                    SelectFieldSyntax::ValueExpr { value_expr, alias } => {
+                        value_expressions.insert(label, value_expr);
+                        if let Some(alias) = alias {
+                            value_aliased_labels.insert(alias, label);
+                        }
+                    }
+                    SelectFieldSyntax::AggrExpr { aggr_expr, alias } => {
+                        aggr_expressions.insert(label, aggr_expr);
+                        if let Some(alias) = alias {
+                            aggr_aliased_labels.insert(alias, label);
+                        }
+                    }
                 }
 
                 label
@@ -52,6 +66,8 @@ impl ExprResolver {
                 label_gen,
                 value_expressions,
                 value_aliased_labels,
+                aggr_expressions,
+                aggr_aliased_labels,
             },
             labels,
         )
@@ -72,10 +88,32 @@ impl ExprResolver {
             })
     }
 
-    /// Register expression which is not in select_list
-    pub(crate) fn register(&mut self, value_expr: ValueExpr) -> ExprLabel {
+    /// # Failures
+    ///
+    /// - `SpringError::Sql` if alias is not in select_list.
+    pub(crate) fn resolve_aggr_alias(&self, aggr_alias: AggrAlias) -> Result<ExprLabel> {
+        self.aggr_aliased_labels
+            .get(&aggr_alias)
+            .cloned()
+            .ok_or_else(|| {
+                SpringError::Sql(anyhow!(
+                    "Aggr alias `{}` is not in select list.",
+                    aggr_alias
+                ))
+            })
+    }
+
+    /// Register value expression which is not in select_list
+    pub(crate) fn register_value_expr(&mut self, value_expr: ValueExpr) -> ExprLabel {
         let label = self.label_gen.next();
         self.value_expressions.insert(label, value_expr);
+        label
+    }
+
+    /// Register aggregate expression which is not in select_list
+    pub(crate) fn register_aggr_expr(&mut self, aggr_expr: AggrExpr) -> ExprLabel {
+        let label = self.label_gen.next();
+        self.aggr_expressions.insert(label, aggr_expr);
         label
     }
 
@@ -139,7 +177,7 @@ mod tests {
             .resolve_value_alias(ValueAlias::new("a404".to_string()))
             .is_err(),);
 
-        let label = resolver.register(ValueExpr::factory_add(
+        let label = resolver.register_value_expr(ValueExpr::factory_add(
             ValueExpr::factory_integer(3),
             ValueExpr::factory_integer(3),
         ));

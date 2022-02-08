@@ -1,40 +1,23 @@
 use super::SelectSyntaxAnalyzer;
 use crate::error::Result;
-use crate::pipeline::pump_model::window_operation_parameter::aggregate::{
-    AggregateParameter, GroupAggregateParameter,
-};
+use crate::expression::{AggrExpr, ValueExpr};
+use crate::pipeline::pump_model::window_operation_parameter::aggregate::GroupAggregateParameter;
 use crate::sql_processor::sql_parser::syntax::SelectFieldSyntax;
 
 impl SelectSyntaxAnalyzer {
-    pub(in super::super) fn group_aggregate_parameter(
-        &self,
-    ) -> Result<Option<GroupAggregateParameter>> {
-        let opt_group_by = &self.select_syntax.grouping_element;
-        let aggregate_parameters = self.aggregate_parameters();
-
-        match (opt_group_by, aggregate_parameters.len()) {
-            (Some(group_by), 1) => Ok(Some(GroupAggregateParameter::new(
-                aggregate_parameters
-                    .into_iter()
-                    .next()
-                    .expect("len checked"),
-                group_by.clone(),
-            ))),
-            (None, 0) => Ok(None),
-            _ => unimplemented!(),
-        }
-    }
-
-    pub(in super::super) fn aggregate_parameters(&self) -> Vec<AggregateParameter> {
+    pub(in super::super) fn aggr_expr_select_list(&self) -> Vec<AggrExpr> {
         self.select_syntax
             .fields
             .iter()
             .filter_map(|field| match field {
-                SelectFieldSyntax::Expression { .. } => None,
-                SelectFieldSyntax::Aggregate(aggregate_parameter) => {
-                    Some(aggregate_parameter.clone())
-                }
+                SelectFieldSyntax::ValueExpr { .. } => None,
+                SelectFieldSyntax::AggrExpr { aggr_expr, .. } => Some(aggr_expr.clone()),
             })
             .collect()
+    }
+
+    /// TODO multiple GROUP BY
+    pub(in super::super) fn grouping_element(&self) -> Option<ValueExpr> {
+        self.select_syntax.grouping_element.clone()
     }
 }

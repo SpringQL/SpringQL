@@ -146,7 +146,7 @@ mod tests {
 
     fn dont_care_window_operation_parameter() -> WindowOperationParameter {
         WindowOperationParameter::GroupAggregation(GroupAggregateParameter {
-            aggregation_parameter: AggregateParameter::new(
+            aggr_expr: AggregateParameter::new(
                 ColumnReference::factory("dontcare", "dontcare"),
                 ValueAlias::new("".to_string()),
                 AggregateFunctionParameter::Avg,

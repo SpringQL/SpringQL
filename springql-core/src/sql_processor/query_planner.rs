@@ -58,9 +58,19 @@ mod select_syntax_analyzer;
 use crate::{
     error::Result,
     expr_resolver::ExprResolver,
-    pipeline::Pipeline,
+    pipeline::{
+        pump_model::{
+            window_operation_parameter::{
+                aggregate::GroupAggregateParameter, WindowOperationParameter,
+            },
+            window_parameter::WindowParameter,
+        },
+        Pipeline,
+    },
     stream_engine::command::query_plan::{
-        query_plan_operation::{CollectOp, LowerOps, ProjectionOp, UpperOps},
+        query_plan_operation::{
+            CollectOp, GroupAggregateWindowOp, LowerOps, ProjectionOp, UpperOps,
+        },
         QueryPlan,
     },
 };
@@ -89,6 +99,13 @@ impl QueryPlanner {
             expr_labels: labels_select_list,
         };
 
+        let group_aggr_window = self.create_group_aggr_window_op(&expr_resolver);
+
+        let upper_ops = UpperOps {
+            projection,
+            group_aggr_window,
+        };
+
         let collect_ops = self.create_collect_ops()?;
         let collect = collect_ops
             .into_iter()
@@ -96,9 +113,50 @@ impl QueryPlanner {
             .expect("collect_ops.len() == 1");
         let lower_ops = LowerOps { collect };
 
-        let upper_ops = UpperOps { projection };
-
         Ok(QueryPlan::new(upper_ops, lower_ops, expr_resolver))
+    }
+
+    fn create_group_aggr_window_op(
+        &self,
+        expr_resolver: &ExprResolver,
+    ) -> Option<GroupAggregateWindowOp> {
+        let window_param = self.create_window_param()?;
+        let group_aggr_param = self.create_group_aggr_param(expr_resolver)?;
+        Some(GroupAggregateWindowOp {
+            window_param,
+            op_param: WindowOperationParameter::GroupAggregation(group_aggr_param),
+        })
+    }
+
+    fn create_window_param(&self) -> Option<WindowParameter> {
+        todo!()
+    }
+
+    fn create_group_aggr_param(
+        &self,
+        expr_resolver: &ExprResolver,
+    ) -> Option<GroupAggregateParameter> {
+        let opt_group_by = self.analyzer.grouping_element();
+        let aggregate_parameters = self.analyzer.aggr_expr_select_list();
+
+        match (opt_group_by, aggregate_parameters.len()) {
+            (Some(group_by), 1) => {
+                let aggr_expr = aggregate_parameters
+                    .into_iter()
+                    .next()
+                    .expect("len checked");
+
+                let aggr_expr_label = expr_resolver.register_aggr_expr(aggr_expr);
+                let group_by_label = expr_resolver.register_value_expr(group_by);
+
+                Some(GroupAggregateParameter::new(
+                    aggr_expr_label,
+                    group_by_label,
+                ))
+            }
+            (None, 0) => None,
+            _ => unimplemented!(),
+        }
     }
 
     fn create_collect_ops(&self) -> Result<Vec<CollectOp>> {

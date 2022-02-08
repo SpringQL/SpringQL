@@ -9,16 +9,14 @@ use crate::expression::boolean_expression::numerical_function::NumericalFunction
 use crate::expression::boolean_expression::BooleanExpr;
 use crate::expression::function_call::FunctionCall;
 use crate::expression::operator::{BinaryOperator, UnaryOperator};
-use crate::expression::ValueExpr;
+use crate::expression::{AggrExpr, ValueExpr};
 use crate::pipeline::field::field_name::ColumnReference;
 use crate::pipeline::name::{
-    ColumnName, CorrelationAlias, PumpName, SinkWriterName, SourceReaderName, StreamName,
-    ValueAlias,
+    AggrAlias, ColumnName, CorrelationAlias, PumpName, SinkWriterName, SourceReaderName,
+    StreamName, ValueAlias,
 };
 use crate::pipeline::option::options_builder::OptionsBuilder;
-use crate::pipeline::pump_model::window_operation_parameter::aggregate::{
-    AggregateFunctionParameter, AggregateParameter,
-};
+use crate::pipeline::pump_model::window_operation_parameter::aggregate::AggregateFunctionParameter;
 use crate::pipeline::pump_model::window_parameter::WindowParameter;
 use crate::pipeline::relation::column::column_constraint::ColumnConstraint;
 use crate::pipeline::relation::column::column_data_type::ColumnDataType;
@@ -44,7 +42,7 @@ use pest::{iterators::Pairs, Parser};
 use std::convert::identity;
 
 use super::parse_success::ParseSuccess;
-use super::syntax::{AggregateSyntax, DurationFunction, FromItemSyntax, SelectFieldSyntax};
+use super::syntax::{DurationFunction, FromItemSyntax, SelectFieldSyntax};
 
 #[derive(Debug, Default)]
 pub(super) struct PestParserImpl;
@@ -498,23 +496,21 @@ impl PestParserImpl {
         .transpose()?
         .or(try_parse_child(
             &mut params,
-            Rule::aggregate,
-            Self::parse_aggregate,
+            Rule::aggr_expr,
+            Self::parse_aggr_expr,
             identity,
         )?
-        .map(|aggregate_syntax| {
-            let aggregated_alias = parse_child(
+        .map(|aggr_expr| {
+            let alias = parse_child(
                 &mut params,
-                Rule::field_alias,
-                Self::parse_field_alias,
+                Rule::aggr_alias,
+                Self::parse_aggr_alias,
                 identity,
             )?;
-            let aggregate_parameter = AggregateParameter {
-                aggregated: aggregate_syntax.aggregated,
-                aggregated_alias,
-                aggregate_function: aggregate_syntax.aggregate_function,
-            };
-            Ok(SelectFieldSyntax::Aggregate(aggregate_parameter))
+            Ok(SelectFieldSyntax::AggrExpr {
+                aggr_expr,
+                alias: Some(alias),
+            })
         })
         .transpose()?)
         .ok_or_else(|| {
@@ -768,8 +764,8 @@ impl PestParserImpl {
      * ----------------------------------------------------------------------------
      */
 
-    fn parse_aggregate(mut params: FnParseParams) -> Result<AggregateSyntax> {
-        let aggregate_function = parse_child(
+    fn parse_aggr_expr(mut params: FnParseParams) -> Result<AggrExpr> {
+        let func = parse_child(
             &mut params,
             Rule::aggregate_name,
             Self::parse_aggregate_name,
@@ -777,14 +773,11 @@ impl PestParserImpl {
         )?;
         let aggregated = parse_child(
             &mut params,
-            Rule::field_pointer,
-            &Self::parse_field_pointer,
+            Rule::value_expr,
+            &Self::parse_value_expr,
             &identity,
         )?;
-        Ok(AggregateSyntax {
-            aggregate_function,
-            aggregated,
-        })
+        Ok(AggrExpr { func, aggregated })
     }
 
     fn parse_aggregate_name(mut params: FnParseParams) -> Result<AggregateFunctionParameter> {
@@ -975,6 +968,15 @@ impl PestParserImpl {
             Rule::identifier,
             Self::parse_identifier,
             ValueAlias::new,
+        )
+    }
+
+    fn parse_aggr_alias(mut params: FnParseParams) -> Result<AggrAlias> {
+        parse_child(
+            &mut params,
+            Rule::identifier,
+            Self::parse_identifier,
+            AggrAlias::new,
         )
     }
 

@@ -68,7 +68,7 @@ mod tests {
             field::field_name::ColumnReference,
             name::{ColumnName, StreamName, ValueAlias},
             pump_model::window_operation_parameter::aggregate::{
-                AggregateFunctionParameter, AggregateParameter, GroupAggregateParameter,
+                AggregateFunctionParameter, GroupAggregateParameter,
             },
         },
         stream_engine::{
@@ -120,7 +120,7 @@ mod tests {
                 allowed_delay: EventDuration::from_secs(1),
             },
             WindowOperationParameter::GroupAggregation(GroupAggregateParameter {
-                aggregation_parameter: AggregateParameter {
+                aggr_expr: AggregateParameter {
                     aggregated: ColumnReference::new(
                         StreamName::fx_trade(),
                         ColumnName::fx_amount(),
@@ -254,7 +254,7 @@ mod tests {
                 allowed_delay: EventDuration::from_secs(1),
             },
             WindowOperationParameter::GroupAggregation(GroupAggregateParameter {
-                aggregation_parameter: AggregateParameter {
+                aggr_expr: AggregateParameter {
                     aggregated: ColumnReference::new(
                         StreamName::fx_trade(),
                         ColumnName::fx_amount(),

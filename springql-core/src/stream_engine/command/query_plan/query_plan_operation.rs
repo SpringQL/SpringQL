@@ -13,7 +13,7 @@ use crate::{
 #[derive(Clone, PartialEq, Debug)]
 pub(crate) struct UpperOps {
     pub(crate) projection: ProjectionOp,
-    // TODO option group_aggregate
+    pub(crate) group_aggr_window: Option<GroupAggregateWindowOp>,
 }
 
 #[derive(Clone, PartialEq, Debug)]

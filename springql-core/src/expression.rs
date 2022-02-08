@@ -14,7 +14,10 @@ use anyhow::anyhow;
 
 use crate::{
     error::{Result, SpringError},
-    pipeline::field::field_name::ColumnReference,
+    pipeline::{
+        field::field_name::ColumnReference,
+        pump_model::window_operation_parameter::aggregate::AggregateFunctionParameter,
+    },
     stream_engine::{
         time::duration::{event_duration::EventDuration, SpringDuration},
         NnSqlValue, SqlCompareResult, SqlValue, Tuple,
@@ -244,4 +247,11 @@ impl ValueExprPh2 {
             )))
         }
     }
+}
+
+/// Aggregate expression.
+#[derive(Clone, PartialEq, Debug)]
+pub(crate) struct AggrExpr {
+    pub(crate) func: AggregateFunctionParameter,
+    pub(crate) aggregated: ValueExpr,
 }
