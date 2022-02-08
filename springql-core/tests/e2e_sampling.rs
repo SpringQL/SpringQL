@@ -66,24 +66,13 @@ fn test_e2e_sampling() -> Result<()> {
         CREATE PUMP pu_passthrough AS
           INSERT INTO sink_sampled_trade_amount (ts, amount)
           SELECT STREAM
-            FLOOR(ts) AS sampled_ts,
-            AVG(amount) AS avg_amount
+            FLOOR_TIME(source_trade.ts, DURATION_SECS(10)) AS sampled_ts,
+            AVG(source_trade.amount) AS avg_amount
           FROM source_trade
           GROUP BY sampled_ts
           FIXED WINDOW DURATION_SECS(10), DURATION_SECS(0);
         "
         .to_string(),
-        // "
-        // CREATE PUMP pu_passthrough AS
-        //   INSERT INTO sink_sampled_trade_amount (ts, amount)
-        //   SELECT STREAM
-        //     FLOOR(ts, DURATION_SECS(10)) AS sampled_ts,
-        //     AVG(amount) AS avg_amount
-        //   FROM source_trade
-        //   GROUP BY sampled_ts
-        //   FIXED WINDOW DURATION_SECS(10), DURATION_SECS(0);
-        // "
-        // .to_string(),
         format!(
             "
         CREATE SINK WRITER tcp_sink_trade FOR sink_sampled_trade_amount
