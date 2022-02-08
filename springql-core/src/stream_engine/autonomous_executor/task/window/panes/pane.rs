@@ -12,7 +12,10 @@ use crate::{
         },
     },
     stream_engine::{
-        autonomous_executor::task::{tuple::Tuple, window::watermark::Watermark},
+        autonomous_executor::task::{
+            tuple::Tuple,
+            window::{watermark::Watermark, GroupAggrOut},
+        },
         time::timestamp::Timestamp,
         NnSqlValue, SqlValue,
     },
@@ -50,7 +53,7 @@ impl Pane {
     pub(in crate::stream_engine::autonomous_executor) fn dispatch(
         &mut self,
         expr_resolver: &ExprResolver,
-        tuple: Tuple,
+        tuple: &Tuple,
     ) {
         match &mut self.inner {
             PaneInner::Avg {
@@ -88,7 +91,7 @@ impl Pane {
         }
     }
 
-    pub(in crate::stream_engine::autonomous_executor) fn close(self) -> Vec<Tuple> {
+    pub(in crate::stream_engine::autonomous_executor) fn close(self) -> Vec<GroupAggrOut> {
         match self.inner {
             PaneInner::Avg {
                 group_aggregation_parameter,
@@ -96,28 +99,9 @@ impl Pane {
             } => states
                 .into_iter()
                 .map(|(group_by, state)| {
-                    let rowtime = self.close_at; // FIXME tuple.rowtime is always close_at
-                    let avg_field = {
-                        let avg_value = SqlValue::NotNull(NnSqlValue::BigInt(state.finalize()));
-                        let fixme_colref = ColumnReference::new(
-                            StreamName::new("_".to_string()),
-                            ColumnName::new(
-                                group_aggregation_parameter
-                                    .aggr_expr
-                                    .aggregated_alias
-                                    .to_string(),
-                            ),
-                        );
-                        Field::new(
-                            fixme_colref, // TODO use label instead of `stream.alias`
-                            avg_value,
-                        )
-                    };
-                    let group_by_field = {
-                        let group_by_value = SqlValue::NotNull(group_by);
-                        Field::new(group_aggregation_parameter.group_by.clone(), group_by_value)
-                    };
-                    Tuple::new(rowtime, vec![avg_field, group_by_field])
+                    let aggr_label = group_aggregation_parameter.aggr_expr;
+                    let aggr_value = SqlValue::NotNull(NnSqlValue::BigInt(state.finalize()));
+                    GroupAggrOut::new(aggr_label, aggr_value, SqlValue::NotNull(group_by))
                 })
                 .collect(),
         }
