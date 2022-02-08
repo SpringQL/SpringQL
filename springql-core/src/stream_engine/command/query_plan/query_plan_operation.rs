@@ -2,15 +2,11 @@
 
 use std::time::Duration;
 
-use crate::{
-    expression::ValueExpr,
-    pipeline::{field::field_name::ColumnReference, name::StreamName},
-};
+use crate::{expr_resolver::expr_label::ExprLabel, pipeline::name::StreamName};
 
 #[derive(Clone, PartialEq, Debug)]
 pub(crate) struct UpperOps {
     pub(crate) projection: ProjectionOp,
-    pub(crate) eval_value_expr: EvalValueExprOp,
     // TODO option group_aggregate
 }
 
@@ -22,12 +18,7 @@ pub(crate) struct LowerOps {
 
 #[derive(Clone, PartialEq, Debug)]
 pub(crate) struct ProjectionOp {
-    pub(crate) column_references: Vec<ColumnReference>,
-}
-
-#[derive(Clone, PartialEq, Debug)]
-pub(crate) struct EvalValueExprOp {
-    pub(crate) expressions: Vec<ValueExpr>,
+    pub(crate) expr_labels: Vec<ExprLabel>,
 }
 
 #[derive(Clone, PartialEq, Debug)]

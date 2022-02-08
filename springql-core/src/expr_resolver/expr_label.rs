@@ -1,4 +1,4 @@
-#[derive(Debug, Default)]
+#[derive(Clone, Eq, PartialEq, Debug, Default)]
 pub(crate) struct ExprLabelGenerator(u16);
 
 impl ExprLabelGenerator {
