@@ -6,12 +6,9 @@ use serde_json::json;
 
 use crate::{
     pipeline::{
-        name::{PumpName, StreamName},
-        pipeline_version::PipelineVersion,
-        pump_model::{pump_input_type::PumpInputType, PumpModel},
-        sink_writer_model::SinkWriterModel,
-        source_reader_model::SourceReaderModel,
-        stream_model::StreamModel,
+        name::StreamName, pipeline_version::PipelineVersion,
+        pump_model::pump_input_type::PumpInputType, sink_writer_model::SinkWriterModel,
+        source_reader_model::SourceReaderModel, stream_model::StreamModel,
     },
     stream_engine::{
         autonomous_executor::{
@@ -28,7 +25,7 @@ use crate::{
                 task_id::TaskId,
             },
         },
-        command::{alter_pipeline_command::AlterPipelineCommand, query_plan::aliaser::Aliaser},
+        command::alter_pipeline_command::AlterPipelineCommand,
         time::duration::{wall_clock_duration::WallClockDuration, SpringDuration},
     },
     stream_engine::{
@@ -46,13 +43,13 @@ use crate::{
 };
 
 impl Timestamp {
-    pub(in crate::stream_engine) fn fx_ts1() -> Self {
+    pub(crate) fn fx_ts1() -> Self {
         "2021-01-01 13:00:00.000000001".parse().unwrap()
     }
-    pub(in crate::stream_engine) fn fx_ts2() -> Self {
+    pub(crate) fn fx_ts2() -> Self {
         "2021-01-01 13:00:00.000000002".parse().unwrap()
     }
-    pub(in crate::stream_engine) fn fx_ts3() -> Self {
+    pub(crate) fn fx_ts3() -> Self {
         "2021-01-01 13:00:00.000000003".parse().unwrap()
     }
 }
@@ -180,7 +177,7 @@ impl Row {
 impl Tuple {
     pub(in crate::stream_engine) fn fx_trade_oracle() -> Self {
         let row = Row::fx_trade_oracle();
-        Self::from_row(row, &Aliaser::default())
+        Self::from_row(row)
     }
 }
 
@@ -237,15 +234,6 @@ impl AlterPipelineCommand {
     ) -> Self {
         let sink = SinkWriterModel::fx_net(stream_name, sink_server_host, sink_server_port);
         Self::CreateSinkWriter(sink)
-    }
-
-    pub(in crate::stream_engine) fn fx_create_pump(
-        pump_name: PumpName,
-        upstream: StreamName,
-        downstream: StreamName,
-    ) -> Self {
-        let pump = PumpModel::fx_trade(pump_name, upstream, downstream);
-        Self::CreatePump(pump)
     }
 }
 

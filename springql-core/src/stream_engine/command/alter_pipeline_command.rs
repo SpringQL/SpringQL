@@ -6,7 +6,7 @@ use crate::pipeline::{
 };
 
 #[allow(clippy::enum_variant_names)]
-#[derive(Clone, Eq, PartialEq, Debug)]
+#[derive(Clone, PartialEq, Debug)]
 pub(crate) enum AlterPipelineCommand {
     CreateSourceStream(StreamModel),
     CreateSourceReader(SourceReaderModel),

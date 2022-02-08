@@ -5,15 +5,15 @@ mod helper;
 
 use crate::error::{Result, SpringError};
 use crate::expression::boolean_expression::comparison_function::ComparisonFunction;
-use crate::expression::boolean_expression::BooleanExpression;
+use crate::expression::boolean_expression::numerical_function::NumericalFunction;
+use crate::expression::boolean_expression::BooleanExpr;
 use crate::expression::function_call::FunctionCall;
 use crate::expression::operator::{BinaryOperator, UnaryOperator};
-use crate::expression::Expression;
-use crate::pipeline::expression_to_field::ExpressionToField;
-use crate::pipeline::field::field_pointer::FieldPointer;
+use crate::expression::ValueExpr;
+use crate::pipeline::field::field_name::ColumnReference;
 use crate::pipeline::name::{
-    ColumnName, CorrelationAlias, CorrelationName, FieldAlias, PumpName, SinkWriterName,
-    SourceReaderName, StreamName,
+    ColumnName, CorrelationAlias, PumpName, SinkWriterName, SourceReaderName, StreamName,
+    ValueAlias,
 };
 use crate::pipeline::option::options_builder::OptionsBuilder;
 use crate::pipeline::pump_model::window_operation_parameter::aggregate::{
@@ -196,6 +196,7 @@ impl PestParserImpl {
         let s = self_as_str(&mut params);
         match s.to_lowercase().as_str() {
             "=" => Ok(BinaryOperator::Equal),
+            "+" => Ok(BinaryOperator::Add),
             _ => Err(SpringError::Sql(anyhow!(
                 "Does not match any child rule of binary_operator.",
             ))),
@@ -481,20 +482,18 @@ impl PestParserImpl {
     fn parse_select_field(mut params: FnParseParams) -> Result<SelectFieldSyntax> {
         try_parse_child(
             &mut params,
-            Rule::expression,
-            Self::parse_expression,
+            Rule::value_expr,
+            Self::parse_value_expr,
             identity,
         )?
-        .map(|expression| {
+        .map(|value_expr| {
             let alias = try_parse_child(
                 &mut params,
-                Rule::field_alias,
-                Self::parse_field_alias,
+                Rule::value_alias,
+                Self::parse_value_alias,
                 identity,
             )?;
-            Ok(SelectFieldSyntax::Expression(ExpressionToField::new(
-                expression, alias,
-            )))
+            Ok(SelectFieldSyntax::ValueExpr { value_expr, alias })
         })
         .transpose()?
         .or(try_parse_child(
@@ -604,11 +603,11 @@ impl PestParserImpl {
      * ================================================================================================
      */
 
-    fn parse_expression(mut params: FnParseParams) -> Result<Expression> {
+    fn parse_value_expr(mut params: FnParseParams) -> Result<ValueExpr> {
         let expr = parse_child(
             &mut params,
-            Rule::sub_expression,
-            Self::parse_sub_expression,
+            Rule::sub_value_expr,
+            Self::parse_sub_value_expr,
             identity,
         )?;
 
@@ -620,19 +619,23 @@ impl PestParserImpl {
         )? {
             let right_expr = parse_child(
                 &mut params,
-                Rule::expression,
-                Self::parse_expression,
+                Rule::value_expr,
+                Self::parse_value_expr,
                 identity,
             )?;
 
             match bin_op {
-                BinaryOperator::Equal => Ok(Expression::BooleanExpr(
-                    BooleanExpression::ComparisonFunctionVariant(
-                        ComparisonFunction::EqualVariant {
-                            left: Box::new(expr),
-                            right: Box::new(right_expr),
-                        },
-                    ),
+                BinaryOperator::Equal => Ok(ValueExpr::BooleanExpr(
+                    BooleanExpr::ComparisonFunctionVariant(ComparisonFunction::EqualVariant {
+                        left: Box::new(expr),
+                        right: Box::new(right_expr),
+                    }),
+                )),
+                BinaryOperator::Add => Ok(ValueExpr::BooleanExpr(
+                    BooleanExpr::NumericalFunctionVariant(NumericalFunction::AddVariant {
+                        left: Box::new(expr),
+                        right: Box::new(right_expr),
+                    }),
                 )),
             }
         } else {
@@ -640,18 +643,18 @@ impl PestParserImpl {
         }
     }
 
-    fn parse_sub_expression(mut params: FnParseParams) -> Result<Expression> {
+    fn parse_sub_value_expr(mut params: FnParseParams) -> Result<ValueExpr> {
         try_parse_child(
             &mut params,
             Rule::constant,
             Self::parse_constant,
-            Expression::Constant,
+            ValueExpr::Constant,
         )?
         .or(try_parse_child(
             &mut params,
-            Rule::field_pointer,
-            Self::parse_field_pointer,
-            Expression::FieldPointer,
+            Rule::column_reference,
+            Self::parse_column_reference,
+            ValueExpr::ColumnReference,
         )?)
         .or({
             if let Some(uni_op) = try_parse_child(
@@ -662,9 +665,9 @@ impl PestParserImpl {
             )? {
                 Some(parse_child(
                     &mut params,
-                    Rule::expression,
-                    Self::parse_expression,
-                    |expr| Expression::UnaryOperator(uni_op.clone(), Box::new(expr)),
+                    Rule::value_expr,
+                    Self::parse_value_expr,
+                    |expr| ValueExpr::UnaryOperator(uni_op.clone(), Box::new(expr)),
                 )?)
             } else {
                 None
@@ -674,21 +677,21 @@ impl PestParserImpl {
             &mut params,
             Rule::function_call,
             Self::parse_function_call,
-            Expression::FunctionCall,
+            ValueExpr::FunctionCall,
         )?)
         .ok_or_else(|| {
-            SpringError::Sql(anyhow!("Does not match any child rule of sub_expression.",))
+            SpringError::Sql(anyhow!("Does not match any child rule of sub_value_expr.",))
         })
     }
 
     /*
      * ----------------------------------------------------------------------------
-     * Field Pointer
+     * Column Reference
      * ----------------------------------------------------------------------------
      */
 
-    fn parse_field_pointer(mut params: FnParseParams) -> Result<FieldPointer> {
-        let correlation = try_parse_child(
+    fn parse_column_reference(mut params: FnParseParams) -> Result<ColumnReference> {
+        let correlation = parse_child(
             &mut params,
             Rule::correlation,
             Self::parse_correlation,
@@ -700,10 +703,62 @@ impl PestParserImpl {
             Self::parse_column_name,
             identity,
         )?;
-        Ok(FieldPointer::new(
-            correlation.map(|c| c.to_string()),
-            column_name.to_string(),
-        ))
+        Ok(ColumnReference::new(correlation, column_name))
+    }
+
+    /*
+     * ----------------------------------------------------------------------------
+     * Function
+     * ----------------------------------------------------------------------------
+     */
+
+    fn parse_function_call(mut params: FnParseParams) -> Result<FunctionCall<ValueExpr>> {
+        let function_name = parse_child(
+            &mut params,
+            Rule::function_name,
+            Self::parse_function_name,
+            identity,
+        )?;
+        let parameters = parse_child_seq(
+            &mut params,
+            Rule::value_expr,
+            &Self::parse_value_expr,
+            &identity,
+        )?;
+
+        match function_name.to_lowercase().as_str() {
+            "duration_secs" => {
+                if parameters.len() == 1 {
+                    Ok(FunctionCall::DurationSecs {
+                        duration_secs: Box::new(parameters[0].clone()),
+                    })
+                } else {
+                    Err(SpringError::Sql(anyhow!(
+                        "duration_secs() takes exactly one parameter (duration_secs)."
+                    )))
+                }
+            }
+            "floor_time" => {
+                if parameters.len() == 2 {
+                    Ok(FunctionCall::FloorTime {
+                        target: Box::new(parameters[0].clone()),
+                        resolution: Box::new(parameters[1].clone()),
+                    })
+                } else {
+                    Err(SpringError::Sql(anyhow!(
+                        "floor_time() takes exactly two parameters (target, resolution)."
+                    )))
+                }
+            }
+            _ => Err(SpringError::Sql(anyhow!(
+                "unknown function {}",
+                function_name.to_lowercase()
+            ))),
+        }
+    }
+
+    fn parse_function_name(mut params: FnParseParams) -> Result<String> {
+        Ok(self_as_str(&mut params).to_string())
     }
 
     /*
@@ -952,21 +1007,21 @@ impl PestParserImpl {
         )
     }
 
-    fn parse_field_alias(mut params: FnParseParams) -> Result<FieldAlias> {
+    fn parse_value_alias(mut params: FnParseParams) -> Result<ValueAlias> {
         parse_child(
             &mut params,
             Rule::identifier,
             Self::parse_identifier,
-            FieldAlias::new,
+            ValueAlias::new,
         )
     }
 
-    fn parse_correlation(mut params: FnParseParams) -> Result<CorrelationName> {
+    fn parse_correlation(mut params: FnParseParams) -> Result<StreamName> {
         parse_child(
             &mut params,
             Rule::identifier,
             Self::parse_identifier,
-            CorrelationName::new,
+            StreamName::new,
         )
     }
 

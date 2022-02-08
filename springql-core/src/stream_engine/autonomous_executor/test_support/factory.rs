@@ -10,7 +10,6 @@ use crate::pipeline::stream_model::StreamModel;
 use crate::stream_engine::autonomous_executor::task::source_task::source_reader::net::NetSourceReader;
 use crate::stream_engine::autonomous_executor::task::source_task::source_reader::SourceReader;
 use crate::stream_engine::autonomous_executor::task::tuple::Tuple;
-use crate::stream_engine::command::query_plan::aliaser::Aliaser;
 use crate::stream_engine::time::timestamp::Timestamp;
 use crate::{
     pipeline::{
@@ -163,19 +162,13 @@ impl Tuple {
         city: &str,
         temperature: i32,
     ) -> Self {
-        Self::from_row(
-            Row::factory_city_temperature(timestamp, city, temperature),
-            &Aliaser::default(),
-        )
+        Self::from_row(Row::factory_city_temperature(timestamp, city, temperature))
     }
     pub(in crate::stream_engine) fn factory_trade(
         timestamp: Timestamp,
         ticker: &str,
         amount: i16,
     ) -> Self {
-        Self::from_row(
-            Row::factory_trade(timestamp, ticker, amount),
-            &Aliaser::default(),
-        )
+        Self::from_row(Row::factory_trade(timestamp, ticker, amount))
     }
 }

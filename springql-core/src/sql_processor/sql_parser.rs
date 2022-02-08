@@ -1,7 +1,8 @@
 // Copyright (c) 2021 TOYOTA MOTOR CORPORATION. Licensed under MIT OR Apache-2.0.
 
+pub(crate) mod syntax;
+
 pub(in crate::sql_processor) mod parse_success;
-pub(in crate::sql_processor) mod syntax;
 
 mod pest_parser_impl;
 

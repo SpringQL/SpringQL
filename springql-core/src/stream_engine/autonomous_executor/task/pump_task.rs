@@ -25,7 +25,7 @@ impl PumpTask {
         pipeline_graph: &PipelineGraph,
     ) -> Self {
         let id = TaskId::from_pump(pump);
-        let query_subtask = QuerySubtask::from(pump.query_plan());
+        let query_subtask = QuerySubtask::new(pump.query_plan().clone());
         let insert_subtask = InsertSubtask::new(pump.insert_plan(), pipeline_graph);
         Self {
             id,
@@ -64,7 +64,9 @@ impl PumpTask {
         Vec<OutQueueMetricsUpdateByTaskExecution>,
     )> {
         if let Some(query_subtask_out) = self.query_subtask.run(context)? {
-            let insert_subtask_out = self.insert_subtask.run(query_subtask_out.tuples, context);
+            let insert_subtask_out = self
+                .insert_subtask
+                .run(query_subtask_out.values_seq, context);
             Ok((
                 Some(query_subtask_out.in_queue_metrics_update),
                 insert_subtask_out.out_queues_metrics_update,

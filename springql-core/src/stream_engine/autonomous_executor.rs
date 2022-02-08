@@ -1,9 +1,9 @@
 // Copyright (c) 2021 TOYOTA MOTOR CORPORATION. Licensed under MIT OR Apache-2.0.
 
-pub(in crate::stream_engine) mod event_queue;
-pub(in crate::stream_engine) mod task;
-
 pub(crate) mod row;
+pub(crate) mod task;
+
+pub(in crate::stream_engine) mod event_queue;
 
 pub(in crate::stream_engine::autonomous_executor) mod worker;
 

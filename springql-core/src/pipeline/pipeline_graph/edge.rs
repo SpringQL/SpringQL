@@ -7,7 +7,7 @@ use crate::pipeline::{
     source_reader_model::SourceReaderModel,
 };
 
-#[derive(Clone, Eq, PartialEq, Debug)]
+#[derive(Clone, Debug)]
 pub(crate) enum Edge {
     /// A pump can have 2 or more upstreams (on JOIN, for example). Then, graph edges share the same PumpModel.
     Pump(Arc<PumpModel>),

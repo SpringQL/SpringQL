@@ -1,7 +1,4 @@
-use crate::pipeline::{
-    field::{aliased_field_name::AliasedFieldName, field_pointer::FieldPointer},
-    name::FieldAlias,
-};
+use crate::pipeline::{field::field_name::ColumnReference, name::ValueAlias};
 
 /// TODO [support complex expression with aggregations](https://gh01.base.toyota-tokyo.tech/SpringQL-internal/SpringQL/issues/152)
 ///
@@ -14,29 +11,17 @@ use crate::pipeline::{
 #[derive(Clone, Eq, PartialEq, Debug, new)]
 pub(crate) struct GroupAggregateParameter {
     pub(crate) aggregation_parameter: AggregateParameter,
-    pub(crate) group_by: FieldPointer,
-}
-
-impl GroupAggregateParameter {
-    pub(crate) fn group_by_aliased_field_name(&self) -> AliasedFieldName {
-        AliasedFieldName::from_only_alias(FieldAlias::new(self.group_by.attr().to_string()))
-    }
+    pub(crate) group_by: ColumnReference,
 }
 
 #[derive(Clone, Eq, PartialEq, Debug, new)]
 pub(crate) struct AggregateParameter {
-    pub(crate) aggregated: FieldPointer,
-    pub(crate) aggregated_alias: FieldAlias,
+    pub(crate) aggregated: ColumnReference,
+    pub(crate) aggregated_alias: ValueAlias,
     pub(crate) aggregate_function: AggregateFunctionParameter,
 }
 
 #[derive(Clone, Eq, PartialEq, Debug)]
 pub(crate) enum AggregateFunctionParameter {
     Avg,
-}
-
-impl AggregateParameter {
-    pub(crate) fn aggregated_aliased_field_name(&self) -> AliasedFieldName {
-        AliasedFieldName::from_only_alias(self.aggregated_alias.clone())
-    }
 }

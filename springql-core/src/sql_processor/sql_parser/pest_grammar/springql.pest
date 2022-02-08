@@ -28,6 +28,7 @@ keyword = {
     | ^"CREATE"
     | ^"DURATION_SECS"
     | ^"FIXED"
+    | ^"FLOOR_TIME"
     | ^"FLOOR"
     | ^"FOR"
     | ^"FROM"
@@ -180,6 +181,7 @@ unary_operator = {
 
 binary_operator = {
     "="
+    | "+"
 }
 
 /*
@@ -220,22 +222,32 @@ identifier_part = _{
  */
 
 condition = {
-    expression
+    value_expr
 }
 
-expression = {
-    sub_expression ~ (binary_operator ~ expression)?
+value_expr = {
+    sub_value_expr ~ (binary_operator ~ value_expr)?
 }
 // To avoid left-recursion
-sub_expression = {
+sub_value_expr = {
     constant
-    | field_pointer
-    | (unary_operator ~ expression)
+    | column_reference
+    | (unary_operator ~ value_expr)
     | function_call
 }
 
-field_pointer = {
-    (correlation ~ ".")? ~ column_name
+column_reference = {
+    correlation ~ "." ~ column_name
+}
+
+function_call = {
+    function_name ~ "("
+    ~ value_expr ~ ("," ~ value_expr)*
+    ~ ")"
+}
+function_name = {
+    ^"DURATION_SECS"
+    | ^"FLOOR_TIME"
 }
 
 function_call = {
@@ -414,8 +426,8 @@ select_stream_command = {
 }
 
 select_field = {
-    expression ~ (^"AS"? ~ field_alias)?
-    | aggregate ~ (^"AS"? ~ field_alias) // FIXME currently an expression is Tuple::eval_expression(tuple) (scalar expression) but aggregate should also be expression to realize `max(c1) + min(c2)`.
+    value_expr ~ (^"AS"? ~ value_alias)?
+    | aggregate ~ (^"AS"? ~ aggr_alias) // FIXME currently an expression is Tuple::eval_expression(tuple) (scalar expression) but aggregate should also be expression to realize `max(c1) + min(c2)`.
 }
 
 from_item = {
@@ -486,7 +498,11 @@ correlation_alias = {
     identifier
 }
 
-field_alias = {
+value_alias = {
+    identifier
+}
+
+aggr_alias = {
     identifier
 }
 

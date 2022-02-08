@@ -1,7 +1,7 @@
 // Copyright (c) 2021 TOYOTA MOTOR CORPORATION. Licensed under MIT OR Apache-2.0.
 
 pub(crate) mod nn_sql_value;
-pub(in crate::stream_engine::autonomous_executor) mod sql_compare_result;
+pub(crate) mod sql_compare_result;
 pub(in crate::stream_engine::autonomous_executor) mod sql_value_hash_key;
 
 use self::{nn_sql_value::NnSqlValue, sql_compare_result::SqlCompareResult};
@@ -154,6 +154,21 @@ impl SqlValue {
                     nn_sql_value.sql_type()
                 ))),
             },
+        }
+    }
+
+    /// Eval as i64 if possible.
+    ///
+    /// # Failures
+    ///
+    /// - `SpringError::Sql` when:
+    ///   - this SqlValue cannot be evaluated as SQL BIGINT
+    pub(crate) fn to_i64(&self) -> Result<i64> {
+        match self {
+            SqlValue::Null => Err(SpringError::Sql(anyhow!(
+                "NULL cannot be evaluated as BIGINT",
+            ))),
+            SqlValue::NotNull(nn_sql_value) => nn_sql_value.unpack::<i64>(),
         }
     }
 }

@@ -5,23 +5,21 @@
 //! - constant (e.g. `777`, `"abc").
 //! - other expressions (e.g. `c1 + 1 AS c1p`).
 
-pub(crate) mod aliased_field_name;
 pub(crate) mod field_name;
-pub(crate) mod field_pointer;
 
 use crate::stream_engine::SqlValue;
 
-use self::aliased_field_name::AliasedFieldName;
+use self::field_name::ColumnReference;
 
-/// Field == SqlValue + AliasedFieldName
+/// Field == SqlValue + FieldName
 #[derive(Clone, PartialEq, Debug, new)]
 pub(crate) struct Field {
-    name: AliasedFieldName,
+    name: ColumnReference, // TODO use ExprLabel instead
     value: SqlValue,
 }
 
 impl Field {
-    pub(crate) fn name(&self) -> &AliasedFieldName {
+    pub(crate) fn name(&self) -> &ColumnReference {
         &self.name
     }
 

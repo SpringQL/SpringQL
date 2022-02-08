@@ -23,16 +23,14 @@ pub(crate) struct ColumnName(String);
 pub(crate) struct QueueName(String);
 
 #[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Serialize, Deserialize, new)]
-pub(crate) struct CorrelationName(String);
-
-#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Serialize, Deserialize, new)]
 pub(crate) struct CorrelationAlias(String);
 
 #[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Serialize, Deserialize, new)]
 pub(crate) struct AttributeName(String);
 
+/// Alias to an value expression.
 #[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Serialize, Deserialize, new)]
-pub(crate) struct FieldAlias(String);
+pub(crate) struct ValueAlias(String);
 
 impl Display for StreamName {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -64,11 +62,6 @@ impl Display for QueueName {
         write!(f, "{}", self.0)
     }
 }
-impl Display for CorrelationName {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self.0)
-    }
-}
 impl Display for CorrelationAlias {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", self.0)
@@ -79,7 +72,7 @@ impl Display for AttributeName {
         write!(f, "{}", self.0)
     }
 }
-impl Display for FieldAlias {
+impl Display for ValueAlias {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", self.0)
     }
@@ -110,11 +103,6 @@ impl AsRef<str> for SinkWriterName {
         &self.0
     }
 }
-impl AsRef<str> for CorrelationName {
-    fn as_ref(&self) -> &str {
-        &self.0
-    }
-}
 impl AsRef<str> for AttributeName {
     fn as_ref(&self) -> &str {
         &self.0
@@ -125,7 +113,7 @@ impl AsRef<str> for CorrelationAlias {
         &self.0
     }
 }
-impl AsRef<str> for FieldAlias {
+impl AsRef<str> for ValueAlias {
     fn as_ref(&self) -> &str {
         &self.0
     }

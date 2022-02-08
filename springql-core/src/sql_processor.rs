@@ -1,7 +1,8 @@
 // Copyright (c) 2021 TOYOTA MOTOR CORPORATION. Licensed under MIT OR Apache-2.0.
 
+pub(crate) mod sql_parser;
+
 mod query_planner;
-mod sql_parser;
 
 use self::{
     query_planner::QueryPlanner,
@@ -125,18 +126,14 @@ mod tests {
     use super::*;
     use crate::{
         pipeline::{
-            name::{ColumnName, PumpName, SinkWriterName, SourceReaderName, StreamName},
+            name::{SinkWriterName, SourceReaderName, StreamName},
             option::options_builder::OptionsBuilder,
             pipeline_version::PipelineVersion,
-            pump_model::PumpModel,
             sink_writer_model::{sink_writer_type::SinkWriterType, SinkWriterModel},
             source_reader_model::{source_reader_type::SourceReaderType, SourceReaderModel},
             stream_model::{stream_shape::StreamShape, StreamModel},
         },
-        stream_engine::command::{
-            alter_pipeline_command::AlterPipelineCommand, insert_plan::InsertPlan,
-            query_plan::QueryPlan,
-        },
+        stream_engine::command::alter_pipeline_command::AlterPipelineCommand,
     };
     use pretty_assertions::assert_eq;
 
@@ -246,37 +243,6 @@ mod tests {
         assert_eq!(
             command,
             Command::AlterPipeline(AlterPipelineCommand::CreateSinkWriter(expected_sink))
-        );
-    }
-
-    #[test]
-    fn test_create_pump() {
-        let processor = SqlProcessor::default();
-        let pipeline = Pipeline::fx_source_sink_no_pump();
-
-        let sql = "
-            CREATE PUMP pu_passthrough AS
-              INSERT INTO st_2 (ts, ticker, amount)
-              SELECT STREAM ts, ticker, amount FROM st_1;
-            ";
-        let command = processor.compile(sql, &pipeline).unwrap();
-
-        let expected_pump = PumpModel::new(
-            PumpName::new("pu_passthrough".to_string()),
-            QueryPlan::fx_collect_projection(
-                StreamName::new("st_1".to_string()),
-                vec![
-                    ColumnName::fx_timestamp(),
-                    ColumnName::fx_ticker(),
-                    ColumnName::fx_amount(),
-                ],
-            ),
-            InsertPlan::fx_trade(StreamName::new("st_2".to_string())),
-        );
-
-        assert_eq!(
-            command,
-            Command::AlterPipeline(AlterPipelineCommand::CreatePump(expected_pump))
         );
     }
 }

@@ -1,30 +1,39 @@
 // Copyright (c) 2021 TOYOTA MOTOR CORPORATION. Licensed under MIT OR Apache-2.0.
 
-use crate::pipeline::{
-    expression_to_field::ExpressionToField,
-    field::field_pointer::FieldPointer,
-    name::StreamName,
-    pump_model::{
-        window_operation_parameter::WindowOperationParameter, window_parameter::WindowParameter,
+use crate::{
+    expr_resolver::expr_label::ExprLabel,
+    pipeline::{
+        name::StreamName,
+        pump_model::{
+            window_operation_parameter::WindowOperationParameter, window_parameter::WindowParameter,
+        },
     },
 };
 
-use super::aliaser::Aliaser;
+#[derive(Clone, PartialEq, Debug)]
+pub(crate) struct UpperOps {
+    pub(crate) projection: ProjectionOp,
+    // TODO option group_aggregate
+}
 
 #[derive(Clone, PartialEq, Debug)]
-pub(crate) enum QueryPlanOperation {
-    Collect {
-        stream: StreamName,
-        aliaser: Aliaser,
-    },
-    EvalExpression {
-        expr_to_fields: Vec<ExpressionToField>,
-    },
-    Projection {
-        field_pointers: Vec<FieldPointer>,
-    },
-    GroupAggregateWindow {
-        window_param: WindowParameter,
-        op_param: WindowOperationParameter,
-    },
+pub(crate) struct LowerOps {
+    pub(crate) collect: CollectOp,
+    // TODO join
+}
+
+#[derive(Clone, PartialEq, Debug)]
+pub(crate) struct ProjectionOp {
+    pub(crate) expr_labels: Vec<ExprLabel>,
+}
+
+#[derive(Clone, PartialEq, Debug)]
+pub(crate) struct CollectOp {
+    pub(crate) stream: StreamName,
+}
+
+#[derive(Clone, PartialEq, Debug)]
+pub(crate) struct GroupAggregateWindowOp {
+    window_param: WindowParameter,
+    op_param: WindowOperationParameter,
 }
