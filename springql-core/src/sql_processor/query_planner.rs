@@ -92,10 +92,11 @@ impl QueryPlanner {
     }
 
     pub(crate) fn plan(self, _pipeline: &Pipeline) -> Result<QueryPlan> {
-        let (mut expr_resolver, labels_select_list) =
+        let (mut expr_resolver, value_labels_select_list, aggr_labels_select_list) =
             ExprResolver::new(self.analyzer.select_list().to_vec());
         let projection = ProjectionOp {
-            expr_labels: labels_select_list,
+            value_expr_labels: value_labels_select_list,
+            aggr_expr_labels: aggr_labels_select_list,
         };
 
         let group_aggr_window = self.create_group_aggr_window_op(&mut expr_resolver);

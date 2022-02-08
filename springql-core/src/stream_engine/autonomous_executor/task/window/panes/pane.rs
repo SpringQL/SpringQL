@@ -57,7 +57,7 @@ impl Pane {
                 states,
             } => {
                 let group_by_value = expr_resolver
-                    .eval(group_aggregation_parameter.group_by, tuple)
+                    .eval_value_expr(group_aggregation_parameter.group_by, tuple)
                     .expect("TODO Result");
                 let group_by_value = if let SqlValue::NotNull(v) = group_by_value {
                     v
@@ -66,7 +66,7 @@ impl Pane {
                 };
 
                 let aggregated_value = expr_resolver
-                    .eval(group_aggregation_parameter.aggr_expr, tuple)
+                    .eval_aggr_expr_inner(group_aggregation_parameter.aggr_expr, tuple)
                     .expect("TODO Result");
                 let aggregated_value = if let SqlValue::NotNull(v) = aggregated_value {
                     v

@@ -1,7 +1,7 @@
 // Copyright (c) 2021 TOYOTA MOTOR CORPORATION. Licensed under MIT OR Apache-2.0.
 
 use crate::{
-    expr_resolver::expr_label::ExprLabel,
+    expr_resolver::expr_label::{ValueExprLabel, AggrExprLabel},
     pipeline::{
         name::StreamName,
         pump_model::{
@@ -24,7 +24,8 @@ pub(crate) struct LowerOps {
 
 #[derive(Clone, PartialEq, Debug)]
 pub(crate) struct ProjectionOp {
-    pub(crate) expr_labels: Vec<ExprLabel>,
+    pub(crate) value_expr_labels: Vec<ValueExprLabel>,
+    pub(crate) aggr_expr_labels: Vec<AggrExprLabel>,
 }
 
 #[derive(Clone, PartialEq, Debug)]

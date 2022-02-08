@@ -8,7 +8,7 @@ use crate::stream_engine::{SqlValue, Tuple};
 use anyhow::anyhow;
 use std::collections::HashMap;
 
-use self::expr_label::{ExprLabel, ExprLabelGenerator};
+use self::expr_label::{AggrExprLabel, ExprLabelGenerator, ValueExprLabel};
 
 /// ExprResolver is to:
 ///
@@ -19,47 +19,49 @@ use self::expr_label::{ExprLabel, ExprLabelGenerator};
 pub(crate) struct ExprResolver {
     label_gen: ExprLabelGenerator,
 
-    value_expressions: HashMap<ExprLabel, ValueExpr>,
-    value_aliased_labels: HashMap<ValueAlias, ExprLabel>,
+    value_expressions: HashMap<ValueExprLabel, ValueExpr>,
+    value_aliased_labels: HashMap<ValueAlias, ValueExprLabel>,
 
-    aggr_expressions: HashMap<ExprLabel, AggrExpr>,
-    aggr_aliased_labels: HashMap<AggrAlias, ExprLabel>,
+    aggr_expressions: HashMap<AggrExprLabel, AggrExpr>,
+    aggr_aliased_labels: HashMap<AggrAlias, AggrExprLabel>,
 }
 
 impl ExprResolver {
     /// # Returns
     ///
-    /// `(instance, labels in select_list)
-    pub(crate) fn new(select_list: Vec<SelectFieldSyntax>) -> (Self, Vec<ExprLabel>) {
+    /// `(instance, value expr labels in select_list, aggr expr labels in select_list)
+    pub(crate) fn new(
+        select_list: Vec<SelectFieldSyntax>,
+    ) -> (Self, Vec<ValueExprLabel>, Vec<AggrExprLabel>) {
         let mut label_gen = ExprLabelGenerator::default();
         let mut value_expressions = HashMap::new();
         let mut value_aliased_labels = HashMap::new();
         let mut aggr_expressions = HashMap::new();
         let mut aggr_aliased_labels = HashMap::new();
 
-        let labels = select_list
+        let mut value_expr_labels = Vec::new();
+        let mut aggr_expr_labels = Vec::new();
+
+        select_list
             .into_iter()
-            .map(|select_field| {
-                let label = label_gen.next();
-
-                match select_field {
-                    SelectFieldSyntax::ValueExpr { value_expr, alias } => {
-                        value_expressions.insert(label, value_expr);
-                        if let Some(alias) = alias {
-                            value_aliased_labels.insert(alias, label);
-                        }
+            .for_each(|select_field| match select_field {
+                SelectFieldSyntax::ValueExpr { value_expr, alias } => {
+                    let label = label_gen.next_value();
+                    value_expressions.insert(label, value_expr);
+                    if let Some(alias) = alias {
+                        value_aliased_labels.insert(alias, label);
                     }
-                    SelectFieldSyntax::AggrExpr { aggr_expr, alias } => {
-                        aggr_expressions.insert(label, aggr_expr);
-                        if let Some(alias) = alias {
-                            aggr_aliased_labels.insert(alias, label);
-                        }
-                    }
+                    value_expr_labels.push(label);
                 }
-
-                label
-            })
-            .collect();
+                SelectFieldSyntax::AggrExpr { aggr_expr, alias } => {
+                    let label = label_gen.next_aggr();
+                    aggr_expressions.insert(label, aggr_expr);
+                    if let Some(alias) = alias {
+                        aggr_aliased_labels.insert(alias, label);
+                    }
+                    aggr_expr_labels.push(label);
+                }
+            });
 
         (
             Self {
@@ -69,14 +71,15 @@ impl ExprResolver {
                 aggr_expressions,
                 aggr_aliased_labels,
             },
-            labels,
+            value_expr_labels,
+            aggr_expr_labels,
         )
     }
 
     /// # Failures
     ///
     /// - `SpringError::Sql` if alias is not in select_list.
-    pub(crate) fn resolve_value_alias(&self, value_alias: ValueAlias) -> Result<ExprLabel> {
+    pub(crate) fn resolve_value_alias(&self, value_alias: ValueAlias) -> Result<ValueExprLabel> {
         self.value_aliased_labels
             .get(&value_alias)
             .cloned()
@@ -91,7 +94,7 @@ impl ExprResolver {
     /// # Failures
     ///
     /// - `SpringError::Sql` if alias is not in select_list.
-    pub(crate) fn resolve_aggr_alias(&self, aggr_alias: AggrAlias) -> Result<ExprLabel> {
+    pub(crate) fn resolve_aggr_alias(&self, aggr_alias: AggrAlias) -> Result<AggrExprLabel> {
         self.aggr_aliased_labels
             .get(&aggr_alias)
             .cloned()
@@ -104,20 +107,20 @@ impl ExprResolver {
     }
 
     /// Register value expression which is not in select_list
-    pub(crate) fn register_value_expr(&mut self, value_expr: ValueExpr) -> ExprLabel {
-        let label = self.label_gen.next();
+    pub(crate) fn register_value_expr(&mut self, value_expr: ValueExpr) -> ValueExprLabel {
+        let label = self.label_gen.next_value();
         self.value_expressions.insert(label, value_expr);
         label
     }
 
     /// Register aggregate expression which is not in select_list
-    pub(crate) fn register_aggr_expr(&mut self, aggr_expr: AggrExpr) -> ExprLabel {
-        let label = self.label_gen.next();
+    pub(crate) fn register_aggr_expr(&mut self, aggr_expr: AggrExpr) -> AggrExprLabel {
+        let label = self.label_gen.next_aggr();
         self.aggr_expressions.insert(label, aggr_expr);
         label
     }
 
-    /// label -> (internal) expression + tuple (for ColumnReference) -> SqlValue.
+    /// label -> (internal) value expression + tuple (for ColumnReference) -> SqlValue.
     ///
     /// # Panics
     ///
@@ -128,13 +131,40 @@ impl ExprResolver {
     /// - `SpringError::Sql` when:
     ///   - column reference in expression is not found in `tuple`.
     ///   - somehow failed to eval expression.
-    pub(crate) fn eval(&self, label: ExprLabel, tuple: &Tuple) -> Result<SqlValue> {
+    pub(crate) fn eval_value_expr(&self, label: ValueExprLabel, tuple: &Tuple) -> Result<SqlValue> {
         let value_expr = self
             .value_expressions
             .get(&label)
             .cloned()
             .unwrap_or_else(|| panic!("label {:?} not found", label));
 
+        let value_expr_ph2 = value_expr.resolve_colref(tuple)?;
+        value_expr_ph2.eval()
+    }
+
+    /// label -> (internal) value expression inside aggr expr + tuple (for ColumnReference) -> SqlValue.
+    ///
+    /// # Panics
+    ///
+    /// -  `label` is not found
+    ///
+    /// # Failures
+    ///
+    /// - `SpringError::Sql` when:
+    ///   - column reference in expression is not found in `tuple`.
+    ///   - somehow failed to eval expression.
+    pub(crate) fn eval_aggr_expr_inner(
+        &self,
+        label: AggrExprLabel,
+        tuple: &Tuple,
+    ) -> Result<SqlValue> {
+        let aggr_expr = self
+            .aggr_expressions
+            .get(&label)
+            .cloned()
+            .unwrap_or_else(|| panic!("label {:?} not found", label));
+
+        let value_expr = aggr_expr.aggregated;
         let value_expr_ph2 = value_expr.resolve_colref(tuple)?;
         value_expr_ph2.eval()
     }
@@ -165,13 +195,14 @@ mod tests {
             },
         ];
 
-        let (mut resolver, labels_select_list) = ExprResolver::new(select_list);
+        let (mut resolver, value_labels_select_list, _aggr_labels_select_list) =
+            ExprResolver::new(select_list);
 
         assert_eq!(
             resolver
                 .resolve_value_alias(ValueAlias::new("a1".to_string()))
                 .unwrap(),
-            labels_select_list[1]
+            value_labels_select_list[1]
         );
         assert!(resolver
             .resolve_value_alias(ValueAlias::new("a404".to_string()))
@@ -185,20 +216,26 @@ mod tests {
         let empty_tuple = Tuple::new(Timestamp::fx_ts1(), vec![]);
 
         assert_eq!(
-            resolver.eval(labels_select_list[0], &empty_tuple).unwrap(),
+            resolver
+                .eval_value_expr(value_labels_select_list[0], &empty_tuple)
+                .unwrap(),
             SqlValue::factory_integer(2)
         );
         assert_eq!(
-            resolver.eval(labels_select_list[0], &empty_tuple).unwrap(),
+            resolver
+                .eval_value_expr(value_labels_select_list[0], &empty_tuple)
+                .unwrap(),
             SqlValue::factory_integer(2),
             "eval twice"
         );
         assert_eq!(
-            resolver.eval(labels_select_list[1], &empty_tuple).unwrap(),
+            resolver
+                .eval_value_expr(value_labels_select_list[1], &empty_tuple)
+                .unwrap(),
             SqlValue::factory_integer(4)
         );
         assert_eq!(
-            resolver.eval(label, &empty_tuple).unwrap(),
+            resolver.eval_value_expr(label, &empty_tuple).unwrap(),
             SqlValue::factory_integer(6)
         );
     }

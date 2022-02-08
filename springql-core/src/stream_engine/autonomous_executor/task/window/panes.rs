@@ -131,8 +131,11 @@ mod tests {
     use std::str::FromStr;
 
     use crate::{
-        expr_resolver::ExprResolver, expression::ValueExpr,
-        pipeline::pump_model::window_operation_parameter::aggregate::GroupAggregateParameter,
+        expr_resolver::ExprResolver,
+        expression::{AggrExpr, ValueExpr},
+        pipeline::pump_model::window_operation_parameter::aggregate::{
+            AggregateFunctionParameter, GroupAggregateParameter,
+        },
         sql_processor::sql_parser::syntax::SelectFieldSyntax,
         stream_engine::time::duration::event_duration::EventDuration,
     };
@@ -141,19 +144,23 @@ mod tests {
     use pretty_assertions::assert_eq;
 
     fn dont_care_window_operation_parameter() -> WindowOperationParameter {
-        let aggregated_expr = ValueExpr::factory_colref("dontcare", "dontcare");
+        let aggr_expr = AggrExpr {
+            func: AggregateFunctionParameter::Avg,
+            aggregated: ValueExpr::factory_colref("dontcare", "dontcare"),
+        };
         let group_by_expr = ValueExpr::factory_colref("dontcare", "dontcare");
 
-        let select_list = vec![SelectFieldSyntax::ValueExpr {
-            value_expr: aggregated_expr,
+        let select_list = vec![SelectFieldSyntax::AggrExpr {
+            aggr_expr,
             alias: None,
         }];
-        let (mut expr_resolver, labels_select_list) = ExprResolver::new(select_list);
+        let (mut expr_resolver, value_labels_select_list, aggr_labels_select_list) =
+            ExprResolver::new(select_list);
 
         let group_by_label = expr_resolver.register_value_expr(group_by_expr);
 
         WindowOperationParameter::GroupAggregation(GroupAggregateParameter {
-            aggr_expr: labels_select_list[0],
+            aggr_expr: aggr_labels_select_list[0],
             group_by: group_by_label,
         })
     }

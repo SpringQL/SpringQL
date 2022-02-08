@@ -2,7 +2,10 @@ mod panes;
 mod watermark;
 
 use crate::{
-    expr_resolver::{expr_label::ExprLabel, ExprResolver},
+    expr_resolver::{
+        expr_label::{AggrExprLabel, ValueExprLabel},
+        ExprResolver,
+    },
     pipeline::pump_model::{
         window_operation_parameter::WindowOperationParameter, window_parameter::WindowParameter,
     },
@@ -15,7 +18,7 @@ use super::tuple::Tuple;
 
 #[derive(Clone, PartialEq, Debug, new)]
 pub(in crate::stream_engine::autonomous_executor) struct GroupAggrOut {
-    pub(in crate::stream_engine::autonomous_executor) aggr_label: ExprLabel,
+    pub(in crate::stream_engine::autonomous_executor) aggr_label: AggrExprLabel,
     pub(in crate::stream_engine::autonomous_executor) aggr_result: SqlValue,
 
     pub(in crate::stream_engine::autonomous_executor) group_by: SqlValue,
@@ -140,7 +143,8 @@ mod tests {
             },
         ];
 
-        let (mut expr_resolver, labels_select_list) = ExprResolver::new(select_list);
+        let (mut expr_resolver, value_labels_select_list, aggr_labels_select_list) =
+            ExprResolver::new(select_list);
 
         let group_by_expr = ValueExpr::factory_colref(
             StreamName::fx_trade().as_ref(),
@@ -155,7 +159,7 @@ mod tests {
                 allowed_delay: EventDuration::from_secs(1),
             },
             WindowOperationParameter::GroupAggregation(GroupAggregateParameter {
-                aggr_expr: labels_select_list[1],
+                aggr_expr: aggr_labels_select_list[0],
                 group_by: group_by_label,
             }),
         );
@@ -323,7 +327,8 @@ mod tests {
             },
         ];
 
-        let (mut expr_resolver, labels_select_list) = ExprResolver::new(select_list);
+        let (mut expr_resolver, value_labels_select_list, aggr_labels_select_list) =
+            ExprResolver::new(select_list);
 
         let group_by_expr = ValueExpr::factory_colref(
             StreamName::fx_trade().as_ref(),
@@ -337,7 +342,7 @@ mod tests {
                 allowed_delay: EventDuration::from_secs(1),
             },
             WindowOperationParameter::GroupAggregation(GroupAggregateParameter {
-                aggr_expr: labels_select_list[1],
+                aggr_expr: aggr_labels_select_list[0],
                 group_by: group_by_label,
             }),
         );
