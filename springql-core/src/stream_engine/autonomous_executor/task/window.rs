@@ -82,7 +82,6 @@ mod tests {
         expr_resolver::ExprResolver,
         expression::{AggrExpr, ValueExpr},
         pipeline::{
-            field::field_name::ColumnReference,
             name::{AggrAlias, ColumnName, StreamName},
             pump_model::window_operation_parameter::aggregate::{
                 AggregateFunctionParameter, GroupAggregateParameter,
@@ -98,7 +97,7 @@ mod tests {
         },
     };
 
-    fn t_expect(group_aggr_out: &GroupAggrOut, expected_ticker: &str, expected_avg_amount: i16) {
+    fn t_expect(group_aggr_out: GroupAggrOut, expected_ticker: &str, expected_avg_amount: i16) {
         let ticker = group_aggr_out.group_by.unwrap();
         assert_eq!(
             ticker.unpack::<String>().unwrap(),
@@ -199,10 +198,15 @@ mod tests {
         );
         assert_eq!(out.len(), 2);
         out.sort_by_key(|group_aggr_out| {
-            group_aggr_out.group_by.unwrap().unpack::<String>().unwrap()
+            group_aggr_out
+                .group_by
+                .clone()
+                .unwrap()
+                .unpack::<String>()
+                .unwrap()
         });
-        t_expect(out.get(0).unwrap(), "GOOGL", 100);
-        t_expect(out.get(1).unwrap(), "ORCL", 100);
+        t_expect(out.get(0).cloned().unwrap(), "GOOGL", 100);
+        t_expect(out.get(1).cloned().unwrap(), "ORCL", 100);
 
         // [:00, :10): ("GOOGL", 100), ("ORCL", 100), ("ORCL", 400) <-- !!NOT CLOSED YET (within delay)!!
         // [:05, :15):                                ("ORCL", 400), ("ORCL", 100)
@@ -259,10 +263,15 @@ mod tests {
         );
         assert_eq!(out.len(), 2);
         out.sort_by_key(|group_aggr_out| {
-            group_aggr_out.group_by.unwrap().unpack::<String>().unwrap()
+            group_aggr_out
+                .group_by
+                .clone()
+                .unwrap()
+                .unpack::<String>()
+                .unwrap()
         });
-        t_expect(out.get(0).unwrap(), "GOOGL", 100);
-        t_expect(out.get(1).unwrap(), "ORCL", 200);
+        t_expect(out.get(0).cloned().unwrap(), "GOOGL", 100);
+        t_expect(out.get(1).cloned().unwrap(), "ORCL", 200);
 
         // [:05, :15): -> "ORCL" = 175
         // [:10, :20): -> "ORCL" = 100
@@ -278,8 +287,8 @@ mod tests {
             ),
         );
         assert_eq!(out.len(), 2);
-        t_expect(out.get(0).unwrap(), "ORCL", 175);
-        t_expect(out.get(1).unwrap(), "ORCL", 100);
+        t_expect(out.get(0).cloned().unwrap(), "ORCL", 175);
+        t_expect(out.get(1).cloned().unwrap(), "ORCL", 100);
     }
 
     #[test]
@@ -417,10 +426,15 @@ mod tests {
         );
         assert_eq!(out.len(), 2);
         out.sort_by_key(|group_aggr_out| {
-            group_aggr_out.group_by.unwrap().unpack::<String>().unwrap()
+            group_aggr_out
+                .group_by
+                .clone()
+                .unwrap()
+                .unpack::<String>()
+                .unwrap()
         });
-        t_expect(out.get(0).unwrap(), "GOOGL", 100);
-        t_expect(out.get(1).unwrap(), "ORCL", 200);
+        t_expect(out.get(0).cloned().unwrap(), "GOOGL", 100);
+        t_expect(out.get(1).cloned().unwrap(), "ORCL", 200);
 
         // [:10, :20): -> "ORCL" = 100
         //
@@ -434,6 +448,6 @@ mod tests {
             ),
         );
         assert_eq!(out.len(), 1);
-        t_expect(out.get(0).unwrap(), "ORCL", 100);
+        t_expect(out.get(0).cloned().unwrap(), "ORCL", 100);
     }
 }

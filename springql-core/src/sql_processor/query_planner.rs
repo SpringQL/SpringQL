@@ -92,13 +92,13 @@ impl QueryPlanner {
     }
 
     pub(crate) fn plan(self, _pipeline: &Pipeline) -> Result<QueryPlan> {
-        let (expr_resolver, labels_select_list) =
+        let (mut expr_resolver, labels_select_list) =
             ExprResolver::new(self.analyzer.select_list().to_vec());
         let projection = ProjectionOp {
             expr_labels: labels_select_list,
         };
 
-        let group_aggr_window = self.create_group_aggr_window_op(&expr_resolver);
+        let group_aggr_window = self.create_group_aggr_window_op(&mut expr_resolver);
 
         let upper_ops = UpperOps {
             projection,
@@ -117,7 +117,7 @@ impl QueryPlanner {
 
     fn create_group_aggr_window_op(
         &self,
-        expr_resolver: &ExprResolver,
+        expr_resolver: &mut ExprResolver,
     ) -> Option<GroupAggregateWindowOp> {
         let window_param = self.create_window_param()?;
         let group_aggr_param = self.create_group_aggr_param(expr_resolver)?;
@@ -133,7 +133,7 @@ impl QueryPlanner {
 
     fn create_group_aggr_param(
         &self,
-        expr_resolver: &ExprResolver,
+        expr_resolver: &mut ExprResolver,
     ) -> Option<GroupAggregateParameter> {
         let opt_group_by = self.analyzer.grouping_element();
         let aggregate_parameters = self.analyzer.aggr_expr_select_list();

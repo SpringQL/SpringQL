@@ -116,14 +116,12 @@ impl PaneInner {
     pub(in crate::stream_engine::autonomous_executor) fn new(
         group_aggregation_parameter: GroupAggregateParameter,
     ) -> Self {
-        match group_aggregation_parameter.aggr_expr.aggregate_function {
-            AggregateFunctionParameter::Avg => {
-                let states = HashMap::new();
-                PaneInner::Avg {
-                    group_aggregation_parameter,
-                    states,
-                }
-            }
+        // TODO branch by AggregateFunctionParameter in aggr_expr
+
+        let states = HashMap::new();
+        PaneInner::Avg {
+            group_aggregation_parameter,
+            states,
         }
     }
 }

@@ -34,6 +34,6 @@ pub(crate) struct CollectOp {
 
 #[derive(Clone, PartialEq, Debug)]
 pub(crate) struct GroupAggregateWindowOp {
-    window_param: WindowParameter,
-    op_param: WindowOperationParameter,
+    pub(crate) window_param: WindowParameter,
+    pub(crate) op_param: WindowOperationParameter,
 }
