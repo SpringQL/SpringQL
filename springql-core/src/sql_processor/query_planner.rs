@@ -77,7 +77,7 @@ use crate::{
 
 use self::select_syntax_analyzer::SelectSyntaxAnalyzer;
 
-use super::sql_parser::syntax::SelectStreamSyntax;
+use super::sql_parser::syntax::{GroupingElementSyntax, SelectStreamSyntax};
 
 #[derive(Debug)]
 pub(crate) struct QueryPlanner {
@@ -99,7 +99,7 @@ impl QueryPlanner {
             aggr_expr_labels: aggr_labels_select_list,
         };
 
-        let group_aggr_window = self.create_group_aggr_window_op(&mut expr_resolver);
+        let group_aggr_window = self.create_group_aggr_window_op(&mut expr_resolver)?;
 
         let upper_ops = UpperOps {
             projection,
@@ -119,13 +119,17 @@ impl QueryPlanner {
     fn create_group_aggr_window_op(
         &self,
         expr_resolver: &mut ExprResolver,
-    ) -> Option<GroupAggregateWindowOp> {
-        let window_param = self.create_window_param()?;
+    ) -> Result<Option<GroupAggregateWindowOp>> {
+        let window_param = self.create_window_param();
         let group_aggr_param = self.create_group_aggr_param(expr_resolver)?;
-        Some(GroupAggregateWindowOp {
-            window_param,
-            op_param: WindowOperationParameter::GroupAggregation(group_aggr_param),
-        })
+
+        match (window_param, group_aggr_param) {
+            (Some(window_param), Some(group_aggr_param)) => Ok(Some(GroupAggregateWindowOp {
+                window_param,
+                op_param: WindowOperationParameter::GroupAggregation(group_aggr_param),
+            })),
+            _ => Ok(None),
+        }
     }
 
     fn create_window_param(&self) -> Option<WindowParameter> {
@@ -135,26 +139,33 @@ impl QueryPlanner {
     fn create_group_aggr_param(
         &self,
         expr_resolver: &mut ExprResolver,
-    ) -> Option<GroupAggregateParameter> {
-        let opt_group_by = self.analyzer.grouping_element();
+    ) -> Result<Option<GroupAggregateParameter>> {
+        let opt_grouping_elem = self.analyzer.grouping_element();
         let aggregate_parameters = self.analyzer.aggr_expr_select_list();
 
-        match (opt_group_by, aggregate_parameters.len()) {
-            (Some(group_by), 1) => {
+        match (opt_grouping_elem, aggregate_parameters.len()) {
+            (Some(grouping_elem), 1) => {
                 let aggr_expr = aggregate_parameters
                     .into_iter()
                     .next()
                     .expect("len checked");
 
                 let aggr_expr_label = expr_resolver.register_aggr_expr(aggr_expr);
-                let group_by_label = expr_resolver.register_value_expr(group_by);
+                let group_by_label = match grouping_elem {
+                    GroupingElementSyntax::ValueExpr(expr) => {
+                        expr_resolver.register_value_expr(expr)
+                    }
+                    GroupingElementSyntax::ValueAlias(alias) => {
+                        expr_resolver.resolve_value_alias(alias)?
+                    }
+                };
 
-                Some(GroupAggregateParameter::new(
+                Ok(Some(GroupAggregateParameter::new(
                     aggr_expr_label,
                     group_by_label,
-                ))
+                )))
             }
-            (None, 0) => None,
+            (None, 0) => Ok(None),
             _ => unimplemented!(),
         }
     }

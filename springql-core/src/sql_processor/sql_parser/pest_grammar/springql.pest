@@ -433,6 +433,7 @@ sub_from_item = {
 
 grouping_element = {
     value_expr
+    | value_alias
 }
 
 window_clause = {

@@ -42,7 +42,7 @@ use pest::{iterators::Pairs, Parser};
 use std::convert::identity;
 
 use super::parse_success::ParseSuccess;
-use super::syntax::{DurationFunction, FromItemSyntax, SelectFieldSyntax};
+use super::syntax::{DurationFunction, FromItemSyntax, GroupingElementSyntax, SelectFieldSyntax};
 
 #[derive(Debug, Default)]
 pub(super) struct PestParserImpl;
@@ -547,13 +547,22 @@ impl PestParserImpl {
         Ok(FromItemSyntax::StreamVariant { stream_name, alias })
     }
 
-    fn parse_grouping_element(mut params: FnParseParams) -> Result<ValueExpr> {
-        parse_child(
+    fn parse_grouping_element(mut params: FnParseParams) -> Result<GroupingElementSyntax> {
+        try_parse_child(
             &mut params,
             Rule::value_expr,
             Self::parse_value_expr,
-            identity,
-        )
+            GroupingElementSyntax::ValueExpr,
+        )?
+        .or(try_parse_child(
+            &mut params,
+            Rule::value_alias,
+            Self::parse_value_alias,
+            GroupingElementSyntax::ValueAlias,
+        )?)
+        .ok_or_else(|| {
+            SpringError::Sql(anyhow!("Failed to parse grouping element: {}", params.sql))
+        })
     }
 
     fn parse_window_clause(mut params: FnParseParams) -> Result<WindowParameter> {

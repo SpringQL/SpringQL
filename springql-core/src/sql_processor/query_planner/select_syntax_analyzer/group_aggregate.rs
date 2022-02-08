@@ -1,6 +1,6 @@
 use super::SelectSyntaxAnalyzer;
-use crate::expression::{AggrExpr, ValueExpr};
-use crate::sql_processor::sql_parser::syntax::SelectFieldSyntax;
+use crate::expression::AggrExpr;
+use crate::sql_processor::sql_parser::syntax::{GroupingElementSyntax, SelectFieldSyntax};
 
 impl SelectSyntaxAnalyzer {
     pub(in super::super) fn aggr_expr_select_list(&self) -> Vec<AggrExpr> {
@@ -15,7 +15,7 @@ impl SelectSyntaxAnalyzer {
     }
 
     /// TODO multiple GROUP BY
-    pub(in super::super) fn grouping_element(&self) -> Option<ValueExpr> {
+    pub(in super::super) fn grouping_element(&self) -> Option<GroupingElementSyntax> {
         self.select_syntax.grouping_element.clone()
     }
 }

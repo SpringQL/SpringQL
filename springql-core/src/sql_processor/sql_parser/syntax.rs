@@ -24,7 +24,7 @@ pub(in crate::sql_processor) struct OptionSyntax {
 pub(in crate::sql_processor) struct SelectStreamSyntax {
     pub(in crate::sql_processor) fields: Vec<SelectFieldSyntax>,
     pub(in crate::sql_processor) from_item: FromItemSyntax,
-    pub(in crate::sql_processor) grouping_element: Option<ValueExpr>,
+    pub(in crate::sql_processor) grouping_element: Option<GroupingElementSyntax>,
     pub(in crate::sql_processor) window_clause: Option<WindowParameter>,
 }
 
@@ -46,6 +46,12 @@ pub(in crate::sql_processor) enum FromItemSyntax {
         stream_name: StreamName,
         alias: Option<CorrelationAlias>,
     },
+}
+
+#[derive(Clone, PartialEq, Debug)]
+pub(in crate::sql_processor) enum GroupingElementSyntax {
+    ValueExpr(ValueExpr),
+    ValueAlias(ValueAlias),
 }
 
 #[derive(Clone, Eq, PartialEq, Debug)]
