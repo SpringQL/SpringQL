@@ -58,7 +58,10 @@ mod select_syntax_analyzer;
 use crate::{
     error::Result,
     pipeline::Pipeline,
-    stream_engine::command::query_plan::{query_plan_operation::QueryPlanOperation, QueryPlan},
+    stream_engine::command::query_plan::{
+        query_plan_operation::{CollectOp, EvalValueExprOp, LowerOps, ProjectionOp, UpperOps},
+        QueryPlan,
+    },
 };
 
 use self::select_syntax_analyzer::SelectSyntaxAnalyzer;
@@ -67,42 +70,35 @@ use super::sql_parser::syntax::SelectStreamSyntax;
 
 #[derive(Clone, Debug)]
 pub(crate) struct QueryPlanner {
-    plan: QueryPlan,
     analyzer: SelectSyntaxAnalyzer,
 }
 
 impl QueryPlanner {
     pub(in crate::sql_processor) fn new(select_stream_syntax: SelectStreamSyntax) -> Self {
         Self {
-            plan: QueryPlan::default(),
             analyzer: SelectSyntaxAnalyzer::new(select_stream_syntax),
         }
     }
 
     pub(crate) fn plan(self, _pipeline: &Pipeline) -> Result<QueryPlan> {
         let collect_ops = self.create_collect_ops()?;
-        let collect_op = collect_ops
+        let collect = collect_ops
             .into_iter()
             .next()
             .expect("collect_ops.len() == 1");
+        let lower_ops = LowerOps { collect };
 
-        let eval_value_expr_op = self.create_eval_value_expr_op();
+        let projection = self.create_projection_op()?;
+        let eval_value_expr = self.create_eval_value_expr_op();
+        let upper_ops = UpperOps {
+            projection,
+            eval_value_expr,
+        };
 
-        // self.create_window_nodes()?;
-        // self.create_join_nodes()?;
-        // self.create_aggregation_nodes()?;
-        // self.create_sort_node()?;
-        // self.create_selection_node()?;
-        let projection_op = self.create_projection_op()?;
-
-        let mut plan = self.plan;
-        plan.add_root(projection_op.clone());
-        plan.add_left(&projection_op, eval_value_expr_op.clone());
-        plan.add_left(&eval_value_expr_op, collect_op);
-        Ok(plan)
+        Ok(QueryPlan::new(upper_ops, lower_ops))
     }
 
-    fn create_collect_ops(&self) -> Result<Vec<QueryPlanOperation>> {
+    fn create_collect_ops(&self) -> Result<Vec<CollectOp>> {
         let from_item_correlations = self.analyzer.from_item_streams()?;
         assert!(
             !from_item_correlations.is_empty(),
@@ -115,16 +111,19 @@ impl QueryPlanner {
 
         from_item_correlations
             .into_iter()
-            .map(|stream| Ok(QueryPlanOperation::Collect { stream }))
+            .map(|stream| Ok(CollectOp { stream }))
             .collect::<Result<Vec<_>>>()
     }
 
-    fn create_projection_op(&self) -> Result<QueryPlanOperation> {
-        todo!()
+    fn create_projection_op(&self) -> Result<ProjectionOp> {
+        let column_references = self.analyzer.column_references_in_projection()?;
+
+        let projection_op = ProjectionOp { column_references };
+        Ok(projection_op)
     }
 
-    fn create_eval_value_expr_op(&self) -> QueryPlanOperation {
+    fn create_eval_value_expr_op(&self) -> EvalValueExprOp {
         let expressions = self.analyzer.all_expressions();
-        QueryPlanOperation::EvalValueExpr { expressions }
+        EvalValueExprOp { expressions }
     }
 }

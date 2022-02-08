@@ -1,22 +1,18 @@
 // Copyright (c) 2021 TOYOTA MOTOR CORPORATION. Licensed under MIT OR Apache-2.0.
 
+pub(super) mod collect_subtask;
+pub(super) mod eval_value_expr_subtask;
+pub(super) mod projection_subtask;
+
 use std::sync::Arc;
 
-use petgraph::{
-    graph::{DiGraph, NodeIndex},
-    visit::{EdgeRef, IntoNodeReferences},
-};
-
-use self::query_subtask_node::QuerySubtaskNode;
 use crate::{
     error::Result,
     pipeline::{name::ColumnName, stream_model::StreamModel},
-    stream_engine::{
-        autonomous_executor::row::{
-            column::stream_column::StreamColumns, column_values::ColumnValues, Row,
-        },
-        command::query_plan::{child_direction::ChildDirection, QueryPlan},
+    stream_engine::autonomous_executor::row::{
+        column::stream_column::StreamColumns, column_values::ColumnValues, Row,
     },
+    stream_engine::command::query_plan::QueryPlan,
     stream_engine::{
         autonomous_executor::{
             performance_metrics::metrics_update_command::metrics_update_by_task_execution::InQueueMetricsUpdateByTaskExecution,
@@ -26,12 +22,18 @@ use crate::{
     },
 };
 
-mod query_subtask_node;
+use self::{
+    collect_subtask::CollectSubtask, eval_value_expr_subtask::EvalValueExprSubtask,
+    projection_subtask::ProjectionSubtask,
+};
 
 /// Process input row 1-by-1.
 #[derive(Debug)]
 pub(in crate::stream_engine::autonomous_executor) struct QuerySubtask {
-    tree: DiGraph<QuerySubtaskNode, ChildDirection>,
+    projection_subtask: ProjectionSubtask,
+    collect_subtask: CollectSubtask,
+
+    eval_value_expr_subtask: EvalValueExprSubtask, // TODO rm
 }
 
 #[derive(Clone, Debug)]
@@ -85,18 +87,21 @@ pub(in crate::stream_engine::autonomous_executor) struct QuerySubtaskOut {
         InQueueMetricsUpdateByTaskExecution,
 }
 
-impl From<&QueryPlan> for QuerySubtask {
-    fn from(query_plan: &QueryPlan) -> Self {
-        let plan_tree = query_plan.as_petgraph();
-        let subtask_tree = plan_tree.map(
-            |_, op| QuerySubtaskNode::from(op),
-            |_, child_direction| child_direction.clone(),
-        );
-        Self { tree: subtask_tree }
-    }
-}
-
 impl QuerySubtask {
+    pub(in crate::stream_engine::autonomous_executor) fn new(plan: QueryPlan) -> Self {
+        let projection_subtask =
+            ProjectionSubtask::new(plan.upper_ops.projection.column_references);
+        let collect_subtask = CollectSubtask::new();
+        let eval_value_expr_subtask =
+            EvalValueExprSubtask::new(plan.upper_ops.eval_value_expr.expressions);
+
+        Self {
+            projection_subtask,
+            collect_subtask,
+            eval_value_expr_subtask,
+        }
+    }
+
     /// # Returns
     ///
     /// None when input queue does not exist or is empty.
@@ -108,75 +113,45 @@ impl QuerySubtask {
         &self,
         context: &TaskContext,
     ) -> Result<Option<QuerySubtaskOut>> {
-        let mut next_idx = self.leaf_node_idx();
-
-        match self.run_leaf(next_idx, context) {
+        match self.run_lower_ops(context) {
             None => Ok(None),
-            Some(leaf_query_subtask_out) => {
-                let mut next_tuples = leaf_query_subtask_out.values_seq;
-                while let Some(parent_idx) = self.parent_node_idx(next_idx) {
-                    next_idx = parent_idx;
-                    next_tuples = next_tuples
-                        .into_iter()
-                        .map(|next_tuple| self.run_non_leaf(next_idx, next_tuple))
-                        .collect::<Result<Vec<Vec<_>>>>()?
-                        .concat();
-                }
+            Some(lower_query_subtask_out) => {
+                let values_seq = self.run_upper_ops(lower_query_subtask_out.values_seq)?;
 
                 Ok(Some(QuerySubtaskOut::new(
-                    next_tuples,
-                    leaf_query_subtask_out.in_queue_metrics_update, // leaf subtask decides in queue metrics change
+                    values_seq,
+                    lower_query_subtask_out.in_queue_metrics_update, // leaf subtask decides in queue metrics change
                 )))
             }
         }
     }
 
-    /// # Returns
-    ///
-    /// Although many subtasks return single tuple, selection subtask may return empty (filtered-out) and window subtask may return multiple tuples.
-    fn run_non_leaf(&self, subtask_idx: NodeIndex, child_tuple: Tuple) -> Result<Vec<Tuple>> {
-        let subtask = self.tree.node_weight(subtask_idx).expect("must be found");
-        match subtask {
-            QuerySubtaskNode::Projection(projection_subtask) => {
-                let tuple = projection_subtask.run(child_tuple)?;
-                Ok(vec![tuple])
-            }
-            QuerySubtaskNode::EvalValueExpr(eval_value_expr_subtask) => {
-                let tuple = eval_value_expr_subtask.run(child_tuple)?;
-                Ok(vec![tuple])
-            }
-            QuerySubtaskNode::Collect(_) => unreachable!(),
-        }
-    }
-
-    /// # Returns
-    ///
-    /// None when input queue does not exist or is empty.
-    fn run_leaf(&self, subtask_idx: NodeIndex, context: &TaskContext) -> Option<QuerySubtaskOut> {
-        let subtask = self.tree.node_weight(subtask_idx).expect("must be found");
-        match subtask {
-            QuerySubtaskNode::Collect(collect_subtask) => collect_subtask.run(context),
-            _ => unreachable!(),
-        }
-    }
-
-    fn leaf_node_idx(&self) -> NodeIndex {
-        self.tree
-            .node_references()
-            .find_map(|(idx, _)| {
-                self.tree
-                    .edges_directed(idx, petgraph::Direction::Outgoing)
-                    .next()
-                    .is_none()
-                    .then(|| idx)
+    fn run_upper_ops(&self, values_seq: Vec<SqlValues>) -> Result<Vec<SqlValues>> {
+        values_seq
+            .into_iter()
+            .map(|values| {
+                let tuple = self.run_eval_value_expr_op(values)?;
+                self.run_projection_op(tuple)
             })
-            .expect("asserting only 1 leaf currently. TODO multiple leaves")
+            .collect()
     }
 
-    fn parent_node_idx(&self, node_idx: NodeIndex) -> Option<NodeIndex> {
-        self.tree
-            .edges_directed(node_idx, petgraph::Direction::Incoming)
-            .next()
-            .map(|parent_edge| parent_edge.source())
+    /// # Returns
+    ///
+    /// None when input queue does not exist or is empty or JOIN op does not emit output yet.
+    fn run_lower_ops(&self, context: &TaskContext) -> Option<QuerySubtaskOut> {
+        self.run_collect_op(context)
+    }
+
+    fn run_eval_value_expr_op(&self, tuple: Tuple) -> Result<Tuple> {
+        self.eval_value_expr_subtask.run(tuple)
+    }
+
+    fn run_projection_op(&self, tuple: Tuple) -> Result<Tuple> {
+        self.projection_subtask.run(tuple)
+    }
+
+    fn run_collect_op(&self, context: &TaskContext) -> Option<QuerySubtaskOut> {
+        self.collect_subtask.run(context)
     }
 }

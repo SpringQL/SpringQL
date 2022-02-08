@@ -9,16 +9,35 @@ use crate::{
 };
 
 #[derive(Clone, PartialEq, Debug)]
+pub(crate) struct UpperOps {
+    pub(crate) projection: ProjectionOp,
+    pub(crate) eval_value_expr: EvalValueExprOp,
+    // TODO option group_aggregate
+}
+
+#[derive(Clone, PartialEq, Debug)]
+pub(crate) struct LowerOps {
+    pub(crate) collect: CollectOp,
+    // TODO join
+}
+
+#[derive(Clone, PartialEq, Debug)]
+pub(crate) struct ProjectionOp {
+    pub(crate) column_references: Vec<ColumnReference>,
+}
+
+#[derive(Clone, PartialEq, Debug)]
+pub(crate) struct EvalValueExprOp {
+    pub(crate) expressions: Vec<ValueExpr>,
+}
+
+#[derive(Clone, PartialEq, Debug)]
+pub(crate) struct CollectOp {
+    pub(crate) stream: StreamName,
+}
+
+#[derive(Clone, PartialEq, Debug)]
 pub(crate) enum QueryPlanOperation {
-    Collect {
-        stream: StreamName,
-    },
-    EvalValueExpr {
-        expressions: Vec<ValueExpr>,
-    },
-    Projection {
-        expr_labels: Vec<ExprLabel>,
-    },
     TimeBasedSlidingWindow {
         /// cannot use chrono::Duration here: <https://github.com/chronotope/chrono/issues/117>
         lower_bound: Duration,

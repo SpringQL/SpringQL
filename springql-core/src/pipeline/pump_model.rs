@@ -10,7 +10,7 @@ use self::pump_input_type::PumpInputType;
 
 use super::name::{PumpName, StreamName};
 
-#[derive(Clone, Eq, PartialEq, Debug, new)]
+#[derive(Clone, PartialEq, Debug, new)]
 pub(crate) struct PumpModel {
     name: PumpName,
     query_plan: QueryPlan,
