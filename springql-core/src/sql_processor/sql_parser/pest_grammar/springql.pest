@@ -248,20 +248,13 @@ function_call = {
 function_name = {
     ^"DURATION_SECS"
     | ^"FLOOR_TIME"
+    | ^"FLOOR"
+
 }
 
-function_call = {
-    function_name ~ "("
-    ~ expression ~ ("," ~ expression)*
-    ~ ")"
-}
-function_name = {
-    ^"FLOOR"
-}
-
-aggregate = {
+aggr_expr = {
     aggregate_name ~ "("
-    ~ field_pointer
+    ~ value_expr
     ~ ")"
 }
 aggregate_name = {
@@ -427,7 +420,7 @@ select_stream_command = {
 
 select_field = {
     value_expr ~ (^"AS"? ~ value_alias)?
-    | aggregate ~ (^"AS"? ~ aggr_alias) // FIXME currently an expression is Tuple::eval_expression(tuple) (scalar expression) but aggregate should also be expression to realize `max(c1) + min(c2)`.
+    | aggr_expr ~ (^"AS"? ~ aggr_alias) // FIXME currently an expression is Tuple::eval_expression(tuple) (scalar expression) but aggr_expr should also be expression to realize `max(c1) + min(c2)`.
 }
 
 from_item = {
@@ -439,7 +432,7 @@ sub_from_item = {
 }
 
 grouping_element = {
-    field_pointer // TODO expression
+    value_expr
 }
 
 window_clause = {
