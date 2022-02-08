@@ -89,8 +89,7 @@ pub(in crate::stream_engine::autonomous_executor) struct QuerySubtaskOut {
 
 impl QuerySubtask {
     pub(in crate::stream_engine::autonomous_executor) fn new(plan: QueryPlan) -> Self {
-        let projection_subtask =
-            ProjectionSubtask::new(plan.upper_ops.projection.column_references);
+        let projection_subtask = ProjectionSubtask::new(plan.upper_ops.projection.expr_labels);
         let collect_subtask = CollectSubtask::new();
         let eval_value_expr_subtask =
             EvalValueExprSubtask::new(plan.upper_ops.eval_value_expr.expressions);

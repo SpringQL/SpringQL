@@ -57,6 +57,7 @@ mod select_syntax_analyzer;
 
 use crate::{
     error::Result,
+    expr_resolver::{self, ExprResolver},
     pipeline::Pipeline,
     stream_engine::command::query_plan::{
         query_plan_operation::{CollectOp, EvalValueExprOp, LowerOps, ProjectionOp, UpperOps},
@@ -68,7 +69,7 @@ use self::select_syntax_analyzer::SelectSyntaxAnalyzer;
 
 use super::sql_parser::syntax::SelectStreamSyntax;
 
-#[derive(Clone, Debug)]
+#[derive(Debug)]
 pub(crate) struct QueryPlanner {
     analyzer: SelectSyntaxAnalyzer,
 }
@@ -81,6 +82,12 @@ impl QueryPlanner {
     }
 
     pub(crate) fn plan(self, _pipeline: &Pipeline) -> Result<QueryPlan> {
+        let (expr_resolver, labels_select_list) =
+            ExprResolver::new(self.analyzer.select_list().to_vec());
+        let projection = ProjectionOp {
+            expr_labels: labels_select_list,
+        };
+
         let collect_ops = self.create_collect_ops()?;
         let collect = collect_ops
             .into_iter()
@@ -88,7 +95,6 @@ impl QueryPlanner {
             .expect("collect_ops.len() == 1");
         let lower_ops = LowerOps { collect };
 
-        let projection = self.create_projection_op()?;
         let eval_value_expr = self.create_eval_value_expr_op();
         let upper_ops = UpperOps {
             projection,
@@ -113,13 +119,6 @@ impl QueryPlanner {
             .into_iter()
             .map(|stream| Ok(CollectOp { stream }))
             .collect::<Result<Vec<_>>>()
-    }
-
-    fn create_projection_op(&self) -> Result<ProjectionOp> {
-        let column_references = self.analyzer.column_references_in_projection()?;
-
-        let projection_op = ProjectionOp { column_references };
-        Ok(projection_op)
     }
 
     fn create_eval_value_expr_op(&self) -> EvalValueExprOp {

@@ -10,7 +10,7 @@ pub(in crate::sql_processor) struct SelectSyntaxAnalyzer {
 
 impl SelectSyntaxAnalyzer {
     pub(in crate::sql_processor) fn all_expressions(&self) -> Vec<ValueExpr> {
-        let mut expressions = self.field_expressions();
+        let mut expressions = self.expressions_in_select_list();
         expressions.append(&mut self.from_item_expressions());
         expressions
     }

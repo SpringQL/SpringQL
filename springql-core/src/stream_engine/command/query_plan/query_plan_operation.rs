@@ -23,7 +23,7 @@ pub(crate) struct LowerOps {
 
 #[derive(Clone, PartialEq, Debug)]
 pub(crate) struct ProjectionOp {
-    pub(crate) column_references: Vec<ColumnReference>,
+    pub(crate) expr_labels: Vec<ExprLabel>,
 }
 
 #[derive(Clone, PartialEq, Debug)]
