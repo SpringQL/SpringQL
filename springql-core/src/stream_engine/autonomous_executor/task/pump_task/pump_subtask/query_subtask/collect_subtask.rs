@@ -2,7 +2,6 @@
 
 use crate::mem_size::MemSize;
 use crate::stream_engine::autonomous_executor::performance_metrics::metrics_update_command::metrics_update_by_task_execution::InQueueMetricsUpdateByTaskExecution;
-use crate::stream_engine::autonomous_executor::task::pump_task::pump_subtask::query_subtask::QuerySubtaskOut;
 use crate::stream_engine::autonomous_executor::task::task_context::TaskContext;
 use crate::stream_engine::autonomous_executor::task::tuple::Tuple;
 use crate::stream_engine::autonomous_executor::task_graph::queue_id::QueueId;

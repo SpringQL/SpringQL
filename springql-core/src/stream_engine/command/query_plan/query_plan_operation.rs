@@ -2,11 +2,7 @@
 
 use std::time::Duration;
 
-use crate::{
-    expr_resolver::expr_label::ExprLabel,
-    expression::ValueExpr,
-    pipeline::{field::field_name::ColumnReference, name::StreamName},
-};
+use crate::{expr_resolver::expr_label::ExprLabel, pipeline::name::StreamName};
 
 #[derive(Clone, PartialEq, Debug)]
 pub(crate) struct UpperOps {

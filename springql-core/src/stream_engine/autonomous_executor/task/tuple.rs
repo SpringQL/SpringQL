@@ -1,20 +1,9 @@
 use crate::{
     error::{Result, SpringError},
-    pipeline::{
-        field::{field_name::ColumnReference, Field},
-        name::ColumnName,
-        stream_model::StreamModel,
-    },
-    stream_engine::{
-        autonomous_executor::row::{
-            column::stream_column::StreamColumns, column_values::ColumnValues, Row,
-        },
-        time::timestamp::Timestamp,
-        SqlValue,
-    },
+    pipeline::field::{field_name::ColumnReference, Field},
+    stream_engine::{autonomous_executor::row::Row, time::timestamp::Timestamp, SqlValue},
 };
 use anyhow::anyhow;
-use std::sync::Arc;
 
 /// Tuple is a temporary structure appearing only in task execution.
 ///
