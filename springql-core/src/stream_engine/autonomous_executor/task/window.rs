@@ -83,7 +83,7 @@ mod tests {
         expression::{AggrExpr, ValueExpr},
         pipeline::{
             field::field_name::ColumnReference,
-            name::{AggrAlias, ColumnName, StreamName, ValueAlias},
+            name::{AggrAlias, ColumnName, StreamName},
             pump_model::window_operation_parameter::aggregate::{
                 AggregateFunctionParameter, GroupAggregateParameter,
             },

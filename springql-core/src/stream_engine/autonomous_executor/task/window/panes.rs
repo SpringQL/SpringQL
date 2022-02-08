@@ -131,16 +131,10 @@ mod tests {
     use std::str::FromStr;
 
     use crate::{
-        expr_resolver::ExprResolver,
-        expression::ValueExpr,
-        pipeline::{
-            field::field_name::ColumnReference,
-            name::ValueAlias,
-            pump_model::window_operation_parameter::aggregate::{
-                AggregateFunctionParameter, GroupAggregateParameter,
-            },
-        },
-        stream_engine::time::duration::event_duration::EventDuration, sql_processor::sql_parser::syntax::SelectFieldSyntax,
+        expr_resolver::ExprResolver, expression::ValueExpr,
+        pipeline::pump_model::window_operation_parameter::aggregate::GroupAggregateParameter,
+        sql_processor::sql_parser::syntax::SelectFieldSyntax,
+        stream_engine::time::duration::event_duration::EventDuration,
     };
 
     use super::*;

@@ -4,12 +4,8 @@ use std::collections::HashMap;
 
 use crate::{
     expr_resolver::ExprResolver,
-    pipeline::{
-        field::{field_name::ColumnReference, Field},
-        name::{ColumnName, StreamName},
-        pump_model::window_operation_parameter::aggregate::{
-            AggregateFunctionParameter, GroupAggregateParameter,
-        },
+    pipeline::pump_model::window_operation_parameter::aggregate::{
+        AggregateFunctionParameter, GroupAggregateParameter,
     },
     stream_engine::{
         autonomous_executor::task::{

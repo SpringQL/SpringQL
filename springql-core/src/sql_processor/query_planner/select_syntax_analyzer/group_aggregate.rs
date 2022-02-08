@@ -1,7 +1,5 @@
 use super::SelectSyntaxAnalyzer;
-use crate::error::Result;
 use crate::expression::{AggrExpr, ValueExpr};
-use crate::pipeline::pump_model::window_operation_parameter::aggregate::GroupAggregateParameter;
 use crate::sql_processor::sql_parser::syntax::SelectFieldSyntax;
 
 impl SelectSyntaxAnalyzer {

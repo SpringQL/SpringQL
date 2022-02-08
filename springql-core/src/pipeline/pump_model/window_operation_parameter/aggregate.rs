@@ -1,7 +1,4 @@
-use crate::{
-    expr_resolver::expr_label::ExprLabel, expression::AggrExpr,
-    pipeline::field::field_name::ColumnReference,
-};
+use crate::expr_resolver::expr_label::ExprLabel;
 
 /// TODO [support complex expression with aggregations](https://gh01.base.toyota-tokyo.tech/SpringQL-internal/SpringQL/issues/152)
 ///
