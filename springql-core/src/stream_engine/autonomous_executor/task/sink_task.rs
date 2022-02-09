@@ -9,7 +9,7 @@ use crate::error::Result;
 use crate::mem_size::MemSize;
 use crate::pipeline::name::SinkWriterName;
 use crate::pipeline::sink_writer_model::SinkWriterModel;
-use crate::stream_engine::autonomous_executor::performance_metrics::metrics_update_command::metrics_update_by_task_execution::{MetricsUpdateByTaskExecution, InQueueMetricsUpdateByCollect, TaskMetricsUpdateByTask, InQueueMetricsUpdateByTask};
+use crate::stream_engine::autonomous_executor::performance_metrics::metrics_update_command::metrics_update_by_task_execution::{MetricsUpdateByTaskExecution, TaskMetricsUpdateByTask, InQueueMetricsUpdateByTask};
 use crate::stream_engine::autonomous_executor::repositories::Repositories;
 use crate::stream_engine::autonomous_executor::row::foreign_row::sink_row::SinkRow;
 use crate::stream_engine::autonomous_executor::row::Row;
