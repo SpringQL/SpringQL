@@ -6,9 +6,12 @@ use crate::{
     expr_resolver::ExprResolver,
     pipeline::pump_model::window_operation_parameter::aggregate::GroupAggregateParameter,
     stream_engine::{
-        autonomous_executor::task::{
-            tuple::Tuple,
-            window::{watermark::Watermark, GroupAggrOut},
+        autonomous_executor::{
+            performance_metrics::metrics_update_command::metrics_update_by_task_execution::WindowInFlowByWindowTask,
+            task::{
+                tuple::Tuple,
+                window::{watermark::Watermark, GroupAggrOut},
+            },
         },
         time::timestamp::Timestamp,
         NnSqlValue, SqlValue,
@@ -48,7 +51,7 @@ impl Pane {
         &mut self,
         expr_resolver: &ExprResolver,
         tuple: &Tuple,
-    ) {
+    ) -> WindowInFlowByWindowTask {
         match &mut self.inner {
             PaneInner::Avg {
                 group_aggregation_parameter,
@@ -81,29 +84,37 @@ impl Pane {
                         .unpack::<i64>()
                         .expect("only i64 is supported currently"),
                 );
+
+                WindowInFlowByWindowTask::zero()
             }
         }
     }
 
-    pub(in crate::stream_engine::autonomous_executor) fn close(self) -> Vec<GroupAggrOut> {
+    pub(in crate::stream_engine::autonomous_executor) fn close(
+        self,
+    ) -> (Vec<GroupAggrOut>, WindowInFlowByWindowTask) {
         match self.inner {
             PaneInner::Avg {
                 group_aggregation_parameter,
                 states,
-            } => states
-                .into_iter()
-                .map(|(group_by, state)| {
-                    let aggr_label = group_aggregation_parameter.aggr_expr;
-                    let aggr_value = SqlValue::NotNull(NnSqlValue::BigInt(state.finalize()));
-                    let group_by_label = group_aggregation_parameter.group_by;
-                    GroupAggrOut::new(
-                        aggr_label,
-                        aggr_value,
-                        group_by_label,
-                        SqlValue::NotNull(group_by),
-                    )
-                })
-                .collect(),
+            } => {
+                let group_aggr_out_seq = states
+                    .into_iter()
+                    .map(|(group_by, state)| {
+                        let aggr_label = group_aggregation_parameter.aggr_expr;
+                        let aggr_value = SqlValue::NotNull(NnSqlValue::BigInt(state.finalize()));
+                        let group_by_label = group_aggregation_parameter.group_by;
+                        GroupAggrOut::new(
+                            aggr_label,
+                            aggr_value,
+                            group_by_label,
+                            SqlValue::NotNull(group_by),
+                        )
+                    })
+                    .collect();
+
+                (group_aggr_out_seq, WindowInFlowByWindowTask::zero())
+            }
         }
     }
 }

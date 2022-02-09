@@ -3,7 +3,7 @@
 use std::sync::Arc;
 
 use crate::mem_size::MemSize;
-use crate::stream_engine::autonomous_executor::performance_metrics::metrics_update_command::metrics_update_by_task_execution::{InQueueMetricsUpdateByCollect, WaitingQueueInFlowByCollect};
+use crate::stream_engine::autonomous_executor::performance_metrics::metrics_update_command::metrics_update_by_task_execution::InQueueMetricsUpdateByCollect;
 use crate::stream_engine::autonomous_executor::repositories::Repositories;
 use crate::stream_engine::autonomous_executor::task::task_context::TaskContext;
 use crate::stream_engine::autonomous_executor::task::tuple::Tuple;
