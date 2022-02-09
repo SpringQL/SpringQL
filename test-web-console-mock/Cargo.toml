@@ -14,8 +14,7 @@ keywords = ["springql"] # up to 5 keywords, each keyword should have <= 20 chars
 repository = "https://github.com/SpringQL/SpringQL"
 
 [dependencies]
-tokio = {version = "1", features = ["full"]}
-warp = "0.3"
+simple-server = "0.4"
 
 serde = "=1.0"
 serde_derive = "=1.0"

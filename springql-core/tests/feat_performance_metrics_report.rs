@@ -99,7 +99,7 @@ fn test_performance_metrics_report() {
         .add_callback_post_pipeline(|| {
             log::error!("post_pipeline");
         })
-        .start();
+        .bulid();
 
     let mut config = spring_config_default();
     config.web_console.enable_report_post = true;
@@ -108,6 +108,8 @@ fn test_performance_metrics_report() {
     config.web_console.port = mock.sock_addr().port();
 
     let _pipeline = apply_ddls(&ddls, config);
+
+    mock.start();
 
     let sink_received = drain_from_sink(&test_sink);
     let r = sink_received.get(0).unwrap();

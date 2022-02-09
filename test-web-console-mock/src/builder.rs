@@ -14,12 +14,7 @@ impl WebConsoleMockBuilder {
         me
     }
 
-    pub fn start(self) -> WebConsoleMock {
-        let rt = tokio::runtime::Builder::new_multi_thread()
-            .enable_all()
-            .build()
-            .unwrap();
-
-        rt.block_on(async move { WebConsoleMock::new(self).await })
+    pub fn bulid(self) -> WebConsoleMock {
+        WebConsoleMock::new(self)
     }
 }
