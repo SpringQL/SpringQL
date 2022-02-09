@@ -107,9 +107,9 @@ fn test_performance_metrics_report() {
     config.web_console.host = mock.sock_addr().ip().to_string();
     config.web_console.port = mock.sock_addr().port();
 
-    let _pipeline = apply_ddls(&ddls, config);
-
     mock.start();
+
+    let _pipeline = apply_ddls(&ddls, config);
 
     let sink_received = drain_from_sink(&test_sink);
     let r = sink_received.get(0).unwrap();

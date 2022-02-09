@@ -5,6 +5,7 @@ mod handlers;
 use std::{
     net::{SocketAddr, TcpListener},
     thread,
+    time::Duration,
 };
 
 use builder::WebConsoleMockBuilder;
@@ -48,10 +49,39 @@ impl WebConsoleMock {
     }
 
     /// Returns when health-check endpoint starts working.
-    pub fn start(self) -> ! {
-        // thread::spawn(move || {
-        //     self.server.listen_on_socket(self.listener_sock);
-        // });
-        self.server.listen_on_socket(self.listener_sock)
+    pub fn start(self) {
+        let addr = self.sock_addr();
+
+        thread::spawn(move || {
+            self.server.listen_on_socket(self.listener_sock);
+        });
+        Self::wait_for_health_check(addr);
+    }
+
+    fn wait_for_health_check(addr: SocketAddr) {
+        let client = reqwest::blocking::Client::builder()
+            .timeout(Some(Duration::from_secs(1)))
+            .build()
+            .expect("failed to build a reqwest client");
+
+        let url = format!("http://{}:{}/health", addr.ip(), addr.port());
+
+        loop {
+            match client.get(&url).send() {
+                Ok(resp) => {
+                    let res_status = resp.error_for_status_ref();
+                    match res_status {
+                        Ok(_) => {
+                            log::error!("Got response to healthcheck endpoint.");
+                            break;
+                        }
+                        Err(e) => {
+                            panic!("healthcheck endpoint responsed with error status: {:?}", e)
+                        }
+                    }
+                }
+                Err(_) => thread::sleep(Duration::from_secs(1)),
+            }
+        }
     }
 }
