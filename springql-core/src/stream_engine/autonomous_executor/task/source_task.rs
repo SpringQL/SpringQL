@@ -15,6 +15,7 @@ use crate::stream_engine::autonomous_executor::repositories::Repositories;
 use crate::stream_engine::autonomous_executor::row::Row;
 use crate::stream_engine::autonomous_executor::task_graph::queue_id::QueueId;
 use crate::stream_engine::autonomous_executor::task_graph::queue_id::row_queue_id::RowQueueId;
+use crate::stream_engine::autonomous_executor::task_graph::queue_id::window_queue_id::WindowQueueId;
 use crate::stream_engine::autonomous_executor::task_graph::task_id::TaskId;
 use crate::stream_engine::time::duration::wall_clock_duration::wall_clock_stopwatch::WallClockStopwatch;
 
@@ -74,7 +75,7 @@ impl SourceTask {
 
         let out_queue_metrics = match queue_id {
             QueueId::Row(queue_id) => self.put_row_into_row_queue(row, queue_id, repos),
-            QueueId::Window(_) => todo!(),
+            QueueId::Window(queue_id) => self.put_row_into_window_queue(row, queue_id, repos),
         };
         Some(out_queue_metrics)
     }
@@ -86,6 +87,19 @@ impl SourceTask {
     ) -> OutQueueMetricsUpdateByTaskExecution {
         let row_q_repo = repos.row_queue_repository();
         let queue = row_q_repo.get(&queue_id);
+        let bytes_put = row.mem_size();
+
+        queue.put(row);
+        OutQueueMetricsUpdateByTaskExecution::new(queue_id.into(), 1, bytes_put as u64)
+    }
+    fn put_row_into_window_queue(
+        &self,
+        row: Row,
+        queue_id: WindowQueueId,
+        repos: Arc<Repositories>,
+    ) -> OutQueueMetricsUpdateByTaskExecution {
+        let window_q_repo = repos.window_queue_repository();
+        let queue = window_q_repo.get(&queue_id);
         let bytes_put = row.mem_size();
 
         queue.put(row);
