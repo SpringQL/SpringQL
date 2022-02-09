@@ -24,6 +24,7 @@ pub(crate) struct ExprResolver {
 
     aggr_expressions: HashMap<AggrExprLabel, AggrExpr>,
     aggr_aliased_labels: HashMap<AggrAlias, AggrExprLabel>,
+    aggr_expression_results: HashMap<AggrExprLabel, SqlValue>,
 }
 
 impl ExprResolver {
@@ -70,6 +71,7 @@ impl ExprResolver {
                 value_aliased_labels,
                 aggr_expressions,
                 aggr_aliased_labels,
+                aggr_expression_results: HashMap::new(),
             },
             value_expr_labels,
             aggr_expr_labels,
@@ -120,6 +122,11 @@ impl ExprResolver {
         label
     }
 
+    /// Register aggregate expression result
+    pub(crate) fn register_aggr_result(&mut self, label: AggrExprLabel, result: SqlValue) {
+        self.aggr_expression_results.insert(label, result);
+    }
+
     /// label -> (internal) value expression + tuple (for ColumnReference) -> SqlValue.
     ///
     /// # Panics
@@ -167,6 +174,24 @@ impl ExprResolver {
         let value_expr = aggr_expr.aggregated;
         let value_expr_ph2 = value_expr.resolve_colref(tuple)?;
         value_expr_ph2.eval()
+    }
+
+    /// label -> (internal) value expression inside aggr expr + tuple (for ColumnReference) -> SqlValue.
+    ///
+    /// # Panics
+    ///
+    /// -  `label` is not calculated and registered yet
+    ///
+    /// # Failures
+    ///
+    /// - `SpringError::Sql` when:
+    ///   - column reference in expression is not found in `tuple`.
+    ///   - somehow failed to eval expression.
+    pub(crate) fn get_aggr_expr_result(&self, label: AggrExprLabel) -> SqlValue {
+        self.aggr_expression_results
+            .get(&label)
+            .cloned()
+            .unwrap_or_else(|| panic!("label {:?} not found", label))
     }
 }
 
