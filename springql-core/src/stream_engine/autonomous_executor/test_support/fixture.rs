@@ -13,8 +13,8 @@ use crate::{
     stream_engine::{
         autonomous_executor::{
             performance_metrics::metrics_update_command::metrics_update_by_task_execution::{
-                InQueueMetricsUpdateByTaskExecution, OutQueueMetricsUpdateByTaskExecution,
-                TaskMetricsUpdateByTaskExecution,
+                InQueueMetricsUpdateByCollect, OutQueueMetricsUpdateByTask,
+                TaskMetricsUpdateByTask,
             },
             row::{
                 column::stream_column::StreamColumns, foreign_row::format::json::JsonObject, Row,
@@ -451,11 +451,11 @@ impl PerformanceMetrics {
 
 impl MetricsUpdateByTaskExecution {
     pub(in crate::stream_engine) fn fx_split_join_t1() -> Self {
-        let task = TaskMetricsUpdateByTaskExecution::new(
+        let task = TaskMetricsUpdateByTask::new(
             TaskId::fx_split_join_t1(),
             WallClockDuration::from_micros(200),
         );
-        let out_queues = vec![OutQueueMetricsUpdateByTaskExecution::new(
+        let out_queues = vec![OutQueueMetricsUpdateByTask::new(
             QueueId::fx_split_join_q2(),
             1,
             100,
@@ -463,16 +463,16 @@ impl MetricsUpdateByTaskExecution {
         Self::new(task, vec![], out_queues)
     }
     pub(in crate::stream_engine) fn fx_split_join_t2() -> Self {
-        let task = TaskMetricsUpdateByTaskExecution::new(
+        let task = TaskMetricsUpdateByTask::new(
             TaskId::fx_split_join_t2(),
             WallClockDuration::from_micros(50),
         );
-        let in_queues = vec![InQueueMetricsUpdateByTaskExecution::Row {
+        let in_queues = vec![InQueueMetricsUpdateByCollect::Row {
             queue_id: RowQueueId::fx_q2(),
             rows_used: 1,
             bytes_used: 100,
         }];
-        let out_queues = vec![OutQueueMetricsUpdateByTaskExecution::new(
+        let out_queues = vec![OutQueueMetricsUpdateByTask::new(
             QueueId::fx_split_join_q3_1(),
             1,
             80,
@@ -480,11 +480,11 @@ impl MetricsUpdateByTaskExecution {
         Self::new(task, in_queues, out_queues)
     }
     pub(in crate::stream_engine) fn fx_split_join_t3() -> Self {
-        let task = TaskMetricsUpdateByTaskExecution::new(
+        let task = TaskMetricsUpdateByTask::new(
             TaskId::fx_split_join_t3(),
             WallClockDuration::from_micros(90),
         );
-        let in_queues = vec![InQueueMetricsUpdateByTaskExecution::Window {
+        let in_queues = vec![InQueueMetricsUpdateByCollect::Window {
             queue_id: WindowQueueId::fx_q3_1(),
             waiting_bytes_dispatched: 80,
             waiting_rows_dispatched: 1,
@@ -495,11 +495,11 @@ impl MetricsUpdateByTaskExecution {
         Self::new(task, in_queues, out_queues)
     }
     pub(in crate::stream_engine) fn fx_split_join_t6() -> Self {
-        let task = TaskMetricsUpdateByTaskExecution::new(
+        let task = TaskMetricsUpdateByTask::new(
             TaskId::fx_split_join_t6(),
             WallClockDuration::from_micros(800),
         );
-        let out_queues = vec![OutQueueMetricsUpdateByTaskExecution::new(
+        let out_queues = vec![OutQueueMetricsUpdateByTask::new(
             QueueId::fx_split_join_q7(),
             1,
             800,
@@ -507,32 +507,32 @@ impl MetricsUpdateByTaskExecution {
         Self::new(task, vec![], out_queues)
     }
     pub(in crate::stream_engine) fn fx_split_join_t7() -> Self {
-        let task = TaskMetricsUpdateByTaskExecution::new(
+        let task = TaskMetricsUpdateByTask::new(
             TaskId::fx_split_join_t7(),
             WallClockDuration::from_micros(50),
         );
-        let in_queues = vec![InQueueMetricsUpdateByTaskExecution::Row {
+        let in_queues = vec![InQueueMetricsUpdateByCollect::Row {
             queue_id: RowQueueId::fx_q7(),
             rows_used: 1,
             bytes_used: 800,
         }];
         let out_queues = vec![
-            OutQueueMetricsUpdateByTaskExecution::new(QueueId::fx_split_join_q3_2(), 1, 150),
-            OutQueueMetricsUpdateByTaskExecution::new(QueueId::fx_split_join_q8(), 1, 150),
+            OutQueueMetricsUpdateByTask::new(QueueId::fx_split_join_q3_2(), 1, 150),
+            OutQueueMetricsUpdateByTask::new(QueueId::fx_split_join_q8(), 1, 150),
         ];
         Self::new(task, in_queues, out_queues)
     }
     pub(in crate::stream_engine) fn fx_split_join_t8() -> Self {
-        let task = TaskMetricsUpdateByTaskExecution::new(
+        let task = TaskMetricsUpdateByTask::new(
             TaskId::fx_split_join_t8(),
             WallClockDuration::from_micros(50),
         );
-        let in_queues = vec![InQueueMetricsUpdateByTaskExecution::Row {
+        let in_queues = vec![InQueueMetricsUpdateByCollect::Row {
             queue_id: RowQueueId::fx_q8(),
             rows_used: 1,
             bytes_used: 150,
         }];
-        let out_queues = vec![OutQueueMetricsUpdateByTaskExecution::new(
+        let out_queues = vec![OutQueueMetricsUpdateByTask::new(
             QueueId::fx_split_join_q9(),
             1,
             120,
@@ -540,16 +540,16 @@ impl MetricsUpdateByTaskExecution {
         Self::new(task, in_queues, out_queues)
     }
     pub(in crate::stream_engine) fn fx_split_join_t9() -> Self {
-        let task = TaskMetricsUpdateByTaskExecution::new(
+        let task = TaskMetricsUpdateByTask::new(
             TaskId::fx_split_join_t9(),
             WallClockDuration::from_micros(50),
         );
-        let in_queues = vec![InQueueMetricsUpdateByTaskExecution::Row {
+        let in_queues = vec![InQueueMetricsUpdateByCollect::Row {
             queue_id: RowQueueId::fx_q9(),
             rows_used: 1,
             bytes_used: 120,
         }];
-        let out_queues = vec![OutQueueMetricsUpdateByTaskExecution::new(
+        let out_queues = vec![OutQueueMetricsUpdateByTask::new(
             QueueId::fx_split_join_q10(),
             1,
             70,
@@ -557,11 +557,11 @@ impl MetricsUpdateByTaskExecution {
         Self::new(task, in_queues, out_queues)
     }
     pub(in crate::stream_engine) fn fx_split_join_t10() -> Self {
-        let task = TaskMetricsUpdateByTaskExecution::new(
+        let task = TaskMetricsUpdateByTask::new(
             TaskId::fx_split_join_t10(),
             WallClockDuration::from_micros(200),
         );
-        let in_queues = vec![InQueueMetricsUpdateByTaskExecution::Row {
+        let in_queues = vec![InQueueMetricsUpdateByCollect::Row {
             queue_id: RowQueueId::fx_q10(),
             rows_used: 1,
             bytes_used: 70,

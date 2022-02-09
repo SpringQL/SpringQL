@@ -18,7 +18,7 @@ use crate::{
     stream_engine::command::query_plan::QueryPlan,
     stream_engine::{
         autonomous_executor::{
-            performance_metrics::metrics_update_command::metrics_update_by_task_execution::InQueueMetricsUpdateByTaskExecution,
+            performance_metrics::metrics_update_command::metrics_update_by_task_execution::InQueueMetricsUpdateByCollect,
             task::{task_context::TaskContext, tuple::Tuple},
         },
         SqlValue,
@@ -92,7 +92,7 @@ impl SqlValues {
 pub(in crate::stream_engine::autonomous_executor) struct QuerySubtaskOut {
     pub(in crate::stream_engine::autonomous_executor) values_seq: Vec<SqlValues>,
     pub(in crate::stream_engine::autonomous_executor) in_queue_metrics_update:
-        InQueueMetricsUpdateByTaskExecution,
+        InQueueMetricsUpdateByCollect,
 }
 
 impl QuerySubtask {
@@ -191,7 +191,7 @@ impl QuerySubtask {
     fn run_lower_ops(
         &self,
         context: &TaskContext,
-    ) -> Option<(Vec<Tuple>, InQueueMetricsUpdateByTaskExecution)> {
+    ) -> Option<(Vec<Tuple>, InQueueMetricsUpdateByCollect)> {
         self.run_collect_op(context)
     }
 
@@ -220,7 +220,7 @@ impl QuerySubtask {
     fn run_collect_op(
         &self,
         context: &TaskContext,
-    ) -> Option<(Vec<Tuple>, InQueueMetricsUpdateByTaskExecution)> {
+    ) -> Option<(Vec<Tuple>, InQueueMetricsUpdateByCollect)> {
         self.collect_subtask.run(context)
     }
 }

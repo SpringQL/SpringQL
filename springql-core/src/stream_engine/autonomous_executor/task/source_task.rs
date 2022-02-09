@@ -10,7 +10,7 @@ use crate::mem_size::MemSize;
 use crate::pipeline::name::{SourceReaderName, StreamName};
 use crate::pipeline::source_reader_model::SourceReaderModel;
 use crate::stream_engine::autonomous_executor::AutonomousExecutor;
-use crate::stream_engine::autonomous_executor::performance_metrics::metrics_update_command::metrics_update_by_task_execution::{MetricsUpdateByTaskExecution, OutQueueMetricsUpdateByTaskExecution, TaskMetricsUpdateByTaskExecution};
+use crate::stream_engine::autonomous_executor::performance_metrics::metrics_update_command::metrics_update_by_task_execution::{MetricsUpdateByTaskExecution, OutQueueMetricsUpdateByTask, TaskMetricsUpdateByTask};
 use crate::stream_engine::autonomous_executor::repositories::Repositories;
 use crate::stream_engine::autonomous_executor::row::Row;
 use crate::stream_engine::autonomous_executor::task_graph::queue_id::QueueId;
@@ -57,7 +57,7 @@ impl SourceTask {
 
         let execution_time = stopwatch.stop();
 
-        let task_metrics = TaskMetricsUpdateByTaskExecution::new(context.task(), execution_time);
+        let task_metrics = TaskMetricsUpdateByTask::new(context.task(), execution_time);
         Ok(MetricsUpdateByTaskExecution::new(
             task_metrics,
             vec![],
@@ -69,7 +69,7 @@ impl SourceTask {
         &self,
         queue_id: QueueId,
         context: &TaskContext,
-    ) -> Option<OutQueueMetricsUpdateByTaskExecution> {
+    ) -> Option<OutQueueMetricsUpdateByTask> {
         let row = self.collect_next(context)?;
         let repos = context.repos();
 
@@ -84,26 +84,26 @@ impl SourceTask {
         row: Row,
         queue_id: RowQueueId,
         repos: Arc<Repositories>,
-    ) -> OutQueueMetricsUpdateByTaskExecution {
+    ) -> OutQueueMetricsUpdateByTask {
         let row_q_repo = repos.row_queue_repository();
         let queue = row_q_repo.get(&queue_id);
         let bytes_put = row.mem_size();
 
         queue.put(row);
-        OutQueueMetricsUpdateByTaskExecution::new(queue_id.into(), 1, bytes_put as u64)
+        OutQueueMetricsUpdateByTask::new(queue_id.into(), 1, bytes_put as u64)
     }
     fn put_row_into_window_queue(
         &self,
         row: Row,
         queue_id: WindowQueueId,
         repos: Arc<Repositories>,
-    ) -> OutQueueMetricsUpdateByTaskExecution {
+    ) -> OutQueueMetricsUpdateByTask {
         let window_q_repo = repos.window_queue_repository();
         let queue = window_q_repo.get(&queue_id);
         let bytes_put = row.mem_size();
 
         queue.put(row);
-        OutQueueMetricsUpdateByTaskExecution::new(queue_id.into(), 1, bytes_put as u64)
+        OutQueueMetricsUpdateByTask::new(queue_id.into(), 1, bytes_put as u64)
     }
 
     fn collect_next(&self, context: &TaskContext) -> Option<Row> {

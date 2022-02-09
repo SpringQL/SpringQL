@@ -11,9 +11,9 @@ use crate::stream_engine::{
 /// Commands only include flow metrics (no stock metrics).
 #[derive(Clone, Eq, PartialEq, Debug, new)]
 pub(in crate::stream_engine::autonomous_executor) struct MetricsUpdateByTaskExecution {
-    task: TaskMetricsUpdateByTaskExecution,
-    in_queues: Vec<InQueueMetricsUpdateByTaskExecution>,
-    out_queues: Vec<OutQueueMetricsUpdateByTaskExecution>,
+    task: TaskMetricsUpdateByTask,
+    in_queues: Vec<InQueueMetricsUpdateByTask>,
+    out_queues: Vec<OutQueueMetricsUpdateByTask>,
 }
 
 impl MetricsUpdateByTaskExecution {
@@ -83,8 +83,8 @@ impl MetricsUpdateByTaskExecution {
         self.in_queues
             .iter()
             .filter_map(|in_q| match in_q {
-                InQueueMetricsUpdateByTaskExecution::Row { bytes_used, .. } => Some(bytes_used),
-                InQueueMetricsUpdateByTaskExecution::Window { .. } => None,
+                InQueueMetricsUpdateByCollect::Row { bytes_used, .. } => Some(bytes_used),
+                InQueueMetricsUpdateByCollect::Window { .. } => None,
             })
             .sum()
     }
@@ -92,8 +92,8 @@ impl MetricsUpdateByTaskExecution {
         self.in_queues
             .iter()
             .filter_map(|in_q| match in_q {
-                InQueueMetricsUpdateByTaskExecution::Row { .. } => None,
-                InQueueMetricsUpdateByTaskExecution::Window {
+                InQueueMetricsUpdateByCollect::Row { .. } => None,
+                InQueueMetricsUpdateByCollect::Window {
                     waiting_bytes_dispatched,
                     ..
                 } => Some(waiting_bytes_dispatched),
@@ -104,8 +104,8 @@ impl MetricsUpdateByTaskExecution {
         self.in_queues
             .iter()
             .filter_map(|in_q| match in_q {
-                InQueueMetricsUpdateByTaskExecution::Row { .. } => None,
-                InQueueMetricsUpdateByTaskExecution::Window {
+                InQueueMetricsUpdateByCollect::Row { .. } => None,
+                InQueueMetricsUpdateByCollect::Window {
                     window_gain_bytes_states,
                     window_gain_bytes_rows,
                     ..
@@ -130,12 +130,12 @@ impl MetricsUpdateByTaskExecution {
         self.in_queues
             .iter()
             .filter_map(|in_q| match in_q {
-                InQueueMetricsUpdateByTaskExecution::Row {
+                InQueueMetricsUpdateByCollect::Row {
                     queue_id,
                     rows_used,
                     ..
                 } => (queue_id == id).then(|| rows_used),
-                InQueueMetricsUpdateByTaskExecution::Window { .. } => None,
+                InQueueMetricsUpdateByCollect::Window { .. } => None,
             })
             .sum()
     }
@@ -143,12 +143,12 @@ impl MetricsUpdateByTaskExecution {
         self.in_queues
             .iter()
             .filter_map(|in_q| match in_q {
-                InQueueMetricsUpdateByTaskExecution::Row {
+                InQueueMetricsUpdateByCollect::Row {
                     queue_id,
                     bytes_used,
                     ..
                 } => (queue_id == id).then(|| bytes_used),
-                InQueueMetricsUpdateByTaskExecution::Window { .. } => None,
+                InQueueMetricsUpdateByCollect::Window { .. } => None,
             })
             .sum()
     }
@@ -156,8 +156,8 @@ impl MetricsUpdateByTaskExecution {
         self.in_queues
             .iter()
             .filter_map(|in_q| match in_q {
-                InQueueMetricsUpdateByTaskExecution::Row { .. } => None,
-                InQueueMetricsUpdateByTaskExecution::Window {
+                InQueueMetricsUpdateByCollect::Row { .. } => None,
+                InQueueMetricsUpdateByCollect::Window {
                     queue_id,
                     waiting_rows_dispatched,
                     ..
@@ -169,8 +169,8 @@ impl MetricsUpdateByTaskExecution {
         self.in_queues
             .iter()
             .filter_map(|in_q| match in_q {
-                InQueueMetricsUpdateByTaskExecution::Row { .. } => None,
-                InQueueMetricsUpdateByTaskExecution::Window {
+                InQueueMetricsUpdateByCollect::Row { .. } => None,
+                InQueueMetricsUpdateByCollect::Window {
                     queue_id,
                     waiting_rows_dispatched: waiting_bytes_dispatched,
                     ..
@@ -190,8 +190,8 @@ impl MetricsUpdateByTaskExecution {
         self.in_queues
             .iter()
             .filter_map(|in_q| match in_q {
-                InQueueMetricsUpdateByTaskExecution::Row { .. } => None,
-                InQueueMetricsUpdateByTaskExecution::Window {
+                InQueueMetricsUpdateByCollect::Row { .. } => None,
+                InQueueMetricsUpdateByCollect::Window {
                     queue_id,
                     window_gain_bytes_states,
                     ..
@@ -203,8 +203,8 @@ impl MetricsUpdateByTaskExecution {
         self.in_queues
             .iter()
             .filter_map(|in_q| match in_q {
-                InQueueMetricsUpdateByTaskExecution::Row { .. } => None,
-                InQueueMetricsUpdateByTaskExecution::Window {
+                InQueueMetricsUpdateByCollect::Row { .. } => None,
+                InQueueMetricsUpdateByCollect::Window {
                     queue_id,
                     window_gain_bytes_states: window_gain_bytes_rows,
                     ..
@@ -215,13 +215,13 @@ impl MetricsUpdateByTaskExecution {
 }
 
 #[derive(Clone, Eq, PartialEq, Debug, new)]
-pub(in crate::stream_engine::autonomous_executor) struct TaskMetricsUpdateByTaskExecution {
+pub(in crate::stream_engine::autonomous_executor) struct TaskMetricsUpdateByTask {
     task_id: TaskId,
     execution_time: WallClockDuration,
 }
 
 #[derive(Clone, Eq, PartialEq, Debug)]
-pub(in crate::stream_engine::autonomous_executor) enum InQueueMetricsUpdateByTaskExecution {
+pub(in crate::stream_engine::autonomous_executor) enum InQueueMetricsUpdateByTask {
     Row {
         queue_id: RowQueueId,
         rows_used: u64,
@@ -229,28 +229,43 @@ pub(in crate::stream_engine::autonomous_executor) enum InQueueMetricsUpdateByTas
     },
     Window {
         queue_id: WindowQueueId,
-
-        // Waiting queue flow
         waiting_bytes_dispatched: u64,
         waiting_rows_dispatched: u64,
-
-        // Window flow
-        window_gain_bytes_states: i64,
-        window_gain_bytes_rows: i64,
+        window_in_flow: WindowInFlowByWindowTask,
     },
 }
 
-impl InQueueMetricsUpdateByTaskExecution {
+#[derive(Clone, Eq, PartialEq, Debug)]
+pub(in crate::stream_engine::autonomous_executor) enum InQueueMetricsUpdateByCollect {
+    Row {
+        queue_id: RowQueueId,
+        rows_used: u64,
+        bytes_used: u64,
+    },
+    Window {
+        queue_id: WindowQueueId,
+        waiting_bytes_dispatched: u64,
+        waiting_rows_dispatched: u64,
+    },
+}
+
+impl InQueueMetricsUpdateByCollect {
     fn queue_id(&self) -> QueueId {
         match self {
-            InQueueMetricsUpdateByTaskExecution::Row { queue_id, .. } => queue_id.clone().into(),
-            InQueueMetricsUpdateByTaskExecution::Window { queue_id, .. } => queue_id.clone().into(),
+            InQueueMetricsUpdateByCollect::Row { queue_id, .. } => queue_id.clone().into(),
+            InQueueMetricsUpdateByCollect::Window { queue_id, .. } => queue_id.clone().into(),
         }
     }
 }
 
 #[derive(Clone, Eq, PartialEq, Debug, new)]
-pub(in crate::stream_engine::autonomous_executor) struct OutQueueMetricsUpdateByTaskExecution {
+pub(in crate::stream_engine::autonomous_executor) struct WindowInFlowByWindowTask {
+    window_gain_bytes_states: i64,
+    window_gain_bytes_rows: i64,
+}
+
+#[derive(Clone, Eq, PartialEq, Debug, new)]
+pub(in crate::stream_engine::autonomous_executor) struct OutQueueMetricsUpdateByTask {
     queue_id: QueueId,
     rows_put: u64,
     bytes_put: u64,
