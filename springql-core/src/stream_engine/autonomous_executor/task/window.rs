@@ -21,7 +21,7 @@ pub(in crate::stream_engine::autonomous_executor) struct GroupAggrOut {
     pub(in crate::stream_engine::autonomous_executor) aggr_label: AggrExprLabel,
     pub(in crate::stream_engine::autonomous_executor) aggr_result: SqlValue,
 
-    pub(in crate::stream_engine::autonomous_executor) group_by: SqlValue,
+    pub(in crate::stream_engine::autonomous_executor) group_by_result: SqlValue,
 }
 
 #[derive(Debug)]
@@ -101,7 +101,7 @@ mod tests {
     };
 
     fn t_expect(group_aggr_out: GroupAggrOut, expected_ticker: &str, expected_avg_amount: i16) {
-        let ticker = group_aggr_out.group_by.unwrap();
+        let ticker = group_aggr_out.group_by_result.unwrap();
         assert_eq!(
             ticker.unpack::<String>().unwrap(),
             expected_ticker.to_string()
@@ -203,7 +203,7 @@ mod tests {
         assert_eq!(out.len(), 2);
         out.sort_by_key(|group_aggr_out| {
             group_aggr_out
-                .group_by
+                .group_by_result
                 .clone()
                 .unwrap()
                 .unpack::<String>()
@@ -268,7 +268,7 @@ mod tests {
         assert_eq!(out.len(), 2);
         out.sort_by_key(|group_aggr_out| {
             group_aggr_out
-                .group_by
+                .group_by_result
                 .clone()
                 .unwrap()
                 .unpack::<String>()
@@ -432,7 +432,7 @@ mod tests {
         assert_eq!(out.len(), 2);
         out.sort_by_key(|group_aggr_out| {
             group_aggr_out
-                .group_by
+                .group_by_result
                 .clone()
                 .unwrap()
                 .unpack::<String>()

@@ -1,6 +1,7 @@
 // Copyright (c) 2021 TOYOTA MOTOR CORPORATION. Licensed under MIT OR Apache-2.0.
 
 pub(super) mod collect_subtask;
+pub(super) mod group_aggregate_window_subtask;
 pub(super) mod projection_subtask;
 
 use std::sync::Arc;
@@ -22,7 +23,10 @@ use crate::{
     },
 };
 
-use self::{collect_subtask::CollectSubtask, projection_subtask::ProjectionSubtask};
+use self::{
+    collect_subtask::CollectSubtask, group_aggregate_window_subtask::GroupAggregateWindowSubtask,
+    projection_subtask::ProjectionSubtask,
+};
 
 /// Process input row 1-by-1.
 #[derive(Debug)]
@@ -30,6 +34,7 @@ pub(in crate::stream_engine::autonomous_executor) struct QuerySubtask {
     expr_resolver: ExprResolver,
 
     projection_subtask: ProjectionSubtask,
+    group_aggr_window_subtask: Option<GroupAggregateWindowSubtask>,
     collect_subtask: CollectSubtask,
 }
 
@@ -91,11 +96,17 @@ impl QuerySubtask {
             plan.upper_ops.projection.aggr_expr_labels,
         );
 
+        let group_aggr_window_subtask = plan
+            .upper_ops
+            .group_aggr_window
+            .map(|op| GroupAggregateWindowSubtask::new(op.window_param, op.op_param));
+
         let collect_subtask = CollectSubtask::new();
 
         Self {
             expr_resolver: plan.expr_resolver,
             projection_subtask,
+            group_aggr_window_subtask,
             collect_subtask,
         }
     }
@@ -125,10 +136,15 @@ impl QuerySubtask {
     }
 
     fn run_upper_ops(&self, tuples: Vec<Tuple>) -> Result<Vec<SqlValues>> {
-        tuples
+        Ok(tuples
             .into_iter()
-            .map(|tuple| self.run_projection_op(&tuple))
-            .collect()
+            .map(|tuple| self.run_upper_ops_inner(tuple))
+            .collect::<Result<Vec<Vec<_>>>>()?
+            .concat())
+    }
+    fn run_upper_ops_inner(&self, tuple: Tuple) -> Result<Vec<SqlValues>> {
+        let values = self.run_projection_op(&tuple)?;
+        Ok(vec![values])
     }
 
     /// # Returns
