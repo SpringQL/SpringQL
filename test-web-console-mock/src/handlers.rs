@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use serde_derive::{Deserialize, Serialize};
 use simple_server::{Builder, Request, ResponseResult, StatusCode};
 
@@ -17,10 +19,18 @@ impl RequestHandler {
     }
 
     pub(super) fn not_found(&mut self) -> ResponseResult {
-        println!("hihihihihi");
-
         self.response.status(StatusCode::NOT_FOUND);
         Ok(self.response.body("404 Not found".as_bytes().to_vec())?)
+    }
+
+    pub(super) fn post_task_graph(
+        &mut self,
+        callback: Option<Arc<dyn Fn() + Sync + Send>>,
+    ) -> ResponseResult {
+        if let Some(cb) = callback {
+            cb();
+        }
+        Ok(self.response.body("ok".as_bytes().to_vec())?)
     }
 }
 

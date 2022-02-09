@@ -9,11 +9,10 @@ use std::{
 };
 
 use builder::WebConsoleMockBuilder;
-use simple_server::{Method, Server, StatusCode};
+use simple_server::{Method, Server};
 
 use crate::handlers::RequestHandler;
 
-#[derive(Debug)]
 pub struct WebConsoleMock {
     listener_sock: TcpListener,
     server: Server,
@@ -21,12 +20,12 @@ pub struct WebConsoleMock {
 
 impl WebConsoleMock {
     fn new(builder: WebConsoleMockBuilder) -> Self {
-        // let cb_post_pipeline = builder.cb_post_pipeline.clone();
+        let cb_post_pipeline = builder.cb_post_pipeline;
 
         let listener_sock =
             TcpListener::bind(("127.0.0.1", 0)).expect("Error starting the server.");
 
-        let server = Server::new(|request, response| {
+        let server = Server::new(move |request, response| {
             let method = request.method().clone();
             let uri = request.uri().clone();
 
@@ -34,6 +33,7 @@ impl WebConsoleMock {
 
             match (method, uri.path()) {
                 (Method::GET, "/health") => h.get_health(),
+                (Method::POST, "/task-graph") => h.post_task_graph(cb_post_pipeline.clone()),
                 (_, _) => h.not_found(),
             }
         });
