@@ -99,7 +99,8 @@ impl QueryPlanner {
             aggr_expr_labels: aggr_labels_select_list,
         };
 
-        let group_aggr_window = self.create_group_aggr_window_op(&mut expr_resolver)?;
+        let group_aggr_window =
+            self.create_group_aggr_window_op(&projection, &mut expr_resolver)?;
 
         let upper_ops = UpperOps {
             projection,
@@ -118,10 +119,11 @@ impl QueryPlanner {
 
     fn create_group_aggr_window_op(
         &self,
+        projection_op: &ProjectionOp,
         expr_resolver: &mut ExprResolver,
     ) -> Result<Option<GroupAggregateWindowOp>> {
         let window_param = self.create_window_param();
-        let group_aggr_param = self.create_group_aggr_param(expr_resolver)?;
+        let group_aggr_param = self.create_group_aggr_param(expr_resolver, projection_op)?;
 
         match (window_param, group_aggr_param) {
             (Some(window_param), Some(group_aggr_param)) => Ok(Some(GroupAggregateWindowOp {
@@ -139,18 +141,15 @@ impl QueryPlanner {
     fn create_group_aggr_param(
         &self,
         expr_resolver: &mut ExprResolver,
+        projection_op: &ProjectionOp,
     ) -> Result<Option<GroupAggregateParameter>> {
         let opt_grouping_elem = self.analyzer.grouping_element();
-        let aggregate_parameters = self.analyzer.aggr_expr_select_list();
+        let aggr_labels = &projection_op.aggr_expr_labels;
 
-        match (opt_grouping_elem, aggregate_parameters.len()) {
+        match (opt_grouping_elem, aggr_labels.len()) {
             (Some(grouping_elem), 1) => {
-                let aggr_expr = aggregate_parameters
-                    .into_iter()
-                    .next()
-                    .expect("len checked");
+                let aggr_label = aggr_labels.into_iter().next().expect("len checked");
 
-                let aggr_expr_label = expr_resolver.register_aggr_expr(aggr_expr);
                 let group_by_label = match grouping_elem {
                     GroupingElementSyntax::ValueExpr(expr) => {
                         expr_resolver.register_value_expr(expr)
@@ -161,7 +160,7 @@ impl QueryPlanner {
                 };
 
                 Ok(Some(GroupAggregateParameter::new(
-                    aggr_expr_label,
+                    *aggr_label,
                     group_by_label,
                 )))
             }
