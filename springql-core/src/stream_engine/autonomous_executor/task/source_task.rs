@@ -3,6 +3,7 @@
 pub(in crate::stream_engine::autonomous_executor) mod source_reader;
 
 use std::fmt::Debug;
+use std::sync::Arc;
 
 use crate::error::Result;
 use crate::mem_size::MemSize;
@@ -10,8 +11,10 @@ use crate::pipeline::name::{SourceReaderName, StreamName};
 use crate::pipeline::source_reader_model::SourceReaderModel;
 use crate::stream_engine::autonomous_executor::AutonomousExecutor;
 use crate::stream_engine::autonomous_executor::performance_metrics::metrics_update_command::metrics_update_by_task_execution::{MetricsUpdateByTaskExecution, OutQueueMetricsUpdateByTaskExecution, TaskMetricsUpdateByTaskExecution};
+use crate::stream_engine::autonomous_executor::repositories::Repositories;
 use crate::stream_engine::autonomous_executor::row::Row;
 use crate::stream_engine::autonomous_executor::task_graph::queue_id::QueueId;
+use crate::stream_engine::autonomous_executor::task_graph::queue_id::row_queue_id::RowQueueId;
 use crate::stream_engine::autonomous_executor::task_graph::task_id::TaskId;
 use crate::stream_engine::time::duration::wall_clock_duration::wall_clock_stopwatch::WallClockStopwatch;
 
@@ -70,17 +73,23 @@ impl SourceTask {
         let repos = context.repos();
 
         let out_queue_metrics = match queue_id {
-            QueueId::Row(queue_id) => {
-                let row_q_repo = repos.row_queue_repository();
-                let queue = row_q_repo.get(&queue_id);
-                let bytes_put = row.mem_size();
-
-                queue.put(row);
-                OutQueueMetricsUpdateByTaskExecution::new(queue_id.into(), 1, bytes_put as u64)
-            }
+            QueueId::Row(queue_id) => self.put_row_into_row_queue(row, queue_id, repos),
             QueueId::Window(_) => todo!(),
         };
         Some(out_queue_metrics)
+    }
+    fn put_row_into_row_queue(
+        &self,
+        row: Row,
+        queue_id: RowQueueId,
+        repos: Arc<Repositories>,
+    ) -> OutQueueMetricsUpdateByTaskExecution {
+        let row_q_repo = repos.row_queue_repository();
+        let queue = row_q_repo.get(&queue_id);
+        let bytes_put = row.mem_size();
+
+        queue.put(row);
+        OutQueueMetricsUpdateByTaskExecution::new(queue_id.into(), 1, bytes_put as u64)
     }
 
     fn collect_next(&self, context: &TaskContext) -> Option<Row> {

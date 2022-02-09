@@ -1,7 +1,7 @@
 // Copyright (c) 2021 TOYOTA MOTOR CORPORATION. Licensed under MIT OR Apache-2.0.
 
 use crate::{
-    expr_resolver::expr_label::{ValueExprLabel, AggrExprLabel},
+    expr_resolver::expr_label::{AggrExprLabel, ValueExprLabel},
     pipeline::{
         name::StreamName,
         pump_model::{
@@ -15,11 +15,21 @@ pub(crate) struct UpperOps {
     pub(crate) projection: ProjectionOp,
     pub(crate) group_aggr_window: Option<GroupAggregateWindowOp>,
 }
+impl UpperOps {
+    pub(crate) fn has_window(&self) -> bool {
+        self.group_aggr_window.is_some()
+    }
+}
 
 #[derive(Clone, PartialEq, Debug)]
 pub(crate) struct LowerOps {
     pub(crate) collect: CollectOp,
     // TODO join
+}
+impl LowerOps {
+    pub(crate) fn has_window(&self) -> bool {
+        false
+    }
 }
 
 #[derive(Clone, PartialEq, Debug)]
