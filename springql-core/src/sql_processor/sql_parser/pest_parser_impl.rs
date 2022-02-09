@@ -9,13 +9,15 @@ use crate::expression::boolean_expression::numerical_function::NumericalFunction
 use crate::expression::boolean_expression::BooleanExpr;
 use crate::expression::function_call::FunctionCall;
 use crate::expression::operator::{BinaryOperator, UnaryOperator};
-use crate::expression::ValueExpr;
+use crate::expression::{AggrExpr, ValueExpr};
 use crate::pipeline::field::field_name::ColumnReference;
 use crate::pipeline::name::{
-    ColumnName, CorrelationAlias, PumpName, SinkWriterName, SourceReaderName, StreamName,
-    ValueAlias,
+    AggrAlias, ColumnName, CorrelationAlias, PumpName, SinkWriterName, SourceReaderName,
+    StreamName, ValueAlias,
 };
 use crate::pipeline::option::options_builder::OptionsBuilder;
+use crate::pipeline::pump_model::window_operation_parameter::aggregate::AggregateFunctionParameter;
+use crate::pipeline::pump_model::window_parameter::WindowParameter;
 use crate::pipeline::relation::column::column_constraint::ColumnConstraint;
 use crate::pipeline::relation::column::column_data_type::ColumnDataType;
 use crate::pipeline::relation::column::column_definition::ColumnDefinition;
@@ -30,6 +32,8 @@ use crate::sql_processor::sql_parser::syntax::{
     ColumnConstraintSyntax, OptionSyntax, SelectStreamSyntax,
 };
 use crate::stream_engine::command::insert_plan::InsertPlan;
+use crate::stream_engine::time::duration::event_duration::EventDuration;
+use crate::stream_engine::time::duration::SpringDuration;
 use crate::stream_engine::{NnSqlValue, SqlValue};
 use anyhow::{anyhow, Context};
 use generated_parser::{GeneratedParser, Rule};
@@ -38,7 +42,7 @@ use pest::{iterators::Pairs, Parser};
 use std::convert::identity;
 
 use super::parse_success::ParseSuccess;
-use super::syntax::{FromItemSyntax, SelectFieldSyntax};
+use super::syntax::{DurationFunction, FromItemSyntax, GroupingElementSyntax, SelectFieldSyntax};
 
 #[derive(Debug, Default)]
 pub(super) struct PestParserImpl;
@@ -91,6 +95,12 @@ impl PestParserImpl {
             Self::parse_string_constant,
             identity,
         )?)
+        .or(try_parse_child(
+            &mut params,
+            Rule::duration_constant,
+            Self::parse_duration_constant,
+            identity,
+        )?)
         .ok_or_else(|| SpringError::Sql(anyhow!("Does not match any child rule of constant.",)))
     }
 
@@ -136,6 +146,40 @@ impl PestParserImpl {
     fn parse_string_content(mut params: FnParseParams) -> Result<String> {
         let s = self_as_str(&mut params);
         Ok(s.into())
+    }
+
+    fn parse_duration_constant(mut params: FnParseParams) -> Result<SqlValue> {
+        let duration_function = parse_child(
+            &mut params,
+            Rule::duration_function,
+            Self::parse_duration_function,
+            identity,
+        )?;
+        let integer_constant = parse_child(
+            &mut params,
+            Rule::integer_constant,
+            Self::parse_integer_constant,
+            identity,
+        )?;
+
+        let event_duration = match duration_function {
+            DurationFunction::Secs => {
+                Ok(EventDuration::from_secs(integer_constant.to_i64()? as u64))
+            }
+        }?;
+
+        Ok(SqlValue::NotNull(NnSqlValue::Duration(event_duration)))
+    }
+
+    fn parse_duration_function(mut params: FnParseParams) -> Result<DurationFunction> {
+        let s = self_as_str(&mut params);
+        match s.to_lowercase().as_ref() {
+            "duration_secs" => Ok(DurationFunction::Secs),
+            _ => Err(SpringError::Sql(anyhow!(
+                "duration function `{}` is invalid",
+                s
+            ))),
+        }
     }
 
     /*
@@ -420,24 +464,69 @@ impl PestParserImpl {
             Self::parse_from_item,
             identity,
         )?;
+        let grouping_element = try_parse_child(
+            &mut params,
+            Rule::grouping_element,
+            Self::parse_grouping_element,
+            identity,
+        )?;
+        let window_clause = try_parse_child(
+            &mut params,
+            Rule::window_clause,
+            Self::parse_window_clause,
+            identity,
+        )?;
 
-        Ok(SelectStreamSyntax { fields, from_item })
+        Ok(SelectStreamSyntax {
+            fields,
+            from_item,
+            grouping_element,
+            window_clause,
+        })
     }
 
     fn parse_select_field(mut params: FnParseParams) -> Result<SelectFieldSyntax> {
-        let value_expr = parse_child(
+        try_parse_child(
             &mut params,
             Rule::value_expr,
             Self::parse_value_expr,
             identity,
-        )?;
-        let alias = try_parse_child(
+        )?
+        .map(|value_expr| {
+            let alias = try_parse_child(
+                &mut params,
+                Rule::value_alias,
+                Self::parse_value_alias,
+                identity,
+            )?;
+            Ok(SelectFieldSyntax::ValueExpr { value_expr, alias })
+        })
+        .transpose()?
+        .or(try_parse_child(
             &mut params,
-            Rule::value_alias,
-            Self::parse_value_alias,
+            Rule::aggr_expr,
+            Self::parse_aggr_expr,
             identity,
-        )?;
-        Ok(SelectFieldSyntax { value_expr, alias })
+        )?
+        .map(|aggr_expr| {
+            let alias = parse_child(
+                &mut params,
+                Rule::aggr_alias,
+                Self::parse_aggr_alias,
+                identity,
+            )?;
+            Ok(SelectFieldSyntax::AggrExpr {
+                aggr_expr,
+                alias: Some(alias),
+            })
+        })
+        .transpose()?)
+        .ok_or_else(|| {
+            SpringError::Sql(anyhow!(
+                "Does not match any child rule of command: {}",
+                params.sql
+            ))
+        })
     }
 
     fn parse_from_item(mut params: FnParseParams) -> Result<FromItemSyntax> {
@@ -464,6 +553,64 @@ impl PestParserImpl {
             identity,
         )?;
         Ok(FromItemSyntax::StreamVariant { stream_name, alias })
+    }
+
+    fn parse_grouping_element(mut params: FnParseParams) -> Result<GroupingElementSyntax> {
+        try_parse_child(
+            &mut params,
+            Rule::value_expr,
+            Self::parse_value_expr,
+            GroupingElementSyntax::ValueExpr,
+        )?
+        .or(try_parse_child(
+            &mut params,
+            Rule::value_alias,
+            Self::parse_value_alias,
+            GroupingElementSyntax::ValueAlias,
+        )?)
+        .ok_or_else(|| {
+            SpringError::Sql(anyhow!("Failed to parse grouping element: {}", params.sql))
+        })
+    }
+
+    fn parse_window_clause(mut params: FnParseParams) -> Result<WindowParameter> {
+        let length = parse_child(
+            &mut params,
+            Rule::window_length,
+            Self::parse_window_length,
+            identity,
+        )?;
+        let length = length.to_event_duration()?;
+
+        let allowed_delay = parse_child(
+            &mut params,
+            Rule::allowed_delay,
+            Self::parse_allowed_delay,
+            identity,
+        )?;
+        let allowed_delay = allowed_delay.to_event_duration()?;
+
+        Ok(WindowParameter::TimedFixedWindow {
+            length,
+            allowed_delay,
+        })
+    }
+
+    fn parse_window_length(mut params: FnParseParams) -> Result<SqlValue> {
+        parse_child(
+            &mut params,
+            Rule::duration_constant,
+            Self::parse_duration_constant,
+            identity,
+        )
+    }
+    fn parse_allowed_delay(mut params: FnParseParams) -> Result<SqlValue> {
+        parse_child(
+            &mut params,
+            Rule::duration_constant,
+            Self::parse_duration_constant,
+            identity,
+        )
     }
 
     /*
@@ -619,6 +766,7 @@ impl PestParserImpl {
                     )))
                 }
             }
+            "floor" => unimplemented!(),
             _ => Err(SpringError::Sql(anyhow!(
                 "unknown function {}",
                 function_name.to_lowercase()
@@ -628,6 +776,39 @@ impl PestParserImpl {
 
     fn parse_function_name(mut params: FnParseParams) -> Result<String> {
         Ok(self_as_str(&mut params).to_string())
+    }
+
+    /*
+     * ----------------------------------------------------------------------------
+     * Aggregate
+     * ----------------------------------------------------------------------------
+     */
+
+    fn parse_aggr_expr(mut params: FnParseParams) -> Result<AggrExpr> {
+        let func = parse_child(
+            &mut params,
+            Rule::aggregate_name,
+            Self::parse_aggregate_name,
+            identity,
+        )?;
+        let aggregated = parse_child(
+            &mut params,
+            Rule::value_expr,
+            &Self::parse_value_expr,
+            &identity,
+        )?;
+        Ok(AggrExpr { func, aggregated })
+    }
+
+    fn parse_aggregate_name(mut params: FnParseParams) -> Result<AggregateFunctionParameter> {
+        let s = self_as_str(&mut params);
+        match s.to_lowercase().as_str() {
+            "avg" => Ok(AggregateFunctionParameter::Avg),
+            _ => Err(SpringError::Sql(anyhow!(
+                "unknown aggregate function {}",
+                s.to_lowercase()
+            ))),
+        }
     }
 
     /*
@@ -807,6 +988,15 @@ impl PestParserImpl {
             Rule::identifier,
             Self::parse_identifier,
             ValueAlias::new,
+        )
+    }
+
+    fn parse_aggr_alias(mut params: FnParseParams) -> Result<AggrAlias> {
+        parse_child(
+            &mut params,
+            Rule::identifier,
+            Self::parse_identifier,
+            AggrAlias::new,
         )
     }
 

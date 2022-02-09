@@ -32,6 +32,10 @@ pub(crate) struct AttributeName(String);
 #[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Serialize, Deserialize, new)]
 pub(crate) struct ValueAlias(String);
 
+/// Alias to an aggregate expression.
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Serialize, Deserialize, new)]
+pub(crate) struct AggrAlias(String);
+
 impl Display for StreamName {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", self.0)
@@ -77,6 +81,11 @@ impl Display for ValueAlias {
         write!(f, "{}", self.0)
     }
 }
+impl Display for AggrAlias {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.0)
+    }
+}
 
 impl AsRef<str> for StreamName {
     fn as_ref(&self) -> &str {
@@ -118,6 +127,11 @@ impl AsRef<str> for ValueAlias {
         &self.0
     }
 }
+impl AsRef<str> for AggrAlias {
+    fn as_ref(&self) -> &str {
+        &self.0
+    }
+}
 
 impl ColumnName {
     pub(crate) fn arrival_rowtime() -> Self {
@@ -128,10 +142,6 @@ impl ColumnName {
 impl StreamName {
     pub(crate) fn virtual_root() -> Self {
         Self::new("__st_virtual_root__".to_string())
-    }
-
-    pub(crate) fn virtual_leaf(sink_stream: StreamName) -> Self {
-        Self::new(format!("__st_virtual_leaf__{}__", sink_stream))
     }
 }
 

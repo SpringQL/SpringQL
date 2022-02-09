@@ -58,16 +58,26 @@ mod select_syntax_analyzer;
 use crate::{
     error::Result,
     expr_resolver::ExprResolver,
-    pipeline::Pipeline,
+    pipeline::{
+        pump_model::{
+            window_operation_parameter::{
+                aggregate::GroupAggregateParameter, WindowOperationParameter,
+            },
+            window_parameter::WindowParameter,
+        },
+        Pipeline,
+    },
     stream_engine::command::query_plan::{
-        query_plan_operation::{CollectOp, LowerOps, ProjectionOp, UpperOps},
+        query_plan_operation::{
+            CollectOp, GroupAggregateWindowOp, LowerOps, ProjectionOp, UpperOps,
+        },
         QueryPlan,
     },
 };
 
 use self::select_syntax_analyzer::SelectSyntaxAnalyzer;
 
-use super::sql_parser::syntax::SelectStreamSyntax;
+use super::sql_parser::syntax::{GroupingElementSyntax, SelectStreamSyntax};
 
 #[derive(Debug)]
 pub(crate) struct QueryPlanner {
@@ -82,10 +92,19 @@ impl QueryPlanner {
     }
 
     pub(crate) fn plan(self, _pipeline: &Pipeline) -> Result<QueryPlan> {
-        let (expr_resolver, labels_select_list) =
+        let (mut expr_resolver, value_labels_select_list, aggr_labels_select_list) =
             ExprResolver::new(self.analyzer.select_list().to_vec());
         let projection = ProjectionOp {
-            expr_labels: labels_select_list,
+            value_expr_labels: value_labels_select_list,
+            aggr_expr_labels: aggr_labels_select_list,
+        };
+
+        let group_aggr_window =
+            self.create_group_aggr_window_op(&projection, &mut expr_resolver)?;
+
+        let upper_ops = UpperOps {
+            projection,
+            group_aggr_window,
         };
 
         let collect_ops = self.create_collect_ops()?;
@@ -95,9 +114,59 @@ impl QueryPlanner {
             .expect("collect_ops.len() == 1");
         let lower_ops = LowerOps { collect };
 
-        let upper_ops = UpperOps { projection };
-
         Ok(QueryPlan::new(upper_ops, lower_ops, expr_resolver))
+    }
+
+    fn create_group_aggr_window_op(
+        &self,
+        projection_op: &ProjectionOp,
+        expr_resolver: &mut ExprResolver,
+    ) -> Result<Option<GroupAggregateWindowOp>> {
+        let window_param = self.create_window_param();
+        let group_aggr_param = self.create_group_aggr_param(expr_resolver, projection_op)?;
+
+        match (window_param, group_aggr_param) {
+            (Some(window_param), Some(group_aggr_param)) => Ok(Some(GroupAggregateWindowOp {
+                window_param,
+                op_param: WindowOperationParameter::GroupAggregation(group_aggr_param),
+            })),
+            _ => Ok(None),
+        }
+    }
+
+    fn create_window_param(&self) -> Option<WindowParameter> {
+        self.analyzer.window_parameter()
+    }
+
+    fn create_group_aggr_param(
+        &self,
+        expr_resolver: &mut ExprResolver,
+        projection_op: &ProjectionOp,
+    ) -> Result<Option<GroupAggregateParameter>> {
+        let opt_grouping_elem = self.analyzer.grouping_element();
+        let aggr_labels = &projection_op.aggr_expr_labels;
+
+        match (opt_grouping_elem, aggr_labels.len()) {
+            (Some(grouping_elem), 1) => {
+                let aggr_label = aggr_labels.iter().next().expect("len checked");
+
+                let group_by_label = match grouping_elem {
+                    GroupingElementSyntax::ValueExpr(expr) => {
+                        expr_resolver.register_value_expr(expr)
+                    }
+                    GroupingElementSyntax::ValueAlias(alias) => {
+                        expr_resolver.resolve_value_alias(alias)?
+                    }
+                };
+
+                Ok(Some(GroupAggregateParameter::new(
+                    *aggr_label,
+                    group_by_label,
+                )))
+            }
+            (None, 0) => Ok(None),
+            _ => unimplemented!(),
+        }
     }
 
     fn create_collect_ops(&self) -> Result<Vec<CollectOp>> {

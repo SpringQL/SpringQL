@@ -22,12 +22,17 @@
 keyword = { 
     ^"AS"
     | ^"ALTER"
+    | ^"AVG"
     | ^"BIGINT"
+    | ^"BY"
     | ^"CREATE"
     | ^"DURATION_SECS"
+    | ^"FIXED"
     | ^"FLOOR_TIME"
+    | ^"FLOOR"
     | ^"FOR"
     | ^"FROM"
+    | ^"GROUP"
     | ^"INSERT"
     | ^"INTEGER"
     | ^"INTO"
@@ -47,6 +52,7 @@ keyword = {
     | ^"TEXT"
     | ^"TIMESTAMP"
     | ^"TYPE"
+    | ^"WINDOW"
     | ^"WRITER"
 }
 
@@ -132,6 +138,7 @@ constant = {
     null_constant
     | numeric_constant
     | string_constant
+    | duration_constant
 }
 
 null_constant = {
@@ -152,6 +159,14 @@ string_constant = {
 
 string_content = @{
     string_character*
+}
+
+duration_constant = {
+    duration_function ~ "(" ~ integer_constant ~ ")"
+}
+
+duration_function = {
+    ^"DURATION_SECS"
 }
 
 /*
@@ -233,6 +248,17 @@ function_call = {
 function_name = {
     ^"DURATION_SECS"
     | ^"FLOOR_TIME"
+    | ^"FLOOR"
+
+}
+
+aggr_expr = {
+    aggregate_name ~ "("
+    ~ value_expr
+    ~ ")"
+}
+aggregate_name = {
+    ^"AVG"
 }
 
 /*
@@ -388,10 +414,13 @@ select_stream_command = {
     ^"SELECT" ~ "STREAM"
     ~ select_field ~ ("," ~ select_field)*
     ~ (^"FROM" ~ from_item)
+    ~ (^"GROUP" ~ "BY" ~ grouping_element)? // TODO multiple grouping elements
+    ~ window_clause?
 }
 
 select_field = {
     value_expr ~ (^"AS"? ~ value_alias)?
+    | aggr_expr ~ (^"AS"? ~ aggr_alias) // FIXME currently an expression is Tuple::eval_expression(tuple) (scalar expression) but aggr_expr should also be expression to realize `max(c1) + min(c2)`.
 }
 
 from_item = {
@@ -400,6 +429,23 @@ from_item = {
 // To avoid left-recursion
 sub_from_item = {
     stream_name ~ (^"AS"? ~ correlation_alias)?
+}
+
+grouping_element = {
+    value_expr
+    | value_alias
+}
+
+window_clause = {
+    ^"FIXED" ~ ^"WINDOW" ~ window_length ~ "," ~ allowed_delay
+}
+
+window_length = {
+    duration_constant
+}
+
+allowed_delay = {
+    duration_constant
 }
 
 /*
@@ -447,6 +493,10 @@ correlation_alias = {
 }
 
 value_alias = {
+    identifier
+}
+
+aggr_alias = {
     identifier
 }
 

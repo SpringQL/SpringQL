@@ -131,13 +131,12 @@ mod tests {
     use std::str::FromStr;
 
     use crate::{
-        pipeline::{
-            field::field_name::ColumnReference,
-            name::ValueAlias,
-            pump_model::window_operation_parameter::aggregate::{
-                AggregateFunctionParameter, AggregateParameter, GroupAggregateParameter,
-            },
+        expr_resolver::ExprResolver,
+        expression::{AggrExpr, ValueExpr},
+        pipeline::pump_model::window_operation_parameter::aggregate::{
+            AggregateFunctionParameter, GroupAggregateParameter,
         },
+        sql_processor::sql_parser::syntax::SelectFieldSyntax,
         stream_engine::time::duration::event_duration::EventDuration,
     };
 
@@ -145,13 +144,24 @@ mod tests {
     use pretty_assertions::assert_eq;
 
     fn dont_care_window_operation_parameter() -> WindowOperationParameter {
+        let aggr_expr = AggrExpr {
+            func: AggregateFunctionParameter::Avg,
+            aggregated: ValueExpr::factory_colref("dontcare", "dontcare"),
+        };
+        let group_by_expr = ValueExpr::factory_colref("dontcare", "dontcare");
+
+        let select_list = vec![SelectFieldSyntax::AggrExpr {
+            aggr_expr,
+            alias: None,
+        }];
+        let (mut expr_resolver, _, aggr_labels_select_list) =
+            ExprResolver::new(select_list);
+
+        let group_by_label = expr_resolver.register_value_expr(group_by_expr);
+
         WindowOperationParameter::GroupAggregation(GroupAggregateParameter {
-            aggregation_parameter: AggregateParameter::new(
-                ColumnReference::factory("dontcare", "dontcare"),
-                ValueAlias::new("".to_string()),
-                AggregateFunctionParameter::Avg,
-            ),
-            group_by: ColumnReference::factory("dontcare", "dontcare"),
+            aggr_expr: aggr_labels_select_list[0],
+            group_by: group_by_label,
         })
     }
 

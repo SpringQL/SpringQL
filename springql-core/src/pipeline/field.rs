@@ -26,8 +26,4 @@ impl Field {
     pub(crate) fn sql_value(&self) -> &SqlValue {
         &self.value
     }
-
-    pub(crate) fn into_sql_value(self) -> SqlValue {
-        self.value
-    }
 }

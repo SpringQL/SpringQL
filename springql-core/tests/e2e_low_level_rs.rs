@@ -1,6 +1,6 @@
 // Copyright (c) 2021 TOYOTA MOTOR CORPORATION. Licensed under MIT OR Apache-2.0.
 
-use std::time::Duration;
+mod test_support;
 
 use pretty_assertions::assert_eq;
 use serde_json::json;
@@ -11,21 +11,7 @@ use springql_foreign_service::source::source_input::ForeignSourceInput;
 use springql_foreign_service::source::ForeignSource;
 use springql_test_logger::setup_test_logger;
 
-fn apply_ddls(ddls: &[String], config: SpringConfig) -> SpringPipeline {
-    let pipeline = spring_open(config).unwrap();
-    for ddl in ddls {
-        spring_command(&pipeline, ddl).unwrap();
-    }
-    pipeline
-}
-
-fn drain_from_sink(sink: &ForeignSink) -> Vec<serde_json::Value> {
-    let mut received = Vec::new();
-    while let Some(v) = sink.try_receive(Duration::from_secs(1)) {
-        received.push(v);
-    }
-    received
-}
+use crate::test_support::*;
 
 #[test]
 fn test_e2e_source_sink() -> Result<()> {

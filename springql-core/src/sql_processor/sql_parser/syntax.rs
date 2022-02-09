@@ -1,8 +1,11 @@
 // Copyright (c) 2021 TOYOTA MOTOR CORPORATION. Licensed under MIT OR Apache-2.0.
 
 use crate::{
-    expression::ValueExpr,
-    pipeline::name::{CorrelationAlias, StreamName, ValueAlias},
+    expression::{AggrExpr, ValueExpr},
+    pipeline::{
+        name::{AggrAlias, CorrelationAlias, StreamName, ValueAlias},
+        pump_model::window_parameter::WindowParameter,
+    },
 };
 
 #[derive(Clone, Eq, PartialEq, Debug)]
@@ -21,12 +24,20 @@ pub(in crate::sql_processor) struct OptionSyntax {
 pub(in crate::sql_processor) struct SelectStreamSyntax {
     pub(in crate::sql_processor) fields: Vec<SelectFieldSyntax>,
     pub(in crate::sql_processor) from_item: FromItemSyntax,
+    pub(in crate::sql_processor) grouping_element: Option<GroupingElementSyntax>,
+    pub(in crate::sql_processor) window_clause: Option<WindowParameter>,
 }
 
 #[derive(Clone, PartialEq, Debug)]
-pub(crate) struct SelectFieldSyntax {
-    pub( crate) value_expr: ValueExpr,
-    pub( crate) alias: Option<ValueAlias>,
+pub(crate) enum SelectFieldSyntax {
+    ValueExpr {
+        value_expr: ValueExpr,
+        alias: Option<ValueAlias>,
+    },
+    AggrExpr {
+        aggr_expr: AggrExpr,
+        alias: Option<AggrAlias>,
+    },
 }
 
 #[derive(Clone, Eq, PartialEq, Debug)]
@@ -35,4 +46,15 @@ pub(in crate::sql_processor) enum FromItemSyntax {
         stream_name: StreamName,
         alias: Option<CorrelationAlias>,
     },
+}
+
+#[derive(Clone, PartialEq, Debug)]
+pub(in crate::sql_processor) enum GroupingElementSyntax {
+    ValueExpr(ValueExpr),
+    ValueAlias(ValueAlias),
+}
+
+#[derive(Clone, Eq, PartialEq, Debug)]
+pub(in crate::sql_processor) enum DurationFunction {
+    Secs,
 }

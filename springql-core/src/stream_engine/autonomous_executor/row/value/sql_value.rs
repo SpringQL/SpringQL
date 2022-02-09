@@ -8,6 +8,7 @@ use self::{nn_sql_value::NnSqlValue, sql_compare_result::SqlCompareResult};
 use crate::{
     error::{Result, SpringError},
     mem_size::MemSize,
+    stream_engine::time::duration::event_duration::EventDuration,
 };
 use anyhow::{anyhow, Context};
 use serde::{Deserialize, Serialize};
@@ -148,6 +149,21 @@ impl SqlValue {
                 "NULL cannot be evaluated as BIGINT",
             ))),
             SqlValue::NotNull(nn_sql_value) => nn_sql_value.unpack::<i64>(),
+        }
+    }
+
+    /// Eval as EventDuration if possible.
+    ///
+    /// # Failures
+    ///
+    /// - `SpringError::Sql` when:
+    ///   - this SqlValue cannot be evaluated as event duration
+    pub(crate) fn to_event_duration(&self) -> Result<EventDuration> {
+        match self {
+            SqlValue::Null => Err(SpringError::Sql(anyhow!(
+                "NULL cannot be evaluated as event duration",
+            ))),
+            SqlValue::NotNull(nn_sql_value) => nn_sql_value.unpack::<EventDuration>(),
         }
     }
 }
