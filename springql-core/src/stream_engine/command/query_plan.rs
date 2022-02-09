@@ -22,8 +22,11 @@ pub(crate) struct QueryPlan {
 
 impl QueryPlan {
     pub(crate) fn input_type(&self) -> PumpInputType {
-        // TODO distinguish window input
-        PumpInputType::Row
+        if self.upper_ops.has_window() || self.lower_ops.has_window() {
+            PumpInputType::Window
+        } else {
+            PumpInputType::Row
+        }
     }
 
     pub(crate) fn upstreams(&self) -> Vec<&StreamName> {

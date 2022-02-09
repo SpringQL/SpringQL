@@ -12,13 +12,16 @@ use crate::{
     expr_resolver::ExprResolver,
     pipeline::{name::ColumnName, stream_model::StreamModel},
     stream_engine::autonomous_executor::{
+        performance_metrics::metrics_update_command::metrics_update_by_task_execution::{
+            InQueueMetricsUpdateByTask, WindowInFlowByWindowTask,
+        },
         row::{column::stream_column::StreamColumns, column_values::ColumnValues, Row},
         task::window::GroupAggrOut,
     },
     stream_engine::command::query_plan::QueryPlan,
     stream_engine::{
         autonomous_executor::{
-            performance_metrics::metrics_update_command::metrics_update_by_task_execution::InQueueMetricsUpdateByTaskExecution,
+            performance_metrics::metrics_update_command::metrics_update_by_task_execution::InQueueMetricsUpdateByCollect,
             task::{task_context::TaskContext, tuple::Tuple},
         },
         SqlValue,
@@ -92,7 +95,7 @@ impl SqlValues {
 pub(in crate::stream_engine::autonomous_executor) struct QuerySubtaskOut {
     pub(in crate::stream_engine::autonomous_executor) values_seq: Vec<SqlValues>,
     pub(in crate::stream_engine::autonomous_executor) in_queue_metrics_update:
-        InQueueMetricsUpdateByTaskExecution,
+        InQueueMetricsUpdateByTask,
 }
 
 impl QuerySubtask {
@@ -157,31 +160,54 @@ impl QuerySubtask {
     ) -> Result<Option<QuerySubtaskOut>> {
         match self.run_lower_ops(context) {
             None => Ok(None),
-            Some((lower_tuples, in_queue_metrics_update)) => {
-                let values_seq = self.run_upper_ops(lower_tuples)?;
+            Some((lower_tuples, in_queue_metrics_update_by_collect)) => {
+                let (values_seq, in_queue_metrics_update) =
+                    self.run_upper_ops(lower_tuples, in_queue_metrics_update_by_collect)?;
 
                 Ok(Some(QuerySubtaskOut::new(
                     values_seq,
-                    in_queue_metrics_update, // leaf subtask decides in queue metrics change
+                    in_queue_metrics_update,
                 )))
             }
         }
     }
 
-    fn run_upper_ops(&self, tuples: Vec<Tuple>) -> Result<Vec<SqlValues>> {
-        Ok(tuples
-            .into_iter()
-            .map(|tuple| self.run_upper_ops_inner(tuple))
-            .collect::<Result<Vec<Vec<_>>>>()?
-            .concat())
+    fn run_upper_ops(
+        &self,
+        tuples: Vec<Tuple>,
+        in_queue_metrics_update_by_collect: InQueueMetricsUpdateByCollect,
+    ) -> Result<(Vec<SqlValues>, InQueueMetricsUpdateByTask)> {
+        let (values_seq, window_in_flow_total) = tuples.into_iter().fold(
+            Ok((Vec::new(), WindowInFlowByWindowTask::zero())),
+            |res, tuple| {
+                let (mut values_seq_acc, window_in_flow_acc) = res?;
+
+                let (mut values_seq, window_in_flow) = self.run_upper_ops_inner(tuple)?;
+                values_seq_acc.append(&mut values_seq);
+                Ok((values_seq_acc, window_in_flow_acc + window_in_flow))
+            },
+        )?;
+        let in_queue_metrics_update_by_task = InQueueMetricsUpdateByTask::new(
+            in_queue_metrics_update_by_collect,
+            Some(window_in_flow_total),
+        );
+
+        Ok((values_seq, in_queue_metrics_update_by_task))
     }
-    fn run_upper_ops_inner(&self, tuple: Tuple) -> Result<Vec<SqlValues>> {
+    fn run_upper_ops_inner(
+        &self,
+        tuple: Tuple,
+    ) -> Result<(Vec<SqlValues>, WindowInFlowByWindowTask)> {
         if let Some(group_aggr_window_subtask) = &self.group_aggr_window_subtask {
-            let group_aggr_out = group_aggr_window_subtask.run(&self.expr_resolver, tuple);
-            self.run_aggr_projection_op(group_aggr_out)
+            let (group_aggr_out_seq, window_in_flow) =
+                group_aggr_window_subtask.run(&self.expr_resolver, tuple);
+
+            let values = self.run_aggr_projection_op(group_aggr_out_seq)?;
+
+            Ok((values, window_in_flow))
         } else {
             let values = self.run_projection_op(&tuple)?;
-            Ok(vec![values])
+            Ok((vec![values], WindowInFlowByWindowTask::zero()))
         }
     }
 
@@ -191,7 +217,7 @@ impl QuerySubtask {
     fn run_lower_ops(
         &self,
         context: &TaskContext,
-    ) -> Option<(Vec<Tuple>, InQueueMetricsUpdateByTaskExecution)> {
+    ) -> Option<(Vec<Tuple>, InQueueMetricsUpdateByCollect)> {
         self.run_collect_op(context)
     }
 
@@ -220,7 +246,7 @@ impl QuerySubtask {
     fn run_collect_op(
         &self,
         context: &TaskContext,
-    ) -> Option<(Vec<Tuple>, InQueueMetricsUpdateByTaskExecution)> {
+    ) -> Option<(Vec<Tuple>, InQueueMetricsUpdateByCollect)> {
         self.collect_subtask.run(context)
     }
 }

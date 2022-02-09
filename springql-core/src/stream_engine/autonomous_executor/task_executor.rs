@@ -108,5 +108,8 @@ impl TaskExecutor {
         self.repos
             .row_queue_repository()
             .reset(task_graph.row_queues().into_iter().collect());
+        self.repos
+            .window_queue_repository()
+            .reset(task_graph.window_queues().into_iter().collect());
     }
 }

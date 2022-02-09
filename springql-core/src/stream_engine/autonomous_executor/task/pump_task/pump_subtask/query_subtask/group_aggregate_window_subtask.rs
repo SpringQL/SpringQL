@@ -5,6 +5,7 @@ use std::sync::Mutex;
 use crate::expr_resolver::ExprResolver;
 use crate::pipeline::pump_model::window_operation_parameter::WindowOperationParameter;
 use crate::pipeline::pump_model::window_parameter::WindowParameter;
+use crate::stream_engine::autonomous_executor::performance_metrics::metrics_update_command::metrics_update_by_task_execution::WindowInFlowByWindowTask;
 use crate::stream_engine::autonomous_executor::task::tuple::Tuple;
 use crate::stream_engine::autonomous_executor::task::window::{GroupAggrOut, Window};
 
@@ -24,7 +25,7 @@ impl GroupAggregateWindowSubtask {
         &self,
         expr_resolver: &ExprResolver,
         tuple: Tuple,
-    ) -> Vec<GroupAggrOut> {
+    ) -> (Vec<GroupAggrOut>, WindowInFlowByWindowTask) {
         self.0
             .lock()
             .expect("another thread accessing to window gets poisoned")

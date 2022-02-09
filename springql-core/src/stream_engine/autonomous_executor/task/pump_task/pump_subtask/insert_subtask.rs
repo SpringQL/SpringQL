@@ -6,7 +6,7 @@ use crate::mem_size::MemSize;
 use crate::pipeline::name::ColumnName;
 use crate::pipeline::pipeline_graph::PipelineGraph;
 use crate::pipeline::stream_model::StreamModel;
-use crate::stream_engine::autonomous_executor::performance_metrics::metrics_update_command::metrics_update_by_task_execution::OutQueueMetricsUpdateByTaskExecution;
+use crate::stream_engine::autonomous_executor::performance_metrics::metrics_update_command::metrics_update_by_task_execution::OutQueueMetricsUpdateByTask;
 use crate::stream_engine::autonomous_executor::task::task_context::TaskContext;
 use crate::stream_engine::autonomous_executor::task_graph::queue_id::QueueId;
 use crate::stream_engine::command::insert_plan::InsertPlan;
@@ -24,7 +24,7 @@ pub(in crate::stream_engine::autonomous_executor) struct InsertSubtask {
 #[derive(Debug, new)]
 pub(in crate::stream_engine::autonomous_executor) struct InsertSubtaskOut {
     pub(in crate::stream_engine::autonomous_executor) out_queues_metrics_update:
-        Vec<OutQueueMetricsUpdateByTaskExecution>,
+        Vec<OutQueueMetricsUpdateByTask>,
 }
 
 impl InsertSubtask {
@@ -71,7 +71,7 @@ impl InsertSubtask {
                         row_q.put(row);
                     }
 
-                    OutQueueMetricsUpdateByTaskExecution::new(
+                    OutQueueMetricsUpdateByTask::new(
                         queue_id.into(),
                         rows.len() as u64,
                         bytes_put as u64,

@@ -1,7 +1,9 @@
 use crate::low_level_rs::SpringConfig;
 
 use super::{
-    queue::row_queue_repository::RowQueueRepository,
+    queue::{
+        row_queue_repository::RowQueueRepository, window_queue_repository::WindowQueueRepository,
+    },
     task::{
         sink_task::sink_writer::sink_writer_repository::SinkWriterRepository,
         source_task::source_reader::source_reader_repository::SourceReaderRepository,
@@ -12,6 +14,7 @@ use super::{
 #[derive(Debug)]
 pub(in crate::stream_engine::autonomous_executor) struct Repositories {
     row_queue_repository: RowQueueRepository,
+    window_queue_repository: WindowQueueRepository,
     source_reader_repository: SourceReaderRepository,
     sink_writer_repository: SinkWriterRepository,
 }
@@ -20,6 +23,7 @@ impl Repositories {
     pub(in crate::stream_engine::autonomous_executor) fn new(config: &SpringConfig) -> Self {
         Self {
             row_queue_repository: RowQueueRepository::default(),
+            window_queue_repository: WindowQueueRepository::default(),
             source_reader_repository: SourceReaderRepository::new(config.source_reader),
             sink_writer_repository: SinkWriterRepository::new(config.sink_writer),
         }
@@ -29,6 +33,12 @@ impl Repositories {
         &self,
     ) -> &RowQueueRepository {
         &self.row_queue_repository
+    }
+
+    pub(in crate::stream_engine::autonomous_executor) fn window_queue_repository(
+        &self,
+    ) -> &WindowQueueRepository {
+        &self.window_queue_repository
     }
 
     pub(in crate::stream_engine::autonomous_executor) fn source_reader_repository(
