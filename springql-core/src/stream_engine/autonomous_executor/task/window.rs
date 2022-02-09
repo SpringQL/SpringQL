@@ -2,6 +2,7 @@ mod panes;
 mod watermark;
 
 use crate::{
+    error::{Result, SpringError},
     expr_resolver::{
         expr_label::{AggrExprLabel, ValueExprLabel},
         ExprResolver,
@@ -12,16 +13,48 @@ use crate::{
     stream_engine::SqlValue,
 };
 
+use anyhow::anyhow;
+
 use self::{panes::Panes, watermark::Watermark};
 
 use super::tuple::Tuple;
 
 #[derive(Clone, PartialEq, Debug, new)]
 pub(in crate::stream_engine::autonomous_executor) struct GroupAggrOut {
-    pub(in crate::stream_engine::autonomous_executor) aggr_label: AggrExprLabel,
-    pub(in crate::stream_engine::autonomous_executor) aggr_result: SqlValue,
+    aggr_label: AggrExprLabel,
+    aggr_result: SqlValue,
 
-    pub(in crate::stream_engine::autonomous_executor) group_by_result: SqlValue,
+    group_by_label: ValueExprLabel,
+    group_by_result: SqlValue,
+}
+impl GroupAggrOut {
+    /// # Returns
+    ///
+    /// (aggregate result, group by result)
+    ///
+    /// # Failures
+    ///
+    /// - `SpringError::Sql` when:
+    ///   - `label` is not included in aggregation result
+    pub(in crate::stream_engine::autonomous_executor) fn into_results(
+        self,
+        aggr_label: AggrExprLabel,
+        group_by_label: ValueExprLabel,
+    ) -> Result<(SqlValue, SqlValue)> {
+        if self.aggr_label != aggr_label {
+            Err(SpringError::Sql(anyhow!(
+                "aggregate labeled {:?} is not calculated",
+                aggr_label
+            )))
+        } else if self.group_by_label != group_by_label {
+            Err(SpringError::Sql(anyhow!(
+                "GROUP BY expression {:?} is not calculated",
+                group_by_label
+            )))
+        } else {
+            Ok((self.aggr_result, self.group_by_result))
+        }
+    }
 }
 
 #[derive(Debug)]

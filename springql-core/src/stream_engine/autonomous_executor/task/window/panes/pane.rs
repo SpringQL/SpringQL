@@ -97,7 +97,13 @@ impl Pane {
                 .map(|(group_by, state)| {
                     let aggr_label = group_aggregation_parameter.aggr_expr;
                     let aggr_value = SqlValue::NotNull(NnSqlValue::BigInt(state.finalize()));
-                    GroupAggrOut::new(aggr_label, aggr_value, SqlValue::NotNull(group_by))
+                    let group_by_label = group_aggregation_parameter.group_by;
+                    GroupAggrOut::new(
+                        aggr_label,
+                        aggr_value,
+                        group_by_label,
+                        SqlValue::NotNull(group_by),
+                    )
                 })
                 .collect(),
         }
