@@ -1,0 +1,22 @@
+[package]
+name = "springql-test-web-console-mock"
+version = "0.1.0"
+
+authors = ["Sho Nakatani <lay.sakura@gmail.com>"]
+license = "MIT OR Apache-2.0"
+
+edition = "2021"
+
+categories = ["development-tools"]
+description = "Mock of https://github.com/SpringQL/web-console"
+documentation = "https://docs.rs/springql-test-web-console-mock"
+keywords = ["springql"] # up to 5 keywords, each keyword should have <= 20 chars
+repository = "https://github.com/SpringQL/SpringQL"
+
+[dependencies]
+tokio = {version = "1", features = ["full"]}
+warp = "0.3"
+
+serde = "=1.0"
+serde_derive = "=1.0"
+serde_json = "=1.0"
