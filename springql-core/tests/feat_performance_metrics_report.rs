@@ -11,6 +11,7 @@ use springql_foreign_service::sink::ForeignSink;
 use springql_foreign_service::source::source_input::ForeignSourceInput;
 use springql_foreign_service::source::ForeignSource;
 use springql_test_logger::setup_test_logger;
+use springql_test_web_console_mock::builder::WebConsoleMockBuilder;
 
 use crate::test_support::{apply_ddls, drain_from_sink};
 
@@ -39,7 +40,7 @@ fn gen_source_input(n: u64) -> impl Iterator<Item = serde_json::Value> {
 fn test_performance_metrics_report() {
     setup_test_logger();
 
-    let source_input = gen_source_input(1000).collect();
+    let source_input = gen_source_input(100000).collect();
 
     let test_source =
         ForeignSource::start(ForeignSourceInput::new_fifo_batch(source_input)).unwrap();
@@ -94,9 +95,17 @@ fn test_performance_metrics_report() {
         ),
     ];
 
+    let mock = WebConsoleMockBuilder::default()
+        .add_callback_post_pipeline(|| {
+            log::error!("post_pipeline");
+        })
+        .start();
+
     let mut config = spring_config_default();
     config.web_console.enable_report_post = true;
-    config.web_console.report_interval_msec = 1;
+    config.web_console.report_interval_msec = 100;
+    config.web_console.host = mock.sock_addr().ip().to_string();
+    config.web_console.port = mock.sock_addr().port();
 
     let _pipeline = apply_ddls(&ddls, config);
 
