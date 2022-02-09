@@ -4,9 +4,7 @@ use std::collections::HashMap;
 
 use crate::{
     expr_resolver::ExprResolver,
-    pipeline::pump_model::window_operation_parameter::aggregate::{
-        AggregateFunctionParameter, GroupAggregateParameter,
-    },
+    pipeline::pump_model::window_operation_parameter::aggregate::GroupAggregateParameter,
     stream_engine::{
         autonomous_executor::task::{
             tuple::Tuple,

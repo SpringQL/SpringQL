@@ -1,19 +1,7 @@
 use super::SelectSyntaxAnalyzer;
-use crate::expression::AggrExpr;
-use crate::sql_processor::sql_parser::syntax::{GroupingElementSyntax, SelectFieldSyntax};
+use crate::sql_processor::sql_parser::syntax::GroupingElementSyntax;
 
 impl SelectSyntaxAnalyzer {
-    pub(in super::super) fn aggr_expr_select_list(&self) -> Vec<AggrExpr> {
-        self.select_syntax
-            .fields
-            .iter()
-            .filter_map(|field| match field {
-                SelectFieldSyntax::ValueExpr { .. } => None,
-                SelectFieldSyntax::AggrExpr { aggr_expr, .. } => Some(aggr_expr.clone()),
-            })
-            .collect()
-    }
-
     /// TODO multiple GROUP BY
     pub(in super::super) fn grouping_element(&self) -> Option<GroupingElementSyntax> {
         self.select_syntax.grouping_element.clone()

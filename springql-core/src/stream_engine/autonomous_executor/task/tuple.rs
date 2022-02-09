@@ -53,27 +53,6 @@ impl Tuple {
         sql_value
             .ok_or_else(|| SpringError::Sql(anyhow!("cannot find field `{:?}`", column_reference)))
     }
-
-    /// # Failure
-    ///
-    /// - [SpringError::Sql](crate::error::SpringError::Sql) when:
-    ///   - No field named `colrefs` is found from this tuple.
-    pub(super) fn projection(self, colrefs: &[ColumnReference]) -> Result<Self> {
-        let mut fields = self.fields.into_iter();
-
-        let new_fields = colrefs
-            .iter()
-            .map(|colref| {
-                fields.find(|field| field.name() == colref).ok_or_else(|| {
-                    SpringError::Sql(anyhow!("cannot find field `{:?}` in tuple", colref))
-                })
-            })
-            .collect::<Result<Vec<_>>>()?;
-        Ok(Self {
-            rowtime: self.rowtime,
-            fields: new_fields,
-        })
-    }
 }
 
 #[cfg(test)]

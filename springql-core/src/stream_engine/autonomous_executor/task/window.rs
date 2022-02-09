@@ -176,8 +176,7 @@ mod tests {
             },
         ];
 
-        let (mut expr_resolver, value_labels_select_list, aggr_labels_select_list) =
-            ExprResolver::new(select_list);
+        let (mut expr_resolver, _, aggr_labels_select_list) = ExprResolver::new(select_list);
 
         let group_by_expr = ValueExpr::factory_colref(
             StreamName::fx_trade().as_ref(),
@@ -360,8 +359,7 @@ mod tests {
             },
         ];
 
-        let (mut expr_resolver, value_labels_select_list, aggr_labels_select_list) =
-            ExprResolver::new(select_list);
+        let (mut expr_resolver, _, aggr_labels_select_list) = ExprResolver::new(select_list);
 
         let group_by_expr = ValueExpr::factory_colref(
             StreamName::fx_trade().as_ref(),

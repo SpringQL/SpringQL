@@ -1,14 +1,9 @@
 use super::SelectSyntaxAnalyzer;
 use crate::error::Result;
-use crate::expression::ValueExpr;
 use crate::pipeline::name::StreamName;
 use crate::sql_processor::sql_parser::syntax::FromItemSyntax;
 
 impl SelectSyntaxAnalyzer {
-    pub(in super::super) fn from_item_expressions(&self) -> Vec<ValueExpr> {
-        vec![]
-    }
-
     pub(in super::super) fn from_item_streams(&self) -> Result<Vec<StreamName>> {
         let from_item = self.from_item();
         Self::from_item_into_stream_names(from_item)

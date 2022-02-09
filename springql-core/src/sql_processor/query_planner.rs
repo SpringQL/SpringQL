@@ -148,7 +148,7 @@ impl QueryPlanner {
 
         match (opt_grouping_elem, aggr_labels.len()) {
             (Some(grouping_elem), 1) => {
-                let aggr_label = aggr_labels.into_iter().next().expect("len checked");
+                let aggr_label = aggr_labels.iter().next().expect("len checked");
 
                 let group_by_label = match grouping_elem {
                     GroupingElementSyntax::ValueExpr(expr) => {
