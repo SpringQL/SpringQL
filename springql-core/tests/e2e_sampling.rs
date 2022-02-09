@@ -106,17 +106,19 @@ fn test_e2e_sampling() -> Result<()> {
         ts.as_str().unwrap().to_string()
     });
 
+    assert_eq!(sink_received.len(), 2);
+
     assert_eq!(
         sink_received[0]["ts"].as_str().unwrap(),
-        "2020-01-01 00:00:10.000000000"
+        "2020-01-01 00:00:00.000000000"
     );
     assert_eq!(sink_received[0]["amount"].as_i64().unwrap(), 20,);
 
     assert_eq!(
         sink_received[1]["ts"].as_str().unwrap(),
-        "2020-01-01 00:00:20.000000000"
+        "2020-01-01 00:00:10.000000000"
     );
-    assert_eq!(sink_received[0]["amount"].as_i64().unwrap(), 50,);
+    assert_eq!(sink_received[1]["amount"].as_i64().unwrap(), 50,);
 
     Ok(())
 }
