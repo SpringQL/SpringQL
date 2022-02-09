@@ -96,8 +96,8 @@ fn test_performance_metrics_report() {
     ];
 
     let mock = WebConsoleMockBuilder::default()
-        .add_callback_post_pipeline(|| {
-            log::error!("post_pipeline");
+        .add_callback_post_pipeline(|body| {
+            log::error!("post_pipeline {:#?}", body);
         })
         .bulid();
 

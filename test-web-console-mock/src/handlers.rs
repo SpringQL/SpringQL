@@ -25,26 +25,19 @@ impl RequestHandler {
 
     pub(super) fn post_task_graph(
         &mut self,
-        callback: Option<Arc<dyn Fn() + Sync + Send>>,
+        callback: Option<Arc<dyn Fn(PostTaskGraphBody) + Sync + Send>>,
     ) -> ResponseResult {
+        let req_body = self.request.body();
+        let body: PostTaskGraphBody = serde_json::from_slice(req_body.as_slice()).unwrap();
+
         if let Some(cb) = callback {
-            cb();
+            cb(body);
         }
         Ok(self.response.body("ok".as_bytes().to_vec())?)
     }
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-pub(super) struct PostPipelineBody {
+pub struct PostTaskGraphBody {
     data: String,
 }
-
-// pub(super) async fn post_pipeline(
-//     body: PostPipelineBody,
-//     callback: Option<Arc<dyn Fn() + Sync + Send>>,
-// ) -> Result<impl warp::Reply, Infallible> {
-//     if let Some(cb) = callback {
-//         cb();
-//     }
-//     Ok(warp::reply::json(&body))
-// }
