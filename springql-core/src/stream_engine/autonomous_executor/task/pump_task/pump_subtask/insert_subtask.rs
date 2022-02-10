@@ -49,38 +49,41 @@ impl InsertSubtask {
         values_seq: Vec<SqlValues>,
         context: &TaskContext,
     ) -> InsertSubtaskOut {
-        let repos = context.repos();
-        let row_q_repo = repos.row_queue_repository();
-        let output_queues = context.output_queues();
+        if values_seq.is_empty() {
+            InsertSubtaskOut::new(vec![])
+        } else {
+            let repos = context.repos();
+            let row_q_repo = repos.row_queue_repository();
+            let output_queues = context.output_queues();
 
-        let rows = values_seq
-            .into_iter()
-            .map(|values| values.into_row(self.into_stream.clone(), self.column_order.clone()))
-            .collect::<Vec<_>>();
+            let rows = values_seq
+                .into_iter()
+                .map(|values| values.into_row(self.into_stream.clone(), self.column_order.clone()))
+                .collect::<Vec<_>>();
 
-        // TODO modify row on INSERT if necessary
-        let out_queues_metrics_update = output_queues
-            .into_iter()
-            .map(|q| match q {
-                QueueId::Row(queue_id) => {
-                    let row_q = row_q_repo.get(&queue_id);
+            let out_queues_metrics_update = output_queues
+                .into_iter()
+                .map(|q| match q {
+                    QueueId::Row(queue_id) => {
+                        let row_q = row_q_repo.get(&queue_id);
 
-                    let mut bytes_put = 0;
-                    for row in rows.clone() {
-                        bytes_put += row.mem_size();
-                        row_q.put(row);
+                        let mut bytes_put = 0;
+                        for row in rows.clone() {
+                            bytes_put += row.mem_size();
+                            row_q.put(row);
+                        }
+
+                        OutQueueMetricsUpdateByTask::new(
+                            queue_id.into(),
+                            rows.len() as u64,
+                            bytes_put as u64,
+                        )
                     }
+                    QueueId::Window(_) => todo!(),
+                })
+                .collect();
 
-                    OutQueueMetricsUpdateByTask::new(
-                        queue_id.into(),
-                        rows.len() as u64,
-                        bytes_put as u64,
-                    )
-                }
-                QueueId::Window(_) => todo!(),
-            })
-            .collect();
-
-        InsertSubtaskOut::new(out_queues_metrics_update)
+            InsertSubtaskOut::new(out_queues_metrics_update)
+        }
     }
 }
