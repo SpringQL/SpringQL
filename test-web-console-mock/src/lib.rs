@@ -1,8 +1,7 @@
 pub mod builder;
+pub mod request_body;
 
 mod request_handler;
-mod request_body;
-
 
 use std::{
     net::{SocketAddr, TcpListener},

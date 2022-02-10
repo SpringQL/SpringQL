@@ -17,7 +17,7 @@ impl WebConsoleMockBuilder {
         me
     }
 
-    pub fn bulid(self) -> WebConsoleMock {
+    pub fn build(self) -> WebConsoleMock {
         WebConsoleMock::new(self)
     }
 }
