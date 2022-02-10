@@ -36,6 +36,9 @@ impl SqlProcessor {
             ParseSuccess::CreateSourceReader(source_reader_model) => {
                 self.compile_create_source_reader(source_reader_model, pipeline)?
             }
+            ParseSuccess::CreateStream(stream_model) => {
+                self.compile_create_stream(stream_model, pipeline)?
+            }
             ParseSuccess::CreateSinkStream(sink_stream_model) => {
                 self.compile_create_sink_stream(sink_stream_model, pipeline)?
             }
@@ -73,6 +76,17 @@ impl SqlProcessor {
         Ok(Command::AlterPipeline(
             AlterPipelineCommand::CreateSourceReader(source_reader_model),
         ))
+    }
+
+    fn compile_create_stream(
+        &self,
+        stream_model: StreamModel,
+        _pipeline: &Pipeline,
+    ) -> Result<Command> {
+        // TODO semantic check
+        Ok(Command::AlterPipeline(AlterPipelineCommand::CreateStream(
+            stream_model,
+        )))
     }
 
     fn compile_create_sink_stream(

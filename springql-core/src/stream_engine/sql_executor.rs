@@ -50,6 +50,7 @@ impl SqlExecutor {
             AlterPipelineCommand::CreateSourceReader(source_reader) => {
                 Self::create_source_reader(pipeline, source_reader)
             }
+            AlterPipelineCommand::CreateStream(stream) => Self::create_stream(pipeline, stream),
             AlterPipelineCommand::CreateSinkStream(sink_stream) => {
                 Self::create_sink_stream(pipeline, sink_stream)
             }
@@ -72,6 +73,11 @@ impl SqlExecutor {
         source_reader: SourceReaderModel,
     ) -> Result<Pipeline> {
         pipeline.add_source_reader(source_reader)?;
+        Ok(pipeline)
+    }
+
+    fn create_stream(mut pipeline: Pipeline, stream: StreamModel) -> Result<Pipeline> {
+        pipeline.add_stream(Arc::new(stream))?;
         Ok(pipeline)
     }
 

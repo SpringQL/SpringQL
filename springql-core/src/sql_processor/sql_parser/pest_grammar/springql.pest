@@ -324,6 +324,7 @@ command = {
     SOI ~ (
         create_source_stream_command
         | create_source_reader_command
+        | create_stream_command
         | create_sink_stream_command
         | create_sink_writer_command
         | create_pump_command
@@ -340,6 +341,20 @@ command = {
 
 create_source_stream_command = {
     ^"CREATE" ~ ^"SOURCE" ~ ^"STREAM"
+    ~ stream_name
+    ~ "("
+    ~ column_definition ~ ("," ~ column_definition)*
+    ~ ")"
+}
+
+/*
+ * ----------------------------------------------------------------------------
+ * CREATE STREAM
+ * ----------------------------------------------------------------------------
+ */
+
+create_stream_command = {
+    ^"CREATE" ~ ^"STREAM"
     ~ stream_name
     ~ "("
     ~ column_definition ~ ("," ~ column_definition)*

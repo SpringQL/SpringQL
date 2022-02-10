@@ -230,6 +230,12 @@ impl PestParserImpl {
         )?)
         .or(try_parse_child(
             &mut params,
+            Rule::create_stream_command,
+            Self::parse_create_stream_command,
+            identity,
+        )?)
+        .or(try_parse_child(
+            &mut params,
             Rule::create_sink_stream_command,
             Self::parse_create_sink_stream_command,
             identity,
@@ -328,6 +334,32 @@ impl PestParserImpl {
         );
 
         Ok(ParseSuccess::CreateSourceReader(source_reader))
+    }
+
+    /*
+     * ----------------------------------------------------------------------------
+     * CREATE STREAM
+     * ----------------------------------------------------------------------------
+     */
+
+    fn parse_create_stream_command(mut params: FnParseParams) -> Result<ParseSuccess> {
+        let stream_name = parse_child(
+            &mut params,
+            Rule::stream_name,
+            Self::parse_stream_name,
+            identity,
+        )?;
+        let column_definitions = parse_child_seq(
+            &mut params,
+            Rule::column_definition,
+            &Self::parse_column_definition,
+            &identity,
+        )?;
+
+        let stream_shape = StreamShape::new(column_definitions)?;
+        let stream = StreamModel::new(stream_name, stream_shape);
+
+        Ok(ParseSuccess::CreateStream(stream))
     }
 
     /*

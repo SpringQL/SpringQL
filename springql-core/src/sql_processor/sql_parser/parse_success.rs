@@ -15,6 +15,7 @@ use super::syntax::SelectStreamSyntax;
 pub(in crate::sql_processor) enum ParseSuccess {
     CreateSourceStream(StreamModel),
     CreateSourceReader(SourceReaderModel),
+    CreateStream(StreamModel),
     CreateSinkStream(StreamModel),
     CreateSinkWriter(SinkWriterModel),
     CreatePump {
