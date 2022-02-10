@@ -1,7 +1,8 @@
 use std::sync::Arc;
 
-use serde_derive::{Deserialize, Serialize};
 use simple_server::{Builder, Request, ResponseResult, StatusCode};
+
+use crate::request_body::PostTaskGraphBody;
 
 #[derive(Debug)]
 pub(super) struct RequestHandler {
@@ -28,16 +29,13 @@ impl RequestHandler {
         callback: Option<Arc<dyn Fn(PostTaskGraphBody) + Sync + Send>>,
     ) -> ResponseResult {
         let req_body = self.request.body();
-        let body: PostTaskGraphBody = serde_json::from_slice(req_body.as_slice()).unwrap();
+        let req_body = String::from_utf8(req_body.to_vec()).unwrap();
+        let body: PostTaskGraphBody = serde_json::from_str(req_body.as_str())
+            .unwrap_or_else(|_| panic!("failed to parse response: {}", req_body));
 
         if let Some(cb) = callback {
             cb(body);
         }
         Ok(self.response.body("ok".as_bytes().to_vec())?)
     }
-}
-
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-pub struct PostTaskGraphBody {
-    data: String,
 }

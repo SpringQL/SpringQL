@@ -1,6 +1,8 @@
 pub mod builder;
 
-mod handlers;
+mod request_handler;
+mod request_body;
+
 
 use std::{
     net::{SocketAddr, TcpListener},
@@ -11,7 +13,7 @@ use std::{
 use builder::WebConsoleMockBuilder;
 use simple_server::{Method, Server};
 
-use crate::handlers::RequestHandler;
+use crate::request_handler::RequestHandler;
 
 pub struct WebConsoleMock {
     listener_sock: TcpListener,
