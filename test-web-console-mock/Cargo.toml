@@ -14,7 +14,7 @@ keywords = ["springql"] # up to 5 keywords, each keyword should have <= 20 chars
 repository = "https://github.com/SpringQL/SpringQL"
 
 [dependencies]
-simple-server = "0.4"
+simple-server = {git = "https://github.com/laysakura/simple-server"}
 
 serde = "1.0"
 serde_derive = "1.0"
