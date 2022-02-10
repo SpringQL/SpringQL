@@ -13,10 +13,7 @@ use springql_test_logger::setup_test_logger;
 
 use crate::test_support::*;
 
-#[test]
-fn test_e2e_sampling() -> Result<()> {
-    setup_test_logger();
-
+fn gen_source_input() -> Vec<serde_json::Value> {
     let json_00_1 = json!({
         "ts": "2020-01-01 00:00:00.000000000",
         "ticker": "ORCL",
@@ -28,19 +25,34 @@ fn test_e2e_sampling() -> Result<()> {
         "amount": 30,
     });
     let json_10_1 = json!({
-    "ts": "2020-01-01 00:00:10.0000000000",
-
+        "ts": "2020-01-01 00:00:10.0000000000",
         "ticker": "IBM",
         "amount": 50,
     });
     let json_20_1 = json!({
-    "ts": "2020-01-01 00:00:20.0000000000",
-
+        "ts": "2020-01-01 00:00:20.0000000000",
         "ticker": "IBM",
         "amount": 70,
     });
 
-    let source_input = vec![json_00_1, json_00_2, json_10_1, json_20_1];
+    vec![json_00_1, json_00_2, json_10_1, json_20_1]
+}
+
+fn run_and_drain(ddls: &[String], test_sink: &ForeignSink) -> Vec<serde_json::Value> {
+    let _pipeline = apply_ddls(ddls, spring_config_default());
+    let mut sink_received = drain_from_sink(test_sink);
+    sink_received.sort_by_key(|r| {
+        let ts = &r["ts"];
+        ts.as_str().unwrap().to_string()
+    });
+    sink_received
+}
+
+#[test]
+fn test_e2e_sampling() -> Result<()> {
+    setup_test_logger();
+
+    let source_input = gen_source_input();
 
     let test_source =
         ForeignSource::start(ForeignSourceInput::new_fifo_batch(source_input)).unwrap();
@@ -99,12 +111,7 @@ fn test_e2e_sampling() -> Result<()> {
         ),
     ];
 
-    let _pipeline = apply_ddls(&ddls, spring_config_default());
-    let mut sink_received = drain_from_sink(&test_sink);
-    sink_received.sort_by_key(|r| {
-        let ts = &r["ts"];
-        ts.as_str().unwrap().to_string()
-    });
+    let sink_received = run_and_drain(&ddls, &test_sink);
 
     assert_eq!(sink_received.len(), 2);
 
