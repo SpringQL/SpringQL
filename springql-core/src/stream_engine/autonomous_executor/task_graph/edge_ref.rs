@@ -1,6 +1,4 @@
-use petgraph::graph::{EdgeIndex, NodeIndex};
-
-use super::queue_id::QueueId;
+use petgraph::graph::NodeIndex;
 
 /// Original [EdgeReference](https://docs.rs/petgraph/0.6.0/petgraph/graph/struct.EdgeReference.html) is
 /// only constructed via [edge_references()](https://docs.rs/petgraph/0.6.0/petgraph/graph/struct.Graph.html#method.edge_references)
@@ -9,8 +7,6 @@ use super::queue_id::QueueId;
 pub(super) struct MyEdgeRef {
     source: NodeIndex,
     target: NodeIndex,
-    edge: EdgeIndex,
-    weight: QueueId,
 }
 
 impl MyEdgeRef {
@@ -20,13 +16,5 @@ impl MyEdgeRef {
 
     pub(super) fn target(&self) -> NodeIndex {
         self.target
-    }
-
-    pub(super) fn edge(&self) -> EdgeIndex {
-        self.edge
-    }
-
-    pub(super) fn weight(&self) -> &QueueId {
-        &self.weight
     }
 }

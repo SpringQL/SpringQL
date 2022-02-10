@@ -87,13 +87,6 @@ impl TaskGraph {
             .collect()
     }
 
-    pub(super) fn upstream_tasks(&self, task_id: &TaskId) -> Vec<TaskId> {
-        self.input_queues(task_id)
-            .iter()
-            .map(|q| self.upstream_task(q))
-            .collect()
-    }
-
     pub(super) fn downstream_tasks(&self, task_id: &TaskId) -> Vec<TaskId> {
         self.output_queues(task_id)
             .iter()
@@ -109,22 +102,6 @@ impl TaskGraph {
         self.tasks()
             .iter()
             .filter(|t| matches!(t, TaskId::Source { .. }))
-            .cloned()
-            .collect()
-    }
-
-    fn pump_tasks(&self) -> Vec<TaskId> {
-        self.tasks()
-            .iter()
-            .filter(|t| matches!(t, TaskId::Pump { .. }))
-            .cloned()
-            .collect()
-    }
-
-    pub(super) fn sink_tasks(&self) -> Vec<TaskId> {
-        self.tasks()
-            .iter()
-            .filter(|t| matches!(t, TaskId::Sink { .. }))
             .cloned()
             .collect()
     }
@@ -174,9 +151,8 @@ impl TaskGraph {
     pub(super) fn add_queue(&mut self, queue_id: QueueId, source: TaskId, target: TaskId) {
         let source = self.find_node(&source);
         let target = self.find_node(&target);
-        let i = self.g.add_edge(source, target, queue_id.clone());
 
-        let edge_ref = MyEdgeRef::new(source, target, i, queue_id.clone());
+        let edge_ref = MyEdgeRef::new(source, target);
         let _ = self.queue_id_edge_map.insert(queue_id, edge_ref);
     }
 
