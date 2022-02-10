@@ -74,7 +74,7 @@ impl WebConsoleMock {
                     let res_status = resp.error_for_status_ref();
                     match res_status {
                         Ok(_) => {
-                            log::error!("Got response to healthcheck endpoint.");
+                            log::info!("Got response to healthcheck endpoint.");
                             break;
                         }
                         Err(e) => {
