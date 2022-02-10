@@ -7,6 +7,7 @@ use crate::pipeline::name::ColumnName;
 use crate::pipeline::pipeline_graph::PipelineGraph;
 use crate::pipeline::stream_model::StreamModel;
 use crate::stream_engine::autonomous_executor::performance_metrics::metrics_update_command::metrics_update_by_task_execution::OutQueueMetricsUpdateByTask;
+use crate::stream_engine::autonomous_executor::row::Row;
 use crate::stream_engine::autonomous_executor::task::task_context::TaskContext;
 use crate::stream_engine::autonomous_executor::task_graph::queue_id::QueueId;
 use crate::stream_engine::command::insert_plan::InsertPlan;
@@ -54,6 +55,7 @@ impl InsertSubtask {
         } else {
             let repos = context.repos();
             let row_q_repo = repos.row_queue_repository();
+            let window_q_repo = repos.window_queue_repository();
             let output_queues = context.output_queues();
 
             let rows = values_seq
@@ -66,24 +68,33 @@ impl InsertSubtask {
                 .map(|q| match q {
                     QueueId::Row(queue_id) => {
                         let row_q = row_q_repo.get(&queue_id);
-
-                        let mut bytes_put = 0;
+                        let out = self.out_queue_metrics_update(queue_id.into(), &rows);
                         for row in rows.clone() {
-                            bytes_put += row.mem_size();
                             row_q.put(row);
                         }
-
-                        OutQueueMetricsUpdateByTask::new(
-                            queue_id.into(),
-                            rows.len() as u64,
-                            bytes_put as u64,
-                        )
+                        out
                     }
-                    QueueId::Window(_) => todo!(),
+                    QueueId::Window(queue_id) => {
+                        let window_queue = window_q_repo.get(&queue_id);
+                        let out = self.out_queue_metrics_update(queue_id.into(), &rows);
+                        for row in rows.clone() {
+                            window_queue.put(row);
+                        }
+                        out
+                    }
                 })
                 .collect();
 
             InsertSubtaskOut::new(out_queues_metrics_update)
         }
+    }
+
+    fn out_queue_metrics_update(
+        &self,
+        queue_id: QueueId,
+        rows: &[Row],
+    ) -> OutQueueMetricsUpdateByTask {
+        let bytes_put: usize = rows.iter().map(|row| row.mem_size()).sum();
+        OutQueueMetricsUpdateByTask::new(queue_id, rows.len() as u64, bytes_put as u64)
     }
 }

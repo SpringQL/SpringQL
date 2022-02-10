@@ -10,6 +10,7 @@ use crate::pipeline::{
 pub(crate) enum AlterPipelineCommand {
     CreateSourceStream(StreamModel),
     CreateSourceReader(SourceReaderModel),
+    CreateStream(StreamModel),
     CreateSinkStream(StreamModel),
     CreateSinkWriter(SinkWriterModel),
     CreatePump(PumpModel),
