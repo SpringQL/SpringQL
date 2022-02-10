@@ -41,9 +41,11 @@ impl WebConsoleReporter {
         let res_status = resp.error_for_status_ref();
         match res_status {
             Ok(_) => log::debug!("successfully POSTed metrics to web-console"),
-            Err(e) => {
-                let body = resp.text().unwrap();
-                log::warn!("error response from web-console: {:?} - {}", e, body);
+            Err(e_status) => {
+                match resp.text() {
+                    Ok(body) => log::warn!("error response from web-console: {:?} - {}", e_status, body),
+                    Err(e_resp) => log::warn!("error response (status {}) from web-console but failed to read response body: {:?}", e_status.status().unwrap(), e_resp),
+                }                
             }
         }
     }
