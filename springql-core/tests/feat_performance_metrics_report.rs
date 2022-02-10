@@ -342,11 +342,11 @@ fn test_performance_metrics_report_sampling() {
     );
     assert!(
         non_empty_q_tcp_sink_trade
-            .window_queue
+            .row_queue
             .as_ref()
             .unwrap()
             .total_bytes
             > 0
     );
-    assert!(non_empty_q_tcp_sink_trade.row_queue.is_none());
+    assert!(non_empty_q_tcp_sink_trade.window_queue.is_none());
 }
