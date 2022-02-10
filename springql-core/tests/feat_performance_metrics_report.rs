@@ -2,6 +2,8 @@
 
 mod test_support;
 
+use std::time::Duration;
+
 use chrono::NaiveDateTime;
 use pretty_assertions::assert_eq;
 use rand::prelude::{IteratorRandom, SliceRandom};
