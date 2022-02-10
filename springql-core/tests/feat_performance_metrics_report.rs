@@ -327,26 +327,23 @@ fn test_performance_metrics_report_sampling() {
     );
     assert!(non_empty_q_pu_sampling.row_queue.is_none());
 
-    let non_empty_q_tcp_sink_trade = body_pile
+    let q_tcp_sink_trade = body_pile
         .iter()
         .find_map(|body| {
-            body.queues.iter().find(|queue| {
-                queue.id == "tcp_sink_trade" && queue.row_queue.as_ref().unwrap().num_rows > 0
-            })
+            body.queues
+                .iter()
+                .find(|queue| queue.id == "tcp_sink_trade")
         })
-        .expect("at least 1 should exist (but in very rare case input queue is always empty)");
-    assert_eq!(non_empty_q_tcp_sink_trade.upstream_task_id, "pu_sampling");
-    assert_eq!(
-        non_empty_q_tcp_sink_trade.downstream_task_id,
-        "tcp_sink_trade"
-    );
-    assert!(
-        non_empty_q_tcp_sink_trade
-            .row_queue
-            .as_ref()
-            .unwrap()
-            .total_bytes
-            > 0
-    );
-    assert!(non_empty_q_tcp_sink_trade.window_queue.is_none());
+        .expect("at least 1 should exist");
+
+    assert_eq!(q_tcp_sink_trade.upstream_task_id, "pu_sampling");
+    assert_eq!(q_tcp_sink_trade.downstream_task_id, "tcp_sink_trade");
+    assert!(q_tcp_sink_trade.window_queue.is_none());
+
+    if q_tcp_sink_trade.row_queue.as_ref().unwrap().num_rows > 0 {
+        assert!(q_tcp_sink_trade.row_queue.as_ref().unwrap().total_bytes > 0);
+    } else {
+        // often comes here because tcp_sink_trade queue only get input row on pane close (per 10 secs in event time)
+        assert!(q_tcp_sink_trade.row_queue.as_ref().unwrap().total_bytes == 0);
+    }
 }
