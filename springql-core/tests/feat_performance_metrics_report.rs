@@ -245,7 +245,7 @@ fn test_performance_metrics_report_sampling() {
         "
         .to_string(),
         "
-        CREATE PUMP pu_passthrough AS
+        CREATE PUMP pu_sampling AS
           INSERT INTO sink_sampled_trade_amount (ts, amount)
           SELECT STREAM
             FLOOR_TIME(source_trade.ts, DURATION_SECS(10)) AS sampled_ts,
@@ -269,7 +269,7 @@ fn test_performance_metrics_report_sampling() {
         ),
         format!(
             "
-        CREATE SOURCE READER tcp_trade FOR source_trade
+        CREATE SOURCE READER tcp_source_trade FOR source_trade
           TYPE NET_SERVER OPTIONS (
             PROTOCOL 'TCP',
             REMOTE_HOST '{remote_host}',
@@ -282,6 +282,71 @@ fn test_performance_metrics_report_sampling() {
     ];
 
     let body_pile = start_pile_reports(&ddls, &test_sink);
+    let body_pile = body_pile.lock().unwrap();
 
-    log::error!("a: {:#?}", body_pile.lock().unwrap());
+    assert!(body_pile
+        .iter()
+        .any(|body| !body.tasks.is_empty() && !body.queues.is_empty()));
+
+    let task_pu_sampling = body_pile
+        .iter()
+        .find_map(|body| body.tasks.iter().find(|task| task.id == "pu_sampling"))
+        .expect("at least 1 should exist");
+    assert_eq!(task_pu_sampling.type_, "pump-task");
+
+    let task_tcp_source_trade = body_pile
+        .iter()
+        .find_map(|body| body.tasks.iter().find(|task| task.id == "tcp_source_trade"))
+        .expect("at least 1 should exist");
+    assert_eq!(task_tcp_source_trade.type_, "source-task");
+
+    let task_tcp_sink_trade = body_pile
+        .iter()
+        .find_map(|body| body.tasks.iter().find(|task| task.id == "tcp_sink_trade"))
+        .expect("at least 1 should exist");
+    assert_eq!(task_tcp_sink_trade.type_, "sink-task");
+
+    let non_empty_q_pu_sampling = body_pile
+        .iter()
+        .find_map(|body| {
+            body.queues.iter().find(|queue| {
+                queue.id == "pu_sampling"
+                    && queue.window_queue.as_ref().unwrap().num_rows_waiting > 0
+            })
+        })
+        .expect("at least 1 should exist (but in very rare case input queue is always empty)");
+    assert_eq!(non_empty_q_pu_sampling.upstream_task_id, "tcp_source_trade");
+    assert_eq!(non_empty_q_pu_sampling.downstream_task_id, "pu_sampling");
+    assert!(
+        non_empty_q_pu_sampling
+            .window_queue
+            .as_ref()
+            .unwrap()
+            .total_bytes
+            > 0
+    );
+    assert!(non_empty_q_pu_sampling.row_queue.is_none());
+
+    let non_empty_q_tcp_sink_trade = body_pile
+        .iter()
+        .find_map(|body| {
+            body.queues.iter().find(|queue| {
+                queue.id == "tcp_sink_trade" && queue.row_queue.as_ref().unwrap().num_rows > 0
+            })
+        })
+        .expect("at least 1 should exist (but in very rare case input queue is always empty)");
+    assert_eq!(non_empty_q_tcp_sink_trade.upstream_task_id, "pu_sampling");
+    assert_eq!(
+        non_empty_q_tcp_sink_trade.downstream_task_id,
+        "tcp_sink_trade"
+    );
+    assert!(
+        non_empty_q_tcp_sink_trade
+            .window_queue
+            .as_ref()
+            .unwrap()
+            .total_bytes
+            > 0
+    );
+    assert!(non_empty_q_tcp_sink_trade.row_queue.is_none());
 }
