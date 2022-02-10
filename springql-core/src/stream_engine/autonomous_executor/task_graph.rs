@@ -151,6 +151,7 @@ impl TaskGraph {
     pub(super) fn add_queue(&mut self, queue_id: QueueId, source: TaskId, target: TaskId) {
         let source = self.find_node(&source);
         let target = self.find_node(&target);
+        let _ = self.g.add_edge(source, target, queue_id.clone());
 
         let edge_ref = MyEdgeRef::new(source, target);
         let _ = self.queue_id_edge_map.insert(queue_id, edge_ref);
