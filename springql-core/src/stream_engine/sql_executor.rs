@@ -57,7 +57,7 @@ impl SqlExecutor {
             AlterPipelineCommand::CreateSinkWriter(sink_writer) => {
                 Self::create_sink_writer(pipeline, sink_writer)
             }
-            AlterPipelineCommand::CreatePump(pump) => Self::create_pump(pipeline, pump),
+            AlterPipelineCommand::CreatePump(pump) => Self::create_pump(pipeline, *pump),
         }
     }
 

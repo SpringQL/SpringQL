@@ -13,5 +13,5 @@ pub(crate) enum AlterPipelineCommand {
     CreateStream(StreamModel),
     CreateSinkStream(StreamModel),
     CreateSinkWriter(SinkWriterModel),
-    CreatePump(PumpModel),
+    CreatePump(Box<PumpModel>),
 }

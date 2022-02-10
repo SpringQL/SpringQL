@@ -121,7 +121,7 @@ impl SqlProcessor {
         let query_plan = self.compile_select_stream(select_stream_syntax, pipeline)?;
         let pump = PumpModel::new(pump_name, query_plan, insert_plan);
         Ok(Command::AlterPipeline(AlterPipelineCommand::CreatePump(
-            pump,
+            Box::new(pump),
         )))
     }
 
