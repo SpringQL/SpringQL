@@ -12,8 +12,10 @@ use springql_foreign_service::source::source_input::ForeignSourceInput;
 use springql_foreign_service::source::ForeignSource;
 use springql_test_logger::setup_test_logger;
 use springql_test_web_console_mock::builder::WebConsoleMockBuilder;
+use springql_test_web_console_mock::WebConsoleMock;
+use test_support::drain_from_sink;
 
-use crate::test_support::{apply_ddls, drain_from_sink};
+use crate::test_support::apply_ddls;
 
 /// 1 sec tick data
 fn gen_source_input(n: u64) -> impl Iterator<Item = serde_json::Value> {
@@ -34,6 +36,15 @@ fn gen_source_input(n: u64) -> impl Iterator<Item = serde_json::Value> {
             "amount": amount,
         })
     })
+}
+
+fn config(mock: &WebConsoleMock) -> SpringConfig {
+    let mut config = spring_config_default();
+    config.web_console.enable_report_post = true;
+    config.web_console.report_interval_msec = 100;
+    config.web_console.host = mock.sock_addr().ip().to_string();
+    config.web_console.port = mock.sock_addr().port();
+    config
 }
 
 #[test]
@@ -101,18 +112,10 @@ fn test_performance_metrics_report() {
         })
         .bulid();
 
-    let mut config = spring_config_default();
-    config.web_console.enable_report_post = true;
-    config.web_console.report_interval_msec = 100;
-    config.web_console.host = mock.sock_addr().ip().to_string();
-    config.web_console.port = mock.sock_addr().port();
+    let config = config(&mock);
 
     mock.start();
 
     let _pipeline = apply_ddls(&ddls, config);
-
-    let sink_received = drain_from_sink(&test_sink);
-    let r = sink_received.get(0).unwrap();
-
-    assert_eq!(r["ts"], "2020-01-01 23:59:59.000000000");
+    let _sink_received = drain_from_sink(&test_sink);
 }
