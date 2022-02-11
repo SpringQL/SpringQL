@@ -7,15 +7,21 @@
 
 pub(crate) mod field_name;
 
-use crate::stream_engine::SqlValue;
+use crate::{mem_size::MemSize, stream_engine::SqlValue};
 
 use self::field_name::ColumnReference;
 
 /// Field == SqlValue + FieldName
 #[derive(Clone, PartialEq, Debug, new)]
 pub(crate) struct Field {
-    name: ColumnReference, // TODO use ExprLabel instead
+    name: ColumnReference,
     value: SqlValue,
+}
+
+impl MemSize for Field {
+    fn mem_size(&self) -> usize {
+        self.name.mem_size() + self.value.mem_size()
+    }
 }
 
 impl Field {

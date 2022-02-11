@@ -12,6 +12,7 @@ use crate::{
 };
 
 pub(in crate::stream_engine::autonomous_executor) mod aggregate_pane;
+pub(in crate::stream_engine::autonomous_executor) mod join_pane;
 
 pub(in crate::stream_engine::autonomous_executor) trait Pane {
     type CloseOut;
@@ -32,5 +33,6 @@ pub(in crate::stream_engine::autonomous_executor) trait Pane {
     fn dispatch(&mut self, expr_resolver: &ExprResolver, tuple: &Tuple)
         -> WindowInFlowByWindowTask;
 
-    fn close(self) -> (Vec<Self::CloseOut>, WindowInFlowByWindowTask);
+    fn close(self, expr_resolver: &ExprResolver)
+        -> (Vec<Self::CloseOut>, WindowInFlowByWindowTask);
 }

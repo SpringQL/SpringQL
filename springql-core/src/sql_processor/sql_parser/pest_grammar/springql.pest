@@ -36,9 +36,13 @@ keyword = {
     | ^"INSERT"
     | ^"INTEGER"
     | ^"INTO"
+    | ^"JOIN"
+    | ^"LEFT"
     | ^"NOT"
     | ^"NULL"
+    | ^"ON"
     | ^"OPTIONS"
+    | ^"OUTER"
     | ^"PUMP"
     | ^"READER"
     | ^"ROWTIME"
@@ -439,11 +443,15 @@ select_field = {
 }
 
 from_item = {
-    sub_from_item
+    sub_from_item ~ (join_type ~ from_item ~ ^"ON" ~ condition)?
 }
 // To avoid left-recursion
 sub_from_item = {
     stream_name ~ (^"AS"? ~ correlation_alias)?
+}
+
+join_type = {
+    ^"LEFT" ~ ^"OUTER" ~ ^"JOIN"
 }
 
 grouping_element = {

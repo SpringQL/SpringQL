@@ -122,7 +122,7 @@ where
 
     fn generate_pane(&self, open_at: Timestamp) -> P {
         let close_at = open_at + self.window_param.length().to_chrono();
-        P::new(open_at, close_at, self.op_param)
+        P::new(open_at, close_at, self.op_param.clone())
     }
 }
 

@@ -6,6 +6,7 @@ use self::{
 };
 
 pub(in crate::stream_engine::autonomous_executor) mod aggregate;
+pub(in crate::stream_engine::autonomous_executor) mod join_window;
 
 mod panes;
 mod watermark;
@@ -52,7 +53,7 @@ pub(in crate::stream_engine::autonomous_executor) trait Window {
                 .fold(
                     (Vec::new(), WindowInFlowByWindowTask::zero()),
                     |(mut group_aggr_out_acc, window_in_flow_acc), pane| {
-                        let (mut group_aggr_out_seq, window_in_flow) = pane.close();
+                        let (mut group_aggr_out_seq, window_in_flow) = pane.close(expr_resolver);
                         group_aggr_out_acc.append(&mut group_aggr_out_seq);
                         (group_aggr_out_acc, window_in_flow_acc + window_in_flow)
                     },

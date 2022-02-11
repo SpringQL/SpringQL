@@ -4,6 +4,8 @@ use std::fmt::Display;
 
 use serde::{Deserialize, Serialize};
 
+use crate::mem_size::MemSize;
+
 #[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Serialize, Deserialize, new)]
 pub struct StreamName(String);
 
@@ -152,5 +154,16 @@ impl SinkWriterName {
 
     pub(crate) fn in_memory_queue_sink() -> Self {
         Self::new("IN_MEMORY_QUEUE_SERVER_SINK".to_string())
+    }
+}
+
+impl MemSize for StreamName {
+    fn mem_size(&self) -> usize {
+        self.0.capacity()
+    }
+}
+impl MemSize for ColumnName {
+    fn mem_size(&self) -> usize {
+        self.0.capacity()
     }
 }

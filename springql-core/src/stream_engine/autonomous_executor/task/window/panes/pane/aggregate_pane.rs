@@ -39,19 +39,21 @@ impl Pane for AggrPane {
     ///
     /// if `op_param` is not `GroupAggregateParameter`
     fn new(open_at: Timestamp, close_at: Timestamp, op_param: WindowOperationParameter) -> Self {
-        let WindowOperationParameter::GroupAggregation(group_aggregation_parameter) = op_param;
+        if let WindowOperationParameter::GroupAggregation(group_aggregation_parameter) = op_param {
+            let inner = match group_aggregation_parameter.aggr_func {
+                AggregateFunctionParameter::Avg => AggrPaneInner::Avg {
+                    states: HashMap::new(),
+                },
+            };
 
-        let inner = match group_aggregation_parameter.aggr_func {
-            AggregateFunctionParameter::Avg => AggrPaneInner::Avg {
-                states: HashMap::new(),
-            },
-        };
-
-        Self {
-            open_at,
-            close_at,
-            group_aggregation_parameter,
-            inner,
+            Self {
+                open_at,
+                close_at,
+                group_aggregation_parameter,
+                inner,
+            }
+        } else {
+            panic!("op_param {:?} is not GroupAggregateParameter", op_param)
         }
     }
 
@@ -103,7 +105,10 @@ impl Pane for AggrPane {
         }
     }
 
-    fn close(self) -> (Vec<Self::CloseOut>, WindowInFlowByWindowTask) {
+    fn close(
+        self,
+        _expr_resolver: &ExprResolver,
+    ) -> (Vec<Self::CloseOut>, WindowInFlowByWindowTask) {
         let aggr_label = self.group_aggregation_parameter.aggr_expr;
         let group_by_label = self.group_aggregation_parameter.group_by;
 
