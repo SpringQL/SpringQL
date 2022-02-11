@@ -188,60 +188,7 @@ mod tests {
         );
         assert!(out.is_empty());
 
-        // [:00, :10): t(:00, 100), t(:09, 200)
-        let (out, _) = window.dispatch(
-            &expr_resolver,
-            Tuple::factory_trade(
-                Timestamp::from_str("2020-01-01 00:00:09.000000000").unwrap(),
-                "",
-                200,
-            ),
-            JoinDir::Left,
-        );
-        assert!(out.is_empty());
-
-        // [:00, :10): t(:00, 100), t(:09, 200), t(:09.9, 300)
-        let (out, _) = window.dispatch(
-            &expr_resolver,
-            Tuple::factory_trade(
-                Timestamp::from_str("2020-01-01 00:00:09.9999999999").unwrap(),
-                "",
-                300,
-            ),
-            JoinDir::Left,
-        );
-        assert!(out.is_empty());
-
-        // [:00, :10): t(:00, 100), t(:09, 200), t(:09.9, 300) <-- !!NOT CLOSED YET (within delay)!!
-        // [:10, :20):                                          t(:10.9, 400)
-        let (out, _) = window.dispatch(
-            &expr_resolver,
-            Tuple::factory_trade(
-                Timestamp::from_str("2020-01-01 00:00:10.9999999999").unwrap(),
-                "",
-                400,
-            ),
-            JoinDir::Left,
-        );
-        assert!(out.is_empty());
-
-        // too late data to be ignored
-        //
-        // [:00, :10): t(:00, 100), t(:09, 200), t(:09.9, 300) <-- !!NOT CLOSED YET (within delay)!!
-        // [:10, :20):                                          t(:10.9, 400)
-        let (out, _) = window.dispatch(
-            &expr_resolver,
-            Tuple::factory_trade(
-                Timestamp::from_str("2020-01-01 00:00:09.9999999998").unwrap(),
-                "",
-                500,
-            ),
-            JoinDir::Left,
-        );
-        assert!(out.is_empty());
-
-        // [:00, :10): t(:00, 100), t(:09, 200), t(:09.9, 300)                 c(:00, 10) <-- !!LATE DATA!!
-        // [:10, :20):                                          t(:10.9, 400)
+        // [:00, :10): t(:00, 100), c(:00, 10)
         let (out, _) = window.dispatch(
             &expr_resolver,
             Tuple::factory_city_temperature(
@@ -253,9 +200,62 @@ mod tests {
         );
         assert!(out.is_empty());
 
-        // [:00, :10): -> tc(:00, 100, 10), tc(:09, 200, NULL), tc(:09.9, 300, NULL), tc(:09.9, 600, NULL)
+        // [:00, :10): t(:00, 100), c(:00, 10), t(:09.9, 200)
+        let (out, _) = window.dispatch(
+            &expr_resolver,
+            Tuple::factory_trade(
+                Timestamp::from_str("2020-01-01 00:00:09.999999999").unwrap(),
+                "",
+                200,
+            ),
+            JoinDir::Left,
+        );
+        assert!(out.is_empty());
+
+        // [:00, :10): t(:00, 100), c(:00, 10), t(:09.9, 200) <-- !!NOT CLOSED YET (within delay)!!
+        // [:10, :20):                                         t(:10.9, 300)
+        let (out, _) = window.dispatch(
+            &expr_resolver,
+            Tuple::factory_trade(
+                Timestamp::from_str("2020-01-01 00:00:10.999999999").unwrap(),
+                "",
+                300,
+            ),
+            JoinDir::Left,
+        );
+        assert!(out.is_empty());
+
+        // too late data to be ignored
         //
-        // [:10, :20):                                          t(:10.9, 400),            t(:11, 600)
+        // [:00, :10): t(:00, 100), c(:00, 10), t(:09.9, 200)
+        // [:10, :20):                                         t(:10.9, 300)
+        let (out, _) = window.dispatch(
+            &expr_resolver,
+            Tuple::factory_trade(
+                Timestamp::from_str("2020-01-01 00:00:09.999999998").unwrap(),
+                "",
+                400,
+            ),
+            JoinDir::Left,
+        );
+        assert!(out.is_empty());
+
+        // [:00, :10): t(:00, 100), c(:00, 10), t(:09.9, 200),               t(:09.9, 500) <-- !!LATE DATA!!
+        // [:10, :20):                                         t(:10.9, 300)
+        let (out, _) = window.dispatch(
+            &expr_resolver,
+            Tuple::factory_trade(
+                Timestamp::from_str("2020-01-01 00:00:09.999999999").unwrap(),
+                "",
+                500,
+            ),
+            JoinDir::Left,
+        );
+        assert!(out.is_empty());
+
+        // [:00, :10): -> tc(:00, 100, 10), tc(:09.9, 200, NULL), tc(:09.9, 500, NULL)
+        //
+        // [:10, :20):                                          t(:10.9, 300),            t(:11, 600)
         let (out, _) = window.dispatch(
             &expr_resolver,
             Tuple::factory_trade(
@@ -265,8 +265,7 @@ mod tests {
             ),
             JoinDir::Left,
         );
-        assert_eq!(out.len(), 4);
-
+        assert_eq!(out.len(), 3);
         t_expect(
             out.get(0).cloned().unwrap(),
             Timestamp::from_str("2020-01-01 00:00:00.0000000000").unwrap(),
@@ -275,20 +274,14 @@ mod tests {
         );
         t_expect(
             out.get(1).cloned().unwrap(),
-            Timestamp::from_str("2020-01-01 00:00:09.0000000000").unwrap(),
+            Timestamp::from_str("2020-01-01 00:00:09.999999999").unwrap(),
             200,
             None,
         );
         t_expect(
             out.get(2).cloned().unwrap(),
-            Timestamp::from_str("2020-01-01 00:00:09.9999999999").unwrap(),
-            300,
-            None,
-        );
-        t_expect(
-            out.get(3).cloned().unwrap(),
-            Timestamp::from_str("2020-01-01 00:00:09.9999999999").unwrap(),
-            600,
+            Timestamp::from_str("2020-01-01 00:00:09.999999999").unwrap(),
+            500,
             None,
         );
     }

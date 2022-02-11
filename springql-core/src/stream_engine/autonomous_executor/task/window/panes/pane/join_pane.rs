@@ -108,9 +108,9 @@ impl JoinPane {
         for left_tuple in self.left_tuples {
             let mut joined_to_the_left = vec![];
 
-            for right_tuple in self.right_tuples.clone() {
+            for right_tuple in &self.right_tuples {
                 // TODO less clone. ExprResolver takes two tuples to resolve ColumnReference?
-                let joined_tuple = left_tuple.clone().join(right_tuple);
+                let joined_tuple = left_tuple.clone().join(right_tuple.clone());
 
                 let on_bool = expr_resolver
                     .eval_value_expr(self.join_parameter.on_expr, &joined_tuple)
