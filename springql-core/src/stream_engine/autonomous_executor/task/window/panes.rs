@@ -9,10 +9,7 @@ use crate::{
     stream_engine::time::{duration::SpringDuration, timestamp::Timestamp},
 };
 
-use self::pane::{
-    aggregate_pane::{AggrPane, PaneInner},
-    Pane,
-};
+use self::pane::{aggregate_pane::AggrPane, Pane};
 
 use super::watermark::Watermark;
 
@@ -122,10 +119,8 @@ impl Panes {
 
     fn generate_pane(&self, open_at: Timestamp) -> AggrPane {
         let close_at = open_at + self.window_param.length().to_chrono();
-        let pane_inner = match &self.op_param {
-            WindowOperationParameter::GroupAggregation(param) => PaneInner::new(param.clone()),
-        };
-        AggrPane::new(open_at, close_at, pane_inner)
+        let WindowOperationParameter::GroupAggregation(param) = &self.op_param;
+        AggrPane::new(open_at, close_at, *param)
     }
 }
 
@@ -162,6 +157,7 @@ mod tests {
         let group_by_label = expr_resolver.register_value_expr(group_by_expr);
 
         WindowOperationParameter::GroupAggregation(GroupAggregateParameter {
+            aggr_func: AggregateFunctionParameter::Avg,
             aggr_expr: aggr_labels_select_list[0],
             group_by: group_by_label,
         })

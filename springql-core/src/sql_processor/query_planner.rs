@@ -149,6 +149,7 @@ impl QueryPlanner {
         match (opt_grouping_elem, aggr_labels.len()) {
             (Some(grouping_elem), 1) => {
                 let aggr_label = aggr_labels.iter().next().expect("len checked");
+                let aggr_func = expr_resolver.resolve_aggr_expr(*aggr_label).func;
 
                 let group_by_label = match grouping_elem {
                     GroupingElementSyntax::ValueExpr(expr) => {
@@ -160,6 +161,7 @@ impl QueryPlanner {
                 };
 
                 Ok(Some(GroupAggregateParameter::new(
+                    aggr_func,
                     *aggr_label,
                     group_by_label,
                 )))

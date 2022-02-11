@@ -212,6 +212,7 @@ mod tests {
                 allowed_delay: EventDuration::from_secs(1),
             },
             WindowOperationParameter::GroupAggregation(GroupAggregateParameter {
+                aggr_func: AggregateFunctionParameter::Avg,
                 aggr_expr: aggr_labels_select_list[0],
                 group_by: group_by_label,
             }),
@@ -394,6 +395,7 @@ mod tests {
                 allowed_delay: EventDuration::from_secs(1),
             },
             WindowOperationParameter::GroupAggregation(GroupAggregateParameter {
+                aggr_func: AggregateFunctionParameter::Avg,
                 aggr_expr: aggr_labels_select_list[0],
                 group_by: group_by_label,
             }),
