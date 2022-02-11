@@ -1,24 +1,19 @@
 use crate::{
     error::{Result, SpringError},
-    expr_resolver::{
-        expr_label::{AggrExprLabel, ValueExprLabel},
-        ExprResolver,
-    },
+    expr_resolver::expr_label::{AggrExprLabel, ValueExprLabel},
     pipeline::pump_model::{
         window_operation_parameter::WindowOperationParameter, window_parameter::WindowParameter,
     },
-    stream_engine::{
-        autonomous_executor::{
-            performance_metrics::metrics_update_command::metrics_update_by_task_execution::WindowInFlowByWindowTask,
-            task::window::panes::pane::Pane,
-        },
-        SqlValue, Tuple,
-    },
+    stream_engine::SqlValue,
 };
 
 use anyhow::anyhow;
 
-use super::{panes::Panes, watermark::Watermark};
+use super::{
+    panes::{pane::aggregate_pane::AggrPane, Panes},
+    watermark::Watermark,
+    Window,
+};
 
 #[derive(Clone, PartialEq, Debug, new)]
 pub(in crate::stream_engine::autonomous_executor) struct GroupAggrOut {
@@ -61,7 +56,27 @@ impl GroupAggrOut {
 #[derive(Debug)]
 pub(in crate::stream_engine::autonomous_executor) struct AggrWindow {
     watermark: Watermark,
-    panes: Panes,
+    panes: Panes<AggrPane>,
+}
+
+impl Window for AggrWindow {
+    type Pane = AggrPane;
+
+    fn watermark(&self) -> &Watermark {
+        &self.watermark
+    }
+
+    fn watermark_mut(&mut self) -> &mut Watermark {
+        &mut self.watermark
+    }
+
+    fn panes(&self) -> &Panes<Self::Pane> {
+        &self.panes
+    }
+
+    fn panes_mut(&mut self) -> &mut Panes<Self::Pane> {
+        &mut self.panes
+    }
 }
 
 impl AggrWindow {
@@ -73,51 +88,6 @@ impl AggrWindow {
         Self {
             watermark,
             panes: Panes::new(window_param, op_param),
-        }
-    }
-
-    /// A task dispatches a tuple from waiting queue.
-    /// This window returns output tuples from panes inside if they are closed.
-    ///
-    /// TODO return Vec<Tuple> for JOIN window
-    pub(in crate::stream_engine::autonomous_executor) fn dispatch_aggregate(
-        &mut self,
-        expr_resolver: &ExprResolver,
-        tuple: Tuple,
-    ) -> (Vec<GroupAggrOut>, WindowInFlowByWindowTask) {
-        let rowtime = *tuple.rowtime();
-
-        if rowtime < self.watermark.as_timestamp() {
-            // too late tuple does not have any chance to be dispatched nor to close a pane.
-            (Vec::new(), WindowInFlowByWindowTask::zero())
-        } else {
-            let window_in_flow_dispatch = self
-                .panes
-                .panes_to_dispatch(rowtime)
-                .map(|pane| pane.dispatch(expr_resolver, &tuple))
-                .fold(WindowInFlowByWindowTask::zero(), |acc, window_in_flow| {
-                    acc + window_in_flow
-                });
-
-            self.watermark.update(rowtime);
-
-            let (group_aggr_out_seq, window_in_flow_close) = self
-                .panes
-                .remove_panes_to_close(&self.watermark)
-                .into_iter()
-                .fold(
-                    (Vec::new(), WindowInFlowByWindowTask::zero()),
-                    |(mut group_aggr_out_acc, window_in_flow_acc), pane| {
-                        let (mut group_aggr_out_seq, window_in_flow) = pane.close();
-                        group_aggr_out_acc.append(&mut group_aggr_out_seq);
-                        (group_aggr_out_acc, window_in_flow_acc + window_in_flow)
-                    },
-                );
-
-            (
-                group_aggr_out_seq,
-                window_in_flow_dispatch + window_in_flow_close,
-            )
         }
     }
 }
@@ -215,7 +185,7 @@ mod tests {
 
         // [:55, :05): ("GOOGL", 100)
         // [:00, :10): ("GOOGL", 100)
-        let (out, _) = window.dispatch_aggregate(
+        let (out, _) = window.dispatch(
             &expr_resolver,
             Tuple::factory_trade(
                 Timestamp::from_str("2020-01-01 00:00:00.000000000").unwrap(),
@@ -227,7 +197,7 @@ mod tests {
 
         // [:55, :05): ("GOOGL", 100), ("ORCL", 100)
         // [:00, :10): ("GOOGL", 100), ("ORCL", 100)
-        let (out, _) = window.dispatch_aggregate(
+        let (out, _) = window.dispatch(
             &expr_resolver,
             Tuple::factory_trade(
                 Timestamp::from_str("2020-01-01 00:00:04.999999999").unwrap(),
@@ -241,7 +211,7 @@ mod tests {
         //
         // [:00, :10): ("GOOGL", 100), ("ORCL", 100), ("ORCL", 400)
         // [:05, :15):                                ("ORCL", 400)
-        let (mut out, _) = window.dispatch_aggregate(
+        let (mut out, _) = window.dispatch(
             &expr_resolver,
             Tuple::factory_trade(
                 Timestamp::from_str("2020-01-01 00:00:06.000000000").unwrap(),
@@ -264,7 +234,7 @@ mod tests {
         // [:00, :10): ("GOOGL", 100), ("ORCL", 100), ("ORCL", 400) <-- !!NOT CLOSED YET (within delay)!!
         // [:05, :15):                                ("ORCL", 400), ("ORCL", 100)
         // [:10, :20):                                               ("ORCL", 100)
-        let (out, _) = window.dispatch_aggregate(
+        let (out, _) = window.dispatch(
             &expr_resolver,
             Tuple::factory_trade(
                 Timestamp::from_str("2020-01-01 00:00:10.999999999").unwrap(),
@@ -279,7 +249,7 @@ mod tests {
         // [:00, :10): ("GOOGL", 100), ("ORCL", 100), ("ORCL", 400)
         // [:05, :15):                                ("ORCL", 400), ("ORCL", 100)
         // [:10, :20):                                               ("ORCL", 100)
-        let (out, _) = window.dispatch_aggregate(
+        let (out, _) = window.dispatch(
             &expr_resolver,
             Tuple::factory_trade(
                 Timestamp::from_str("2020-01-01 00:00:09.999999998").unwrap(),
@@ -292,7 +262,7 @@ mod tests {
         // [:00, :10): ("GOOGL", 100), ("ORCL", 100), ("ORCL", 400),                ("ORCL", 100) <-- !!LATE DATA!!
         // [:05, :15):                                ("ORCL", 400), ("ORCL", 100), ("ORCL", 100)
         // [:10, :20):                                               ("ORCL", 100)
-        let (out, _) = window.dispatch_aggregate(
+        let (out, _) = window.dispatch(
             &expr_resolver,
             Tuple::factory_trade(
                 Timestamp::from_str("2020-01-01 00:00:09.9999999999").unwrap(),
@@ -306,7 +276,7 @@ mod tests {
         //
         // [:05, :15):                                ("ORCL", 400), ("ORCL", 100), ("ORCL", 100), ("ORCL", 100)
         // [:10, :20):                                               ("ORCL", 100),                ("ORCL", 100)
-        let (mut out, _) = window.dispatch_aggregate(
+        let (mut out, _) = window.dispatch(
             &expr_resolver,
             Tuple::factory_trade(
                 Timestamp::from_str("2020-01-01 00:00:11.000000000").unwrap(),
@@ -331,7 +301,7 @@ mod tests {
         //
         // [:15, :25):                                                                                           ("ORCL", 100)
         // [:20, :30):                                                                                           ("ORCL", 100)
-        let (out, _) = window.dispatch_aggregate(
+        let (out, _) = window.dispatch(
             &expr_resolver,
             Tuple::factory_trade(
                 Timestamp::from_str("2020-01-01 00:00:21.000000000").unwrap(),
@@ -397,7 +367,7 @@ mod tests {
         );
 
         // [:00, :10): ("GOOGL", 100)
-        let (out, _) = window.dispatch_aggregate(
+        let (out, _) = window.dispatch(
             &expr_resolver,
             Tuple::factory_trade(
                 Timestamp::from_str("2020-01-01 00:00:00.000000000").unwrap(),
@@ -408,7 +378,7 @@ mod tests {
         assert!(out.is_empty());
 
         // [:00, :10): ("GOOGL", 100), ("ORCL", 100)
-        let (out, _) = window.dispatch_aggregate(
+        let (out, _) = window.dispatch(
             &expr_resolver,
             Tuple::factory_trade(
                 Timestamp::from_str("2020-01-01 00:00:09.000000000").unwrap(),
@@ -419,7 +389,7 @@ mod tests {
         assert!(out.is_empty());
 
         // [:00, :10): ("GOOGL", 100), ("ORCL", 100), ("ORCL", 400)
-        let (out, _) = window.dispatch_aggregate(
+        let (out, _) = window.dispatch(
             &expr_resolver,
             Tuple::factory_trade(
                 Timestamp::from_str("2020-01-01 00:00:09.999999999").unwrap(),
@@ -431,7 +401,7 @@ mod tests {
 
         // [:00, :10): ("GOOGL", 100), ("ORCL", 100), ("ORCL", 400) <-- !!NOT CLOSED YET (within delay)!!
         // [:10, :20):                                               ("ORCL", 100)
-        let (out, _) = window.dispatch_aggregate(
+        let (out, _) = window.dispatch(
             &expr_resolver,
             Tuple::factory_trade(
                 Timestamp::from_str("2020-01-01 00:00:10.999999999").unwrap(),
@@ -445,7 +415,7 @@ mod tests {
         //
         // [:00, :10): ("GOOGL", 100), ("ORCL", 100), ("ORCL", 400)
         // [:10, :20):                                               ("ORCL", 100)
-        let (out, _) = window.dispatch_aggregate(
+        let (out, _) = window.dispatch(
             &expr_resolver,
             Tuple::factory_trade(
                 Timestamp::from_str("2020-01-01 00:00:09.999999998").unwrap(),
@@ -457,7 +427,7 @@ mod tests {
 
         // [:00, :10): ("GOOGL", 100), ("ORCL", 100), ("ORCL", 400),                ("ORCL", 100) <-- !!LATE DATA!!
         // [:10, :20):                                               ("ORCL", 100)
-        let (out, _) = window.dispatch_aggregate(
+        let (out, _) = window.dispatch(
             &expr_resolver,
             Tuple::factory_trade(
                 Timestamp::from_str("2020-01-01 00:00:09.9999999999").unwrap(),
@@ -470,7 +440,7 @@ mod tests {
         // [:00, :10): -> "GOOGL" AVG = 100; "ORCL" AVG = 200
         //
         // [:10, :20):                                               ("ORCL", 100),                ("ORCL", 100)
-        let (mut out, _) = window.dispatch_aggregate(
+        let (mut out, _) = window.dispatch(
             &expr_resolver,
             Tuple::factory_trade(
                 Timestamp::from_str("2020-01-01 00:00:11.000000000").unwrap(),
@@ -493,7 +463,7 @@ mod tests {
         // [:10, :20): -> "ORCL" = 100
         //
         // [:20, :30):                                                                                           ("ORCL", 100)
-        let (out, _) = window.dispatch_aggregate(
+        let (out, _) = window.dispatch(
             &expr_resolver,
             Tuple::factory_trade(
                 Timestamp::from_str("2020-01-01 00:00:21.000000000").unwrap(),

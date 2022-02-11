@@ -7,6 +7,7 @@ use crate::pipeline::pump_model::window_operation_parameter::WindowOperationPara
 use crate::pipeline::pump_model::window_parameter::WindowParameter;
 use crate::stream_engine::autonomous_executor::performance_metrics::metrics_update_command::metrics_update_by_task_execution::WindowInFlowByWindowTask;
 use crate::stream_engine::autonomous_executor::task::tuple::Tuple;
+use crate::stream_engine::autonomous_executor::task::window::Window;
 use crate::stream_engine::autonomous_executor::task::window::aggregate::{GroupAggrOut, AggrWindow};
 
 #[derive(Debug)]
@@ -31,6 +32,6 @@ impl GroupAggregateWindowSubtask {
         self.0
             .lock()
             .expect("another thread accessing to window gets poisoned")
-            .dispatch_aggregate(expr_resolver, tuple)
+            .dispatch(expr_resolver, tuple)
     }
 }

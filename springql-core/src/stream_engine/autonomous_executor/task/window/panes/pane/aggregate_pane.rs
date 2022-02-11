@@ -4,8 +4,9 @@ use std::collections::HashMap;
 
 use crate::{
     expr_resolver::ExprResolver,
-    pipeline::pump_model::window_operation_parameter::aggregate::{
-        AggregateFunctionParameter, GroupAggregateParameter,
+    pipeline::pump_model::window_operation_parameter::{
+        aggregate::{AggregateFunctionParameter, GroupAggregateParameter},
+        WindowOperationParameter,
     },
     stream_engine::{
         autonomous_executor::{
@@ -31,12 +32,15 @@ pub(in crate::stream_engine::autonomous_executor) struct AggrPane {
     inner: AggrPaneInner,
 }
 
-impl AggrPane {
-    pub(in crate::stream_engine::autonomous_executor) fn new(
-        open_at: Timestamp,
-        close_at: Timestamp,
-        group_aggregation_parameter: GroupAggregateParameter,
-    ) -> Self {
+impl Pane for AggrPane {
+    type CloseOut = GroupAggrOut;
+
+    /// # Panics
+    ///
+    /// if `op_param` is not `GroupAggregateParameter`
+    fn new(open_at: Timestamp, close_at: Timestamp, op_param: WindowOperationParameter) -> Self {
+        let WindowOperationParameter::GroupAggregation(group_aggregation_parameter) = op_param;
+
         let inner = match group_aggregation_parameter.aggr_func {
             AggregateFunctionParameter::Avg => AggrPaneInner::Avg {
                 states: HashMap::new(),
@@ -50,10 +54,6 @@ impl AggrPane {
             inner,
         }
     }
-}
-
-impl Pane for AggrPane {
-    type CloseOut = Vec<GroupAggrOut>;
 
     fn open_at(&self) -> Timestamp {
         self.open_at
@@ -103,7 +103,7 @@ impl Pane for AggrPane {
         }
     }
 
-    fn close(self) -> (Self::CloseOut, WindowInFlowByWindowTask) {
+    fn close(self) -> (Vec<Self::CloseOut>, WindowInFlowByWindowTask) {
         let aggr_label = self.group_aggregation_parameter.aggr_expr;
         let group_by_label = self.group_aggregation_parameter.group_by;
 
