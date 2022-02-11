@@ -122,10 +122,11 @@ impl Panes {
 
     fn generate_pane(&self, open_at: Timestamp) -> AggrPane {
         let close_at = open_at + self.window_param.length().to_chrono();
-        let pane_inner = match &self.op_param {
-            WindowOperationParameter::GroupAggregation(param) => AggrPaneInner::new(param.clone()),
-        };
-        AggrPane::new(open_at, close_at, pane_inner)
+        let pane_inner = AggrPaneInner::new();
+
+        let WindowOperationParameter::GroupAggregation(param) = &self.op_param;
+
+        AggrPane::new(open_at, close_at, param.clone(), pane_inner)
     }
 }
 
