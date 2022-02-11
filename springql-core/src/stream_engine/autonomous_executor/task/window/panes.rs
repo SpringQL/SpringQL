@@ -9,22 +9,28 @@ use crate::{
     stream_engine::time::{duration::SpringDuration, timestamp::Timestamp},
 };
 
-use self::pane::{aggregate_pane::AggrPane, Pane};
+use self::pane::Pane;
 
 use super::watermark::Watermark;
 
 #[derive(Debug)]
-pub(super) struct Panes {
+pub(in crate::stream_engine::autonomous_executor) struct Panes<P>
+where
+    P: Pane,
+{
     /// FIXME want to use `LinkedList::drain_filter` but it's unstable.
     ///
     /// Sorted by `Pane::open_at`.
-    panes: Vec<AggrPane>,
+    panes: Vec<P>,
 
     window_param: WindowParameter,
     op_param: WindowOperationParameter,
 }
 
-impl Panes {
+impl<P> Panes<P>
+where
+    P: Pane,
+{
     pub(super) fn new(window_param: WindowParameter, op_param: WindowOperationParameter) -> Self {
         Self {
             panes: vec![],
@@ -37,10 +43,7 @@ impl Panes {
     /// Then, return all panes to get a tuple with the `rowtime`.
     ///
     /// Caller must assure rowtime is not smaller than watermark.
-    pub(super) fn panes_to_dispatch(
-        &mut self,
-        rowtime: Timestamp,
-    ) -> impl Iterator<Item = &mut AggrPane> {
+    pub(super) fn panes_to_dispatch(&mut self, rowtime: Timestamp) -> impl Iterator<Item = &mut P> {
         self.generate_panes_if_not_exist(rowtime);
 
         self.panes
@@ -48,7 +51,7 @@ impl Panes {
             .filter(move |pane| pane.is_acceptable(&rowtime))
     }
 
-    pub(super) fn remove_panes_to_close(&mut self, watermark: &Watermark) -> Vec<AggrPane> {
+    pub(super) fn remove_panes_to_close(&mut self, watermark: &Watermark) -> Vec<P> {
         let mut panes_to_close = vec![];
 
         let mut idx = 0;
@@ -117,10 +120,9 @@ impl Panes {
         ret
     }
 
-    fn generate_pane(&self, open_at: Timestamp) -> AggrPane {
+    fn generate_pane(&self, open_at: Timestamp) -> P {
         let close_at = open_at + self.window_param.length().to_chrono();
-        let WindowOperationParameter::GroupAggregation(param) = &self.op_param;
-        AggrPane::new(open_at, close_at, *param)
+        P::new(open_at, close_at, self.op_param)
     }
 }
 
@@ -135,7 +137,10 @@ mod tests {
             AggregateFunctionParameter, GroupAggregateParameter,
         },
         sql_processor::sql_parser::syntax::SelectFieldSyntax,
-        stream_engine::time::duration::event_duration::EventDuration,
+        stream_engine::{
+            autonomous_executor::task::window::panes::pane::aggregate_pane::AggrPane,
+            time::duration::event_duration::EventDuration,
+        },
     };
 
     use super::*;
@@ -165,7 +170,7 @@ mod tests {
 
     #[test]
     fn test_valid_open_at_s() {
-        fn sliding_window_panes(length: EventDuration, period: EventDuration) -> Panes {
+        fn sliding_window_panes(length: EventDuration, period: EventDuration) -> Panes<AggrPane> {
             Panes::new(
                 WindowParameter::TimedSlidingWindow {
                     length,

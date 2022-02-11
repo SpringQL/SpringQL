@@ -2,7 +2,7 @@
 
 use crate::error::Result;
 use crate::expr_resolver::expr_label::{AggrExprLabel, ValueExprLabel};
-use crate::stream_engine::autonomous_executor::task::window::GroupAggrOut;
+use crate::stream_engine::autonomous_executor::task::window::aggregate::GroupAggrOut;
 
 use super::SqlValues;
 
