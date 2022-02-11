@@ -1,5 +1,6 @@
 use crate::{
     error::{Result, SpringError},
+    mem_size::MemSize,
     pipeline::field::{field_name::ColumnReference, Field},
     stream_engine::{autonomous_executor::row::Row, time::timestamp::Timestamp, SqlValue},
 };
@@ -19,6 +20,14 @@ pub(crate) struct Tuple {
     rowtime: Timestamp,
 
     fields: Vec<Field>,
+}
+
+impl MemSize for Tuple {
+    fn mem_size(&self) -> usize {
+        let rowtime_size = self.rowtime.mem_size();
+        let fields_size: usize = self.fields.iter().map(|f| f.mem_size()).sum();
+        rowtime_size + fields_size
+    }
 }
 
 impl Tuple {
@@ -52,6 +61,19 @@ impl Tuple {
 
         sql_value
             .ok_or_else(|| SpringError::Sql(anyhow!("cannot find field `{:?}`", column_reference)))
+    }
+
+    /// Left rowtime is used for joined tuple.
+    pub(in crate::stream_engine::autonomous_executor) fn join(self, right: Self) -> Tuple {
+        let rowtime = self.rowtime;
+
+        let mut new_fields = self.fields;
+        new_fields.extend(right.fields);
+
+        Self {
+            rowtime,
+            fields: new_fields,
+        }
     }
 }
 

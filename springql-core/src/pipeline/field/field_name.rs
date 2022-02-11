@@ -1,4 +1,7 @@
-use crate::pipeline::name::{ColumnName, StreamName};
+use crate::{
+    mem_size::MemSize,
+    pipeline::name::{ColumnName, StreamName},
+};
 
 /// Reference to a column in a row.
 ///
@@ -7,4 +10,10 @@ use crate::pipeline::name::{ColumnName, StreamName};
 pub(crate) struct ColumnReference {
     pub(crate) stream_name: StreamName,
     pub(crate) column_name: ColumnName,
+}
+
+impl MemSize for ColumnReference {
+    fn mem_size(&self) -> usize {
+        self.stream_name.mem_size() + self.column_name.mem_size()
+    }
 }

@@ -12,9 +12,11 @@ use crate::{
 };
 
 pub(in crate::stream_engine::autonomous_executor) mod aggregate_pane;
+pub(in crate::stream_engine::autonomous_executor) mod join_pane;
 
 pub(in crate::stream_engine::autonomous_executor) trait Pane {
     type CloseOut;
+    type DispatchArg: Clone;
 
     fn new(open_at: Timestamp, close_at: Timestamp, param: WindowOperationParameter) -> Self;
 
@@ -29,8 +31,13 @@ pub(in crate::stream_engine::autonomous_executor) trait Pane {
         self.close_at() <= watermark.as_timestamp()
     }
 
-    fn dispatch(&mut self, expr_resolver: &ExprResolver, tuple: &Tuple)
-        -> WindowInFlowByWindowTask;
+    fn dispatch(
+        &mut self,
+        expr_resolver: &ExprResolver,
+        tuple: &Tuple,
+        arg: Self::DispatchArg,
+    ) -> WindowInFlowByWindowTask;
 
-    fn close(self) -> (Vec<Self::CloseOut>, WindowInFlowByWindowTask);
+    fn close(self, expr_resolver: &ExprResolver)
+        -> (Vec<Self::CloseOut>, WindowInFlowByWindowTask);
 }

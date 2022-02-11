@@ -6,6 +6,7 @@ use self::{
 };
 
 pub(in crate::stream_engine::autonomous_executor) mod aggregate;
+pub(in crate::stream_engine::autonomous_executor) mod join_window;
 
 mod panes;
 mod watermark;
@@ -24,6 +25,7 @@ pub(in crate::stream_engine::autonomous_executor) trait Window {
         &mut self,
         expr_resolver: &ExprResolver,
         tuple: Tuple,
+        arg: <<Self as Window>::Pane as Pane>::DispatchArg,
     ) -> (
         Vec<<<Self as Window>::Pane as Pane>::CloseOut>,
         WindowInFlowByWindowTask,
@@ -40,7 +42,7 @@ pub(in crate::stream_engine::autonomous_executor) trait Window {
             let window_in_flow_dispatch = self
                 .panes_mut()
                 .panes_to_dispatch(rowtime)
-                .map(|pane| pane.dispatch(expr_resolver, &tuple))
+                .map(|pane| pane.dispatch(expr_resolver, &tuple, arg.clone()))
                 .fold(WindowInFlowByWindowTask::zero(), |acc, window_in_flow| {
                     acc + window_in_flow
                 });
@@ -52,7 +54,7 @@ pub(in crate::stream_engine::autonomous_executor) trait Window {
                 .fold(
                     (Vec::new(), WindowInFlowByWindowTask::zero()),
                     |(mut group_aggr_out_acc, window_in_flow_acc), pane| {
-                        let (mut group_aggr_out_seq, window_in_flow) = pane.close();
+                        let (mut group_aggr_out_seq, window_in_flow) = pane.close(expr_resolver);
                         group_aggr_out_acc.append(&mut group_aggr_out_seq);
                         (group_aggr_out_acc, window_in_flow_acc + window_in_flow)
                     },

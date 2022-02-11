@@ -5,6 +5,7 @@ use std::{net::IpAddr, sync::Arc};
 use crate::{
     low_level_rs::{SpringConfig, SpringSinkWriterConfig, SpringSourceReaderConfig},
     pipeline::{
+        field::field_name::ColumnReference,
         name::{ColumnName, SinkWriterName, SourceReaderName, StreamName},
         option::{options_builder::OptionsBuilder, Options},
         pipeline_version::PipelineVersion,
@@ -126,6 +127,34 @@ impl SinkWriterModel {
     }
 }
 
+impl ColumnReference {
+    pub(crate) fn fx_trade_timestamp() -> Self {
+        Self::new(StreamName::fx_trade(), ColumnName::fx_timestamp())
+    }
+    pub(crate) fn fx_trade_ticker() -> Self {
+        Self::new(StreamName::fx_trade(), ColumnName::fx_ticker())
+    }
+    pub(crate) fn fx_trade_amount() -> Self {
+        Self::new(StreamName::fx_trade(), ColumnName::fx_amount())
+    }
+
+    pub(crate) fn fx_city_temperature_timestamp() -> Self {
+        Self::new(
+            StreamName::fx_city_temperature(),
+            ColumnName::fx_timestamp(),
+        )
+    }
+    pub(crate) fn fx_city_temperature_city() -> Self {
+        Self::new(StreamName::fx_city_temperature(), ColumnName::fx_city())
+    }
+    pub(crate) fn fx_city_temperature_temperature() -> Self {
+        Self::new(
+            StreamName::fx_city_temperature(),
+            ColumnName::fx_temperature(),
+        )
+    }
+}
+
 impl ColumnDefinition {
     pub(crate) fn fx_timestamp() -> Self {
         Self::new(
@@ -195,6 +224,13 @@ impl ColumnName {
     }
     pub(crate) fn fx_amount() -> Self {
         Self::new("amount".to_string())
+    }
+
+    pub(crate) fn fx_city() -> Self {
+        Self::new("city".to_string())
+    }
+    pub(crate) fn fx_temperature() -> Self {
+        Self::new("temperature".to_string())
     }
 }
 
