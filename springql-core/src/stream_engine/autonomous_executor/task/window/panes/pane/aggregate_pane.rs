@@ -10,7 +10,7 @@ use crate::{
     stream_engine::{
         autonomous_executor::{
             performance_metrics::metrics_update_command::metrics_update_by_task_execution::WindowInFlowByWindowTask,
-            task::{tuple::Tuple, window::GroupAggrOut},
+            task::{tuple::Tuple, window::aggregate::GroupAggrOut},
         },
         time::timestamp::Timestamp,
         NnSqlValue, SqlValue,

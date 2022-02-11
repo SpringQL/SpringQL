@@ -16,7 +16,7 @@ use crate::{
             InQueueMetricsUpdateByTask, WindowInFlowByWindowTask,
         },
         row::{column::stream_column::StreamColumns, column_values::ColumnValues, Row},
-        task::window::GroupAggrOut,
+        task::window::aggregate::GroupAggrOut,
     },
     stream_engine::command::query_plan::QueryPlan,
     stream_engine::{
