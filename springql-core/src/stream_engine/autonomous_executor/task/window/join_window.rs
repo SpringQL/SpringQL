@@ -249,7 +249,7 @@ mod tests {
                 "",
                 10,
             ),
-            JoinDir::Left,
+            JoinDir::Right,
         );
         assert!(out.is_empty());
 
