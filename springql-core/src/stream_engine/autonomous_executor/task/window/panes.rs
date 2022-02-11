@@ -7,7 +7,7 @@ use crate::{
     stream_engine::time::{duration::SpringDuration, timestamp::Timestamp},
 };
 
-use self::pane::{Pane, PaneInner};
+use self::pane::aggregate_pane::{AggrPane, PaneInner};
 
 use super::watermark::Watermark;
 
@@ -18,7 +18,7 @@ pub(super) struct Panes {
     /// FIXME want to use `LinkedList::drain_filter` but it's unstable.
     ///
     /// Sorted by `Pane::open_at`.
-    panes: Vec<Pane>,
+    panes: Vec<AggrPane>,
 
     window_param: WindowParameter,
     op_param: WindowOperationParameter,
@@ -40,7 +40,7 @@ impl Panes {
     pub(super) fn panes_to_dispatch(
         &mut self,
         rowtime: Timestamp,
-    ) -> impl Iterator<Item = &mut Pane> {
+    ) -> impl Iterator<Item = &mut AggrPane> {
         self.generate_panes_if_not_exist(rowtime);
 
         self.panes
@@ -48,7 +48,7 @@ impl Panes {
             .filter(move |pane| pane.is_acceptable(&rowtime))
     }
 
-    pub(super) fn remove_panes_to_close(&mut self, watermark: &Watermark) -> Vec<Pane> {
+    pub(super) fn remove_panes_to_close(&mut self, watermark: &Watermark) -> Vec<AggrPane> {
         let mut panes_to_close = vec![];
 
         let mut idx = 0;
@@ -117,12 +117,12 @@ impl Panes {
         ret
     }
 
-    fn generate_pane(&self, open_at: Timestamp) -> Pane {
+    fn generate_pane(&self, open_at: Timestamp) -> AggrPane {
         let close_at = open_at + self.window_param.length().to_chrono();
         let pane_inner = match &self.op_param {
             WindowOperationParameter::GroupAggregation(param) => PaneInner::new(param.clone()),
         };
-        Pane::new(open_at, close_at, pane_inner)
+        AggrPane::new(open_at, close_at, pane_inner)
     }
 }
 
@@ -154,8 +154,7 @@ mod tests {
             aggr_expr,
             alias: None,
         }];
-        let (mut expr_resolver, _, aggr_labels_select_list) =
-            ExprResolver::new(select_list);
+        let (mut expr_resolver, _, aggr_labels_select_list) = ExprResolver::new(select_list);
 
         let group_by_label = expr_resolver.register_value_expr(group_by_expr);
 
