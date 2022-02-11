@@ -24,7 +24,7 @@ pub(in crate::stream_engine::autonomous_executor) struct AggrPane {
     open_at: Timestamp,
     close_at: Timestamp,
 
-    inner: PaneInner,
+    inner: AggrPaneInner,
 }
 
 impl Pane for AggrPane {
@@ -44,7 +44,7 @@ impl Pane for AggrPane {
         tuple: &Tuple,
     ) -> WindowInFlowByWindowTask {
         match &mut self.inner {
-            PaneInner::Avg {
+            AggrPaneInner::Avg {
                 group_aggregation_parameter,
                 states,
             } => {
@@ -83,7 +83,7 @@ impl Pane for AggrPane {
 
     fn close(self) -> (Self::CloseOut, WindowInFlowByWindowTask) {
         match self.inner {
-            PaneInner::Avg {
+            AggrPaneInner::Avg {
                 group_aggregation_parameter,
                 states,
             } => {
@@ -109,21 +109,21 @@ impl Pane for AggrPane {
 }
 
 #[derive(Debug)]
-pub(in crate::stream_engine::autonomous_executor) enum PaneInner {
+pub(in crate::stream_engine::autonomous_executor) enum AggrPaneInner {
     Avg {
         group_aggregation_parameter: GroupAggregateParameter,
         states: HashMap<NnSqlValue, AvgState>,
     },
 }
 
-impl PaneInner {
+impl AggrPaneInner {
     pub(in crate::stream_engine::autonomous_executor) fn new(
         group_aggregation_parameter: GroupAggregateParameter,
     ) -> Self {
         // TODO branch by AggregateFunctionParameter in aggr_expr
 
         let states = HashMap::new();
-        PaneInner::Avg {
+        AggrPaneInner::Avg {
             group_aggregation_parameter,
             states,
         }
