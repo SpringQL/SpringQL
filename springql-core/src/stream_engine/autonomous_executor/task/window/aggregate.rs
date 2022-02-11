@@ -192,6 +192,7 @@ mod tests {
                 "GOOGL",
                 100,
             ),
+            (),
         );
         assert!(out.is_empty());
 
@@ -204,6 +205,7 @@ mod tests {
                 "ORCL",
                 100,
             ),
+            (),
         );
         assert!(out.is_empty());
 
@@ -218,6 +220,7 @@ mod tests {
                 "ORCL",
                 400,
             ),
+            (),
         );
         assert_eq!(out.len(), 2);
         out.sort_by_key(|group_aggr_out| {
@@ -241,6 +244,7 @@ mod tests {
                 "ORCL",
                 100,
             ),
+            (),
         );
         assert!(out.is_empty());
 
@@ -256,6 +260,7 @@ mod tests {
                 "ORCL",
                 100,
             ),
+            (),
         );
         assert!(out.is_empty());
 
@@ -269,6 +274,7 @@ mod tests {
                 "ORCL",
                 100,
             ),
+            (),
         );
         assert!(out.is_empty());
 
@@ -283,6 +289,7 @@ mod tests {
                 "ORCL",
                 100,
             ),
+            (),
         );
         assert_eq!(out.len(), 2);
         out.sort_by_key(|group_aggr_out| {
@@ -308,6 +315,7 @@ mod tests {
                 "ORCL",
                 100,
             ),
+            (),
         );
         assert_eq!(out.len(), 2);
         t_expect(out.get(0).cloned().unwrap(), "ORCL", 175);
@@ -374,6 +382,7 @@ mod tests {
                 "GOOGL",
                 100,
             ),
+            (),
         );
         assert!(out.is_empty());
 
@@ -385,6 +394,7 @@ mod tests {
                 "ORCL",
                 100,
             ),
+            (),
         );
         assert!(out.is_empty());
 
@@ -396,6 +406,7 @@ mod tests {
                 "ORCL",
                 400,
             ),
+            (),
         );
         assert!(out.is_empty());
 
@@ -408,6 +419,7 @@ mod tests {
                 "ORCL",
                 100,
             ),
+            (),
         );
         assert!(out.is_empty());
 
@@ -422,6 +434,7 @@ mod tests {
                 "ORCL",
                 100,
             ),
+            (),
         );
         assert!(out.is_empty());
 
@@ -434,6 +447,7 @@ mod tests {
                 "ORCL",
                 100,
             ),
+            (),
         );
         assert!(out.is_empty());
 
@@ -447,6 +461,7 @@ mod tests {
                 "ORCL",
                 100,
             ),
+            (),
         );
         assert_eq!(out.len(), 2);
         out.sort_by_key(|group_aggr_out| {
@@ -470,6 +485,7 @@ mod tests {
                 "ORCL",
                 100,
             ),
+            (),
         );
         assert_eq!(out.len(), 1);
         t_expect(out.get(0).cloned().unwrap(), "ORCL", 100);

@@ -1,4 +1,4 @@
-use std::{collections::HashMap, str::FromStr, sync::Arc};
+use std::str::FromStr;
 
 use crate::{
     expr_resolver::ExprResolver,
@@ -13,14 +13,20 @@ use crate::{
     stream_engine::{
         autonomous_executor::{
             performance_metrics::metrics_update_command::metrics_update_by_task_execution::WindowInFlowByWindowTask,
-            task::{tuple::Tuple, window::aggregate::GroupAggrOut},
+            task::tuple::Tuple,
         },
         time::timestamp::Timestamp,
-        NnSqlValue, SqlValue,
+        SqlValue,
     },
 };
 
 use super::Pane;
+
+#[derive(Clone, Debug)]
+pub(in crate::stream_engine::autonomous_executor) enum JoinDir {
+    Left,
+    Right,
+}
 
 #[derive(Debug)]
 pub(in crate::stream_engine::autonomous_executor) struct JoinPane {
@@ -35,6 +41,7 @@ pub(in crate::stream_engine::autonomous_executor) struct JoinPane {
 
 impl Pane for JoinPane {
     type CloseOut = Tuple;
+    type DispatchArg = JoinDir;
 
     /// # Panics
     ///
@@ -66,11 +73,14 @@ impl Pane for JoinPane {
     /// Dispatch to left_tuples
     fn dispatch(
         &mut self,
-        expr_resolver: &ExprResolver,
+        _expr_resolver: &ExprResolver,
         tuple: &Tuple,
+        dir: JoinDir,
     ) -> WindowInFlowByWindowTask {
-        self.left_tuples.push(tuple.clone()); // TODO not use trait
-
+        match dir {
+            JoinDir::Left => self.left_tuples.push(tuple.clone()),
+            JoinDir::Right => self.right_tuples.push(tuple.clone()),
+        }
         WindowInFlowByWindowTask::new(tuple.mem_size() as i64, 1)
     }
 

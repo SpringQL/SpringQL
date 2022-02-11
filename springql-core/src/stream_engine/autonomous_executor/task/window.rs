@@ -25,6 +25,7 @@ pub(in crate::stream_engine::autonomous_executor) trait Window {
         &mut self,
         expr_resolver: &ExprResolver,
         tuple: Tuple,
+        arg: <<Self as Window>::Pane as Pane>::DispatchArg,
     ) -> (
         Vec<<<Self as Window>::Pane as Pane>::CloseOut>,
         WindowInFlowByWindowTask,
@@ -41,7 +42,7 @@ pub(in crate::stream_engine::autonomous_executor) trait Window {
             let window_in_flow_dispatch = self
                 .panes_mut()
                 .panes_to_dispatch(rowtime)
-                .map(|pane| pane.dispatch(expr_resolver, &tuple))
+                .map(|pane| pane.dispatch(expr_resolver, &tuple, arg.clone()))
                 .fold(WindowInFlowByWindowTask::zero(), |acc, window_in_flow| {
                     acc + window_in_flow
                 });

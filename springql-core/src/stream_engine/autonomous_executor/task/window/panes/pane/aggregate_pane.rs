@@ -34,6 +34,7 @@ pub(in crate::stream_engine::autonomous_executor) struct AggrPane {
 
 impl Pane for AggrPane {
     type CloseOut = GroupAggrOut;
+    type DispatchArg = ();
 
     /// # Panics
     ///
@@ -69,6 +70,7 @@ impl Pane for AggrPane {
         &mut self,
         expr_resolver: &ExprResolver,
         tuple: &Tuple,
+        _arg: (),
     ) -> WindowInFlowByWindowTask {
         let group_by_value = expr_resolver
             .eval_value_expr(self.group_aggregation_parameter.group_by, tuple)

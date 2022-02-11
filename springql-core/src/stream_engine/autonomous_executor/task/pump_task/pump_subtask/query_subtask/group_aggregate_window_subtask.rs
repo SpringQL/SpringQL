@@ -32,6 +32,6 @@ impl GroupAggregateWindowSubtask {
         self.0
             .lock()
             .expect("another thread accessing to window gets poisoned")
-            .dispatch(expr_resolver, tuple)
+            .dispatch(expr_resolver, tuple, ())
     }
 }
