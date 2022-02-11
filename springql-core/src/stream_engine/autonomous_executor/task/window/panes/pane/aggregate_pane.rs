@@ -8,10 +8,7 @@ use crate::{
     stream_engine::{
         autonomous_executor::{
             performance_metrics::metrics_update_command::metrics_update_by_task_execution::WindowInFlowByWindowTask,
-            task::{
-                tuple::Tuple,
-                window::{watermark::Watermark, GroupAggrOut},
-            },
+            task::{tuple::Tuple, window::GroupAggrOut},
         },
         time::timestamp::Timestamp,
         NnSqlValue, SqlValue,
@@ -19,6 +16,8 @@ use crate::{
 };
 
 use self::aggregate_state::{AggregateState, AvgState};
+
+use super::Pane;
 
 #[derive(Debug, new)]
 pub(in crate::stream_engine::autonomous_executor) struct AggrPane {
@@ -28,26 +27,18 @@ pub(in crate::stream_engine::autonomous_executor) struct AggrPane {
     inner: PaneInner,
 }
 
-impl AggrPane {
-    pub(in crate::stream_engine::autonomous_executor) fn open_at(&self) -> Timestamp {
+impl Pane for AggrPane {
+    type CloseOut = Vec<GroupAggrOut>;
+
+    fn open_at(&self) -> Timestamp {
         self.open_at
     }
 
-    pub(in crate::stream_engine::autonomous_executor) fn is_acceptable(
-        &self,
-        rowtime: &Timestamp,
-    ) -> bool {
-        &self.open_at <= rowtime && rowtime < &self.close_at
+    fn close_at(&self) -> Timestamp {
+        self.close_at
     }
 
-    pub(in crate::stream_engine::autonomous_executor) fn should_close(
-        &self,
-        watermark: &Watermark,
-    ) -> bool {
-        self.close_at <= watermark.as_timestamp()
-    }
-
-    pub(in crate::stream_engine::autonomous_executor) fn dispatch(
+    fn dispatch(
         &mut self,
         expr_resolver: &ExprResolver,
         tuple: &Tuple,
@@ -90,9 +81,7 @@ impl AggrPane {
         }
     }
 
-    pub(in crate::stream_engine::autonomous_executor) fn close(
-        self,
-    ) -> (Vec<GroupAggrOut>, WindowInFlowByWindowTask) {
+    fn close(self) -> (Self::CloseOut, WindowInFlowByWindowTask) {
         match self.inner {
             PaneInner::Avg {
                 group_aggregation_parameter,

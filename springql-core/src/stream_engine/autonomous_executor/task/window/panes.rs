@@ -1,3 +1,5 @@
+pub(super) mod pane;
+
 use std::cmp::Ordering;
 
 use crate::{
@@ -7,11 +9,12 @@ use crate::{
     stream_engine::time::{duration::SpringDuration, timestamp::Timestamp},
 };
 
-use self::pane::aggregate_pane::{AggrPane, PaneInner};
+use self::pane::{
+    aggregate_pane::{AggrPane, PaneInner},
+    Pane,
+};
 
 use super::watermark::Watermark;
-
-mod pane;
 
 #[derive(Debug)]
 pub(super) struct Panes {
