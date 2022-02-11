@@ -8,13 +8,16 @@ use crate::expr_resolver::expr_label::{AggrExprLabel, ValueExprLabel};
 ///   GROUP BY group_by
 ///   SLIDING WINDOW ...;
 /// ```
-#[derive(Clone, PartialEq, Debug, new)]
+#[derive(Copy, Clone, PartialEq, Debug, new)]
 pub(crate) struct GroupAggregateParameter {
-    pub(crate) aggr_expr: AggrExprLabel, // TODO multiple aggr_expr
-    pub(crate) group_by: ValueExprLabel,
+    // TODO multiple aggr_expr
+    pub(crate) aggr_func: AggregateFunctionParameter,
+    pub(crate) aggr_expr: AggrExprLabel,
+
+    pub(crate) group_by: ValueExprLabel, // TODO multiple group by expression
 }
 
-#[derive(Clone, Eq, PartialEq, Debug)]
+#[derive(Copy, Clone, Eq, PartialEq, Debug)]
 pub(crate) enum AggregateFunctionParameter {
     Avg,
 }

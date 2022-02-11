@@ -108,6 +108,16 @@ impl ExprResolver {
             })
     }
 
+    /// # Panics
+    ///
+    /// -  `label` is not found
+    pub(crate) fn resolve_aggr_expr(&self, label: AggrExprLabel) -> AggrExpr {
+        self.aggr_expressions
+            .get(&label)
+            .cloned()
+            .unwrap_or_else(|| panic!("label {:?} not found", label))
+    }
+
     /// Register value expression which is not in select_list
     pub(crate) fn register_value_expr(&mut self, value_expr: ValueExpr) -> ValueExprLabel {
         let label = self.label_gen.next_value();
@@ -160,12 +170,7 @@ impl ExprResolver {
         label: AggrExprLabel,
         tuple: &Tuple,
     ) -> Result<SqlValue> {
-        let aggr_expr = self
-            .aggr_expressions
-            .get(&label)
-            .cloned()
-            .unwrap_or_else(|| panic!("label {:?} not found", label));
-
+        let aggr_expr = self.resolve_aggr_expr(label);
         let value_expr = aggr_expr.aggregated;
         let value_expr_ph2 = value_expr.resolve_colref(tuple)?;
         value_expr_ph2.eval()

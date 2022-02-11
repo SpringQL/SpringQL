@@ -4,7 +4,9 @@ use std::collections::HashMap;
 
 use crate::{
     expr_resolver::ExprResolver,
-    pipeline::pump_model::window_operation_parameter::aggregate::GroupAggregateParameter,
+    pipeline::pump_model::window_operation_parameter::aggregate::{
+        AggregateFunctionParameter, GroupAggregateParameter,
+    },
     stream_engine::{
         autonomous_executor::{
             performance_metrics::metrics_update_command::metrics_update_by_task_execution::WindowInFlowByWindowTask,
@@ -19,7 +21,7 @@ use self::aggregate_state::{AggregateState, AvgState};
 
 use super::Pane;
 
-#[derive(Debug, new)]
+#[derive(Debug)]
 pub(in crate::stream_engine::autonomous_executor) struct AggrPane {
     open_at: Timestamp,
     close_at: Timestamp,
@@ -27,6 +29,27 @@ pub(in crate::stream_engine::autonomous_executor) struct AggrPane {
     group_aggregation_parameter: GroupAggregateParameter,
 
     inner: AggrPaneInner,
+}
+
+impl AggrPane {
+    pub(in crate::stream_engine::autonomous_executor) fn new(
+        open_at: Timestamp,
+        close_at: Timestamp,
+        group_aggregation_parameter: GroupAggregateParameter,
+    ) -> Self {
+        let inner = match group_aggregation_parameter.aggr_func {
+            AggregateFunctionParameter::Avg => AggrPaneInner::Avg {
+                states: HashMap::new(),
+            },
+        };
+
+        Self {
+            open_at,
+            close_at,
+            group_aggregation_parameter,
+            inner,
+        }
+    }
 }
 
 impl Pane for AggrPane {
@@ -110,14 +133,4 @@ pub(in crate::stream_engine::autonomous_executor) enum AggrPaneInner {
     Avg {
         states: HashMap<NnSqlValue, AvgState>,
     },
-}
-
-impl AggrPaneInner {
-    pub(in crate::stream_engine::autonomous_executor) fn new() -> Self {
-        // TODO branch by AggregateFunctionParameter in aggr_expr
-
-        AggrPaneInner::Avg {
-            states: HashMap::new(),
-        }
-    }
 }
