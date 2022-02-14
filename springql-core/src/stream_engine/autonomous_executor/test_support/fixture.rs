@@ -13,8 +13,8 @@ use crate::{
     stream_engine::{
         autonomous_executor::{
             performance_metrics::metrics_update_command::metrics_update_by_task_execution::{
-                InQueueMetricsUpdateByTask, OutQueueMetricsUpdateByTask, TaskMetricsUpdateByTask,
-                WindowInFlowByWindowTask,
+                InQueueMetricsUpdateByCollect, InQueueMetricsUpdateByTask,
+                OutQueueMetricsUpdateByTask, TaskMetricsUpdateByTask, WindowInFlowByWindowTask,
             },
             row::{
                 column::stream_column::StreamColumns, foreign_row::format::json::JsonObject, Row,
@@ -467,11 +467,14 @@ impl MetricsUpdateByTaskExecution {
             TaskId::fx_split_join_t2(),
             WallClockDuration::from_micros(50),
         );
-        let in_queues = vec![InQueueMetricsUpdateByTask::Row {
-            queue_id: RowQueueId::fx_q2(),
-            rows_used: 1,
-            bytes_used: 100,
-        }];
+        let in_queues = vec![InQueueMetricsUpdateByTask::new(
+            InQueueMetricsUpdateByCollect::Row {
+                queue_id: RowQueueId::fx_q2(),
+                rows_used: 1,
+                bytes_used: 100,
+            },
+            None,
+        )];
         let out_queues = vec![OutQueueMetricsUpdateByTask::new(
             QueueId::fx_split_join_q3_1(),
             1,
@@ -484,12 +487,14 @@ impl MetricsUpdateByTaskExecution {
             TaskId::fx_split_join_t3(),
             WallClockDuration::from_micros(90),
         );
-        let in_queues = vec![InQueueMetricsUpdateByTask::Window {
-            queue_id: WindowQueueId::fx_q3_1(),
-            waiting_bytes_dispatched: 80,
-            waiting_rows_dispatched: 1,
-            window_in_flow: WindowInFlowByWindowTask::new(80, 0),
-        }];
+        let in_queues = vec![InQueueMetricsUpdateByTask::new(
+            InQueueMetricsUpdateByCollect::Window {
+                queue_id: WindowQueueId::fx_q3_1(),
+                waiting_bytes_dispatched: 80,
+                waiting_rows_dispatched: 1,
+            },
+            Some(WindowInFlowByWindowTask::new(80, 0)),
+        )];
         let out_queues = vec![];
         Self::new(task, in_queues, out_queues)
     }
@@ -510,11 +515,14 @@ impl MetricsUpdateByTaskExecution {
             TaskId::fx_split_join_t7(),
             WallClockDuration::from_micros(50),
         );
-        let in_queues = vec![InQueueMetricsUpdateByTask::Row {
-            queue_id: RowQueueId::fx_q7(),
-            rows_used: 1,
-            bytes_used: 800,
-        }];
+        let in_queues = vec![InQueueMetricsUpdateByTask::new(
+            InQueueMetricsUpdateByCollect::Row {
+                queue_id: RowQueueId::fx_q7(),
+                rows_used: 1,
+                bytes_used: 800,
+            },
+            None,
+        )];
         let out_queues = vec![
             OutQueueMetricsUpdateByTask::new(QueueId::fx_split_join_q3_2(), 1, 150),
             OutQueueMetricsUpdateByTask::new(QueueId::fx_split_join_q8(), 1, 150),
@@ -526,11 +534,14 @@ impl MetricsUpdateByTaskExecution {
             TaskId::fx_split_join_t8(),
             WallClockDuration::from_micros(50),
         );
-        let in_queues = vec![InQueueMetricsUpdateByTask::Row {
-            queue_id: RowQueueId::fx_q8(),
-            rows_used: 1,
-            bytes_used: 150,
-        }];
+        let in_queues = vec![InQueueMetricsUpdateByTask::new(
+            InQueueMetricsUpdateByCollect::Row {
+                queue_id: RowQueueId::fx_q8(),
+                rows_used: 1,
+                bytes_used: 150,
+            },
+            None,
+        )];
         let out_queues = vec![OutQueueMetricsUpdateByTask::new(
             QueueId::fx_split_join_q9(),
             1,
@@ -543,11 +554,14 @@ impl MetricsUpdateByTaskExecution {
             TaskId::fx_split_join_t9(),
             WallClockDuration::from_micros(50),
         );
-        let in_queues = vec![InQueueMetricsUpdateByTask::Row {
-            queue_id: RowQueueId::fx_q9(),
-            rows_used: 1,
-            bytes_used: 120,
-        }];
+        let in_queues = vec![InQueueMetricsUpdateByTask::new(
+            InQueueMetricsUpdateByCollect::Row {
+                queue_id: RowQueueId::fx_q9(),
+                rows_used: 1,
+                bytes_used: 120,
+            },
+            None,
+        )];
         let out_queues = vec![OutQueueMetricsUpdateByTask::new(
             QueueId::fx_split_join_q10(),
             1,
@@ -560,11 +574,14 @@ impl MetricsUpdateByTaskExecution {
             TaskId::fx_split_join_t10(),
             WallClockDuration::from_micros(200),
         );
-        let in_queues = vec![InQueueMetricsUpdateByTask::Row {
-            queue_id: RowQueueId::fx_q10(),
-            rows_used: 1,
-            bytes_used: 70,
-        }];
+        let in_queues = vec![InQueueMetricsUpdateByTask::new(
+            InQueueMetricsUpdateByCollect::Row {
+                queue_id: RowQueueId::fx_q10(),
+                rows_used: 1,
+                bytes_used: 70,
+            },
+            None,
+        )];
         let out_queues = vec![];
         Self::new(task, in_queues, out_queues)
     }
