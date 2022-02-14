@@ -3,18 +3,31 @@
 use std::sync::Arc;
 
 use crate::mem_size::MemSize;
+use crate::pipeline::name::StreamName;
 use crate::stream_engine::autonomous_executor::performance_metrics::metrics_update_command::metrics_update_by_task_execution::InQueueMetricsUpdateByCollect;
 use crate::stream_engine::autonomous_executor::repositories::Repositories;
 use crate::stream_engine::autonomous_executor::task::task_context::TaskContext;
 use crate::stream_engine::autonomous_executor::task::tuple::Tuple;
+use crate::stream_engine::autonomous_executor::task_graph::TaskGraph;
 use crate::stream_engine::autonomous_executor::task_graph::queue_id::QueueId;
 use crate::stream_engine::autonomous_executor::task_graph::queue_id::row_queue_id::RowQueueId;
 use crate::stream_engine::autonomous_executor::task_graph::queue_id::window_queue_id::WindowQueueId;
+use crate::stream_engine::autonomous_executor::task_graph::task_id::TaskId;
+use crate::stream_engine::command::query_plan::query_plan_operation::CollectOp;
 
-#[derive(Debug, new)]
-pub(in crate::stream_engine::autonomous_executor) struct CollectSubtask;
+#[derive(Debug)]
+pub(in crate::stream_engine::autonomous_executor) struct CollectSubtask {
+    upstream: StreamName,
+}
 
 impl CollectSubtask {
+    pub(in crate::stream_engine::autonomous_executor) fn from_collect_op(
+        collect_op: CollectOp,
+    ) -> Self {
+        let upstream = collect_op.stream;
+        Self { upstream }
+    }
+
     /// # Returns
     ///
     /// None when input queue does not exist or is empty.
@@ -22,17 +35,17 @@ impl CollectSubtask {
         &self,
         context: &TaskContext,
     ) -> Option<(Tuple, InQueueMetricsUpdateByCollect)> {
-        context
-            .input_queue()
-            .map(|queue_id| {
-                let repos = context.repos();
+        let repos = context.repos();
+        let pump_task_id = context.task();
 
-                match queue_id {
-                    QueueId::Row(queue_id) => self.collect_from_row_queue(queue_id, repos),
-                    QueueId::Window(queue_id) => self.collect_from_window_queue(queue_id, repos),
-                }
-            })
-            .flatten()
+        let pipeline_derivatives = context.pipeline_derivatives();
+        let task_graph = pipeline_derivatives.task_graph();
+
+        let queue_id = task_graph.input_queue(&pump_task_id, &self.upstream);
+        match queue_id {
+            QueueId::Row(queue_id) => self.collect_from_row_queue(queue_id, repos),
+            QueueId::Window(queue_id) => self.collect_from_window_queue(queue_id, repos),
+        }
     }
 
     /// # Returns

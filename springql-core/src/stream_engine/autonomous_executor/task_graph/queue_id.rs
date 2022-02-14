@@ -4,6 +4,7 @@ pub(in crate::stream_engine::autonomous_executor) mod window_queue_id;
 use serde::{Deserialize, Serialize};
 
 use crate::pipeline::{
+    name::StreamName,
     pump_model::{pump_input_type::PumpInputType, PumpModel},
     sink_writer_model::SinkWriterModel,
 };
@@ -18,8 +19,11 @@ pub(in crate::stream_engine::autonomous_executor) enum QueueId {
 }
 
 impl QueueId {
-    pub(in crate::stream_engine::autonomous_executor) fn from_pump(pump: &PumpModel) -> Self {
-        let name = pump.name().to_string();
+    pub(in crate::stream_engine::autonomous_executor) fn from_pump(
+        pump: &PumpModel,
+        upstream: &StreamName,
+    ) -> Self {
+        let name = format!("{}-{}", pump.name().to_string(), upstream);
         match pump.input_type() {
             PumpInputType::Row => Self::Row(RowQueueId::new(name)),
             PumpInputType::Window => Self::Window(WindowQueueId::new(name)),

@@ -40,18 +40,6 @@ impl TaskContext {
         self.pipeline_derivatives.clone()
     }
 
-    /// Even a task with multiple input queues (e.g. JOIN) gets a row from a single queue for 1 task execution.
-    ///
-    /// # Returns
-    ///
-    /// None if task does not have input queue.
-    /// Not only source tasks but also pump tasks without upstream `CREATE SOURCE READER` yet may return None.
-    pub(in crate::stream_engine) fn input_queue(&self) -> Option<QueueId> {
-        // TODO decide 1 input queue probabilistically from num rows in each queue.
-
-        let task_graph = self.pipeline_derivatives.task_graph();
-        task_graph.input_queues(&self.task).first().cloned()
-    }
     pub(in crate::stream_engine) fn output_queues(&self) -> Vec<QueueId> {
         let task_graph = self.pipeline_derivatives.task_graph();
         task_graph.output_queues(&self.task)

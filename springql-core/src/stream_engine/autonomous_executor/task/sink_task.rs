@@ -7,7 +7,7 @@ use std::sync::Arc;
 use super::task_context::TaskContext;
 use crate::error::Result;
 use crate::mem_size::MemSize;
-use crate::pipeline::name::SinkWriterName;
+use crate::pipeline::name::{SinkWriterName, StreamName};
 use crate::pipeline::sink_writer_model::SinkWriterModel;
 use crate::stream_engine::autonomous_executor::performance_metrics::metrics_update_command::metrics_update_by_task_execution::{MetricsUpdateByTaskExecution, TaskMetricsUpdateByTask, InQueueMetricsUpdateByTask, InQueueMetricsUpdateByCollect};
 use crate::stream_engine::autonomous_executor::repositories::Repositories;
@@ -20,6 +20,7 @@ use crate::stream_engine::time::duration::wall_clock_duration::wall_clock_stopwa
 #[derive(Debug)]
 pub(crate) struct SinkTask {
     id: TaskId,
+    upstream: StreamName,
     sink_writer_name: SinkWriterName,
 }
 
@@ -28,6 +29,7 @@ impl SinkTask {
         let id = TaskId::from_sink(sink_writer);
         Self {
             id,
+            upstream: sink_writer.from_sink_stream().clone(),
             sink_writer_name: sink_writer.name().clone(),
         }
     }
@@ -42,19 +44,20 @@ impl SinkTask {
     ) -> Result<MetricsUpdateByTaskExecution> {
         let stopwatch = WallClockStopwatch::start();
 
-        let in_queues_metrics = if let Some((row, in_queue_metrics)) = context
-            .input_queue()
-            .map(|queue_id| {
-                let repos = context.repos();
-                self.use_row_from(queue_id, repos)
-            })
-            .flatten()
-        {
-            self.emit(row, context)?;
-            vec![in_queue_metrics]
-        } else {
-            vec![]
-        };
+        let repos = context.repos();
+
+        let queue_id = context
+            .pipeline_derivatives()
+            .task_graph()
+            .input_queue(&context.task(), &self.upstream);
+
+        let in_queues_metrics =
+            if let Some((row, in_queue_metrics)) = self.use_row_from(queue_id, repos) {
+                self.emit(row, context)?;
+                vec![in_queue_metrics]
+            } else {
+                vec![]
+            };
 
         let execution_time = stopwatch.stop();
 
