@@ -232,7 +232,7 @@ impl InQueueMetricsUpdateByTask {
     ) -> Self {
         Self {
             by_collect,
-            window_in_flow: window_in_flow.unwrap_or_else(|| WindowInFlowByWindowTask::zero()),
+            window_in_flow: window_in_flow.unwrap_or_else(WindowInFlowByWindowTask::zero),
         }
     }
 

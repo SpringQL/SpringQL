@@ -6,27 +6,20 @@ pub(super) mod group_aggregate_window_subtask;
 pub(super) mod join_subtask;
 pub(super) mod value_projection_subtask;
 
-use std::{
-    cell::RefCell,
-    sync::{Arc, Mutex},
-};
+use std::sync::{Arc, Mutex};
 
 use rand::{
-    prelude::{SliceRandom, SmallRng, ThreadRng},
+    prelude::{SliceRandom, SmallRng},
     SeedableRng,
 };
 
 use crate::{
     error::Result,
     expr_resolver::ExprResolver,
-    pipeline::{
-        name::ColumnName, pipeline_graph::PipelineGraph,
-        pump_model::window_operation_parameter::join_parameter::JoinParameter,
-        stream_model::StreamModel,
-    },
+    pipeline::{name::ColumnName, stream_model::StreamModel},
     stream_engine::{
         autonomous_executor::task::window::panes::pane::join_pane::JoinDir,
-        command::query_plan::{query_plan_operation::CollectOp, QueryPlan},
+        command::query_plan::QueryPlan,
     },
     stream_engine::{
         autonomous_executor::{

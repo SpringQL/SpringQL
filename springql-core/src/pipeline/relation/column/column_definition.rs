@@ -19,7 +19,7 @@ impl ColumnDefinition {
     }
 
     pub(crate) fn column_name(&self) -> &ColumnName {
-        &self.column_data_type.column_name()
+        self.column_data_type.column_name()
     }
 
     pub(crate) fn column_constraints(&self) -> &[ColumnConstraint] {

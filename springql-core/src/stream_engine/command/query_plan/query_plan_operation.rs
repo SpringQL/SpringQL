@@ -2,14 +2,10 @@
 
 use crate::{
     expr_resolver::expr_label::{AggrExprLabel, ValueExprLabel},
-    expression::ValueExpr,
     pipeline::{
         name::StreamName,
         pump_model::{
-            window_operation_parameter::{
-                join_parameter::{JoinParameter, JoinType},
-                WindowOperationParameter,
-            },
+            window_operation_parameter::{join_parameter::JoinParameter, WindowOperationParameter},
             window_parameter::WindowParameter,
         },
     },

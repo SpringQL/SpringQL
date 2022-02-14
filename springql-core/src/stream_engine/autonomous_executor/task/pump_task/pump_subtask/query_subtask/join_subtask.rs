@@ -3,7 +3,6 @@
 use std::sync::Mutex;
 
 use crate::expr_resolver::ExprResolver;
-use crate::pipeline::pump_model::window_operation_parameter::WindowOperationParameter;
 use crate::pipeline::pump_model::window_operation_parameter::join_parameter::JoinParameter;
 use crate::pipeline::pump_model::window_parameter::WindowParameter;
 use crate::stream_engine::autonomous_executor::performance_metrics::metrics_update_command::metrics_update_by_task_execution::WindowInFlowByWindowTask;
