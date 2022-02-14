@@ -19,7 +19,11 @@ use rand::{
 use crate::{
     error::Result,
     expr_resolver::ExprResolver,
-    pipeline::{name::ColumnName, stream_model::StreamModel},
+    pipeline::{
+        name::ColumnName, pipeline_graph::PipelineGraph,
+        pump_model::window_operation_parameter::join_parameter::JoinParameter,
+        stream_model::StreamModel,
+    },
     stream_engine::{
         autonomous_executor::task::window::panes::pane::join_pane::JoinDir,
         command::query_plan::{query_plan_operation::CollectOp, QueryPlan},
@@ -128,12 +132,10 @@ impl QuerySubtask {
         let left_collect_subtask = CollectSubtask::new();
         let join = match plan.lower_ops.join {
             JoinOp::Collect(_) => None,
-            JoinOp::Join {
-                left,
-                right,
-                join_type,
-                on_expr,
-            } => todo!(),
+            JoinOp::JoinWindow(join_window) => Some((
+                JoinSubtask::new(join_window.window_param, join_window.join_param),
+                CollectSubtask::new(),
+            )),
         };
 
         if plan.upper_ops.projection.aggr_expr_labels.is_empty() {

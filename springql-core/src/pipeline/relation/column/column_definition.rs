@@ -2,6 +2,8 @@
 
 use serde::{Deserialize, Serialize};
 
+use crate::pipeline::name::ColumnName;
+
 use super::{column_constraint::ColumnConstraint, column_data_type::ColumnDataType};
 
 /// Column definition used in DDL.
@@ -14,6 +16,10 @@ pub(crate) struct ColumnDefinition {
 impl ColumnDefinition {
     pub(crate) fn column_data_type(&self) -> &ColumnDataType {
         &self.column_data_type
+    }
+
+    pub(crate) fn column_name(&self) -> &ColumnName {
+        &self.column_data_type.column_name()
     }
 
     pub(crate) fn column_constraints(&self) -> &[ColumnConstraint] {

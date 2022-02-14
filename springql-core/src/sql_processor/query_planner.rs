@@ -89,7 +89,7 @@ impl QueryPlanner {
         }
     }
 
-    pub(crate) fn plan(self, _pipeline: &Pipeline) -> Result<QueryPlan> {
+    pub(crate) fn plan(self, pipeline: &Pipeline) -> Result<QueryPlan> {
         let (mut expr_resolver, value_labels_select_list, aggr_labels_select_list) =
             ExprResolver::new(self.analyzer.select_list().to_vec());
         let projection = ProjectionOp {
@@ -105,7 +105,7 @@ impl QueryPlanner {
             group_aggr_window,
         };
 
-        let join = self.create_join_op();
+        let join = self.create_join_op(&mut expr_resolver, pipeline)?;
         let lower_ops = LowerOps { join };
 
         Ok(QueryPlan::new(upper_ops, lower_ops, expr_resolver))
@@ -165,7 +165,11 @@ impl QueryPlanner {
         }
     }
 
-    fn create_join_op(&self) -> JoinOp {
-        self.analyzer.join_op()
+    fn create_join_op(
+        &self,
+        expr_resolver: &mut ExprResolver,
+        pipeline: &Pipeline,
+    ) -> Result<JoinOp> {
+        self.analyzer.join_op(expr_resolver, pipeline)
     }
 }

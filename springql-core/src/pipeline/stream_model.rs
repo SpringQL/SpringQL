@@ -6,7 +6,7 @@ use serde::{Deserialize, Serialize};
 
 use self::stream_shape::StreamShape;
 
-use super::name::StreamName;
+use super::{field::field_name::ColumnReference, name::StreamName};
 
 #[derive(Clone, Eq, PartialEq, Debug, Serialize, Deserialize, new)]
 pub(crate) struct StreamModel {
@@ -21,5 +21,13 @@ impl StreamModel {
 
     pub(crate) fn shape(&self) -> &StreamShape {
         &self.shape
+    }
+
+    pub(crate) fn column_references(&self) -> Vec<ColumnReference> {
+        self.shape
+            .column_names()
+            .iter()
+            .map(|c| ColumnReference::new(self.name.clone(), c.clone()))
+            .collect()
     }
 }

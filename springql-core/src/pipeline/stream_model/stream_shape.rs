@@ -46,6 +46,10 @@ impl StreamShape {
         &self.cols
     }
 
+    pub(crate) fn column_names(&self) -> Vec<ColumnName> {
+        self.cols.iter().map(|c| c.column_name()).cloned().collect()
+    }
+
     fn extract_promoted_rowtime(cols: &[ColumnDefinition]) -> Result<Option<ColumnName>> {
         let rowtime_cdts = cols
             .iter()

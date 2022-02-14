@@ -2,6 +2,7 @@
 
 use crate::{
     expr_resolver::expr_label::{AggrExprLabel, ValueExprLabel},
+    expression::ValueExpr,
     pipeline::{
         name::StreamName,
         pump_model::{
@@ -11,7 +12,7 @@ use crate::{
             },
             window_parameter::WindowParameter,
         },
-    }, expression::ValueExpr,
+    },
 };
 
 #[derive(Clone, PartialEq, Debug)]
@@ -56,10 +57,14 @@ pub(crate) struct CollectOp {
 #[derive(Clone, PartialEq, Debug)]
 pub(crate) enum JoinOp {
     Collect(CollectOp),
-    Join {
-        left: CollectOp,
-        right: CollectOp,
-        join_type: JoinType,
-        on_expr: ValueExpr,
-    },
+    JoinWindow(JoinWindowOp),
+}
+
+#[derive(Clone, PartialEq, Debug)]
+pub(crate) struct JoinWindowOp {
+    pub(crate) left: CollectOp,
+    pub(crate) right: CollectOp,
+
+    pub(crate) window_param: WindowParameter,
+    pub(crate) join_param: JoinParameter,
 }

@@ -1,5 +1,6 @@
 use crate::pipeline::pump_model::{
-    window_operation_parameter::WindowOperationParameter, window_parameter::WindowParameter,
+    window_operation_parameter::{join_parameter::JoinParameter, WindowOperationParameter},
+    window_parameter::WindowParameter,
 };
 
 use super::{
@@ -37,12 +38,12 @@ impl Window for JoinWindow {
 impl JoinWindow {
     pub(in crate::stream_engine::autonomous_executor) fn new(
         window_param: WindowParameter,
-        op_param: WindowOperationParameter,
+        join_param: JoinParameter,
     ) -> Self {
         let watermark = Watermark::new(window_param.allowed_delay());
         Self {
             watermark,
-            panes: Panes::new(window_param, op_param),
+            panes: Panes::new(window_param, WindowOperationParameter::Join(join_param)),
         }
     }
 }
@@ -160,7 +161,7 @@ mod tests {
                 length: EventDuration::from_secs(10),
                 allowed_delay: EventDuration::from_secs(1),
             },
-            WindowOperationParameter::Join(JoinParameter {
+            JoinParameter {
                 join_type: JoinType::LeftOuter,
                 left_colrefs: vec![
                     ColumnReference::fx_trade_timestamp(),
@@ -173,7 +174,7 @@ mod tests {
                     ColumnReference::fx_city_temperature_temperature(),
                 ],
                 on_expr: on_expr_label,
-            }),
+            },
         );
 
         // [:00, :10): t(:00, 100)

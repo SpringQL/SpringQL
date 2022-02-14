@@ -10,7 +10,7 @@ use crate::{
     stream_engine::command::query_plan::query_plan_operation::JoinOp,
 };
 
-use self::query_plan_operation::{LowerOps, UpperOps};
+use self::query_plan_operation::{JoinWindowOp, LowerOps, UpperOps};
 
 /// Query plan from which an executor can do its work deterministically.
 #[derive(Clone, PartialEq, Debug, new)]
@@ -18,6 +18,7 @@ pub(crate) struct QueryPlan {
     pub(crate) upper_ops: UpperOps,
     pub(crate) lower_ops: LowerOps,
 
+    /// to convert *Expr in *Syntax into *ExprLabel
     pub(crate) expr_resolver: ExprResolver,
 }
 
@@ -33,7 +34,9 @@ impl QueryPlan {
     pub(crate) fn upstreams(&self) -> Vec<&StreamName> {
         match &self.lower_ops.join {
             JoinOp::Collect(collect) => vec![&collect.stream],
-            JoinOp::Join { left, right, .. } => vec![&left.stream, &right.stream],
+            JoinOp::JoinWindow(JoinWindowOp { left, right, .. }) => {
+                vec![&left.stream, &right.stream]
+            }
         }
     }
 }
