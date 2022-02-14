@@ -43,13 +43,8 @@ fn gen_source_city_temperature() -> Vec<serde_json::Value> {
         "city": "Tokyo",
         "temperature": -3,
     });
-    let json_00_2 = json!({
-        "ts": "2020-01-01 00:00:00.000000000",
-        "city": "London",
-        "temperature": -8,
-    });
 
-    vec![json_00_1, json_00_2]
+    vec![json_00_1]
 }
 
 fn run_and_drain(ddls: &[String], test_sink: &ForeignSink) -> Vec<serde_json::Value> {
@@ -57,11 +52,7 @@ fn run_and_drain(ddls: &[String], test_sink: &ForeignSink) -> Vec<serde_json::Va
     let mut sink_received = drain_from_sink(test_sink);
     sink_received.sort_by_key(|r| {
         let ts = &r["ts"];
-        let temperature = &r["temperature"];
-        (
-            ts.as_str().unwrap().to_string(),
-            temperature.as_i64().unwrap(),
-        )
+        ts.as_str().unwrap().to_string()
     });
     sink_received
 }
@@ -158,25 +149,20 @@ fn test_feat_left_outer_join() {
 
     let sink_received = run_and_drain(&ddls, &test_sink);
 
-    assert_eq!(sink_received.len(), 4);
+    assert_eq!(sink_received.len(), 3);
 
     let r0 = sink_received[0].clone();
     assert_eq!(r0["ts"].as_str().unwrap(), "2020-01-01 00:00:00.000000000");
     assert_eq!(r0["amount"].as_i64().unwrap(), 10);
-    assert_eq!(r0["temperature"].as_i64().unwrap(), -8);
+    assert!(r0["temperature"].is_null() || r0["temperature"].as_i64().unwrap() == -3);
 
     let r1 = sink_received[1].clone();
-    assert_eq!(r1["ts"].as_str().unwrap(), "2020-01-01 00:00:00.000000000");
-    assert_eq!(r1["amount"].as_i64().unwrap(), 10);
-    assert_eq!(r1["temperature"].as_i64().unwrap(), -3);
+    assert_eq!(r1["ts"].as_str().unwrap(), "2020-01-01 00:00:09.999999999");
+    assert_eq!(r1["amount"].as_i64().unwrap(), 30);
+    assert!(r1["temperature"].is_null());
 
     let r2 = sink_received[2].clone();
-    assert_eq!(r2["ts"].as_str().unwrap(), "2020-01-01 00:00:09.999999999");
-    assert_eq!(r2["amount"].as_i64().unwrap(), 30);
+    assert_eq!(r2["ts"].as_str().unwrap(), "2020-01-01 00:00:10.000000000");
+    assert_eq!(r2["amount"].as_i64().unwrap(), 50);
     assert!(r2["temperature"].is_null());
-
-    let r3 = sink_received[3].clone();
-    assert_eq!(r3["ts"].as_str().unwrap(), "2020-01-01 00:00:10.000000000");
-    assert_eq!(r3["amount"].as_i64().unwrap(), 50);
-    assert!(r3["temperature"].is_null());
 }
