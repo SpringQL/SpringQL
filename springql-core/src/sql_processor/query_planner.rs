@@ -69,7 +69,7 @@ use crate::{
     },
     stream_engine::command::query_plan::{
         query_plan_operation::{
-            CollectOp, GroupAggregateWindowOp, LowerOps, ProjectionOp, UpperOps,
+            CollectOp, GroupAggregateWindowOp, JoinOp, LowerOps, ProjectionOp, UpperOps,
         },
         QueryPlan,
     },
@@ -112,7 +112,9 @@ impl QueryPlanner {
             .into_iter()
             .next()
             .expect("collect_ops.len() == 1");
-        let lower_ops = LowerOps { collect };
+        let lower_ops = LowerOps {
+            join: JoinOp::Collect(collect),
+        };
 
         Ok(QueryPlan::new(upper_ops, lower_ops, expr_resolver))
     }

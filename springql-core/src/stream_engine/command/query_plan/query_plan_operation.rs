@@ -5,7 +5,8 @@ use crate::{
     pipeline::{
         name::StreamName,
         pump_model::{
-            window_operation_parameter::WindowOperationParameter, window_parameter::WindowParameter,
+            window_operation_parameter::{join_parameter::JoinParameter, WindowOperationParameter},
+            window_parameter::WindowParameter,
         },
     },
 };
@@ -23,8 +24,7 @@ impl UpperOps {
 
 #[derive(Clone, PartialEq, Debug)]
 pub(crate) struct LowerOps {
-    pub(crate) collect: CollectOp,
-    // TODO join
+    pub(crate) join: JoinOp,
 }
 impl LowerOps {
     pub(crate) fn has_window(&self) -> bool {
@@ -39,12 +39,23 @@ pub(crate) struct ProjectionOp {
 }
 
 #[derive(Clone, PartialEq, Debug)]
+pub(crate) struct GroupAggregateWindowOp {
+    pub(crate) window_param: WindowParameter,
+    pub(crate) op_param: WindowOperationParameter,
+}
+
+#[derive(Clone, PartialEq, Debug)]
 pub(crate) struct CollectOp {
     pub(crate) stream: StreamName,
 }
 
+/// TODO recursive join
 #[derive(Clone, PartialEq, Debug)]
-pub(crate) struct GroupAggregateWindowOp {
-    pub(crate) window_param: WindowParameter,
-    pub(crate) op_param: WindowOperationParameter,
+pub(crate) enum JoinOp {
+    Collect(CollectOp),
+    Join {
+        left: CollectOp,
+        right: CollectOp,
+        join_param: JoinParameter,
+    },
 }

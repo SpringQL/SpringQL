@@ -7,6 +7,7 @@ pub(in crate::stream_engine) mod child_direction;
 use crate::{
     expr_resolver::ExprResolver,
     pipeline::{name::StreamName, pump_model::pump_input_type::PumpInputType},
+    stream_engine::command::query_plan::query_plan_operation::JoinOp,
 };
 
 use self::query_plan_operation::{LowerOps, UpperOps};
@@ -30,7 +31,9 @@ impl QueryPlan {
     }
 
     pub(crate) fn upstreams(&self) -> Vec<&StreamName> {
-        let stream = &self.lower_ops.collect.stream;
-        vec![stream]
+        match &self.lower_ops.join {
+            JoinOp::Collect(collect) => vec![&collect.stream],
+            JoinOp::Join { left, right, .. } => vec![&left.stream, &right.stream],
+        }
     }
 }
