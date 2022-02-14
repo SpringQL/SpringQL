@@ -21,11 +21,8 @@ use petgraph::{
 use self::{edge::Edge, stream_node::StreamNode};
 
 use super::{
-    name::{PumpName, StreamName},
-    pump_model::PumpModel,
-    sink_writer_model::SinkWriterModel,
-    source_reader_model::SourceReaderModel,
-    stream_model::StreamModel,
+    name::StreamName, pump_model::PumpModel, sink_writer_model::SinkWriterModel,
+    source_reader_model::SourceReaderModel, stream_model::StreamModel,
 };
 use crate::error::{Result, SpringError};
 use anyhow::anyhow;

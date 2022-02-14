@@ -14,7 +14,7 @@ pub(super) mod task_id;
 
 mod edge_ref;
 
-use std::collections::{HashMap, HashSet};
+use std::collections::HashMap;
 
 use petgraph::graph::{DiGraph, NodeIndex};
 
