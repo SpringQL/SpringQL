@@ -107,14 +107,8 @@ impl QueryPlanner {
             group_aggr_window,
         };
 
-        let collect_ops = self.create_collect_ops()?;
-        let collect = collect_ops
-            .into_iter()
-            .next()
-            .expect("collect_ops.len() == 1");
-        let lower_ops = LowerOps {
-            join: JoinOp::Collect(collect),
-        };
+        let join = self.create_join_op();
+        let lower_ops = LowerOps { join };
 
         Ok(QueryPlan::new(upper_ops, lower_ops, expr_resolver))
     }
@@ -173,7 +167,7 @@ impl QueryPlanner {
         }
     }
 
-    fn create_collect_ops(&self) -> Result<Vec<CollectOp>> {
-        todo!("create join op")
+    fn create_join_op(&self) -> JoinOp {
+        self.analyzer.join_op()
     }
 }

@@ -5,10 +5,13 @@ use crate::{
     pipeline::{
         name::StreamName,
         pump_model::{
-            window_operation_parameter::{join_parameter::JoinParameter, WindowOperationParameter},
+            window_operation_parameter::{
+                join_parameter::{JoinParameter, JoinType},
+                WindowOperationParameter,
+            },
             window_parameter::WindowParameter,
         },
-    },
+    }, expression::ValueExpr,
 };
 
 #[derive(Clone, PartialEq, Debug)]
@@ -56,6 +59,7 @@ pub(crate) enum JoinOp {
     Join {
         left: CollectOp,
         right: CollectOp,
-        join_param: JoinParameter,
+        join_type: JoinType,
+        on_expr: ValueExpr,
     },
 }
