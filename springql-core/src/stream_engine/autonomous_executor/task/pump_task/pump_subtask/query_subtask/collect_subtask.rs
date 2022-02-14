@@ -21,7 +21,7 @@ impl CollectSubtask {
     pub(in crate::stream_engine::autonomous_executor) fn run(
         &self,
         context: &TaskContext,
-    ) -> Option<(Vec<Tuple>, InQueueMetricsUpdateByCollect)> {
+    ) -> Option<(Tuple, InQueueMetricsUpdateByCollect)> {
         context
             .input_queue()
             .map(|queue_id| {
@@ -42,7 +42,7 @@ impl CollectSubtask {
         &self,
         queue_id: RowQueueId,
         repos: Arc<Repositories>,
-    ) -> Option<(Vec<Tuple>, InQueueMetricsUpdateByCollect)> {
+    ) -> Option<(Tuple, InQueueMetricsUpdateByCollect)> {
         let row_q_repo = repos.row_queue_repository();
         let queue = row_q_repo.get(&queue_id);
         let opt_row = queue.use_();
@@ -50,7 +50,7 @@ impl CollectSubtask {
             let bytes_used = row.mem_size();
             let tuple = Tuple::from_row(row);
             (
-                vec![tuple],
+                tuple,
                 InQueueMetricsUpdateByCollect::Row {
                     queue_id,
                     rows_used: 1,
@@ -67,7 +67,7 @@ impl CollectSubtask {
         &self,
         queue_id: WindowQueueId,
         repos: Arc<Repositories>,
-    ) -> Option<(Vec<Tuple>, InQueueMetricsUpdateByCollect)> {
+    ) -> Option<(Tuple, InQueueMetricsUpdateByCollect)> {
         let window_q_repo = repos.window_queue_repository();
         let queue = window_q_repo.get(&queue_id);
         let opt_row = queue.dispatch();
@@ -75,7 +75,7 @@ impl CollectSubtask {
             let bytes_dispatched = row.mem_size();
             let tuple = Tuple::from_row(row);
             (
-                vec![tuple],
+                tuple,
                 InQueueMetricsUpdateByCollect::Window {
                     queue_id,
                     waiting_bytes_dispatched: bytes_dispatched as u64,

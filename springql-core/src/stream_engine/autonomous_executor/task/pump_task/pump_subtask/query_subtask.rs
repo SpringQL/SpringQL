@@ -219,6 +219,7 @@ impl QuerySubtask {
         context: &TaskContext,
     ) -> Option<(Vec<Tuple>, InQueueMetricsUpdateByCollect)> {
         self.run_collect_op(context)
+            .map(|(tuple, m)| (vec![tuple], m))
     }
 
     fn run_projection_op(&self, tuple: &Tuple) -> Result<SqlValues> {
@@ -246,7 +247,7 @@ impl QuerySubtask {
     fn run_collect_op(
         &self,
         context: &TaskContext,
-    ) -> Option<(Vec<Tuple>, InQueueMetricsUpdateByCollect)> {
+    ) -> Option<(Tuple, InQueueMetricsUpdateByCollect)> {
         self.collect_subtask.run(context)
     }
 }
