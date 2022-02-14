@@ -47,23 +47,20 @@ pub(in crate::stream_engine::autonomous_executor) trait Window {
                     acc + window_in_flow
                 });
 
-            let (group_aggr_out_seq, window_in_flow_close) = self
+            let (out, window_in_flow_close) = self
                 .panes_mut()
                 .remove_panes_to_close(&wm)
                 .into_iter()
                 .fold(
                     (Vec::new(), WindowInFlowByWindowTask::zero()),
-                    |(mut group_aggr_out_acc, window_in_flow_acc), pane| {
-                        let (mut group_aggr_out_seq, window_in_flow) = pane.close(expr_resolver);
-                        group_aggr_out_acc.append(&mut group_aggr_out_seq);
-                        (group_aggr_out_acc, window_in_flow_acc + window_in_flow)
+                    |(mut out_acc, window_in_flow_acc), pane| {
+                        let (mut out_seq, window_in_flow) = pane.close(expr_resolver);
+                        out_acc.append(&mut out_seq);
+                        (out_acc, window_in_flow_acc + window_in_flow)
                     },
                 );
 
-            (
-                group_aggr_out_seq,
-                window_in_flow_dispatch + window_in_flow_close,
-            )
+            (out, window_in_flow_dispatch + window_in_flow_close)
         }
     }
 }
