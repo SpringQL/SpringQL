@@ -1,4 +1,4 @@
-pub(super) mod pane;
+pub(in crate::stream_engine::autonomous_executor) mod pane;
 
 use std::cmp::Ordering;
 

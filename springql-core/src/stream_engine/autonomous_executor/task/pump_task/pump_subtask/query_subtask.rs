@@ -3,6 +3,7 @@
 pub(super) mod aggr_projection_subtask;
 pub(super) mod collect_subtask;
 pub(super) mod group_aggregate_window_subtask;
+pub(super) mod join_subtask;
 pub(super) mod value_projection_subtask;
 
 use std::sync::Arc;
@@ -44,7 +45,7 @@ pub(in crate::stream_engine::autonomous_executor) struct QuerySubtask {
     aggr_projection_subtask: Option<AggrProjectionSubtask>,
     group_aggr_window_subtask: Option<GroupAggregateWindowSubtask>,
 
-    collect_subtask: CollectSubtask,
+    join_subtask: CollectSubtask,
 }
 
 #[derive(Clone, Debug, new)]
@@ -111,7 +112,7 @@ impl QuerySubtask {
                 value_projection_subtask: Some(value_projection_subtask),
                 aggr_projection_subtask: None,
                 group_aggr_window_subtask: None,
-                collect_subtask,
+                join_subtask: collect_subtask,
             }
         } else {
             assert_eq!(
@@ -142,7 +143,7 @@ impl QuerySubtask {
                 value_projection_subtask: None,
                 aggr_projection_subtask: Some(aggr_projection_subtask),
                 group_aggr_window_subtask: Some(group_aggr_window_subtask),
-                collect_subtask,
+                join_subtask: collect_subtask,
             }
         }
     }
@@ -218,7 +219,7 @@ impl QuerySubtask {
         &self,
         context: &TaskContext,
     ) -> Option<(Vec<Tuple>, InQueueMetricsUpdateByCollect)> {
-        self.run_collect_op(context)
+        self.run_join_op(context)
     }
 
     fn run_projection_op(&self, tuple: &Tuple) -> Result<SqlValues> {
@@ -243,10 +244,10 @@ impl QuerySubtask {
             .collect()
     }
 
-    fn run_collect_op(
+    fn run_join_op(
         &self,
         context: &TaskContext,
     ) -> Option<(Vec<Tuple>, InQueueMetricsUpdateByCollect)> {
-        self.collect_subtask.run(context)
+        self.join_subtask.run(context)
     }
 }

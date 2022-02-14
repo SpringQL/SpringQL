@@ -7,8 +7,8 @@ use self::{
 
 pub(in crate::stream_engine::autonomous_executor) mod aggregate;
 pub(in crate::stream_engine::autonomous_executor) mod join_window;
+pub(in crate::stream_engine::autonomous_executor) mod panes;
 
-mod panes;
 mod watermark;
 
 pub(in crate::stream_engine::autonomous_executor) trait Window {
