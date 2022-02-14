@@ -143,7 +143,7 @@ impl TaskGraph {
             .edge_weights()
             .filter_map(|queue_id| {
                 if let QueueId::Row(id) = queue_id.queue_id.clone() {
-                    Some(id.clone())
+                    Some(id)
                 } else {
                     None
                 }
@@ -156,7 +156,7 @@ impl TaskGraph {
             .edge_weights()
             .filter_map(|queue_id| {
                 if let QueueId::Window(id) = queue_id.queue_id.clone() {
-                    Some(id.clone())
+                    Some(id)
                 } else {
                     None
                 }

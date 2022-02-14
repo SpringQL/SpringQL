@@ -18,6 +18,10 @@ use crate::{
     expr_resolver::ExprResolver,
     pipeline::{name::ColumnName, stream_model::StreamModel},
     stream_engine::{
+        autonomous_executor::task::window::panes::pane::join_pane::JoinDir,
+        command::query_plan::{query_plan_operation::LowerOps, QueryPlan},
+    },
+    stream_engine::{
         autonomous_executor::{
             performance_metrics::metrics_update_command::metrics_update_by_task_execution::InQueueMetricsUpdateByCollect,
             task::{task_context::TaskContext, tuple::Tuple},
@@ -33,13 +37,6 @@ use crate::{
             task::window::aggregate::GroupAggrOut,
         },
         command::query_plan::query_plan_operation::JoinOp,
-    },
-    stream_engine::{
-        autonomous_executor::{
-            task::window::panes::pane::join_pane::JoinDir,
-            task_graph::{task_id::TaskId, TaskGraph},
-        },
-        command::query_plan::{query_plan_operation::LowerOps, QueryPlan},
     },
 };
 

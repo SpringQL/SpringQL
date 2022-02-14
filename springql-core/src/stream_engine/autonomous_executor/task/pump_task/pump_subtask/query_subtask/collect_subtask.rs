@@ -8,11 +8,9 @@ use crate::stream_engine::autonomous_executor::performance_metrics::metrics_upda
 use crate::stream_engine::autonomous_executor::repositories::Repositories;
 use crate::stream_engine::autonomous_executor::task::task_context::TaskContext;
 use crate::stream_engine::autonomous_executor::task::tuple::Tuple;
-use crate::stream_engine::autonomous_executor::task_graph::TaskGraph;
 use crate::stream_engine::autonomous_executor::task_graph::queue_id::QueueId;
 use crate::stream_engine::autonomous_executor::task_graph::queue_id::row_queue_id::RowQueueId;
 use crate::stream_engine::autonomous_executor::task_graph::queue_id::window_queue_id::WindowQueueId;
-use crate::stream_engine::autonomous_executor::task_graph::task_id::TaskId;
 use crate::stream_engine::command::query_plan::query_plan_operation::CollectOp;
 
 #[derive(Debug)]
