@@ -48,6 +48,12 @@ impl SourceTask {
     ) -> Result<MetricsUpdateByTaskExecution> {
         let stopwatch = WallClockStopwatch::start();
 
+        assert_eq!(
+            context.output_queues().len(),
+            1,
+            "source task must have 1 output queue"
+        );
+
         let out_qid = context
             .output_queues()
             .first()
