@@ -174,19 +174,6 @@ impl QueryPlanner {
     }
 
     fn create_collect_ops(&self) -> Result<Vec<CollectOp>> {
-        let from_item_correlations = self.analyzer.from_item_streams()?;
-        assert!(
-            !from_item_correlations.is_empty(),
-            "at least 1 from item is expected"
-        );
-        assert!(
-            from_item_correlations.len() == 1,
-            "1 from item is currently supported"
-        );
-
-        from_item_correlations
-            .into_iter()
-            .map(|stream| Ok(CollectOp { stream }))
-            .collect::<Result<Vec<_>>>()
+        todo!("create join op")
     }
 }

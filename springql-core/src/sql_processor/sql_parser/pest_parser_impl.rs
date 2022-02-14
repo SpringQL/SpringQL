@@ -17,6 +17,7 @@ use crate::pipeline::name::{
 };
 use crate::pipeline::option::options_builder::OptionsBuilder;
 use crate::pipeline::pump_model::window_operation_parameter::aggregate::AggregateFunctionParameter;
+use crate::pipeline::pump_model::window_operation_parameter::join_parameter::JoinType;
 use crate::pipeline::pump_model::window_parameter::WindowParameter;
 use crate::pipeline::relation::column::column_constraint::ColumnConstraint;
 use crate::pipeline::relation::column::column_data_type::ColumnDataType;
@@ -42,7 +43,9 @@ use pest::{iterators::Pairs, Parser};
 use std::convert::identity;
 
 use super::parse_success::ParseSuccess;
-use super::syntax::{DurationFunction, FromItemSyntax, GroupingElementSyntax, SelectFieldSyntax};
+use super::syntax::{
+    DurationFunction, FromItemSyntax, GroupingElementSyntax, SelectFieldSyntax, SubFromItemSyntax,
+};
 
 #[derive(Debug, Default)]
 pub(super) struct PestParserImpl;
@@ -562,16 +565,45 @@ impl PestParserImpl {
     }
 
     fn parse_from_item(mut params: FnParseParams) -> Result<FromItemSyntax> {
-        let from_item = parse_child(
+        let sub_from_item = parse_child(
             &mut params,
             Rule::sub_from_item,
             Self::parse_sub_from_item,
             identity,
         )?;
-        Ok(from_item)
+
+        let opt_join = try_parse_child(
+            &mut params,
+            Rule::join_type,
+            Self::parse_join_type,
+            identity,
+        )?
+        .map(|join_type| {
+            let right_from_item = parse_child(
+                &mut params,
+                Rule::from_item,
+                Self::parse_from_item,
+                identity,
+            )?;
+            let on_expr = parse_child(
+                &mut params,
+                Rule::condition,
+                Self::parse_condition,
+                identity,
+            )?;
+
+            Ok(FromItemSyntax::JoinVariant {
+                left: sub_from_item.clone(),
+                right: Box::new(right_from_item),
+                join_type,
+                on_expr,
+            })
+        });
+
+        opt_join.unwrap_or(Ok(FromItemSyntax::StreamVariant(sub_from_item)))
     }
 
-    fn parse_sub_from_item(mut params: FnParseParams) -> Result<FromItemSyntax> {
+    fn parse_sub_from_item(mut params: FnParseParams) -> Result<SubFromItemSyntax> {
         let stream_name = parse_child(
             &mut params,
             Rule::stream_name,
@@ -584,7 +616,18 @@ impl PestParserImpl {
             Self::parse_correlation_alias,
             identity,
         )?;
-        Ok(FromItemSyntax::StreamVariant { stream_name, alias })
+        Ok(SubFromItemSyntax { stream_name, alias })
+    }
+
+    fn parse_join_type(mut params: FnParseParams) -> Result<JoinType> {
+        let s = self_as_str(&mut params);
+        match s.to_lowercase().as_str() {
+            "left outer join" => Ok(JoinType::LeftOuter),
+            _ => Err(SpringError::Sql(anyhow!(
+                "unknown join type {}",
+                s.to_lowercase()
+            ))),
+        }
     }
 
     fn parse_grouping_element(mut params: FnParseParams) -> Result<GroupingElementSyntax> {
@@ -650,6 +693,15 @@ impl PestParserImpl {
      * Value Expressions:
      * ================================================================================================
      */
+
+    fn parse_condition(mut params: FnParseParams) -> Result<ValueExpr> {
+        parse_child(
+            &mut params,
+            Rule::sub_value_expr,
+            Self::parse_sub_value_expr,
+            identity,
+        )
+    }
 
     fn parse_value_expr(mut params: FnParseParams) -> Result<ValueExpr> {
         let expr = parse_child(
