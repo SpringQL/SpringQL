@@ -12,13 +12,6 @@ use crate::{
     error::Result,
     expr_resolver::ExprResolver,
     pipeline::{name::ColumnName, stream_model::StreamModel},
-    stream_engine::autonomous_executor::{
-        performance_metrics::metrics_update_command::metrics_update_by_task_execution::{
-            InQueueMetricsUpdateByTask, WindowInFlowByWindowTask,
-        },
-        row::{column::stream_column::StreamColumns, column_values::ColumnValues, Row},
-        task::window::aggregate::GroupAggrOut,
-    },
     stream_engine::command::query_plan::QueryPlan,
     stream_engine::{
         autonomous_executor::{
@@ -27,11 +20,21 @@ use crate::{
         },
         SqlValue,
     },
+    stream_engine::{
+        autonomous_executor::{
+            performance_metrics::metrics_update_command::metrics_update_by_task_execution::{
+                InQueueMetricsUpdateByTask, WindowInFlowByWindowTask,
+            },
+            row::{column::stream_column::StreamColumns, column_values::ColumnValues, Row},
+            task::window::aggregate::GroupAggrOut,
+        },
+        command::query_plan::query_plan_operation::JoinOp,
+    },
 };
 
 use self::{
     aggr_projection_subtask::AggrProjectionSubtask, collect_subtask::CollectSubtask,
-    group_aggregate_window_subtask::GroupAggregateWindowSubtask,
+    group_aggregate_window_subtask::GroupAggregateWindowSubtask, join_subtask::JoinSubtask,
     value_projection_subtask::ValueProjectionSubtask,
 };
 
@@ -45,7 +48,12 @@ pub(in crate::stream_engine::autonomous_executor) struct QuerySubtask {
     aggr_projection_subtask: Option<AggrProjectionSubtask>,
     group_aggr_window_subtask: Option<GroupAggregateWindowSubtask>,
 
-    join_subtask: CollectSubtask,
+    // TODO recursive JOIN
+    join: Option<(
+        JoinSubtask,
+        CollectSubtask, // right stream
+    )>,
+    left_collect_subtask: CollectSubtask, // left stream
 }
 
 #[derive(Clone, Debug, new)]
@@ -101,7 +109,16 @@ pub(in crate::stream_engine::autonomous_executor) struct QuerySubtaskOut {
 
 impl QuerySubtask {
     pub(in crate::stream_engine::autonomous_executor) fn new(plan: QueryPlan) -> Self {
-        let collect_subtask = CollectSubtask::new();
+        let left_collect_subtask = CollectSubtask::new();
+        let join = match plan.lower_ops.join {
+            JoinOp::Collect(_) => None,
+            JoinOp::Join {
+                left,
+                right,
+                join_type,
+                on_expr,
+            } => todo!(),
+        };
 
         if plan.upper_ops.projection.aggr_expr_labels.is_empty() {
             let value_projection_subtask =
@@ -112,7 +129,8 @@ impl QuerySubtask {
                 value_projection_subtask: Some(value_projection_subtask),
                 aggr_projection_subtask: None,
                 group_aggr_window_subtask: None,
-                join_subtask: collect_subtask,
+                left_collect_subtask,
+                join,
             }
         } else {
             assert_eq!(
@@ -143,7 +161,8 @@ impl QuerySubtask {
                 value_projection_subtask: None,
                 aggr_projection_subtask: Some(aggr_projection_subtask),
                 group_aggr_window_subtask: Some(group_aggr_window_subtask),
-                join_subtask: collect_subtask,
+                left_collect_subtask,
+                join,
             }
         }
     }
@@ -212,16 +231,6 @@ impl QuerySubtask {
         }
     }
 
-    /// # Returns
-    ///
-    /// None when input queue does not exist or is empty or JOIN op does not emit output yet.
-    fn run_lower_ops(
-        &self,
-        context: &TaskContext,
-    ) -> Option<(Vec<Tuple>, InQueueMetricsUpdateByCollect)> {
-        self.run_join_op(context)
-    }
-
     fn run_projection_op(&self, tuple: &Tuple) -> Result<SqlValues> {
         self.value_projection_subtask
             .as_ref()
@@ -244,10 +253,43 @@ impl QuerySubtask {
             .collect()
     }
 
-    fn run_join_op(
+    /// # Returns
+    ///
+    /// None when input queue does not exist or is empty or JOIN op does not emit output yet.
+    fn run_lower_ops(
         &self,
         context: &TaskContext,
     ) -> Option<(Vec<Tuple>, InQueueMetricsUpdateByCollect)> {
-        self.join_subtask.run(context)
+        match self.join {
+            Some(_) => self.run_join(context),
+            None => self.run_left_collect(context),
+        }
+    }
+
+    /// JOIN takes tuples from both left and right at a time.
+    fn run_join(
+        &self,
+        context: &TaskContext,
+    ) -> Option<(Vec<Tuple>, InQueueMetricsUpdateByCollect)> {
+
+        if let Some((join_subtask, right_collect_subtask)) = self.join {
+            let run_left_collect(context)
+
+
+        } else {
+            unreachable!()
+        }
+
+        match self.join {
+            Some(_) => self.run_join(context),
+            None => self.run_left_collect(context),
+        }
+    }
+
+    fn run_left_collect(
+        &self,
+        context: &TaskContext,
+    ) -> Option<(Vec<Tuple>, InQueueMetricsUpdateByCollect)> {
+        self.left_collect_subtask.run(context)
     }
 }
