@@ -101,7 +101,7 @@ fn test_feat_left_outer_join() {
         CREATE SINK STREAM sink_joined (
           ts TIMESTAMP NOT NULL ROWTIME,    
           amount INTEGER NOT NULL,
-          temperature INTEGER NOT NULL
+          temperature INTEGER
         );
         "
         .to_string(),
