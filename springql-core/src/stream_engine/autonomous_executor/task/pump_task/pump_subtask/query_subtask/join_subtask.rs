@@ -25,6 +25,7 @@ impl JoinSubtask {
 
     pub(in crate::stream_engine::autonomous_executor) fn run(
         &self,
+        expr_resolver: &ExprResolver,
         tuple: Tuple,
         dir: JoinDir,
     ) -> (Vec<Tuple>, WindowInFlowByWindowTask) {

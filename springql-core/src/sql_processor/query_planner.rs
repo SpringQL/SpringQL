@@ -68,9 +68,7 @@ use crate::{
         Pipeline,
     },
     stream_engine::command::query_plan::{
-        query_plan_operation::{
-            CollectOp, GroupAggregateWindowOp, JoinOp, LowerOps, ProjectionOp, UpperOps,
-        },
+        query_plan_operation::{GroupAggregateWindowOp, JoinOp, LowerOps, ProjectionOp, UpperOps},
         QueryPlan,
     },
 };

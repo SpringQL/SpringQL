@@ -6,9 +6,15 @@ pub(super) mod group_aggregate_window_subtask;
 pub(super) mod join_subtask;
 pub(super) mod value_projection_subtask;
 
-use std::{cell::RefCell, sync::Arc};
+use std::{
+    cell::RefCell,
+    sync::{Arc, Mutex},
+};
 
-use rand::prelude::{SliceRandom, ThreadRng};
+use rand::{
+    prelude::{SliceRandom, SmallRng, ThreadRng},
+    SeedableRng,
+};
 
 use crate::{
     error::Result,
@@ -60,7 +66,7 @@ pub(in crate::stream_engine::autonomous_executor) struct QuerySubtask {
     )>,
     left_collect_subtask: CollectSubtask, // left stream
 
-    rng: RefCell<ThreadRng>,
+    rng: Mutex<SmallRng>,
 }
 
 #[derive(Clone, Debug, new)]
@@ -116,7 +122,8 @@ pub(in crate::stream_engine::autonomous_executor) struct QuerySubtaskOut {
 
 impl QuerySubtask {
     pub(in crate::stream_engine::autonomous_executor) fn new(plan: QueryPlan) -> Self {
-        let rng = RefCell::new(rand::thread_rng());
+        let rng =
+            Mutex::new(SmallRng::from_rng(rand::thread_rng()).expect("this generally won't fail"));
 
         let left_collect_subtask = CollectSubtask::new();
         let join = match plan.lower_ops.join {
@@ -312,7 +319,7 @@ impl QuerySubtask {
     }
     fn join_dir_candidates(&self) -> [JoinDir; 2] {
         let first = [JoinDir::Left, JoinDir::Right]
-            .choose(&mut *self.rng.borrow_mut())
+            .choose(&mut *self.rng.lock().expect("rng lock poisoned"))
             .expect("not empty");
         if first == &JoinDir::Left {
             [JoinDir::Left, JoinDir::Right]
@@ -330,7 +337,7 @@ impl QuerySubtask {
         collect_subtask
             .run(context)
             .map(|(tuple, metrics_collect)| {
-                let (tuples, metrics_join) = join_subtask.run(tuple, join_dir);
+                let (tuples, metrics_join) = join_subtask.run(&self.expr_resolver, tuple, join_dir);
                 let metrics = InQueueMetricsUpdateByTask::new(metrics_collect, Some(metrics_join));
                 (tuples, metrics)
             })
