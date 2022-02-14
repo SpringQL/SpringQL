@@ -28,7 +28,7 @@ pub(crate) struct LowerOps {
 }
 impl LowerOps {
     pub(crate) fn has_window(&self) -> bool {
-        false
+        matches!(self.join, JoinOp::JoinWindow(_))
     }
 }
 
