@@ -8,7 +8,7 @@ pub(super) mod value_projection_subtask;
 
 use std::{cell::RefCell, sync::Arc};
 
-use rand::prelude::{ThreadRng, SliceRandom};
+use rand::prelude::{SliceRandom, ThreadRng};
 
 use crate::{
     error::Result,
@@ -219,8 +219,8 @@ impl QuerySubtask {
             },
         )?;
         let in_queue_metrics_update_by_task = InQueueMetricsUpdateByTask::new(
-            in_queue_metrics_update_by_lower,
-            Some(window_in_flow_upper_total),
+            in_queue_metrics_update_by_lower.by_collect,
+            Some(window_in_flow_upper_total + in_queue_metrics_update_by_lower.window_in_flow),
         );
 
         Ok((values_seq, in_queue_metrics_update_by_task))
@@ -281,21 +281,14 @@ impl QuerySubtask {
             None => self
                 .run_left_collect(context)
                 .map(|(tuple, metrics_collect)| {
-                    match metrics_collect {
-                        InQueueMetricsUpdateByCollect::Row {queue_id,rows_used,bytes_used} => 
-                            (vec![tuple], InQueueMetricsUpdateByTask::Row{queue_id,rows_used,bytes_used}),
-                        InQueueMetricsUpdateByCollect::Window {queue_id,waiting_bytes_dispatched,waiting_rows_dispatched} => 
-                            (
-                                vec![tuple], 
-                                InQueueMetricsUpdateByTask::Window {
-                                    queue_id,
-                                    waiting_bytes_dispatched,
-                                    waiting_rows_dispatched,
-                                    window_in_flow: WindowInFlowByWindowTask::zero(), // single collect subtask does not use window yet 
-                                }
-                            ),
-                    }
-                })
+                    (
+                        vec![tuple],
+                        InQueueMetricsUpdateByTask::new(
+                            metrics_collect,
+                            None, // single collect subtask does not use window yet
+                        ),
+                    )
+                }),
         }
     }
 
@@ -309,35 +302,38 @@ impl QuerySubtask {
         right_collect_subtask: &CollectSubtask,
         join_subtask: &JoinSubtask,
     ) -> Option<(Vec<Tuple>, InQueueMetricsUpdateByTask)> {
-        self.join_dir_candidates().iter().find(|a|)
+        self.join_dir_candidates().into_iter().find_map(|dir| {
+            let collect_subtask = match dir {
+                JoinDir::Left => left_collect_subtask,
+                JoinDir::Right => right_collect_subtask,
+            };
+            self.run_join_core(context, collect_subtask, join_subtask, dir)
+        })
     }
-    fn join_dir_candidates(&self) -> (JoinDir, JoinDir) {
-        let first = [JoinDir::Left, JoinDir::Right].choose(&mut *self.rng.borrow_mut()).expect("not empty");
+    fn join_dir_candidates(&self) -> [JoinDir; 2] {
+        let first = [JoinDir::Left, JoinDir::Right]
+            .choose(&mut *self.rng.borrow_mut())
+            .expect("not empty");
         if first == &JoinDir::Left {
-            (JoinDir::Left, JoinDir::Right)
+            [JoinDir::Left, JoinDir::Right]
         } else {
-            (JoinDir::Right, JoinDir::Left)
+            [JoinDir::Right, JoinDir::Left]
         }
     }
-    fn run_join_core(context: &TaskContext,collect_subtask: &CollectSubtask, join_subtask: &JoinSubtask, join_dir: JoinDir) -> Option<(Vec<Tuple>, InQueueMetricsUpdateByTask)> {
-        collect_subtask.run(context).map(|(tuple, metrics_collect)| {
-            let (tuples, metrics_join) = join_subtask.run(tuple, join_dir);
-
-            let metrics = if let InQueueMetricsUpdateByCollect::Window {
-                queue_id,waiting_bytes_dispatched,waiting_rows_dispatched
-            } = metrics_collect {
-                InQueueMetricsUpdateByTask::Window {
-                    queue_id,
-                    waiting_bytes_dispatched,
-                    waiting_rows_dispatched,
-                    window_in_flow: metrics_join,
-                }
-            } else {
-                unreachable!("JOIN must take window input queue")
-            };
-
-            (tuples, metrics)
-        })
+    fn run_join_core(
+        &self,
+        context: &TaskContext,
+        collect_subtask: &CollectSubtask,
+        join_subtask: &JoinSubtask,
+        join_dir: JoinDir,
+    ) -> Option<(Vec<Tuple>, InQueueMetricsUpdateByTask)> {
+        collect_subtask
+            .run(context)
+            .map(|(tuple, metrics_collect)| {
+                let (tuples, metrics_join) = join_subtask.run(tuple, join_dir);
+                let metrics = InQueueMetricsUpdateByTask::new(metrics_collect, Some(metrics_join));
+                (tuples, metrics)
+            })
     }
 
     fn run_left_collect(
