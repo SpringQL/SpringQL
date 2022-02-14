@@ -697,8 +697,8 @@ impl PestParserImpl {
     fn parse_condition(mut params: FnParseParams) -> Result<ValueExpr> {
         parse_child(
             &mut params,
-            Rule::sub_value_expr,
-            Self::parse_sub_value_expr,
+            Rule::value_expr,
+            Self::parse_value_expr,
             identity,
         )
     }
