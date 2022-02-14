@@ -32,7 +32,9 @@ pub(crate) enum Task {
 impl Task {
     pub(super) fn new(edge: &Edge, pipeline_graph: &PipelineGraph) -> Self {
         match edge {
-            Edge::Pump(p) => Self::Pump(PumpTask::new(p.as_ref(), pipeline_graph)),
+            Edge::Pump { pump_model, .. } => {
+                Self::Pump(PumpTask::new(pump_model.as_ref(), pipeline_graph))
+            }
             Edge::Source(s) => Self::Source(SourceTask::new(s)),
             Edge::Sink(s) => Self::Sink(SinkTask::new(s)),
         }

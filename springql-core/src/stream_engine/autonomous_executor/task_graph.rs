@@ -221,34 +221,26 @@ impl From<&Pipeline> for TaskGraph {
         });
 
         // Add all queues.
-        // A join pump forms two edges in pipeline graph so dedup here.
-        let mut visited_pump = HashSet::new();
         for edge_ref in pipeline_petgraph.edge_references() {
             match edge_ref.weight() {
-                Edge::Pump(pump) => {
-                    if visited_pump.contains(pump.name()) {
-                        // continue
-                    } else {
-                        visited_pump.insert(pump.name().clone());
-                        for upstream in pump.upstreams() {
-                            let queue_id = QueueId::from_pump(pump, upstream);
-                            let target = TaskId::from_pump(pump);
-                            pipeline_graph.upstream_edges(&edge_ref).iter().for_each(
-                                |source_edge_ref| {
-                                    let source_edge = source_edge_ref.weight();
-                                    let source = TaskId::from(source_edge);
-                                    task_graph.add_queue(
-                                        QueueIdWithUpstream::new(
-                                            queue_id.clone(),
-                                            upstream.clone(),
-                                        ),
-                                        source,
-                                        target.clone(),
-                                    );
-                                },
-                            )
-                        }
-                    }
+                Edge::Pump {
+                    pump_model,
+                    upstream,
+                } => {
+                    let queue_id = QueueId::from_pump(pump_model, upstream);
+                    let target = TaskId::from_pump(pump_model);
+                    pipeline_graph
+                        .upstream_edges(&edge_ref)
+                        .iter()
+                        .for_each(|source_edge_ref| {
+                            let source_edge = source_edge_ref.weight();
+                            let source = TaskId::from(source_edge);
+                            task_graph.add_queue(
+                                QueueIdWithUpstream::new(queue_id.clone(), upstream.clone()),
+                                source,
+                                target.clone(),
+                            );
+                        })
                 }
                 Edge::Sink(sink) => {
                     let queue_id = QueueId::from_sink(sink);

@@ -67,7 +67,7 @@ fn run_and_drain(ddls: &[String], test_sink: &ForeignSink) -> Vec<serde_json::Va
 }
 
 #[test]
-fn test_e2e_left_outer_join() {
+fn test_feat_left_outer_join() {
     setup_test_logger();
 
     let source_trade = gen_source_trade();

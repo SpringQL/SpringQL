@@ -57,7 +57,7 @@ impl TaskId {
 impl From<&Edge> for TaskId {
     fn from(edge: &Edge) -> Self {
         match edge {
-            Edge::Pump(pump) => TaskId::from_pump(pump.as_ref()),
+            Edge::Pump { pump_model, .. } => TaskId::from_pump(pump_model.as_ref()),
             Edge::Source(source) => TaskId::from_source(source),
             Edge::Sink(sink) => TaskId::from_sink(sink),
         }
