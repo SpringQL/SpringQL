@@ -4,7 +4,7 @@ use std::sync::Arc;
 
 use crate::stream_engine::autonomous_executor::{
     event_queue::{event::EventTag, EventQueue},
-    memory_state_machine::{MemoryState, MemoryStateTransition},
+    memory_state_machine::MemoryStateTransition,
     performance_metrics::{
         metrics_update_command::metrics_update_by_task_execution::MetricsUpdateByTaskExecution,
         performance_metrics_summary::PerformanceMetricsSummary, PerformanceMetrics,
@@ -34,7 +34,6 @@ impl WorkerThread for SourceWorkerThread {
         vec![
             EventTag::UpdatePipeline,
             EventTag::ReplacePerformanceMetrics,
-            EventTag::TransitMemoryState,
         ]
     }
 
@@ -83,22 +82,12 @@ impl WorkerThread for SourceWorkerThread {
     }
 
     fn ev_transit_memory_state(
-        current_state: Self::LoopState,
-        memory_state_transition: Arc<MemoryStateTransition>,
+        _current_state: Self::LoopState,
+        _memory_state_transition: Arc<MemoryStateTransition>,
         _thread_arg: &Self::ThreadArg,
         _event_queue: Arc<EventQueue>,
     ) -> Self::LoopState {
-        match memory_state_transition.to_state() {
-            MemoryState::Moderate => {
-                // TODO resume from pause
-            }
-            MemoryState::Severe => {
-                // TODO resume from pause
-            }
-            MemoryState::Critical => todo!("pause (purger will reduce memory and this method will be called again as `memory_state_transition.to_state() == Severe`"),
-        }
-
-        current_state
+        unreachable!();
     }
 
     fn ev_incremental_update_metrics(

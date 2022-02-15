@@ -26,7 +26,7 @@ pub(super) struct GenericWorkerThread;
 
 impl WorkerThread for GenericWorkerThread {
     const THREAD_NAME: &'static str = "GenericWorker";
-    
+
     type ThreadArg = TaskWorkerThreadArg;
 
     type LoopState = TaskWorkerLoopState<GenericWorkerScheduler>;
@@ -93,14 +93,23 @@ impl WorkerThread for GenericWorkerThread {
 
         match memory_state_transition.to_state() {
             MemoryState::Moderate => {
-                log::info!("[GenericWorker#{}] Switched to FlowEfficientScheduler", thread_arg.worker_id);
+                log::info!(
+                    "[GenericWorker#{}] Switched to FlowEfficientScheduler",
+                    thread_arg.worker_id
+                );
                 state.scheduler = GenericWorkerScheduler::flow_efficient_scheduler();
             }
             MemoryState::Severe => {
-                log::info!("[GenericWorker#{}] Switched to MemoryReducingScheduler", thread_arg.worker_id);
+                log::info!(
+                    "[GenericWorker#{}] Switched to MemoryReducingScheduler",
+                    thread_arg.worker_id
+                );
                 state.scheduler = GenericWorkerScheduler::memory_reducing_scheduler();
             }
-            MemoryState::Critical => todo!("pause (purger will reduce memory and this method will be called again as `memory_state_transition.to_state() == Severe`"),
+            MemoryState::Critical => log::info!(
+                "[GenericWorker#{}] Wait for PurgerWorker to transit memory state",
+                thread_arg.worker_id
+            ),
         }
 
         state

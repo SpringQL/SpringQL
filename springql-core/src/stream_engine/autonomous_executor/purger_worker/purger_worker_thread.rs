@@ -11,12 +11,14 @@ use crate::stream_engine::autonomous_executor::{
     },
     pipeline_derivatives::PipelineDerivatives,
     repositories::Repositories,
+    task_executor::task_executor_lock::TaskExecutorLock,
     worker::worker_thread::{WorkerThread, WorkerThreadLoopState},
 };
 
 #[derive(Debug, new)]
 pub(in crate::stream_engine::autonomous_executor) struct PurgerWorkerThreadArg {
     repos: Arc<Repositories>,
+    task_executor_lock: Arc<TaskExecutorLock>,
 }
 
 #[derive(Debug)]
@@ -57,8 +59,8 @@ impl WorkerThread for PurgerWorkerThread {
 
     fn main_loop_cycle(
         current_state: Self::LoopState,
-        thread_arg: &Self::ThreadArg,
-        event_queue: &EventQueue,
+        _thread_arg: &Self::ThreadArg,
+        _event_queue: &EventQueue,
     ) -> Self::LoopState {
         // Do nothing in loop. Only curious about ReportMetricsSummary event.
         thread::sleep(Duration::from_millis(100));
@@ -68,7 +70,7 @@ impl WorkerThread for PurgerWorkerThread {
     fn ev_update_pipeline(
         current_state: Self::LoopState,
         pipeline_derivatives: Arc<PipelineDerivatives>,
-        thread_arg: &Self::ThreadArg,
+        _thread_arg: &Self::ThreadArg,
         _event_queue: Arc<EventQueue>,
     ) -> Self::LoopState {
         log::debug!("[PurgerWorker] got UpdatePipeline event",);
@@ -89,7 +91,8 @@ impl WorkerThread for PurgerWorkerThread {
                 // do nothing
             }
             MemoryState::Critical => {
-                // TODO TaskExecutorLock
+                let task_executor_lock = &thread_arg.task_executor_lock;
+                let _lock = task_executor_lock.task_execution_barrier();
 
                 // purge queues
                 let row_queue_repo = thread_arg.repos.row_queue_repository();

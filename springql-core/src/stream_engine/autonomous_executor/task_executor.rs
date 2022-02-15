@@ -1,11 +1,11 @@
 // Copyright (c) 2021 TOYOTA MOTOR CORPORATION. Licensed under MIT OR Apache-2.0.
 
+pub(in crate::stream_engine::autonomous_executor) mod task_executor_lock;
 pub(in crate::stream_engine::autonomous_executor) mod task_worker_thread_handler;
 
 mod generic_worker_pool;
 mod scheduler;
 mod source_worker_pool;
-mod task_executor_lock;
 
 use crate::{error::Result, low_level_rs::SpringConfig};
 use std::sync::Arc;
@@ -37,11 +37,10 @@ impl TaskExecutor {
     pub(in crate::stream_engine::autonomous_executor) fn new(
         config: &SpringConfig,
         repos: Arc<Repositories>,
+        task_executor_lock: Arc<TaskExecutorLock>,
         event_queue: Arc<EventQueue>,
         worker_stop_coordinate: Arc<WorkerStopCoordinate>,
     ) -> Self {
-        let task_executor_lock = Arc::new(TaskExecutorLock::default());
-
         Self {
             task_executor_lock: task_executor_lock.clone(),
             repos: repos.clone(),
@@ -58,7 +57,7 @@ impl TaskExecutor {
                 event_queue,
                 worker_stop_coordinate,
                 task_executor_lock,
-                repos.clone(),
+                repos,
             ),
         }
     }

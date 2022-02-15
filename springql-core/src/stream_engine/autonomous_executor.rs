@@ -29,6 +29,7 @@ use self::memory_state_machine_worker::MemoryStateMachineWorker;
 use self::purger_worker::purger_worker_thread::PurgerWorkerThreadArg;
 use self::purger_worker::PurgerWorker;
 use self::repositories::Repositories;
+use self::task_executor::task_executor_lock::TaskExecutorLock;
 use self::worker::worker_handle::WorkerStopCoordinate;
 use self::{
     event_queue::{event::Event, EventQueue},
@@ -47,8 +48,6 @@ pub(super) mod test_support;
 /// All interface methods are called from main thread, while `new()` spawns worker threads.
 #[derive(Debug)]
 pub(in crate::stream_engine) struct AutonomousExecutor {
-    repos: Arc<Repositories>,
-
     event_queue: Arc<EventQueue>,
 
     task_executor: TaskExecutor,
@@ -60,12 +59,14 @@ pub(in crate::stream_engine) struct AutonomousExecutor {
 impl AutonomousExecutor {
     pub(in crate::stream_engine) fn new(config: &SpringConfig) -> Self {
         let repos = Arc::new(Repositories::new(config));
+        let task_executor_lock = Arc::new(TaskExecutorLock::default());
         let event_queue = Arc::new(EventQueue::default());
         let worker_stop_coordinate = Arc::new(WorkerStopCoordinate::default());
 
         let task_executor = TaskExecutor::new(
             config,
             repos.clone(),
+            task_executor_lock.clone(),
             event_queue.clone(),
             worker_stop_coordinate.clone(),
         );
@@ -81,11 +82,10 @@ impl AutonomousExecutor {
         );
         let purger_worker = PurgerWorker::new(
             event_queue.clone(),
-            worker_stop_coordinate.clone(),
-            PurgerWorkerThreadArg::new(repos.clone()),
+            worker_stop_coordinate,
+            PurgerWorkerThreadArg::new(repos, task_executor_lock),
         );
         Self {
-            repos,
             event_queue,
             task_executor,
             memory_state_machine_worker,

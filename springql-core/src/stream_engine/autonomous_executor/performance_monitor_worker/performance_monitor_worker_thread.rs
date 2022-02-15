@@ -14,7 +14,6 @@ use crate::{
                 performance_metrics_summary::PerformanceMetricsSummary, PerformanceMetrics,
             },
             pipeline_derivatives::PipelineDerivatives,
-            task_graph::task_id::TaskId,
             worker::worker_thread::{WorkerThread, WorkerThreadLoopState},
         },
         time::duration::{wall_clock_duration::WallClockDuration, SpringDuration},
