@@ -12,6 +12,7 @@ mod memory_state_machine_worker;
 mod performance_metrics;
 mod performance_monitor_worker;
 mod pipeline_derivatives;
+mod purger_worker;
 mod queue;
 mod repositories;
 mod task_executor;
@@ -25,6 +26,9 @@ use std::sync::Arc;
 pub(crate) use row::SinkRow;
 
 use self::memory_state_machine_worker::MemoryStateMachineWorker;
+use self::purger_worker::purger_worker_thread::PurgerWorkerThreadArg;
+use self::purger_worker::PurgerWorker;
+use self::repositories::Repositories;
 use self::worker::worker_handle::WorkerStopCoordinate;
 use self::{
     event_queue::{event::Event, EventQueue},
@@ -43,32 +47,50 @@ pub(super) mod test_support;
 /// All interface methods are called from main thread, while `new()` spawns worker threads.
 #[derive(Debug)]
 pub(in crate::stream_engine) struct AutonomousExecutor {
+    repos: Arc<Repositories>,
+
     event_queue: Arc<EventQueue>,
 
     task_executor: TaskExecutor,
     memory_state_machine_worker: MemoryStateMachineWorker,
     performance_monitor_worker: PerformanceMonitorWorker,
+    purger_worker: PurgerWorker,
 }
 
 impl AutonomousExecutor {
     pub(in crate::stream_engine) fn new(config: &SpringConfig) -> Self {
+        let repos = Arc::new(Repositories::new(config));
         let event_queue = Arc::new(EventQueue::default());
         let worker_stop_coordinate = Arc::new(WorkerStopCoordinate::default());
 
-        let task_executor =
-            TaskExecutor::new(config, event_queue.clone(), worker_stop_coordinate.clone());
+        let task_executor = TaskExecutor::new(
+            config,
+            repos.clone(),
+            event_queue.clone(),
+            worker_stop_coordinate.clone(),
+        );
         let memory_state_machine_worker = MemoryStateMachineWorker::new(
             &config.memory,
             event_queue.clone(),
             worker_stop_coordinate.clone(),
         );
-        let performance_monitor_worker =
-            PerformanceMonitorWorker::new(config, event_queue.clone(), worker_stop_coordinate);
+        let performance_monitor_worker = PerformanceMonitorWorker::new(
+            config,
+            event_queue.clone(),
+            worker_stop_coordinate.clone(),
+        );
+        let purger_worker = PurgerWorker::new(
+            event_queue.clone(),
+            worker_stop_coordinate.clone(),
+            PurgerWorkerThreadArg::new(repos.clone()),
+        );
         Self {
+            repos,
             event_queue,
             task_executor,
             memory_state_machine_worker,
             performance_monitor_worker,
+            purger_worker,
         }
     }
 

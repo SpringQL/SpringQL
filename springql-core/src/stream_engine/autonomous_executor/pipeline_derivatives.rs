@@ -46,6 +46,10 @@ impl PipelineDerivatives {
         &self.task_graph
     }
 
+    pub(in crate::stream_engine::autonomous_executor) fn task_repo(&self) -> &TaskRepository {
+        &self.task_repo
+    }
+
     /// # Failure
     ///
     /// - [SpringError::Sql](crate::error::SpringError::Sql) when:

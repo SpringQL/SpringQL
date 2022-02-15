@@ -1,6 +1,6 @@
 // Copyright (c) 2021 TOYOTA MOTOR CORPORATION. Licensed under MIT OR Apache-2.0.
 
-pub(self) mod task_worker_thread_handler;
+pub(in crate::stream_engine::autonomous_executor) mod task_worker_thread_handler;
 
 mod generic_worker_pool;
 mod scheduler;
@@ -27,7 +27,6 @@ use super::{
 #[derive(Debug)]
 pub(in crate::stream_engine) struct TaskExecutor {
     task_executor_lock: Arc<TaskExecutorLock>,
-
     repos: Arc<Repositories>,
 
     generic_worker_pool: GenericWorkerPool,
@@ -37,14 +36,15 @@ pub(in crate::stream_engine) struct TaskExecutor {
 impl TaskExecutor {
     pub(in crate::stream_engine::autonomous_executor) fn new(
         config: &SpringConfig,
+        repos: Arc<Repositories>,
         event_queue: Arc<EventQueue>,
         worker_stop_coordinate: Arc<WorkerStopCoordinate>,
     ) -> Self {
         let task_executor_lock = Arc::new(TaskExecutorLock::default());
-        let repos = Arc::new(Repositories::new(config));
 
         Self {
             task_executor_lock: task_executor_lock.clone(),
+            repos: repos.clone(),
 
             generic_worker_pool: GenericWorkerPool::new(
                 config.worker.n_generic_worker_threads,
@@ -60,8 +60,6 @@ impl TaskExecutor {
                 task_executor_lock,
                 repos.clone(),
             ),
-
-            repos,
         }
     }
 

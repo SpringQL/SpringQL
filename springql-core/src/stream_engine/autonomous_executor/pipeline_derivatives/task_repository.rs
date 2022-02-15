@@ -11,7 +11,7 @@ use crate::{
 };
 
 #[derive(Debug, Default)]
-pub(super) struct TaskRepository {
+pub(in crate::stream_engine::autonomous_executor) struct TaskRepository {
     repo: HashMap<TaskId, Arc<Task>>,
 }
 
@@ -27,6 +27,10 @@ impl TaskRepository {
                 SpringError::Sql(anyhow!("task id {} is not in TaskRepository", task_id))
             })
             .map(|t| t.clone())
+    }
+
+    pub(in crate::stream_engine::autonomous_executor) fn purge_windows(&self) {
+        todo!()
     }
 }
 
