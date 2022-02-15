@@ -4,7 +4,10 @@ use std::{fmt::Display, sync::Arc, thread, time::Duration};
 
 use crate::stream_engine::autonomous_executor::{
     event_queue::{event::Event, EventQueue},
-    performance_metrics::PerformanceMetrics,
+    performance_metrics::{
+        metrics_update_command::metrics_update_by_task_execution::MetricsUpdateByTaskExecutionOrPurge,
+        PerformanceMetrics,
+    },
     pipeline_derivatives::PipelineDerivatives,
     repositories::Repositories,
     task::task_context::TaskContext,
@@ -122,7 +125,9 @@ impl TaskWorkerThreadHandler {
             task.run(&context)
                 .map(|metrics_diff| {
                     event_queue.publish(Event::IncrementalUpdateMetrics {
-                        metrics_update_by_task_execution: Arc::new(metrics_diff),
+                        metrics_update_by_task_execution_or_purge: Arc::new(
+                            MetricsUpdateByTaskExecutionOrPurge::TaskExecution(metrics_diff),
+                        ),
                     })
                 })
                 .unwrap_or_else(AutonomousExecutor::handle_error);

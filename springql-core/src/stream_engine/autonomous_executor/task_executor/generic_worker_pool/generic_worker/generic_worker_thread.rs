@@ -8,7 +8,7 @@ use crate::stream_engine::autonomous_executor::{
     event_queue::{event::EventTag, EventQueue},
     memory_state_machine::{MemoryState, MemoryStateTransition},
     performance_metrics::{
-        metrics_update_command::metrics_update_by_task_execution::MetricsUpdateByTaskExecution,
+        metrics_update_command::metrics_update_by_task_execution::MetricsUpdateByTaskExecutionOrPurge,
         performance_metrics_summary::PerformanceMetricsSummary, PerformanceMetrics,
     },
     pipeline_derivatives::PipelineDerivatives,
@@ -117,7 +117,7 @@ impl WorkerThread for GenericWorkerThread {
 
     fn ev_incremental_update_metrics(
         _current_state: Self::LoopState,
-        _metrics: Arc<MetricsUpdateByTaskExecution>,
+        _metrics: Arc<MetricsUpdateByTaskExecutionOrPurge>,
         _thread_arg: &Self::ThreadArg,
         _event_queue: Arc<EventQueue>,
     ) -> Self::LoopState {

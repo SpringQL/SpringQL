@@ -6,7 +6,7 @@ use std::{
 use crate::stream_engine::autonomous_executor::{
     memory_state_machine::MemoryStateTransition,
     performance_metrics::{
-        metrics_update_command::metrics_update_by_task_execution::MetricsUpdateByTaskExecution,
+        metrics_update_command::metrics_update_by_task_execution::MetricsUpdateByTaskExecutionOrPurge,
         performance_metrics_summary::PerformanceMetricsSummary, PerformanceMetrics,
     },
 };
@@ -83,7 +83,7 @@ pub(in crate::stream_engine::autonomous_executor) trait WorkerThread {
 
     fn ev_incremental_update_metrics(
         current_state: Self::LoopState,
-        metrics: Arc<MetricsUpdateByTaskExecution>,
+        metrics: Arc<MetricsUpdateByTaskExecutionOrPurge>,
         thread_arg: &Self::ThreadArg,
 
         // for cascading event
@@ -188,11 +188,11 @@ pub(in crate::stream_engine::autonomous_executor) trait WorkerThread {
                         );
                     }
                     Event::IncrementalUpdateMetrics {
-                        metrics_update_by_task_execution,
+                        metrics_update_by_task_execution_or_purge,
                     } => {
                         state = Self::ev_incremental_update_metrics(
                             state,
-                            metrics_update_by_task_execution,
+                            metrics_update_by_task_execution_or_purge,
                             thread_arg,
                             event_queue.clone(),
                         )

@@ -10,7 +10,7 @@ use crate::{
             },
             memory_state_machine::MemoryStateTransition,
             performance_metrics::{
-                metrics_update_command::metrics_update_by_task_execution::MetricsUpdateByTaskExecution,
+                metrics_update_command::metrics_update_by_task_execution::MetricsUpdateByTaskExecutionOrPurge,
                 performance_metrics_summary::PerformanceMetricsSummary, PerformanceMetrics,
             },
             pipeline_derivatives::PipelineDerivatives,
@@ -163,13 +163,18 @@ impl WorkerThread for PerformanceMonitorWorkerThread {
 
     fn ev_incremental_update_metrics(
         current_state: Self::LoopState,
-        metrics: Arc<MetricsUpdateByTaskExecution>,
+        metrics: Arc<MetricsUpdateByTaskExecutionOrPurge>,
         _thread_arg: &Self::ThreadArg,
         _event_queue: Arc<EventQueue>,
     ) -> Self::LoopState {
         let state = current_state;
         if let Some(m) = state.metrics.as_ref() {
-            m.update_by_task_execution(metrics.as_ref())
+            match metrics.as_ref() {
+                MetricsUpdateByTaskExecutionOrPurge::TaskExecution(metrics_diff) => {
+                    m.update_by_task_execution(metrics_diff)
+                }
+                MetricsUpdateByTaskExecutionOrPurge::Purge => m.update_by_purge(),
+            }
         }
         state
     }
