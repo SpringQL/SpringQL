@@ -14,6 +14,7 @@ use crate::{
                 performance_metrics_summary::PerformanceMetricsSummary, PerformanceMetrics,
             },
             pipeline_derivatives::PipelineDerivatives,
+            task_graph::task_id::TaskId,
             worker::worker_thread::{WorkerThread, WorkerThreadLoopState},
         },
         time::duration::{wall_clock_duration::WallClockDuration, SpringDuration},
@@ -167,6 +168,10 @@ impl WorkerThread for PerformanceMonitorWorkerThread {
         _thread_arg: &Self::ThreadArg,
         _event_queue: Arc<EventQueue>,
     ) -> Self::LoopState {
+        // if matches!(metrics.updated_task(), TaskId::Source { .. }) {
+        //     log::error!("ev_incremental_update_metrics!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+        // }
+
         let state = current_state;
         if let Some(m) = state.metrics.as_ref() {
             m.update_by_task_execution(metrics.as_ref())
@@ -206,6 +211,7 @@ impl PerformanceMonitorWorkerThread {
             state.countdown_metrics_summary_msec = report_interval_msec;
 
             let metrics_summary = Arc::new(PerformanceMetricsSummary::from(metrics));
+            log::error!("metrics_summary {:?}", metrics_summary);
             event_queue.publish(Event::ReportMetricsSummary { metrics_summary })
         } else {
             state.countdown_metrics_summary_msec -= CLOCK_MSEC as i32;
