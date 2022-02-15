@@ -114,6 +114,18 @@ impl PerformanceMetrics {
             })
     }
 
+    pub(super) fn update_by_purge(&self) {
+        for row_queue_id in self.row_queues.keys() {
+            let mut row_queue_metrics = self.get_row_queue_write(row_queue_id);
+            row_queue_metrics.update_by_purge();
+        }
+
+        for window_queue_id in self.window_queues.keys() {
+            let mut window_queue_metrics = self.get_window_queue_write(window_queue_id);
+            window_queue_metrics.update_by_purge();
+        }
+    }
+
     pub(super) fn rows_for_task_input(&self, queue_id: &QueueId) -> u64 {
         match queue_id {
             QueueId::Row(id) => {
