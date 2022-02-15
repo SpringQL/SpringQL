@@ -18,7 +18,9 @@ use std::collections::HashMap;
 
 use petgraph::graph::{DiGraph, NodeIndex};
 
-use crate::pipeline::{pipeline_graph::edge::Edge, pipeline_version::PipelineVersion, Pipeline};
+use crate::pipeline::{
+    name::StreamName, pipeline_graph::edge::Edge, pipeline_version::PipelineVersion, Pipeline,
+};
 
 use self::{
     edge_ref::MyEdgeRef,
@@ -26,12 +28,18 @@ use self::{
     task_id::TaskId,
 };
 
+#[derive(Clone, Debug, new)]
+pub(super) struct QueueIdWithUpstream {
+    queue_id: QueueId,
+    upstream: StreamName,
+}
+
 #[derive(Debug)]
 pub(super) struct TaskGraph {
     /// From which version this graph constructed
     pipeline_version: PipelineVersion,
 
-    g: DiGraph<TaskId, QueueId>,
+    g: DiGraph<TaskId, QueueIdWithUpstream>,
     task_id_node_map: HashMap<TaskId, NodeIndex>,
     queue_id_edge_map: HashMap<QueueId, MyEdgeRef>,
 }
@@ -73,7 +81,7 @@ impl TaskGraph {
         self.g
             .edges_directed(i, petgraph::EdgeDirection::Incoming)
             .into_iter()
-            .map(|e| e.weight())
+            .map(|e| &e.weight().queue_id)
             .cloned()
             .collect()
     }
@@ -82,9 +90,25 @@ impl TaskGraph {
         self.g
             .edges_directed(i, petgraph::EdgeDirection::Outgoing)
             .into_iter()
-            .map(|e| e.weight())
+            .map(|e| &e.weight().queue_id)
             .cloned()
             .collect()
+    }
+
+    /// # Panics
+    ///
+    /// if `task_id` does not have incoming edge (queue) from `upstream`.
+    pub(super) fn input_queue(&self, task_id: &TaskId, upstream: &StreamName) -> QueueId {
+        let i = self.find_node(task_id);
+        self.g
+            .edges_directed(i, petgraph::EdgeDirection::Incoming)
+            .into_iter()
+            .find_map(|e| {
+                let queue_id_with_upstream = e.weight();
+                (&queue_id_with_upstream.upstream == upstream)
+                    .then(|| queue_id_with_upstream.queue_id.clone())
+            })
+            .unwrap_or_else(|| panic!("task id {:?} does not have upstream {}", task_id, upstream))
     }
 
     pub(super) fn downstream_tasks(&self, task_id: &TaskId) -> Vec<TaskId> {
@@ -118,8 +142,8 @@ impl TaskGraph {
         self.g
             .edge_weights()
             .filter_map(|queue_id| {
-                if let QueueId::Row(id) = queue_id {
-                    Some(id.clone())
+                if let QueueId::Row(id) = queue_id.queue_id.clone() {
+                    Some(id)
                 } else {
                     None
                 }
@@ -131,8 +155,8 @@ impl TaskGraph {
         self.g
             .edge_weights()
             .filter_map(|queue_id| {
-                if let QueueId::Window(id) = queue_id {
-                    Some(id.clone())
+                if let QueueId::Window(id) = queue_id.queue_id.clone() {
+                    Some(id)
                 } else {
                     None
                 }
@@ -148,13 +172,18 @@ impl TaskGraph {
     /// # Panics
     ///
     /// `source` or `target` task is not added in the graph.
-    pub(super) fn add_queue(&mut self, queue_id: QueueId, source: TaskId, target: TaskId) {
+    pub(super) fn add_queue(
+        &mut self,
+        queue_id: QueueIdWithUpstream,
+        source: TaskId,
+        target: TaskId,
+    ) {
         let source = self.find_node(&source);
         let target = self.find_node(&target);
         let _ = self.g.add_edge(source, target, queue_id.clone());
 
         let edge_ref = MyEdgeRef::new(source, target);
-        let _ = self.queue_id_edge_map.insert(queue_id, edge_ref);
+        let _ = self.queue_id_edge_map.insert(queue_id.queue_id, edge_ref);
     }
 
     /// # Panics
@@ -191,19 +220,26 @@ impl From<&Pipeline> for TaskGraph {
             task_graph.add_task(task_id);
         });
 
-        // add all queues
-        pipeline_petgraph.edge_references().for_each(|edge_ref| {
+        // Add all queues.
+        for edge_ref in pipeline_petgraph.edge_references() {
             match edge_ref.weight() {
-                Edge::Pump(pump) => {
-                    let queue_id = QueueId::from_pump(pump);
-                    let target = TaskId::from_pump(pump);
+                Edge::Pump {
+                    pump_model,
+                    upstream,
+                } => {
+                    let queue_id = QueueId::from_pump(pump_model, upstream);
+                    let target = TaskId::from_pump(pump_model);
                     pipeline_graph
                         .upstream_edges(&edge_ref)
                         .iter()
                         .for_each(|source_edge_ref| {
                             let source_edge = source_edge_ref.weight();
                             let source = TaskId::from(source_edge);
-                            task_graph.add_queue(queue_id.clone(), source, target.clone());
+                            task_graph.add_queue(
+                                QueueIdWithUpstream::new(queue_id.clone(), upstream.clone()),
+                                source,
+                                target.clone(),
+                            );
                         })
                 }
                 Edge::Sink(sink) => {
@@ -215,11 +251,15 @@ impl From<&Pipeline> for TaskGraph {
                         .expect("sink writer must have 1 upstream pump")
                         .weight();
                     let source = TaskId::from(source_edge);
-                    task_graph.add_queue(queue_id, source, target);
+                    task_graph.add_queue(
+                        QueueIdWithUpstream::new(queue_id, sink.from_sink_stream().clone()),
+                        source,
+                        target,
+                    );
                 }
                 Edge::Source(_) => {} // no queue is created for source task
             };
-        });
+        }
         task_graph
     }
 }

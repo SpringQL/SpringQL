@@ -4,7 +4,9 @@ use crate::{
     expression::{AggrExpr, ValueExpr},
     pipeline::{
         name::{AggrAlias, CorrelationAlias, StreamName, ValueAlias},
-        pump_model::window_parameter::WindowParameter,
+        pump_model::{
+            window_operation_parameter::join_parameter::JoinType, window_parameter::WindowParameter,
+        },
     },
 };
 
@@ -40,12 +42,23 @@ pub(crate) enum SelectFieldSyntax {
     },
 }
 
-#[derive(Clone, Eq, PartialEq, Debug)]
+#[derive(Clone, PartialEq, Debug)]
 pub(in crate::sql_processor) enum FromItemSyntax {
-    StreamVariant {
-        stream_name: StreamName,
-        alias: Option<CorrelationAlias>,
+    StreamVariant(SubFromItemSyntax),
+    JoinVariant {
+        left: SubFromItemSyntax,
+        right: Box<FromItemSyntax>,
+
+        join_type: JoinType,
+        on_expr: ValueExpr,
+        // TODO alias
     },
+}
+
+#[derive(Clone, PartialEq, Debug)]
+pub(in crate::sql_processor) struct SubFromItemSyntax {
+    pub(in crate::sql_processor) stream_name: StreamName,
+    pub(in crate::sql_processor) alias: Option<CorrelationAlias>,
 }
 
 #[derive(Clone, PartialEq, Debug)]

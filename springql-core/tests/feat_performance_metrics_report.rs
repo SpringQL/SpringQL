@@ -172,7 +172,7 @@ fn test_performance_metrics_report_floor_time() {
         .iter()
         .find_map(|body| {
             body.queues.iter().find(|queue| {
-                queue.id == "pu_floor_time" && queue.row_queue.as_ref().unwrap().num_rows > 0
+                queue.id == "pu_floor_time-source_trade" && queue.row_queue.as_ref().unwrap().num_rows > 0
             })
         })
         .expect("at least 1 should exist (but in very rare case input queue is always empty)");
@@ -310,7 +310,7 @@ fn test_performance_metrics_report_sampling() {
         .iter()
         .find_map(|body| {
             body.queues.iter().find(|queue| {
-                queue.id == "pu_sampling"
+                queue.id == "pu_sampling-source_trade"
                     && queue.window_queue.as_ref().unwrap().num_rows_waiting > 0
             })
         })

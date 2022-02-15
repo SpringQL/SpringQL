@@ -67,10 +67,12 @@ pub(super) fn parse_child<T, ChildRet>(
         panic!(
             "Hit to unexpected rule: got({:?}); expected({:?})\n\
         Pair: {}\n\
+        {:#?}
         ",
             child_pair.as_rule(),
             child_term,
-            child_pair
+            child_pair,
+            params
         );
     }
 }

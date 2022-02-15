@@ -23,6 +23,7 @@ use crate::{
             task_graph::{
                 queue_id::{row_queue_id::RowQueueId, window_queue_id::WindowQueueId, QueueId},
                 task_id::TaskId,
+                QueueIdWithUpstream,
             },
         },
         command::alter_pipeline_command::AlterPipelineCommand,
@@ -253,47 +254,47 @@ impl TaskGraph {
         g.add_task(TaskId::fx_split_join_t10());
 
         g.add_queue(
-            QueueId::fx_split_join_q2(),
+            QueueIdWithUpstream::fx_split_join_q2(),
             TaskId::fx_split_join_t1(),
             TaskId::fx_split_join_t2(),
         );
         g.add_queue(
-            QueueId::fx_split_join_q3_1(),
+            QueueIdWithUpstream::fx_split_join_q3_1(),
             TaskId::fx_split_join_t2(),
             TaskId::fx_split_join_t3(),
         );
         g.add_queue(
-            QueueId::fx_split_join_q3_2(),
+            QueueIdWithUpstream::fx_split_join_q3_2(),
             TaskId::fx_split_join_t7(),
             TaskId::fx_split_join_t3(),
         );
         g.add_queue(
-            QueueId::fx_split_join_q4(),
+            QueueIdWithUpstream::fx_split_join_q4(),
             TaskId::fx_split_join_t3(),
             TaskId::fx_split_join_t4(),
         );
         g.add_queue(
-            QueueId::fx_split_join_q5(),
+            QueueIdWithUpstream::fx_split_join_q5(),
             TaskId::fx_split_join_t4(),
             TaskId::fx_split_join_t5(),
         );
         g.add_queue(
-            QueueId::fx_split_join_q7(),
+            QueueIdWithUpstream::fx_split_join_q7(),
             TaskId::fx_split_join_t6(),
             TaskId::fx_split_join_t7(),
         );
         g.add_queue(
-            QueueId::fx_split_join_q8(),
+            QueueIdWithUpstream::fx_split_join_q8(),
             TaskId::fx_split_join_t7(),
             TaskId::fx_split_join_t8(),
         );
         g.add_queue(
-            QueueId::fx_split_join_q9(),
+            QueueIdWithUpstream::fx_split_join_q9(),
             TaskId::fx_split_join_t8(),
             TaskId::fx_split_join_t9(),
         );
         g.add_queue(
-            QueueId::fx_split_join_q10(),
+            QueueIdWithUpstream::fx_split_join_q10(),
             TaskId::fx_split_join_t9(),
             TaskId::fx_split_join_t10(),
         );
@@ -361,6 +362,35 @@ impl TaskId {
     }
 }
 
+impl QueueIdWithUpstream {
+    pub(in crate::stream_engine) fn fx_split_join_q2() -> Self {
+        Self::new(QueueId::fx_split_join_q2(), StreamName::factory("ss1"))
+    }
+    pub(in crate::stream_engine) fn fx_split_join_q3_1() -> Self {
+        Self::new(QueueId::fx_split_join_q3_1(), StreamName::factory("s1"))
+    }
+    pub(in crate::stream_engine) fn fx_split_join_q3_2() -> Self {
+        Self::new(QueueId::fx_split_join_q3_2(), StreamName::factory("s3"))
+    }
+    pub(in crate::stream_engine) fn fx_split_join_q4() -> Self {
+        Self::new(QueueId::fx_split_join_q4(), StreamName::factory("s2"))
+    }
+    pub(in crate::stream_engine) fn fx_split_join_q5() -> Self {
+        Self::new(QueueId::fx_split_join_q5(), StreamName::factory("ss2"))
+    }
+    pub(in crate::stream_engine) fn fx_split_join_q7() -> Self {
+        Self::new(QueueId::fx_split_join_q7(), StreamName::factory("ss3"))
+    }
+    pub(in crate::stream_engine) fn fx_split_join_q8() -> Self {
+        Self::new(QueueId::fx_split_join_q8(), StreamName::factory("s3"))
+    }
+    pub(in crate::stream_engine) fn fx_split_join_q9() -> Self {
+        Self::new(QueueId::fx_split_join_q9(), StreamName::factory("s4"))
+    }
+    pub(in crate::stream_engine) fn fx_split_join_q10() -> Self {
+        Self::new(QueueId::fx_split_join_q10(), StreamName::factory("ss4"))
+    }
+}
 impl QueueId {
     pub(in crate::stream_engine) fn fx_split_join_q2() -> Self {
         Self::Row(RowQueueId::fx_q2())

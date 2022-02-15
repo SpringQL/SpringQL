@@ -21,11 +21,8 @@ use petgraph::{
 use self::{edge::Edge, stream_node::StreamNode};
 
 use super::{
-    name::{PumpName, StreamName},
-    pump_model::PumpModel,
-    sink_writer_model::SinkWriterModel,
-    source_reader_model::SourceReaderModel,
-    stream_model::StreamModel,
+    name::StreamName, pump_model::PumpModel, sink_writer_model::SinkWriterModel,
+    source_reader_model::SourceReaderModel, stream_model::StreamModel,
 };
 use crate::error::{Result, SpringError};
 use anyhow::anyhow;
@@ -88,7 +85,7 @@ impl PipelineGraph {
         self.graph
             .edge_references()
             .filter_map(|edge| match edge.weight() {
-                Edge::Pump(_) | Edge::Sink(_) => None,
+                Edge::Pump { .. } | Edge::Sink(_) => None,
                 Edge::Source(s) => Some(s),
             })
             .collect()
@@ -97,7 +94,7 @@ impl PipelineGraph {
         self.graph
             .edge_references()
             .filter_map(|edge| match edge.weight() {
-                Edge::Pump(_) | Edge::Source(_) => None,
+                Edge::Pump { .. } | Edge::Source(_) => None,
                 Edge::Sink(s) => Some(s),
             })
             .collect()
@@ -121,9 +118,14 @@ impl PipelineGraph {
                 ))
             })?;
 
-            let _ = self
-                .graph
-                .add_edge(*upstream_node, *downstream_node, Edge::Pump(pump.clone()));
+            let _ = self.graph.add_edge(
+                *upstream_node,
+                *downstream_node,
+                Edge::Pump {
+                    pump_model: pump.clone(),
+                    upstream: upstream_name.clone(),
+                },
+            );
         }
 
         Ok(())
@@ -133,20 +135,6 @@ impl PipelineGraph {
         Ok(*self.stream_nodes.get(name).ok_or_else(|| {
             SpringError::Sql(anyhow!(r#"stream "{}" does not exist in pipeline"#, name))
         })?)
-    }
-    fn _find_pump(&self, name: &PumpName) -> Result<EdgeReference<Edge>> {
-        self.graph
-            .edge_references()
-            .find_map(|edge| {
-                if let Edge::Pump(pump) = edge.weight() {
-                    (pump.name() == name).then(|| edge)
-                } else {
-                    None
-                }
-            })
-            .ok_or_else(|| {
-                SpringError::Sql(anyhow!(r#"pump "{}" does not exist in pipeline"#, name))
-            })
     }
 
     pub(super) fn add_source_reader(&mut self, source_reader: SourceReaderModel) -> Result<()> {

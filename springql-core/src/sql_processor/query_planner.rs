@@ -68,9 +68,7 @@ use crate::{
         Pipeline,
     },
     stream_engine::command::query_plan::{
-        query_plan_operation::{
-            CollectOp, GroupAggregateWindowOp, LowerOps, ProjectionOp, UpperOps,
-        },
+        query_plan_operation::{GroupAggregateWindowOp, JoinOp, LowerOps, ProjectionOp, UpperOps},
         QueryPlan,
     },
 };
@@ -91,7 +89,7 @@ impl QueryPlanner {
         }
     }
 
-    pub(crate) fn plan(self, _pipeline: &Pipeline) -> Result<QueryPlan> {
+    pub(crate) fn plan(self, pipeline: &Pipeline) -> Result<QueryPlan> {
         let (mut expr_resolver, value_labels_select_list, aggr_labels_select_list) =
             ExprResolver::new(self.analyzer.select_list().to_vec());
         let projection = ProjectionOp {
@@ -107,12 +105,8 @@ impl QueryPlanner {
             group_aggr_window,
         };
 
-        let collect_ops = self.create_collect_ops()?;
-        let collect = collect_ops
-            .into_iter()
-            .next()
-            .expect("collect_ops.len() == 1");
-        let lower_ops = LowerOps { collect };
+        let join = self.create_join_op(&mut expr_resolver, pipeline)?;
+        let lower_ops = LowerOps { join };
 
         Ok(QueryPlan::new(upper_ops, lower_ops, expr_resolver))
     }
@@ -171,20 +165,11 @@ impl QueryPlanner {
         }
     }
 
-    fn create_collect_ops(&self) -> Result<Vec<CollectOp>> {
-        let from_item_correlations = self.analyzer.from_item_streams()?;
-        assert!(
-            !from_item_correlations.is_empty(),
-            "at least 1 from item is expected"
-        );
-        assert!(
-            from_item_correlations.len() == 1,
-            "1 from item is currently supported"
-        );
-
-        from_item_correlations
-            .into_iter()
-            .map(|stream| Ok(CollectOp { stream }))
-            .collect::<Result<Vec<_>>>()
+    fn create_join_op(
+        &self,
+        expr_resolver: &mut ExprResolver,
+        pipeline: &Pipeline,
+    ) -> Result<JoinOp> {
+        self.analyzer.join_op(expr_resolver, pipeline)
     }
 }

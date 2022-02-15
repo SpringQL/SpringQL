@@ -3,22 +3,24 @@
 pub(super) mod aggr_projection_subtask;
 pub(super) mod collect_subtask;
 pub(super) mod group_aggregate_window_subtask;
+pub(super) mod join_subtask;
 pub(super) mod value_projection_subtask;
 
-use std::sync::Arc;
+use std::sync::{Arc, Mutex};
+
+use rand::{
+    prelude::{SliceRandom, SmallRng},
+    SeedableRng,
+};
 
 use crate::{
     error::Result,
     expr_resolver::ExprResolver,
     pipeline::{name::ColumnName, stream_model::StreamModel},
-    stream_engine::autonomous_executor::{
-        performance_metrics::metrics_update_command::metrics_update_by_task_execution::{
-            InQueueMetricsUpdateByTask, WindowInFlowByWindowTask,
-        },
-        row::{column::stream_column::StreamColumns, column_values::ColumnValues, Row},
-        task::window::aggregate::GroupAggrOut,
+    stream_engine::{
+        autonomous_executor::task::window::panes::pane::join_pane::JoinDir,
+        command::query_plan::{query_plan_operation::LowerOps, QueryPlan},
     },
-    stream_engine::command::query_plan::QueryPlan,
     stream_engine::{
         autonomous_executor::{
             performance_metrics::metrics_update_command::metrics_update_by_task_execution::InQueueMetricsUpdateByCollect,
@@ -26,11 +28,21 @@ use crate::{
         },
         SqlValue,
     },
+    stream_engine::{
+        autonomous_executor::{
+            performance_metrics::metrics_update_command::metrics_update_by_task_execution::{
+                InQueueMetricsUpdateByTask, WindowInFlowByWindowTask,
+            },
+            row::{column::stream_column::StreamColumns, column_values::ColumnValues, Row},
+            task::window::aggregate::GroupAggrOut,
+        },
+        command::query_plan::query_plan_operation::JoinOp,
+    },
 };
 
 use self::{
     aggr_projection_subtask::AggrProjectionSubtask, collect_subtask::CollectSubtask,
-    group_aggregate_window_subtask::GroupAggregateWindowSubtask,
+    group_aggregate_window_subtask::GroupAggregateWindowSubtask, join_subtask::JoinSubtask,
     value_projection_subtask::ValueProjectionSubtask,
 };
 
@@ -44,7 +56,14 @@ pub(in crate::stream_engine::autonomous_executor) struct QuerySubtask {
     aggr_projection_subtask: Option<AggrProjectionSubtask>,
     group_aggr_window_subtask: Option<GroupAggregateWindowSubtask>,
 
-    collect_subtask: CollectSubtask,
+    // TODO recursive JOIN
+    join: Option<(
+        JoinSubtask,
+        CollectSubtask, // right stream
+    )>,
+    left_collect_subtask: CollectSubtask, // left stream
+
+    rng: Mutex<SmallRng>,
 }
 
 #[derive(Clone, Debug, new)]
@@ -100,7 +119,10 @@ pub(in crate::stream_engine::autonomous_executor) struct QuerySubtaskOut {
 
 impl QuerySubtask {
     pub(in crate::stream_engine::autonomous_executor) fn new(plan: QueryPlan) -> Self {
-        let collect_subtask = CollectSubtask::new();
+        let rng =
+            Mutex::new(SmallRng::from_rng(rand::thread_rng()).expect("this generally won't fail"));
+
+        let (left_collect_subtask, join) = Self::subtasks_from_lower_ops(plan.lower_ops);
 
         if plan.upper_ops.projection.aggr_expr_labels.is_empty() {
             let value_projection_subtask =
@@ -111,7 +133,9 @@ impl QuerySubtask {
                 value_projection_subtask: Some(value_projection_subtask),
                 aggr_projection_subtask: None,
                 group_aggr_window_subtask: None,
-                collect_subtask,
+                left_collect_subtask,
+                join,
+                rng,
             }
         } else {
             assert_eq!(
@@ -142,7 +166,30 @@ impl QuerySubtask {
                 value_projection_subtask: None,
                 aggr_projection_subtask: Some(aggr_projection_subtask),
                 group_aggr_window_subtask: Some(group_aggr_window_subtask),
-                collect_subtask,
+                left_collect_subtask,
+                join,
+                rng,
+            }
+        }
+    }
+    /// (left collect subtask, Option<(join subtask, right collect subtask)>)
+    fn subtasks_from_lower_ops(
+        lower_ops: LowerOps,
+    ) -> (CollectSubtask, Option<(JoinSubtask, CollectSubtask)>) {
+        match lower_ops.join {
+            JoinOp::Collect(collect_op) => {
+                let collect_subtask = CollectSubtask::from_collect_op(collect_op);
+                (collect_subtask, None)
+            }
+            JoinOp::JoinWindow(join_window_op) => {
+                let left_collect_subtask = CollectSubtask::from_collect_op(join_window_op.left);
+                let right_collect_subtask = CollectSubtask::from_collect_op(join_window_op.right);
+                let join_subtask =
+                    JoinSubtask::new(join_window_op.window_param, join_window_op.join_param);
+                (
+                    left_collect_subtask,
+                    Some((join_subtask, right_collect_subtask)),
+                )
             }
         }
     }
@@ -160,9 +207,9 @@ impl QuerySubtask {
     ) -> Result<Option<QuerySubtaskOut>> {
         match self.run_lower_ops(context) {
             None => Ok(None),
-            Some((lower_tuples, in_queue_metrics_update_by_collect)) => {
+            Some((lower_tuples, in_queue_metrics_update_by_task)) => {
                 let (values_seq, in_queue_metrics_update) =
-                    self.run_upper_ops(lower_tuples, in_queue_metrics_update_by_collect)?;
+                    self.run_upper_ops(lower_tuples, in_queue_metrics_update_by_task)?;
 
                 Ok(Some(QuerySubtaskOut::new(
                     values_seq,
@@ -175,9 +222,9 @@ impl QuerySubtask {
     fn run_upper_ops(
         &self,
         tuples: Vec<Tuple>,
-        in_queue_metrics_update_by_collect: InQueueMetricsUpdateByCollect,
+        in_queue_metrics_update_by_lower: InQueueMetricsUpdateByTask,
     ) -> Result<(Vec<SqlValues>, InQueueMetricsUpdateByTask)> {
-        let (values_seq, window_in_flow_total) = tuples.into_iter().fold(
+        let (values_seq, window_in_flow_upper_total) = tuples.into_iter().fold(
             Ok((Vec::new(), WindowInFlowByWindowTask::zero())),
             |res, tuple| {
                 let (mut values_seq_acc, window_in_flow_acc) = res?;
@@ -188,8 +235,8 @@ impl QuerySubtask {
             },
         )?;
         let in_queue_metrics_update_by_task = InQueueMetricsUpdateByTask::new(
-            in_queue_metrics_update_by_collect,
-            Some(window_in_flow_total),
+            in_queue_metrics_update_by_lower.by_collect,
+            Some(window_in_flow_upper_total + in_queue_metrics_update_by_lower.window_in_flow),
         );
 
         Ok((values_seq, in_queue_metrics_update_by_task))
@@ -209,17 +256,6 @@ impl QuerySubtask {
             let values = self.run_projection_op(&tuple)?;
             Ok((vec![values], WindowInFlowByWindowTask::zero()))
         }
-    }
-
-    /// # Returns
-    ///
-    /// None when input queue does not exist or is empty or JOIN op does not emit output yet.
-    fn run_lower_ops(
-        &self,
-        context: &TaskContext,
-    ) -> Option<(Vec<Tuple>, InQueueMetricsUpdateByCollect)> {
-        self.run_collect_op(context)
-            .map(|(tuple, m)| (vec![tuple], m))
     }
 
     fn run_projection_op(&self, tuple: &Tuple) -> Result<SqlValues> {
@@ -244,10 +280,82 @@ impl QuerySubtask {
             .collect()
     }
 
-    fn run_collect_op(
+    /// # Returns
+    ///
+    /// None when input queue does not exist or is empty or JOIN op does not emit output yet.
+    fn run_lower_ops(
+        &self,
+        context: &TaskContext,
+    ) -> Option<(Vec<Tuple>, InQueueMetricsUpdateByTask)> {
+        match &self.join {
+            Some((join_subtask, right_collect_subtask)) => self.run_join(
+                context,
+                &self.left_collect_subtask,
+                right_collect_subtask,
+                join_subtask,
+            ),
+            None => self
+                .run_left_collect(context)
+                .map(|(tuple, metrics_collect)| {
+                    (
+                        vec![tuple],
+                        InQueueMetricsUpdateByTask::new(
+                            metrics_collect,
+                            None, // single collect subtask does not use window yet
+                        ),
+                    )
+                }),
+        }
+    }
+
+    /// JOIN takes tuples from left or right at a time.
+    ///
+    /// Left or right is determined randomly and if first candidate does not have tuple to collect, then the other is selected.
+    fn run_join(
+        &self,
+        context: &TaskContext,
+        left_collect_subtask: &CollectSubtask,
+        right_collect_subtask: &CollectSubtask,
+        join_subtask: &JoinSubtask,
+    ) -> Option<(Vec<Tuple>, InQueueMetricsUpdateByTask)> {
+        self.join_dir_candidates().into_iter().find_map(|dir| {
+            let collect_subtask = match dir {
+                JoinDir::Left => left_collect_subtask,
+                JoinDir::Right => right_collect_subtask,
+            };
+            self.run_join_core(context, collect_subtask, join_subtask, dir)
+        })
+    }
+    fn join_dir_candidates(&self) -> [JoinDir; 2] {
+        let first = [JoinDir::Left, JoinDir::Right]
+            .choose(&mut *self.rng.lock().expect("rng lock poisoned"))
+            .expect("not empty");
+        if first == &JoinDir::Left {
+            [JoinDir::Left, JoinDir::Right]
+        } else {
+            [JoinDir::Right, JoinDir::Left]
+        }
+    }
+    fn run_join_core(
+        &self,
+        context: &TaskContext,
+        collect_subtask: &CollectSubtask,
+        join_subtask: &JoinSubtask,
+        join_dir: JoinDir,
+    ) -> Option<(Vec<Tuple>, InQueueMetricsUpdateByTask)> {
+        collect_subtask
+            .run(context)
+            .map(|(tuple, metrics_collect)| {
+                let (tuples, metrics_join) = join_subtask.run(&self.expr_resolver, tuple, join_dir);
+                let metrics = InQueueMetricsUpdateByTask::new(metrics_collect, Some(metrics_join));
+                (tuples, metrics)
+            })
+    }
+
+    fn run_left_collect(
         &self,
         context: &TaskContext,
     ) -> Option<(Tuple, InQueueMetricsUpdateByCollect)> {
-        self.collect_subtask.run(context)
+        self.left_collect_subtask.run(context)
     }
 }
