@@ -119,9 +119,13 @@ fn t(n_in_rows: u64, upper_limit_bytes: u64) {
 
     let mut config = spring_config_default();
     config.memory.upper_limit_bytes = upper_limit_bytes;
+    config.memory.severe_to_critical_percent = 60;
+    config.memory.moderate_to_severe_percent = 30;
+    config.memory.critical_to_severe_percent = 50;
+    config.memory.severe_to_moderate_percent = 20;
 
     let _pipeline = apply_ddls(&ddls, config);
-    thread::sleep(Duration::from_secs(100));
+    thread::sleep(Duration::from_secs(10));
 }
 
 #[test]
