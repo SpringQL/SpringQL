@@ -13,7 +13,7 @@ use std::sync::Arc;
 use self::{
     generic_worker_pool::GenericWorkerPool,
     source_worker_pool::SourceWorkerPool,
-    task_executor_lock::{PipelineUpdateLockGuard, TaskExecutorLock},
+    task_executor_lock::{TaskExecutionBarrierGuard, TaskExecutorLock},
 };
 use super::{
     event_queue::EventQueue, pipeline_derivatives::PipelineDerivatives, repositories::Repositories,
@@ -66,14 +66,14 @@ impl TaskExecutor {
     /// AutonomousExecutor acquires lock when pipeline is updated.
     pub(in crate::stream_engine::autonomous_executor) fn pipeline_update_lock(
         &self,
-    ) -> PipelineUpdateLockGuard {
-        self.task_executor_lock.pipeline_update()
+    ) -> TaskExecutionBarrierGuard {
+        self.task_executor_lock.task_execution_barrier()
     }
 
     /// Update workers' internal current pipeline.
     pub(in crate::stream_engine::autonomous_executor) fn update_pipeline(
         &self,
-        _lock_guard: &PipelineUpdateLockGuard,
+        _lock_guard: &TaskExecutionBarrierGuard,
         pipeline_derivatives: Arc<PipelineDerivatives>,
     ) -> Result<()> {
         let pipeline = pipeline_derivatives.pipeline();
@@ -98,7 +98,7 @@ impl TaskExecutor {
     /// Stop all source tasks and executes pump tasks and sink tasks to finish all rows remaining in queues.
     pub(in crate::stream_engine::autonomous_executor) fn cleanup(
         &self,
-        _lock_guard: &PipelineUpdateLockGuard,
+        _lock_guard: &TaskExecutionBarrierGuard,
         task_graph: &TaskGraph,
     ) {
         // TODO do not just remove rows in queues. Do the things in doc comment.

@@ -11,14 +11,14 @@ pub(in crate::stream_engine::autonomous_executor) struct TaskExecutorLock(
 );
 
 impl TaskExecutorLock {
-    pub(in crate::stream_engine::autonomous_executor) fn pipeline_update(
+    pub(in crate::stream_engine::autonomous_executor) fn task_execution_barrier(
         &self,
-    ) -> PipelineUpdateLockGuard {
+    ) -> TaskExecutionBarrierGuard {
         let write_lock = self
             .0
             .write()
             .expect("another thread sharing the same TaskExecutorLock must not panic");
-        PipelineUpdateLockGuard(write_lock)
+            TaskExecutionBarrierGuard(write_lock)
     }
 
     /// # Returns
@@ -38,7 +38,7 @@ impl TaskExecutorLock {
 pub(in crate::stream_engine::autonomous_executor) struct TaskExecutorLockToken;
 
 #[derive(Debug)]
-pub(in crate::stream_engine::autonomous_executor) struct PipelineUpdateLockGuard<'a>(
+pub(in crate::stream_engine::autonomous_executor) struct TaskExecutionBarrierGuard<'a>(
     RwLockWriteGuard<'a, TaskExecutorLockToken>,
 );
 
