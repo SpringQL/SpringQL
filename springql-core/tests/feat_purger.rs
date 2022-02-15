@@ -18,7 +18,7 @@ use crate::test_support::*;
 fn _gen_source_input(n: u64) -> impl Iterator<Item = serde_json::Value> {
     (0..n).map(move |_| {
         let ts = "2020-01-01 00:00:00.0000000000".to_string();
-        let ticker = "ORCL";
+        let ticker = String::from_iter(std::iter::repeat('X').take(1000));
         let amount = 100;
         json!({
             "ts": ts,
@@ -125,6 +125,6 @@ fn t(n_in_rows: u64, upper_limit_bytes: u64) {
 }
 
 #[test]
-fn test_feat_10000rows_10000bytes() {
-    t(10000, 2000)
+fn test_feat_purger() {
+    t(10000, 100000)
 }
