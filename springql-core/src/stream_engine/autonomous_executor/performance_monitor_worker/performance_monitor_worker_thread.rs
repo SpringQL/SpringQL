@@ -168,10 +168,6 @@ impl WorkerThread for PerformanceMonitorWorkerThread {
         _thread_arg: &Self::ThreadArg,
         _event_queue: Arc<EventQueue>,
     ) -> Self::LoopState {
-        // if matches!(metrics.updated_task(), TaskId::Source { .. }) {
-        //     log::error!("ev_incremental_update_metrics!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-        // }
-
         let state = current_state;
         if let Some(m) = state.metrics.as_ref() {
             m.update_by_task_execution(metrics.as_ref())

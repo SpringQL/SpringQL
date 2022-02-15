@@ -79,7 +79,6 @@ impl PumpTask {
                 insert_subtask_out.out_queues_metrics_update,
             ))
         } else {
-            log::error!("karaburi!!!!!!!!!!!!!!!!!!!!!!!!!");
             thread::sleep(WAIT_ON_NO_INPUT);
             Ok((None, vec![]))
         }
