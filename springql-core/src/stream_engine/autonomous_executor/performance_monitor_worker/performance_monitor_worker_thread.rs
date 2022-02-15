@@ -22,7 +22,7 @@ use crate::{
 
 use super::web_console_reporter::WebConsoleReporter;
 
-const CLOCK_MSEC: u64 = 100;
+const CLOCK_MSEC: u64 = 10;
 
 /// Runs a worker thread.
 #[derive(Debug)]
@@ -175,6 +175,8 @@ impl WorkerThread for PerformanceMonitorWorkerThread {
                 }
                 MetricsUpdateByTaskExecutionOrPurge::Purge => m.update_by_purge(),
             }
+        } else {
+            log::error!("metrics is None");
         }
         state
     }
