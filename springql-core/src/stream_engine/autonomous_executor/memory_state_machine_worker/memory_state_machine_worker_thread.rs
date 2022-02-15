@@ -109,6 +109,10 @@ impl WorkerThread for MemoryStateMachineWorkerThread {
 
         let bytes = metrics_summary.queue_total_bytes;
         if let Some(transition) = state.memory_state_machine.update_memory_usage(bytes) {
+            log::warn!(
+                "[MemoryStateMachineWorker] Memory state transition: {:?}",
+                transition
+            );
             event_queue.publish(Event::TransitMemoryState {
                 memory_state_transition: Arc::new(transition),
             })

@@ -5,12 +5,13 @@ mod test_support;
 use std::thread;
 use std::time::Duration;
 
+use log::LevelFilter;
 use serde_json::json;
 use springql_core::low_level_rs::*;
 use springql_foreign_service::sink::ForeignSink;
 use springql_foreign_service::source::source_input::ForeignSourceInput;
 use springql_foreign_service::source::ForeignSource;
-use springql_test_logger::setup_test_logger;
+use springql_test_logger::setup_test_logger_with_level;
 
 use crate::test_support::*;
 
@@ -29,7 +30,7 @@ fn _gen_source_input(n: u64) -> impl Iterator<Item = serde_json::Value> {
 }
 
 fn t(n_in_rows: u64, upper_limit_bytes: u64) {
-    setup_test_logger();
+    setup_test_logger_with_level(LevelFilter::Warn);
 
     let source_trade = _gen_source_input(n_in_rows).collect();
 

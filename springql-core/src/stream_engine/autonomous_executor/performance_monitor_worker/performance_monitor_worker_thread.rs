@@ -175,8 +175,6 @@ impl WorkerThread for PerformanceMonitorWorkerThread {
                 }
                 MetricsUpdateByTaskExecutionOrPurge::Purge => m.update_by_purge(),
             }
-        } else {
-            log::error!("metrics is None");
         }
         state
     }
@@ -213,7 +211,6 @@ impl PerformanceMonitorWorkerThread {
             state.countdown_metrics_summary_msec = report_interval_msec;
 
             let metrics_summary = Arc::new(PerformanceMetricsSummary::from(metrics));
-            log::error!("metrics_summary {:?}", metrics_summary);
             event_queue.publish(Event::ReportMetricsSummary { metrics_summary })
         } else {
             state.countdown_metrics_summary_msec -= CLOCK_MSEC as i32;
