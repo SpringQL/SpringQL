@@ -2,10 +2,13 @@
 
 mod pump_subtask;
 
+use std::sync::MutexGuard;
 use std::thread;
 use std::time::Duration;
 
 use super::task_context::TaskContext;
+use super::window::aggregate::AggrWindow;
+use super::window::join_window::JoinWindow;
 use crate::error::Result;
 use crate::pipeline::pipeline_graph::PipelineGraph;
 use crate::pipeline::pump_model::PumpModel;
@@ -82,5 +85,16 @@ impl PumpTask {
             thread::sleep(WAIT_ON_NO_INPUT);
             Ok((None, vec![]))
         }
+    }
+
+    pub(in crate::stream_engine::autonomous_executor) fn get_aggr_window_mut(
+        &self,
+    ) -> Option<MutexGuard<AggrWindow>> {
+        self.query_subtask.get_aggr_window_mut()
+    }
+    pub(in crate::stream_engine::autonomous_executor) fn get_join_window_mut(
+        &self,
+    ) -> Option<MutexGuard<JoinWindow>> {
+        self.query_subtask.get_join_window_mut()
     }
 }

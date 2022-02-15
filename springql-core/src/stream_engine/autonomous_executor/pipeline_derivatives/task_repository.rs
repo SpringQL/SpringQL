@@ -1,13 +1,16 @@
 // Copyright (c) 2021 TOYOTA MOTOR CORPORATION. Licensed under MIT OR Apache-2.0.
 
-use std::{collections::HashMap, sync::Arc};
+use std::{borrow::BorrowMut, collections::HashMap, sync::Arc};
 
 use anyhow::anyhow;
 
 use crate::{
     error::{Result, SpringError},
     pipeline::pipeline_graph::PipelineGraph,
-    stream_engine::autonomous_executor::{task::Task, task_graph::task_id::TaskId},
+    stream_engine::autonomous_executor::{
+        task::{window::Window, Task},
+        task_graph::task_id::TaskId,
+    },
 };
 
 #[derive(Debug, Default)]
@@ -30,7 +33,17 @@ impl TaskRepository {
     }
 
     pub(in crate::stream_engine::autonomous_executor) fn purge_windows(&self) {
-        todo!()
+        for task in self.repo.values() {
+            if let Task::Pump(pump_task) = task.as_ref() {
+                if let Some(mut w) = pump_task.get_join_window_mut() {
+                    w.borrow_mut().purge()
+                } else if let Some(mut w) = pump_task.get_aggr_window_mut() {
+                    w.borrow_mut().purge()
+                } else {
+                    // nothing to purge
+                }
+            }
+        }
     }
 }
 

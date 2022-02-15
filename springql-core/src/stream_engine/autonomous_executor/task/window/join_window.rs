@@ -33,6 +33,10 @@ impl Window for JoinWindow {
     fn panes_mut(&mut self) -> &mut Panes<Self::Pane> {
         &mut self.panes
     }
+
+    fn purge(&mut self) {
+        self.panes.purge()
+    }
 }
 
 impl JoinWindow {

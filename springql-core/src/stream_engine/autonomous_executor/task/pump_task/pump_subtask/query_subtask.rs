@@ -6,7 +6,7 @@ pub(super) mod group_aggregate_window_subtask;
 pub(super) mod join_subtask;
 pub(super) mod value_projection_subtask;
 
-use std::sync::{Arc, Mutex};
+use std::sync::{Arc, Mutex, MutexGuard};
 
 use rand::{
     prelude::{SliceRandom, SmallRng},
@@ -18,7 +18,9 @@ use crate::{
     expr_resolver::ExprResolver,
     pipeline::{name::ColumnName, stream_model::StreamModel},
     stream_engine::{
-        autonomous_executor::task::window::panes::pane::join_pane::JoinDir,
+        autonomous_executor::task::window::{
+            aggregate::AggrWindow, join_window::JoinWindow, panes::pane::join_pane::JoinDir,
+        },
         command::query_plan::{query_plan_operation::LowerOps, QueryPlan},
     },
     stream_engine::{
@@ -357,5 +359,20 @@ impl QuerySubtask {
         context: &TaskContext,
     ) -> Option<(Tuple, InQueueMetricsUpdateByCollect)> {
         self.left_collect_subtask.run(context)
+    }
+
+    pub(in crate::stream_engine::autonomous_executor) fn get_aggr_window_mut(
+        &self,
+    ) -> Option<MutexGuard<AggrWindow>> {
+        self.group_aggr_window_subtask
+            .as_ref()
+            .map(|subtask| subtask.get_window_mut())
+    }
+    pub(in crate::stream_engine::autonomous_executor) fn get_join_window_mut(
+        &self,
+    ) -> Option<MutexGuard<JoinWindow>> {
+        self.join
+            .as_ref()
+            .map(|(subtask, _)| subtask.get_window_mut())
     }
 }
