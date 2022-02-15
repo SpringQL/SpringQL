@@ -7,7 +7,7 @@ use std::sync::Arc;
 use crate::stream_engine::autonomous_executor::{
     memory_state_machine::MemoryStateTransition,
     performance_metrics::{
-        metrics_update_command::metrics_update_by_task_execution::MetricsUpdateByTaskExecution,
+        metrics_update_command::metrics_update_by_task_execution::MetricsUpdateByTaskExecutionOrPurge,
         performance_metrics_summary::PerformanceMetricsSummary, PerformanceMetrics,
     },
     pipeline_derivatives::PipelineDerivatives,
@@ -22,7 +22,7 @@ pub(in crate::stream_engine::autonomous_executor) enum Event {
         metrics: Arc<PerformanceMetrics>,
     },
     IncrementalUpdateMetrics {
-        metrics_update_by_task_execution: Arc<MetricsUpdateByTaskExecution>,
+        metrics_update_by_task_execution_or_purge: Arc<MetricsUpdateByTaskExecutionOrPurge>,
     },
     ReportMetricsSummary {
         metrics_summary: Arc<PerformanceMetricsSummary>,

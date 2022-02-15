@@ -46,4 +46,14 @@ impl WindowQueueRepository {
             repo.insert(queue_id, Arc::new(WindowQueue::default()));
         });
     }
+
+    pub(in crate::stream_engine::autonomous_executor) fn purge(&self) {
+        let mut repo = self
+            .repo
+            .write()
+            .expect("WindowQueueRepository lock poisoned");
+        repo.iter_mut().for_each(|(_, queue)| {
+            queue.purge();
+        });
+    }
 }

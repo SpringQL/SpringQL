@@ -5,7 +5,7 @@ use crate::stream_engine::autonomous_executor::row::Row;
 /// Input queue of row tasks.
 ///
 /// Just a FIFO buffer.
-/// 
+///
 /// ![Row queue](https://raw.githubusercontent.com/SpringQL/SpringQL.github.io/main/static/img/row-queue.svg)
 #[derive(Debug, Default)]
 pub(in crate::stream_engine::autonomous_executor) struct RowQueue {
@@ -25,5 +25,12 @@ impl RowQueue {
             .lock()
             .expect("mutex in RowQueue is poisoned")
             .pop_front()
+    }
+
+    pub(in crate::stream_engine::autonomous_executor) fn purge(&self) {
+        self.q
+            .lock()
+            .expect("mutex in RowQueue is poisoned")
+            .clear()
     }
 }

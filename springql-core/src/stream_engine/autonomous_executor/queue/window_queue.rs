@@ -26,4 +26,11 @@ impl WindowQueue {
             .expect("mutex in WindowQueue is poisoned")
             .pop_front()
     }
+
+    pub(in crate::stream_engine::autonomous_executor) fn purge(&self) {
+        self.waiting_q
+            .lock()
+            .expect("mutex in WindowQueue is poisoned")
+            .clear()
+    }
 }

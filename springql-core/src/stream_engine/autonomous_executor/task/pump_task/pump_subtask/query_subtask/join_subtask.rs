@@ -1,6 +1,6 @@
 // Copyright (c) 2021 TOYOTA MOTOR CORPORATION. Licensed under MIT OR Apache-2.0.
 
-use std::sync::Mutex;
+use std::sync::{Mutex, MutexGuard};
 
 use crate::expr_resolver::ExprResolver;
 use crate::pipeline::pump_model::window_operation_parameter::join_parameter::JoinParameter;
@@ -33,5 +33,13 @@ impl JoinSubtask {
             .lock()
             .expect("another thread accessing to window gets poisoned")
             .dispatch(expr_resolver, tuple, dir)
+    }
+
+    pub(in crate::stream_engine::autonomous_executor) fn get_window_mut(
+        &self,
+    ) -> MutexGuard<JoinWindow> {
+        self.0
+            .lock()
+            .expect("another thread accessing to window gets poisoned")
     }
 }

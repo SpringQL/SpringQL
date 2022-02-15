@@ -35,4 +35,11 @@ impl RowQueueRepository {
             repo.insert(queue_id, Arc::new(RowQueue::default()));
         });
     }
+
+    pub(in crate::stream_engine::autonomous_executor) fn purge(&self) {
+        let mut repo = self.repo.write().expect("RowQueueRepository lock poisoned");
+        repo.iter_mut().for_each(|(_, queue)| {
+            queue.purge();
+        });
+    }
 }

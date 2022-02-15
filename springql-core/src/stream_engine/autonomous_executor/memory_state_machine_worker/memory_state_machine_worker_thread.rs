@@ -9,7 +9,7 @@ use crate::stream_engine::autonomous_executor::{
         MemoryStateMachine, MemoryStateMachineThreshold, MemoryStateTransition,
     },
     performance_metrics::{
-        metrics_update_command::metrics_update_by_task_execution::MetricsUpdateByTaskExecution,
+        metrics_update_command::metrics_update_by_task_execution::MetricsUpdateByTaskExecutionOrPurge,
         performance_metrics_summary::PerformanceMetricsSummary, PerformanceMetrics,
     },
     pipeline_derivatives::PipelineDerivatives,
@@ -92,7 +92,7 @@ impl WorkerThread for MemoryStateMachineWorkerThread {
 
     fn ev_incremental_update_metrics(
         _current_state: Self::LoopState,
-        _metrics: Arc<MetricsUpdateByTaskExecution>,
+        _metrics: Arc<MetricsUpdateByTaskExecutionOrPurge>,
         _thread_arg: &Self::ThreadArg,
         _event_queue: Arc<EventQueue>,
     ) -> Self::LoopState {
@@ -109,6 +109,10 @@ impl WorkerThread for MemoryStateMachineWorkerThread {
 
         let bytes = metrics_summary.queue_total_bytes;
         if let Some(transition) = state.memory_state_machine.update_memory_usage(bytes) {
+            log::warn!(
+                "[MemoryStateMachineWorker] Memory state transition: {:?}",
+                transition
+            );
             event_queue.publish(Event::TransitMemoryState {
                 memory_state_transition: Arc::new(transition),
             })

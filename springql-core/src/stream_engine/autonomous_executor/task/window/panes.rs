@@ -69,6 +69,10 @@ where
         panes_to_close
     }
 
+    pub(super) fn purge(&mut self) {
+        self.panes.clear()
+    }
+
     fn generate_panes_if_not_exist(&mut self, rowtime: Timestamp) {
         // Sort-Merge Join like algorithm
         let mut pane_idx = 0;

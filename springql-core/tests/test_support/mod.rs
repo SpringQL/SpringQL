@@ -11,6 +11,7 @@ pub(crate) fn apply_ddls(ddls: &[String], config: SpringConfig) -> SpringPipelin
     pipeline
 }
 
+#[allow(dead_code)]
 pub(crate) fn drain_from_sink(sink: &ForeignSink) -> Vec<serde_json::Value> {
     let mut received = Vec::new();
     while let Some(v) = sink.try_receive(Duration::from_secs(1)) {

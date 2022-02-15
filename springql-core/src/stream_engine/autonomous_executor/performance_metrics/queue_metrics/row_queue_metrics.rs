@@ -42,3 +42,4 @@ impl RowQueueMetrics {
         floor0(self.bytes)
     }
 }
+

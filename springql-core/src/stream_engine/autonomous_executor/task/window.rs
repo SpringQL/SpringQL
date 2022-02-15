@@ -20,6 +20,8 @@ pub(in crate::stream_engine::autonomous_executor) trait Window {
     fn panes(&self) -> &Panes<Self::Pane>;
     fn panes_mut(&mut self) -> &mut Panes<Self::Pane>;
 
+    fn purge(&mut self);
+
     /// A task dispatches a tuple from waiting queue.
     fn dispatch(
         &mut self,

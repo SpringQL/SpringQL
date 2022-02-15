@@ -8,6 +8,12 @@ use crate::stream_engine::{
     time::duration::{wall_clock_duration::WallClockDuration, SpringDuration},
 };
 
+#[derive(Clone, Eq, PartialEq, Debug, new)]
+pub(in crate::stream_engine::autonomous_executor) enum MetricsUpdateByTaskExecutionOrPurge {
+    TaskExecution(MetricsUpdateByTaskExecution),
+    Purge,
+}
+
 /// Metrics update per task execution.
 ///
 /// Commands only include flow metrics (no stock metrics).
