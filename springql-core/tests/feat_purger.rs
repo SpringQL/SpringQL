@@ -2,6 +2,9 @@
 
 mod test_support;
 
+use std::thread;
+use std::time::Duration;
+
 use serde_json::json;
 use springql_core::low_level_rs::*;
 use springql_foreign_service::sink::ForeignSink;
@@ -118,7 +121,7 @@ fn t(n_in_rows: u64, upper_limit_bytes: u64) {
     config.memory.upper_limit_bytes = upper_limit_bytes;
 
     let _pipeline = apply_ddls(&ddls, config);
-    let sink_received = drain_from_sink(&test_sink);
+    thread::sleep(Duration::from_secs(100));
 }
 
 #[test]
