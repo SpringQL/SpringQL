@@ -2,6 +2,9 @@
 
 mod pump_subtask;
 
+use std::thread;
+use std::time::Duration;
+
 use super::task_context::TaskContext;
 use crate::error::Result;
 use crate::pipeline::pipeline_graph::PipelineGraph;
@@ -11,6 +14,10 @@ use crate::stream_engine::autonomous_executor::task_graph::task_id::TaskId;
 use crate::stream_engine::time::duration::wall_clock_duration::wall_clock_stopwatch::WallClockStopwatch;
 use pump_subtask::insert_subtask::InsertSubtask;
 use pump_subtask::query_subtask::QuerySubtask;
+
+/// Source tasks may require I/O but pump tasks are not.
+/// Pump tasks should yield CPU time when it cannot get input data, expecting source tasks get enough CPU time to feed source data.
+const WAIT_ON_NO_INPUT: Duration = Duration::from_millis(10);
 
 #[derive(Debug)]
 pub(crate) struct PumpTask {
@@ -72,6 +79,7 @@ impl PumpTask {
                 insert_subtask_out.out_queues_metrics_update,
             ))
         } else {
+            thread::sleep(WAIT_ON_NO_INPUT);
             Ok((None, vec![]))
         }
     }
