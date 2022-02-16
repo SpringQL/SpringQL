@@ -39,6 +39,7 @@ use crate::stream_engine::{NnSqlValue, SqlValue};
 use anyhow::{anyhow, Context};
 use generated_parser::{GeneratedParser, Rule};
 use helper::{parse_child, parse_child_seq, self_as_str, try_parse_child, FnParseParams};
+use ordered_float::OrderedFloat;
 use pest::{iterators::Pairs, Parser};
 use std::convert::identity;
 
@@ -108,12 +109,23 @@ impl PestParserImpl {
     }
 
     fn parse_numeric_constant(mut params: FnParseParams) -> Result<SqlValue> {
-        parse_child(
+        try_parse_child(
+            &mut params,
+            Rule::float_constant,
+            Self::parse_float_constant,
+            identity,
+        )?
+        .or(try_parse_child(
             &mut params,
             Rule::integer_constant,
             Self::parse_integer_constant,
             identity,
-        )
+        )?)
+        .ok_or_else(|| {
+            SpringError::Sql(anyhow!(
+                "Does not match any child rule of numeric constant.",
+            ))
+        })
     }
 
     fn parse_integer_constant(mut params: FnParseParams) -> Result<SqlValue> {
@@ -132,6 +144,19 @@ impl PestParserImpl {
             .map_err(|_e| {
                 SpringError::Sql(anyhow!(
                     "integer value `{}` could not be parsed as i64 (max supported size)",
+                    s
+                ))
+            })
+    }
+
+    fn parse_float_constant(mut params: FnParseParams) -> Result<SqlValue> {
+        let s = self_as_str(&mut params);
+
+        s.parse::<f32>()
+            .map(|f| SqlValue::NotNull(NnSqlValue::Float(OrderedFloat(f))))
+            .map_err(|_e| {
+                SpringError::Sql(anyhow!(
+                    "float value `{}` could not be parsed as f32 (max supported size)",
                     s
                 ))
             })
@@ -921,6 +946,12 @@ impl PestParserImpl {
         )?
         .or(try_parse_child(
             &mut params,
+            Rule::float_type,
+            Self::parse_float_type,
+            identity,
+        )?)
+        .or(try_parse_child(
+            &mut params,
             Rule::character_type,
             Self::parse_character_type,
             identity,
@@ -949,6 +980,17 @@ impl PestParserImpl {
         let s = self_as_str(&mut params);
         match s.to_ascii_uppercase().as_str() {
             "INTEGER" => Ok(SqlType::integer()),
+            x => {
+                eprintln!("Unexpected data type parsed: {}", x);
+                unreachable!();
+            }
+        }
+    }
+
+    fn parse_float_type(mut params: FnParseParams) -> Result<SqlType> {
+        let s = self_as_str(&mut params);
+        match s.to_ascii_uppercase().as_str() {
+            "FLOAT" => Ok(SqlType::float()),
             x => {
                 eprintln!("Unexpected data type parsed: {}", x);
                 unreachable!();

@@ -28,6 +28,7 @@ keyword = {
     | ^"CREATE"
     | ^"DURATION_SECS"
     | ^"FIXED"
+    | ^"FLOAT"
     | ^"FLOOR_TIME"
     | ^"FLOOR"
     | ^"FOR"
@@ -150,11 +151,17 @@ null_constant = {
 }
 
 numeric_constant = {
-    integer_constant
+    float_constant
+    | integer_constant
 }
 
 integer_constant = @{
     DECIMAL_NUMBER+
+}
+
+float_constant = @{
+    DECIMAL_NUMBER+ ~ "." ~ DECIMAL_NUMBER+
+    // TODO 1.5e12
 }
 
 string_constant = {
@@ -276,6 +283,7 @@ aggregate_name = {
 
 data_type = {
     integer_type
+    | float_type
     | character_type
     | timestamp_type
 }
@@ -291,6 +299,16 @@ integer_type = {
     ^"SMALLINT"
     | ^"INTEGER"
     | ^"BIGINT"
+}
+
+/*
+ * ----------------------------------------------------------------------------
+ * Float Types
+ * ----------------------------------------------------------------------------
+ */
+
+float_type = {
+    ^"FLOAT"
 }
 
 /*

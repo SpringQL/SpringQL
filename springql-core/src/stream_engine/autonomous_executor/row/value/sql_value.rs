@@ -11,8 +11,7 @@ use crate::{
     stream_engine::time::duration::event_duration::EventDuration,
 };
 use anyhow::{anyhow, Context};
-use serde::{Deserialize, Serialize};
-use std::{fmt::Display, hash::Hash};
+use std::{fmt::Display, hash::Hash, ops::Add};
 
 /// SQL-typed value that is efficiently compressed.
 ///
@@ -52,7 +51,7 @@ use std::{fmt::Display, hash::Hash};
 /// # Examples
 ///
 /// See: [test_sql_value_example()](self::tests::test_sql_value_example).
-#[derive(Clone, Serialize, Deserialize, Debug)]
+#[derive(Clone, Debug)]
 pub(crate) enum SqlValue {
     /// NULL value.
     Null,
@@ -201,6 +200,19 @@ impl From<SqlValue> for serde_json::Value {
         match sql_value {
             SqlValue::Null => serde_json::Value::Null,
             SqlValue::NotNull(nn_sql_value) => serde_json::Value::from(nn_sql_value),
+        }
+    }
+}
+
+impl Add for SqlValue {
+    type Output = Result<Self>;
+
+    fn add(self, rhs: Self) -> Self::Output {
+        match (self, rhs) {
+            (SqlValue::Null, _) | (_, SqlValue::Null) => Ok(SqlValue::Null),
+            (SqlValue::NotNull(lhs_nn), SqlValue::NotNull(rhs_nn)) => {
+                (lhs_nn + rhs_nn).map(SqlValue::NotNull)
+            }
         }
     }
 }

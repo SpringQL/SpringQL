@@ -1,6 +1,7 @@
 // Copyright (c) 2021 TOYOTA MOTOR CORPORATION. Licensed under MIT OR Apache-2.0.
 
 use std::mem::size_of;
+use std::ops::Add;
 use std::{fmt::Display, hash::Hash};
 
 use super::sql_compare_result::SqlCompareResult;
@@ -13,10 +14,10 @@ use crate::stream_engine::autonomous_executor::row::value::sql_convertible::SqlC
 use crate::stream_engine::time::duration::event_duration::EventDuration;
 use crate::stream_engine::time::timestamp::Timestamp;
 use anyhow::anyhow;
-use serde::{Deserialize, Serialize};
+use ordered_float::OrderedFloat;
 
 /// NOT NULL value.
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug)]
 pub(crate) enum NnSqlValue {
     /// SMALLINT
     SmallInt(i16),
@@ -24,6 +25,12 @@ pub(crate) enum NnSqlValue {
     Integer(i32),
     /// BIGINT
     BigInt(i64),
+
+    /// FLOAT
+    Float(
+        // to implement Hash
+        OrderedFloat<f32>,
+    ),
 
     /// TEXT
     Text(String),
@@ -44,6 +51,8 @@ impl MemSize for NnSqlValue {
             NnSqlValue::SmallInt(_) => size_of::<i16>(),
             NnSqlValue::Integer(_) => size_of::<i32>(),
             NnSqlValue::BigInt(_) => size_of::<i64>(),
+
+            NnSqlValue::Float(_) => size_of::<f32>(),
 
             NnSqlValue::Text(s) => s.capacity(),
 
@@ -71,11 +80,15 @@ impl MemSize for NnSqlValue {
 ///
 /// does not work properly with closures which capture &mut environments.
 macro_rules! for_all_loose_types {
-    ( $nn_sql_value:expr, $closure_i64:expr, $closure_string:expr, $closure_bool:expr, $closure_timestamp:expr, $closure_duration:expr ) => {{
+    ( $nn_sql_value:expr, $closure_i64:expr, $closure_ordered_float:expr, $closure_string:expr, $closure_bool:expr, $closure_timestamp:expr, $closure_duration:expr ) => {{
         match &$nn_sql_value {
             NnSqlValue::SmallInt(_) | NnSqlValue::Integer(_) | NnSqlValue::BigInt(_) => {
                 let v = $nn_sql_value.unpack::<i64>().unwrap();
                 $closure_i64(v)
+            }
+            NnSqlValue::Float(_) => {
+                let v = $nn_sql_value.unpack::<f32>().unwrap();
+                $closure_ordered_float(OrderedFloat(v))
             }
             NnSqlValue::Text(s) => $closure_string(s.to_string()),
             NnSqlValue::Boolean(b) => $closure_bool(b.clone()),
@@ -101,6 +114,9 @@ impl Hash for NnSqlValue {
             |i: i64| {
                 i.hash(state);
             },
+            |f: OrderedFloat<f32>| {
+                f.hash(state);
+            },
             |s: String| {
                 s.hash(state);
             },
@@ -116,6 +132,7 @@ impl Display for NnSqlValue {
         let s: String = for_all_loose_types!(
             self,
             |i: i64| i.to_string(),
+            |f: OrderedFloat<f32>| f.to_string(),
             |s: String| format!(r#""{}""#, s),
             |b: bool| (if b { "TRUE" } else { "FALSE" }).to_string(),
             |t: Timestamp| t.to_string(),
@@ -143,6 +160,7 @@ impl NnSqlValue {
             NnSqlValue::SmallInt(i16_) => T::try_from_i16(i16_),
             NnSqlValue::Integer(i32_) => T::try_from_i32(i32_),
             NnSqlValue::BigInt(i64_) => T::try_from_i64(i64_),
+            NnSqlValue::Float(f32_) => T::try_from_f32(f32_),
             NnSqlValue::Text(string) => T::try_from_string(string),
             NnSqlValue::Boolean(b) => T::try_from_bool(b),
             NnSqlValue::Timestamp(t) => T::try_from_timestamp(t),
@@ -156,6 +174,7 @@ impl NnSqlValue {
             NnSqlValue::SmallInt(_) => SqlType::small_int(),
             NnSqlValue::Integer(_) => SqlType::integer(),
             NnSqlValue::BigInt(_) => SqlType::big_int(),
+            NnSqlValue::Float(_) => SqlType::float(),
             NnSqlValue::Text(_) => SqlType::text(),
             NnSqlValue::Boolean(_) => SqlType::boolean(),
             NnSqlValue::Timestamp(_) => SqlType::timestamp(),
@@ -187,6 +206,11 @@ impl NnSqlValue {
                         self.unpack::<i64>().map(|v| v.into_sql_value())
                     }
                 },
+                NumericComparableType::F32Loose(f) => match f {
+                    sql_type::F32LooseType::Float => {
+                        self.unpack::<f32>().map(|v| v.into_sql_value())
+                    }
+                },
             },
             SqlType::StringComparableLoose(s) => match s {
                 StringComparableLoseType::Text => {
@@ -203,12 +227,21 @@ impl NnSqlValue {
 
     pub(super) fn sql_compare(&self, other: &Self) -> Result<SqlCompareResult> {
         match (self.sql_type(), other.sql_type()) {
-            (SqlType::NumericComparable(self_n), SqlType::NumericComparable(other_n)) => {
+            (SqlType::NumericComparable(ref self_n), SqlType::NumericComparable(ref other_n)) => {
                 match (self_n, other_n) {
                     (NumericComparableType::I64Loose(_), NumericComparableType::I64Loose(_)) => {
                         let (self_i64, other_i64) = (self.unpack::<i64>()?, other.unpack::<i64>()?);
                         Ok(SqlCompareResult::from(self_i64.cmp(&other_i64)))
                     }
+                    (NumericComparableType::F32Loose(_), NumericComparableType::F32Loose(_)) => {
+                        let (self_f32, other_f32) = (self.unpack::<f32>()?, other.unpack::<f32>()?);
+                        Ok(SqlCompareResult::from(self_f32.partial_cmp(&other_f32)))
+                    }
+                    _ => Err(SpringError::Sql(anyhow!(
+                        "Cannot compare {:?} and {:?}",
+                        self_n,
+                        other_n
+                    ))),
                 }
             }
             (SqlType::StringComparableLoose(self_s), SqlType::StringComparableLoose(other_s)) => {
@@ -245,6 +278,7 @@ impl NnSqlValue {
             NnSqlValue::SmallInt(v) => Ok(Self::SmallInt(-v)),
             NnSqlValue::Integer(v) => Ok(Self::Integer(-v)),
             NnSqlValue::BigInt(v) => Ok(Self::BigInt(-v)),
+            NnSqlValue::Float(v) => Ok(Self::Float(-v)),
             NnSqlValue::Text(_)
             | NnSqlValue::Boolean(_)
             | NnSqlValue::Timestamp(_)
@@ -259,12 +293,44 @@ impl From<NnSqlValue> for serde_json::Value {
             NnSqlValue::SmallInt(i) => serde_json::Value::from(i),
             NnSqlValue::Integer(i) => serde_json::Value::from(i),
             NnSqlValue::BigInt(i) => serde_json::Value::from(i),
+            NnSqlValue::Float(f) => serde_json::Value::from(f.into_inner()),
             NnSqlValue::Text(s) => serde_json::Value::from(s),
             NnSqlValue::Boolean(b) => serde_json::Value::from(b),
             NnSqlValue::Timestamp(t) => serde_json::Value::from(t.to_string()),
             NnSqlValue::Duration(_) => {
                 unimplemented!("never appear in stream definition (just an intermediate type)")
             }
+        }
+    }
+}
+
+impl Add for NnSqlValue {
+    type Output = Result<Self>;
+
+    fn add(self, rhs: Self) -> Self::Output {
+        match (self.sql_type(), rhs.sql_type()) {
+            (SqlType::NumericComparable(ref self_n), SqlType::NumericComparable(ref rhs_n)) => {
+                match (self_n, rhs_n) {
+                    (NumericComparableType::I64Loose(_), NumericComparableType::I64Loose(_)) => {
+                        let (self_i64, rhs_i64) = (self.unpack::<i64>()?, rhs.unpack::<i64>()?);
+                        Ok(Self::BigInt(self_i64 + rhs_i64))
+                    }
+                    (NumericComparableType::F32Loose(_), NumericComparableType::F32Loose(_)) => {
+                        let (self_f32, rhs_f32) = (self.unpack::<f32>()?, rhs.unpack::<f32>()?);
+                        Ok(Self::Float(OrderedFloat(self_f32 + rhs_f32)))
+                    }
+                    _ => Err(SpringError::Sql(anyhow!(
+                        "Cannot compare {:?} and {:?}",
+                        self_n,
+                        rhs_n
+                    ))),
+                }
+            }
+            (_, _) => Err(SpringError::Sql(anyhow!(
+                "`self` + `rhs` is undefined - self: {:?}, other: {:?}",
+                self,
+                rhs
+            ))),
         }
     }
 }

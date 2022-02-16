@@ -8,11 +8,10 @@ use crate::{
 use std::collections::HashMap;
 
 use anyhow::{anyhow, Context};
-use serde::{Deserialize, Serialize};
 
 use super::value::sql_value::SqlValue;
 
-#[derive(Clone, Serialize, Deserialize, Debug, Default)]
+#[derive(Clone, Debug, Default)]
 pub(in crate::stream_engine::autonomous_executor) struct ColumnValues(
     HashMap<ColumnName, SqlValue>,
 );

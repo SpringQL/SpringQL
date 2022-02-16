@@ -41,6 +41,11 @@ impl SqlType {
         SqlType::NumericComparable(NumericComparableType::I64Loose(I64LooseType::BigInt))
     }
 
+    /// Constructor of Flaot
+    pub fn float() -> SqlType {
+        SqlType::NumericComparable(NumericComparableType::F32Loose(F32LooseType::Float))
+    }
+
     /// Constructor of Text
     pub fn text() -> SqlType {
         SqlType::StringComparableLoose(StringComparableLoseType::Text)
@@ -67,6 +72,9 @@ impl SqlType {
 pub enum NumericComparableType {
     /// Loosely typed as i64
     I64Loose(I64LooseType),
+
+    /// Loosely typed as f32
+    F32Loose(F32LooseType),
 }
 
 /// Integer types (loosely typed as i64).
@@ -80,6 +88,13 @@ pub enum I64LooseType {
 
     /// 8-byte signed integer.
     BigInt,
+}
+
+/// Float types (loosely typed as f64).
+#[derive(Clone, Eq, PartialEq, Hash, Debug, Serialize, Deserialize)]
+pub enum F32LooseType {
+    /// fp32
+    Float,
 }
 
 /// Text types (comparable, loosely typed as String).

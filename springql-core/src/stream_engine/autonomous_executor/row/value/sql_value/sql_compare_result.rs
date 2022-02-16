@@ -35,3 +35,15 @@ impl From<Ordering> for SqlCompareResult {
         }
     }
 }
+
+/// for partial_cmp
+impl From<Option<Ordering>> for SqlCompareResult {
+    fn from(partial_ord: Option<Ordering>) -> Self {
+        match partial_ord {
+            Some(Ordering::Less) => Self::LessThan,
+            Some(Ordering::Equal) => Self::Eq,
+            Some(Ordering::Greater) => Self::GreaterThan,
+            None => Self::Null,
+        }
+    }
+}
