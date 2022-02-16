@@ -64,7 +64,7 @@ fn test_e2e_source_sink() -> Result<()> {
         format!(
             "
         CREATE SINK WRITER tcp_sink_trade FOR sink_trade
-          TYPE NET_SERVER OPTIONS (
+          TYPE NET_CLIENT OPTIONS (
             PROTOCOL 'TCP',
             REMOTE_HOST '{remote_host}',
             REMOTE_PORT '{remote_port}'
@@ -76,7 +76,7 @@ fn test_e2e_source_sink() -> Result<()> {
         format!(
             "
         CREATE SOURCE READER tcp_trade FOR source_trade
-          TYPE NET_SERVER OPTIONS (
+          TYPE NET_CLIENT OPTIONS (
             PROTOCOL 'TCP',
             REMOTE_HOST '{remote_host}',
             REMOTE_PORT '{remote_port}'
@@ -137,7 +137,7 @@ fn test_e2e_projection() -> Result<()> {
         format!(
             "
       CREATE SINK WRITER tcp_sink_trade FOR sink_trade
-        TYPE NET_SERVER OPTIONS (
+        TYPE NET_CLIENT OPTIONS (
           PROTOCOL 'TCP',
           REMOTE_HOST '{remote_host}',
           REMOTE_PORT '{remote_port}'
@@ -149,7 +149,7 @@ fn test_e2e_projection() -> Result<()> {
         format!(
             "
         CREATE SOURCE READER tcp_trade FOR source_trade
-          TYPE NET_SERVER OPTIONS (
+          TYPE NET_CLIENT OPTIONS (
             PROTOCOL 'TCP',
             REMOTE_HOST '{remote_host}',
             REMOTE_PORT '{remote_port}'
@@ -232,7 +232,7 @@ fn test_e2e_pop_from_in_memory_queue() {
         format!(
             "
         CREATE SOURCE READER tcp_trade FOR source_trade
-          TYPE NET_SERVER OPTIONS (
+          TYPE NET_CLIENT OPTIONS (
             PROTOCOL 'TCP',
             REMOTE_HOST '{remote_host}',
             REMOTE_PORT '{remote_port}'

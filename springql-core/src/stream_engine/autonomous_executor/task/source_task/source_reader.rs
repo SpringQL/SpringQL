@@ -6,7 +6,7 @@ use crate::{
 };
 use std::fmt::Debug;
 
-pub(in crate::stream_engine::autonomous_executor) mod net;
+pub(in crate::stream_engine::autonomous_executor) mod net_client;
 pub(in crate::stream_engine::autonomous_executor) mod source_reader_factory;
 pub(in crate::stream_engine::autonomous_executor) mod source_reader_repository;
 

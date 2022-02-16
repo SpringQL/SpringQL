@@ -110,7 +110,7 @@ impl SourceReaderModel {
     pub(crate) fn fx_net(stream_name: StreamName, remote_host: IpAddr, remote_port: u16) -> Self {
         Self::new(
             SourceReaderName::fx_tcp_trade(),
-            SourceReaderType::Net,
+            SourceReaderType::NetClient,
             stream_name,
             Options::fx_net(remote_host, remote_port),
         )

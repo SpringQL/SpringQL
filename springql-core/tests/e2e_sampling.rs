@@ -88,7 +88,7 @@ fn test_e2e_sampling() -> Result<()> {
         format!(
             "
         CREATE SINK WRITER tcp_sink_trade FOR sink_sampled_trade_amount
-          TYPE NET_SERVER OPTIONS (
+          TYPE NET_CLIENT OPTIONS (
             PROTOCOL 'TCP',
             REMOTE_HOST '{remote_host}',
             REMOTE_PORT '{remote_port}'
@@ -100,7 +100,7 @@ fn test_e2e_sampling() -> Result<()> {
         format!(
             "
         CREATE SOURCE READER tcp_trade FOR source_trade
-          TYPE NET_SERVER OPTIONS (
+          TYPE NET_CLIENT OPTIONS (
             PROTOCOL 'TCP',
             REMOTE_HOST '{remote_host}',
             REMOTE_PORT '{remote_port}'
@@ -186,7 +186,7 @@ fn test_e2e_sampling_pump_insert_to_window_queue() -> Result<()> {
         format!(
             "
         CREATE SINK WRITER tcp_sink_trade FOR sink_sampled_trade_amount
-          TYPE NET_SERVER OPTIONS (
+          TYPE NET_CLIENT OPTIONS (
             PROTOCOL 'TCP',
             REMOTE_HOST '{remote_host}',
             REMOTE_PORT '{remote_port}'
@@ -198,7 +198,7 @@ fn test_e2e_sampling_pump_insert_to_window_queue() -> Result<()> {
         format!(
             "
         CREATE SOURCE READER tcp_source_trade FOR source_trade
-          TYPE NET_SERVER OPTIONS (
+          TYPE NET_CLIENT OPTIONS (
             PROTOCOL 'TCP',
             REMOTE_HOST '{remote_host}',
             REMOTE_PORT '{remote_port}'

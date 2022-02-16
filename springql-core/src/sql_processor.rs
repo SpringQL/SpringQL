@@ -182,7 +182,7 @@ mod tests {
 
         let sql = "
             CREATE SOURCE READER tcp_source FOR st_1
-              TYPE NET_SERVER OPTIONS (
+              TYPE NET_CLIENT OPTIONS (
                 REMOTE_PORT '17890'
               );
             ";
@@ -196,7 +196,7 @@ mod tests {
         let expected_dest_source_stream = StreamName::new("st_1".to_string());
         let expected_source = SourceReaderModel::new(
             expected_name,
-            SourceReaderType::Net,
+            SourceReaderType::NetClient,
             expected_dest_source_stream,
             expected_options,
         );
@@ -238,7 +238,7 @@ mod tests {
 
         let sql = "
             CREATE SINK WRITER tcp_sink_trade FOR sink_1
-              TYPE NET_SERVER OPTIONS (
+              TYPE NET_CLIENT OPTIONS (
                 REMOTE_PORT '17890'
               );
             ";

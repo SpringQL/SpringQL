@@ -20,12 +20,12 @@ use crate::{
 use super::SourceReader;
 
 #[derive(Debug)]
-pub(in crate::stream_engine) struct NetSourceReader {
+pub(in crate::stream_engine) struct NetClientSourceReader {
     foreign_addr: SocketAddr,
     tcp_stream_reader: BufReader<TcpStream>, // TODO UDP
 }
 
-impl SourceReader for NetSourceReader {
+impl SourceReader for NetClientSourceReader {
     /// # Failure
     ///
     /// - [SpringError::ForeignIo](crate::error::SpringError::ForeignIo)
@@ -86,7 +86,7 @@ impl SourceReader for NetSourceReader {
     }
 }
 
-impl NetSourceReader {
+impl NetClientSourceReader {
     fn parse_resp(&self, json_s: &str) -> Result<SourceRow> {
         let json_v = serde_json::from_str(json_s)
             .with_context(|| {
@@ -106,7 +106,7 @@ impl NetSourceReader {
     }
 }
 
-impl NetSourceReader {}
+impl NetClientSourceReader {}
 
 #[cfg(test)]
 mod tests {
@@ -137,7 +137,7 @@ mod tests {
             .build();
 
         let mut subtask =
-            NetSourceReader::start(&options, &SpringSourceReaderConfig::fx_default())?;
+            NetClientSourceReader::start(&options, &SpringSourceReaderConfig::fx_default())?;
 
         assert_eq!(subtask.next_row()?, SourceRow::from_json(j2));
         assert_eq!(subtask.next_row()?, SourceRow::from_json(j3));
