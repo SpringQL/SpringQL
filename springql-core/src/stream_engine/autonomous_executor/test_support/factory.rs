@@ -7,7 +7,7 @@ use springql_foreign_service::source::{source_input::ForeignSourceInput, Foreign
 use crate::low_level_rs::SpringSourceReaderConfig;
 use crate::pipeline::name::StreamName;
 use crate::pipeline::stream_model::StreamModel;
-use crate::stream_engine::autonomous_executor::task::source_task::source_reader::net::NetSourceReader;
+use crate::stream_engine::autonomous_executor::task::source_task::source_reader::net_client::NetSourceReader;
 use crate::stream_engine::autonomous_executor::task::source_task::source_reader::SourceReader;
 use crate::stream_engine::autonomous_executor::task::tuple::Tuple;
 use crate::stream_engine::time::timestamp::Timestamp;
