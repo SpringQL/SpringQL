@@ -12,7 +12,7 @@ use super::SinkWriter;
 use crate::{
     error::{foreign_info::ForeignInfo, Result, SpringError},
     low_level_rs::SpringSinkWriterConfig,
-    pipeline::option::{net_options::NetOptions, Options},
+    pipeline::option::{net_options::NetClientOptions, Options},
     stream_engine::autonomous_executor::row::foreign_row::{
         format::json::JsonObject, sink_row::SinkRow,
     },
@@ -26,7 +26,7 @@ pub(in crate::stream_engine) struct NetSinkWriter {
 
 impl SinkWriter for NetSinkWriter {
     fn start(options: &Options, config: &SpringSinkWriterConfig) -> Result<Self> {
-        let options = NetOptions::try_from(options)?;
+        let options = NetClientOptions::try_from(options)?;
         let sock_addr = SocketAddr::new(options.remote_host, options.remote_port);
 
         let tcp_stream = TcpStream::connect_timeout(
