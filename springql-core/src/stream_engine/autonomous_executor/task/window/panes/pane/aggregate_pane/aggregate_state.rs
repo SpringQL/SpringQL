@@ -1,12 +1,3 @@
-pub(super) trait AggregateState: Default {
-    type Next;
-    type Final;
-
-    fn next(&mut self, next_val: Self::Next);
-
-    fn finalize(self) -> Self::Final;
-}
-
 // TODO more generic avg
 #[derive(Debug, Default)]
 pub(in crate::stream_engine::autonomous_executor) struct AvgState {
@@ -14,20 +5,21 @@ pub(in crate::stream_engine::autonomous_executor) struct AvgState {
     current_n: u64,
 }
 
-impl AggregateState for AvgState {
-    type Next = i64;
-    type Final = i64;
-
-    fn next(&mut self, next_val: i64) {
+impl AvgState {
+    pub(in crate::stream_engine::autonomous_executor) fn next<V>(&mut self, next_val: V)
+    where
+        V: Into<f32>,
+    {
+        let next_val: f32 = next_val.into();
         let next_n = self.current_n + 1;
 
         self.current_avg =
-            self.current_avg + ((next_val as f32) - self.current_avg) * (1.0 / (next_n as f32));
+            self.current_avg + (next_val - self.current_avg) * (1.0 / (next_n as f32));
         self.current_n = next_n;
     }
 
-    fn finalize(self) -> i64 {
-        self.current_avg.round() as i64
+    pub(in crate::stream_engine::autonomous_executor) fn finalize(self) -> f32 {
+        self.current_avg.round()
     }
 }
 
@@ -38,9 +30,9 @@ mod tests {
     #[test]
     fn test_avg_state() {
         let mut state = AvgState::default();
-        state.next(100);
-        state.next(400);
-        state.next(100);
-        assert_eq!(state.finalize(), 200);
+        state.next(100.);
+        state.next(400.);
+        state.next(100.);
+        assert_eq!(state.finalize().round() as i32, 200);
     }
 }
