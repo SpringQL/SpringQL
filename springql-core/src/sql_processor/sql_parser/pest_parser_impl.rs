@@ -191,6 +191,9 @@ impl PestParserImpl {
         )?;
 
         let event_duration = match duration_function {
+            DurationFunction::Millis => {
+                Ok(EventDuration::from_millis(integer_constant.to_i64()? as u64))
+            }
             DurationFunction::Secs => {
                 Ok(EventDuration::from_secs(integer_constant.to_i64()? as u64))
             }
@@ -202,6 +205,7 @@ impl PestParserImpl {
     fn parse_duration_function(mut params: FnParseParams) -> Result<DurationFunction> {
         let s = self_as_str(&mut params);
         match s.to_lowercase().as_ref() {
+            "duration_millis" => Ok(DurationFunction::Millis),
             "duration_secs" => Ok(DurationFunction::Secs),
             _ => Err(SpringError::Sql(anyhow!(
                 "duration function `{}` is invalid",

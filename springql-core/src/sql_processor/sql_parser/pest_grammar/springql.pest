@@ -178,7 +178,8 @@ duration_constant = {
 }
 
 duration_function = {
-    ^"DURATION_SECS"
+    ^"DURATION_MILLIS"
+    | ^"DURATION_SECS"
 }
 
 /*

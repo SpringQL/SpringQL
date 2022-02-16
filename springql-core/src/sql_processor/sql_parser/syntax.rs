@@ -69,5 +69,6 @@ pub(in crate::sql_processor) enum GroupingElementSyntax {
 
 #[derive(Clone, Eq, PartialEq, Debug)]
 pub(in crate::sql_processor) enum DurationFunction {
+    Millis,
     Secs,
 }
