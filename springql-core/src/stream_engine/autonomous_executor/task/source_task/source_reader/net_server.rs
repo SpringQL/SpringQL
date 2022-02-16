@@ -52,7 +52,7 @@ impl SourceReader for NetServerSourceReader {
         let timeout = Duration::from_millis(config.net_read_timeout_msec as u64);
 
         let _ = thread::Builder::new()
-            .name("ForeignSink".into())
+            .name("NetServerSourceReader".into())
             .spawn(move || {
                 for stream in listener.incoming() {
                     let stream = stream.unwrap();
