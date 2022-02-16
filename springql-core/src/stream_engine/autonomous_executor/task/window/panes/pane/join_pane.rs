@@ -135,9 +135,6 @@ impl JoinPane {
     }
 
     fn calc_window_in_flow_on_close(&self) -> WindowInFlowByWindowTask {
-        let left_rows = self.left_tuples.len();
-        let right_rows = self.right_tuples.len();
-
         let left_size = self.left_tuples.iter().map(|t| t.mem_size()).sum::<usize>();
         let right_size = self
             .right_tuples
@@ -145,10 +142,7 @@ impl JoinPane {
             .map(|t| t.mem_size())
             .sum::<usize>();
 
-        WindowInFlowByWindowTask::new(
-            -((left_size + right_size) as i64),
-            -((left_rows + right_rows) as i64),
-        )
+        WindowInFlowByWindowTask::new(0, -((left_size + right_size) as i64))
     }
 
     fn null_right_tuple(&self) -> Tuple {
