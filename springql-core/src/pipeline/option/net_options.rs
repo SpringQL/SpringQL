@@ -39,3 +39,26 @@ impl TryFrom<&Options> for NetClientOptions {
         })
     }
 }
+
+#[derive(Clone, Eq, PartialEq, Debug)]
+pub(crate) struct NetServerOptions {
+    pub(crate) protocol: NetProtocol,
+    pub(crate) port: u16,
+}
+
+impl TryFrom<&Options> for NetServerOptions {
+    type Error = SpringError;
+
+    fn try_from(options: &Options) -> Result<Self> {
+        Ok(Self {
+            protocol: options.get("PROTOCOL", |protocol_str| {
+                (protocol_str == "TCP")
+                    .then(|| NetProtocol::Tcp)
+                    .context("unsupported protocol")
+            })?,
+            port: options.get("PORT", |remote_port_str| {
+                remote_port_str.parse().context("invalid port")
+            })?,
+        })
+    }
+}
