@@ -64,10 +64,6 @@ impl SqlConvertible for i64 {
     fn try_from_i64(v: &i64) -> Result<Self> {
         Ok(*v)
     }
-
-    fn try_from_f32(v: &f32) -> Result<Self> {
-        panic!("!!!!!!!!!!!!!!!!!!!!!!!!!")
-    }
 }
 
 #[cfg(test)]
