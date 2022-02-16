@@ -859,6 +859,17 @@ impl PestParserImpl {
         )?;
 
         match function_name.to_lowercase().as_str() {
+            "duration_millis" => {
+                if parameters.len() == 1 {
+                    Ok(FunctionCall::DurationMillis {
+                        duration_millis: Box::new(parameters[0].clone()),
+                    })
+                } else {
+                    Err(SpringError::Sql(anyhow!(
+                        "duration_millis() takes exactly one parameter (duration_millis)."
+                    )))
+                }
+            }
             "duration_secs" => {
                 if parameters.len() == 1 {
                     Ok(FunctionCall::DurationSecs {
