@@ -49,7 +49,7 @@ fn test_feat_add_integer() {
         format!(
             "
         CREATE SINK WRITER tcp_sink_1 FOR sink_1
-          TYPE NET_SERVER OPTIONS (
+          TYPE NET_CLIENT OPTIONS (
             PROTOCOL 'TCP',
             REMOTE_HOST '{remote_host}',
             REMOTE_PORT '{remote_port}'
@@ -61,7 +61,7 @@ fn test_feat_add_integer() {
         format!(
             "
         CREATE SOURCE READER tcp_1 FOR source_1
-          TYPE NET_SERVER OPTIONS (
+          TYPE NET_CLIENT OPTIONS (
             PROTOCOL 'TCP',
             REMOTE_HOST '{remote_host}',
             REMOTE_PORT '{remote_port}'
@@ -115,7 +115,7 @@ fn test_feat_add_float() {
         format!(
             "
         CREATE SINK WRITER tcp_sink_1 FOR sink_1
-          TYPE NET_SERVER OPTIONS (
+          TYPE NET_CLIENT OPTIONS (
             PROTOCOL 'TCP',
             REMOTE_HOST '{remote_host}',
             REMOTE_PORT '{remote_port}'
@@ -127,7 +127,7 @@ fn test_feat_add_float() {
         format!(
             "
         CREATE SOURCE READER tcp_1 FOR source_1
-          TYPE NET_SERVER OPTIONS (
+          TYPE NET_CLIENT OPTIONS (
             PROTOCOL 'TCP',
             REMOTE_HOST '{remote_host}',
             REMOTE_PORT '{remote_port}'

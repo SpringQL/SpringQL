@@ -149,7 +149,7 @@ impl StreamName {
 
 impl SinkWriterName {
     pub(crate) fn net_sink() -> Self {
-        Self::new("NET_SERVER_SINK".to_string())
+        Self::new("NET_CLIENT_SINK".to_string())
     }
 
     pub(crate) fn in_memory_queue_sink() -> Self {

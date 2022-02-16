@@ -112,7 +112,7 @@ fn test_feat_left_outer_join() {
         format!(
             "
         CREATE SINK WRITER tcp_sink_joined FOR sink_joined
-          TYPE NET_SERVER OPTIONS (
+          TYPE NET_CLIENT OPTIONS (
             PROTOCOL 'TCP',
             REMOTE_HOST '{remote_host}',
             REMOTE_PORT '{remote_port}'
@@ -124,7 +124,7 @@ fn test_feat_left_outer_join() {
         format!(
             "
         CREATE SOURCE READER tcp_source_trade FOR source_trade
-          TYPE NET_SERVER OPTIONS (
+          TYPE NET_CLIENT OPTIONS (
             PROTOCOL 'TCP',
             REMOTE_HOST '{remote_host}',
             REMOTE_PORT '{remote_port}'
@@ -136,7 +136,7 @@ fn test_feat_left_outer_join() {
         format!(
             "
         CREATE SOURCE READER tcp_source_city_temperature FOR source_city_temperature
-          TYPE NET_SERVER OPTIONS (
+          TYPE NET_CLIENT OPTIONS (
             PROTOCOL 'TCP',
             REMOTE_HOST '{remote_host}',
             REMOTE_PORT '{remote_port}'

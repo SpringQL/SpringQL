@@ -44,7 +44,7 @@ Here introduces "Command line mode" first to quickly grasp SpringQL usage.
 #### Installation
 
 ```bash
-$ cargo install springql-cmd
+cargo install springql-cmd
 ```
 
 #### Running demo
@@ -81,7 +81,7 @@ $ springql --output fst_trade_oracle.log
  ->   "timestamp" TIMESTAMP NOT NULL ROWTIME,
  ->   "ticker" TEXT NOT NULL,
  ->   "amount" INTEGER NOT NULL
- -> ) SERVER NET_SERVER OPTIONS (
+ -> ) SERVER NET_CLIENT OPTIONS (
  ->   remote_port 17890  
  -> );
 ```
@@ -150,7 +150,7 @@ See [C client repository](https://github.com/SpringQL/SpringQL-client-c) for mor
 #### Installation
 
 ```bash
-$ cargo install springql-daemon
+cargo install springql-daemon
 ```
 
 **TBD** launch `sqringqld` via systemctl?

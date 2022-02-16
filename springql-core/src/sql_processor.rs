@@ -182,7 +182,7 @@ mod tests {
 
         let sql = "
             CREATE SOURCE READER tcp_source FOR st_1
-              TYPE NET_SERVER OPTIONS (
+              TYPE NET_CLIENT OPTIONS (
                 REMOTE_PORT '17890'
               );
             ";
@@ -238,7 +238,7 @@ mod tests {
 
         let sql = "
             CREATE SINK WRITER tcp_sink_trade FOR sink_1
-              TYPE NET_SERVER OPTIONS (
+              TYPE NET_CLIENT OPTIONS (
                 REMOTE_PORT '17890'
               );
             ";
