@@ -196,7 +196,7 @@ mod tests {
         let expected_dest_source_stream = StreamName::new("st_1".to_string());
         let expected_source = SourceReaderModel::new(
             expected_name,
-            SourceReaderType::Net,
+            SourceReaderType::NetClient,
             expected_dest_source_stream,
             expected_options,
         );

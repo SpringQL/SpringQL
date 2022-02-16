@@ -17,7 +17,7 @@ impl SourceReaderFactory {
         config: &SpringSourceReaderConfig,
     ) -> Result<Box<dyn SourceReader>> {
         let source = match source_reader_type {
-            SourceReaderType::Net => NetClientSourceReader::start(options, config),
+            SourceReaderType::NetClient => NetClientSourceReader::start(options, config),
         }?;
         Ok(Box::new(source))
     }
