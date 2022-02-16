@@ -11,7 +11,6 @@ use crate::{
     stream_engine::time::duration::event_duration::EventDuration,
 };
 use anyhow::{anyhow, Context};
-use serde::{Deserialize, Serialize};
 use std::{fmt::Display, hash::Hash};
 
 /// SQL-typed value that is efficiently compressed.
@@ -52,7 +51,7 @@ use std::{fmt::Display, hash::Hash};
 /// # Examples
 ///
 /// See: [test_sql_value_example()](self::tests::test_sql_value_example).
-#[derive(Clone, Serialize, Deserialize, Debug)]
+#[derive(Clone, Debug)]
 pub(crate) enum SqlValue {
     /// NULL value.
     Null,

@@ -2,6 +2,7 @@
 
 mod boolean;
 mod event_duration;
+mod float;
 mod int;
 mod text;
 mod timestamp;
@@ -42,6 +43,14 @@ pub(crate) trait SqlConvertible: Sized {
     ///   - the type implementing SqlConvertible is not convertible from i64
     fn try_from_i64(_: &i64) -> Result<Self> {
         Self::default_err("i64")
+    }
+
+    /// # Failures
+    ///
+    /// - [SpringError::Sql](crate::error::SpringError::Sql) when:
+    ///   - the type implementing SqlConvertible is not convertible from f32
+    fn try_from_f32(_: &f32) -> Result<Self> {
+        Self::default_err("f32")
     }
 
     /// # Failures
