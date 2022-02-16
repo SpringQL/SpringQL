@@ -11,6 +11,16 @@ impl SqlConvertible for f32 {
         NnSqlValue::Float(OrderedFloat(self))
     }
 
+    fn try_from_i16(v: &i16) -> Result<Self> {
+        Ok(*v as f32)
+    }
+    fn try_from_i32(v: &i32) -> Result<Self> {
+        Ok(*v as f32)
+    }
+    fn try_from_i64(v: &i64) -> Result<Self> {
+        Ok(*v as f32)
+    }
+
     fn try_from_f32(v: &f32) -> Result<Self> {
         Ok(*v)
     }

@@ -70,7 +70,7 @@ fn test_e2e_sampling() -> Result<()> {
         "
         CREATE SINK STREAM sink_sampled_trade_amount (
           ts TIMESTAMP NOT NULL ROWTIME,    
-          amount INTEGER NOT NULL
+          amount FLOAT NOT NULL
         );
         "
         .to_string(),
@@ -119,13 +119,19 @@ fn test_e2e_sampling() -> Result<()> {
         sink_received[0]["ts"].as_str().unwrap(),
         "2020-01-01 00:00:00.000000000"
     );
-    assert_eq!(sink_received[0]["amount"].as_i64().unwrap(), 20,);
+    assert_eq!(
+        sink_received[0]["amount"].as_f64().unwrap().round() as i32,
+        20,
+    );
 
     assert_eq!(
         sink_received[1]["ts"].as_str().unwrap(),
         "2020-01-01 00:00:10.000000000"
     );
-    assert_eq!(sink_received[1]["amount"].as_i64().unwrap(), 50,);
+    assert_eq!(
+        sink_received[1]["amount"].as_f64().unwrap().round() as i32,
+        50,
+    );
 
     Ok(())
 }
@@ -159,7 +165,7 @@ fn test_e2e_sampling_pump_insert_to_window_queue() -> Result<()> {
         "
         CREATE SINK STREAM sink_sampled_trade_amount (
           ts TIMESTAMP NOT NULL ROWTIME,    
-          amount INTEGER NOT NULL
+          amount FLOAT NOT NULL
         );
         "
         .to_string(),
@@ -217,13 +223,19 @@ fn test_e2e_sampling_pump_insert_to_window_queue() -> Result<()> {
         sink_received[0]["ts"].as_str().unwrap(),
         "2020-01-01 00:00:00.000000000"
     );
-    assert_eq!(sink_received[0]["amount"].as_i64().unwrap(), 20,);
+    assert_eq!(
+        sink_received[0]["amount"].as_f64().unwrap().round() as i32,
+        20,
+    );
 
     assert_eq!(
         sink_received[1]["ts"].as_str().unwrap(),
         "2020-01-01 00:00:10.000000000"
     );
-    assert_eq!(sink_received[1]["amount"].as_i64().unwrap(), 50,);
+    assert_eq!(
+        sink_received[1]["amount"].as_f64().unwrap().round() as i32,
+        50,
+    );
 
     Ok(())
 }

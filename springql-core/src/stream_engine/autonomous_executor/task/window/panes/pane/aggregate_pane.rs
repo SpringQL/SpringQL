@@ -2,6 +2,8 @@ mod aggregate_state;
 
 use std::collections::HashMap;
 
+use ordered_float::OrderedFloat;
+
 use crate::{
     expr_resolver::ExprResolver,
     pipeline::pump_model::window_operation_parameter::{
@@ -18,7 +20,7 @@ use crate::{
     },
 };
 
-use self::aggregate_state::{AggregateState, AvgState};
+use self::aggregate_state::AvgState;
 
 use super::Pane;
 
@@ -98,8 +100,8 @@ impl Pane for AggrPane {
 
                 state.next(
                     aggregated_value
-                        .unpack::<i64>()
-                        .expect("only i64 is supported currently"),
+                        .unpack::<f32>()
+                        .expect("only f32 is supported currently"),
                 );
 
                 WindowInFlowByWindowTask::zero()
@@ -119,7 +121,8 @@ impl Pane for AggrPane {
                 let group_aggr_out_seq = states
                     .into_iter()
                     .map(|(group_by, state)| {
-                        let aggr_value = SqlValue::NotNull(NnSqlValue::BigInt(state.finalize()));
+                        let aggr_value =
+                            SqlValue::NotNull(NnSqlValue::Float(OrderedFloat(state.finalize())));
                         GroupAggrOut::new(
                             aggr_label,
                             aggr_value,

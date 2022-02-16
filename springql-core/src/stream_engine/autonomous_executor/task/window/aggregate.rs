@@ -131,7 +131,10 @@ mod tests {
         );
 
         let avg_amount = group_aggr_out.aggr_result.unwrap();
-        assert_eq!(avg_amount.unpack::<i16>().unwrap(), expected_avg_amount);
+        assert_eq!(
+            avg_amount.unpack::<f32>().unwrap().round() as i16,
+            expected_avg_amount
+        );
     }
 
     #[test]
