@@ -182,7 +182,7 @@ mod tests {
         );
 
         // [:00, :10): t(:00, 100)
-        let (out, _) = window.dispatch(
+        let (out, window_in_flow) = window.dispatch(
             &expr_resolver,
             Tuple::factory_trade(
                 Timestamp::from_str("2020-01-01 00:00:00.000000000").unwrap(),
@@ -192,9 +192,11 @@ mod tests {
             JoinDir::Left,
         );
         assert!(out.is_empty());
+        assert!(window_in_flow.window_gain_bytes_rows > 0);
+        assert_eq!(window_in_flow.window_gain_bytes_states, 0);
 
         // [:00, :10): t(:00, 100), c(:00, 10)
-        let (out, _) = window.dispatch(
+        let (out, window_in_flow) = window.dispatch(
             &expr_resolver,
             Tuple::factory_city_temperature(
                 Timestamp::from_str("2020-01-01 00:00:00.0000000000").unwrap(),
@@ -204,9 +206,11 @@ mod tests {
             JoinDir::Right,
         );
         assert!(out.is_empty());
+        assert!(window_in_flow.window_gain_bytes_rows > 0);
+        assert_eq!(window_in_flow.window_gain_bytes_states, 0);
 
         // [:00, :10): t(:00, 100), c(:00, 10), t(:09.9, 200)
-        let (out, _) = window.dispatch(
+        let (out, window_in_flow) = window.dispatch(
             &expr_resolver,
             Tuple::factory_trade(
                 Timestamp::from_str("2020-01-01 00:00:09.999999999").unwrap(),
@@ -216,10 +220,12 @@ mod tests {
             JoinDir::Left,
         );
         assert!(out.is_empty());
+        assert!(window_in_flow.window_gain_bytes_rows > 0);
+        assert_eq!(window_in_flow.window_gain_bytes_states, 0);
 
         // [:00, :10): t(:00, 100), c(:00, 10), t(:09.9, 200) <-- !!NOT CLOSED YET (within delay)!!
         // [:10, :20):                                         t(:10.9, 300)
-        let (out, _) = window.dispatch(
+        let (out, window_in_flow) = window.dispatch(
             &expr_resolver,
             Tuple::factory_trade(
                 Timestamp::from_str("2020-01-01 00:00:10.999999999").unwrap(),
@@ -229,12 +235,14 @@ mod tests {
             JoinDir::Left,
         );
         assert!(out.is_empty());
+        assert!(window_in_flow.window_gain_bytes_rows > 0);
+        assert_eq!(window_in_flow.window_gain_bytes_states, 0);
 
         // too late data to be ignored
         //
         // [:00, :10): t(:00, 100), c(:00, 10), t(:09.9, 200)
         // [:10, :20):                                         t(:10.9, 300)
-        let (out, _) = window.dispatch(
+        let (out, window_in_flow) = window.dispatch(
             &expr_resolver,
             Tuple::factory_trade(
                 Timestamp::from_str("2020-01-01 00:00:09.999999998").unwrap(),
@@ -244,10 +252,12 @@ mod tests {
             JoinDir::Left,
         );
         assert!(out.is_empty());
+        assert_eq!(window_in_flow.window_gain_bytes_rows, 0);
+        assert_eq!(window_in_flow.window_gain_bytes_states, 0);
 
         // [:00, :10): t(:00, 100), c(:00, 10), t(:09.9, 200),               t(:09.9, 500) <-- !!LATE DATA!!
         // [:10, :20):                                         t(:10.9, 300)
-        let (out, _) = window.dispatch(
+        let (out, window_in_flow) = window.dispatch(
             &expr_resolver,
             Tuple::factory_trade(
                 Timestamp::from_str("2020-01-01 00:00:09.999999999").unwrap(),
@@ -257,11 +267,13 @@ mod tests {
             JoinDir::Left,
         );
         assert!(out.is_empty());
+        assert!(window_in_flow.window_gain_bytes_rows > 0);
+        assert_eq!(window_in_flow.window_gain_bytes_states, 0);
 
         // [:00, :10): -> tc(:00, 100, 10), tc(:09.9, 200, NULL), tc(:09.9, 500, NULL)
         //
         // [:10, :20):                                          t(:10.9, 300),            t(:11, 600)
-        let (out, _) = window.dispatch(
+        let (out, window_in_flow) = window.dispatch(
             &expr_resolver,
             Tuple::factory_trade(
                 Timestamp::from_str("2020-01-01 00:00:11.0000000000").unwrap(),
@@ -289,5 +301,7 @@ mod tests {
             500,
             None,
         );
+        assert!(window_in_flow.window_gain_bytes_rows < 0);
+        assert_eq!(window_in_flow.window_gain_bytes_states, 0);
     }
 }

@@ -272,8 +272,8 @@ impl InQueueMetricsUpdateByCollect {
 
 #[derive(Copy, Clone, Eq, PartialEq, Debug, new)]
 pub(in crate::stream_engine::autonomous_executor) struct WindowInFlowByWindowTask {
-    window_gain_bytes_states: i64,
-    window_gain_bytes_rows: i64,
+    pub(in crate::stream_engine::autonomous_executor) window_gain_bytes_states: i64,
+    pub(in crate::stream_engine::autonomous_executor) window_gain_bytes_rows: i64,
 }
 impl WindowInFlowByWindowTask {
     pub(in crate::stream_engine::autonomous_executor) fn zero() -> Self {
