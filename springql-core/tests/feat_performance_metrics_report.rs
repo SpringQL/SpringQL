@@ -241,7 +241,7 @@ fn test_performance_metrics_report_sampling() {
         "
         CREATE SINK STREAM sink_sampled_trade_amount (
           ts TIMESTAMP NOT NULL ROWTIME,    
-          amount INTEGER NOT NULL
+          amount FLOAT NOT NULL
         );
         "
         .to_string(),
