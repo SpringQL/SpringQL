@@ -231,6 +231,7 @@ impl PestParserImpl {
         match s.to_lowercase().as_str() {
             "=" => Ok(BinaryOperator::Equal),
             "+" => Ok(BinaryOperator::Add),
+            "*" => Ok(BinaryOperator::Mul),
             _ => Err(SpringError::Sql(anyhow!(
                 "Does not match any child rule of binary_operator.",
             ))),
@@ -758,6 +759,12 @@ impl PestParserImpl {
                 )),
                 BinaryOperator::Add => Ok(ValueExpr::BooleanExpr(
                     BooleanExpr::NumericalFunctionVariant(NumericalFunction::AddVariant {
+                        left: Box::new(expr),
+                        right: Box::new(right_expr),
+                    }),
+                )),
+                BinaryOperator::Mul => Ok(ValueExpr::BooleanExpr(
+                    BooleanExpr::NumericalFunctionVariant(NumericalFunction::MulVariant {
                         left: Box::new(expr),
                         right: Box::new(right_expr),
                     }),

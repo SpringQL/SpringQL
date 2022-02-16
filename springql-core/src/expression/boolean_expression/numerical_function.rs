@@ -7,4 +7,7 @@ where
 {
     /// `+` operation
     AddVariant { left: Box<E>, right: Box<E> },
+
+    /// `*` operation
+    MulVariant { left: Box<E>, right: Box<E> },
 }

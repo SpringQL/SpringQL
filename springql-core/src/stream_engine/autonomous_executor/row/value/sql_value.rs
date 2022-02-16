@@ -11,7 +11,11 @@ use crate::{
     stream_engine::time::duration::event_duration::EventDuration,
 };
 use anyhow::{anyhow, Context};
-use std::{fmt::Display, hash::Hash, ops::Add};
+use std::{
+    fmt::Display,
+    hash::Hash,
+    ops::{Add, Mul},
+};
 
 /// SQL-typed value that is efficiently compressed.
 ///
@@ -212,6 +216,18 @@ impl Add for SqlValue {
             (SqlValue::Null, _) | (_, SqlValue::Null) => Ok(SqlValue::Null),
             (SqlValue::NotNull(lhs_nn), SqlValue::NotNull(rhs_nn)) => {
                 (lhs_nn + rhs_nn).map(SqlValue::NotNull)
+            }
+        }
+    }
+}
+impl Mul for SqlValue {
+    type Output = Result<Self>;
+
+    fn mul(self, rhs: Self) -> Self::Output {
+        match (self, rhs) {
+            (SqlValue::Null, _) | (_, SqlValue::Null) => Ok(SqlValue::Null),
+            (SqlValue::NotNull(lhs_nn), SqlValue::NotNull(rhs_nn)) => {
+                (lhs_nn * rhs_nn).map(SqlValue::NotNull)
             }
         }
     }

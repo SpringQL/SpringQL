@@ -129,6 +129,18 @@ impl ValueExpr {
                                 ),
                             ))
                         }
+                        NumericalFunction::MulVariant { left, right } => {
+                            let left_ph2 = left.resolve_colref(tuple)?;
+                            let right_ph2 = right.resolve_colref(tuple)?;
+                            Ok(ValueExprPh2::BooleanExpr(
+                                BooleanExpr::NumericalFunctionVariant(
+                                    NumericalFunction::MulVariant {
+                                        left: Box::new(left_ph2),
+                                        right: Box::new(right_ph2),
+                                    },
+                                ),
+                            ))
+                        }
                     }
                 }
             },
@@ -200,6 +212,11 @@ impl ValueExprPh2 {
                 let left_sql_value = left.eval()?;
                 let right_sql_value = right.eval()?;
                 left_sql_value + right_sql_value
+            }
+            NumericalFunction::MulVariant { left, right } => {
+                let left_sql_value = left.eval()?;
+                let right_sql_value = right.eval()?;
+                left_sql_value * right_sql_value
             }
         }
     }
