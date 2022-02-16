@@ -14,13 +14,13 @@ pub(crate) enum NetProtocol {
 }
 
 #[derive(Clone, Eq, PartialEq, Debug)]
-pub(crate) struct NetOptions {
+pub(crate) struct NetClientOptions {
     pub(crate) protocol: NetProtocol,
     pub(crate) remote_host: IpAddr,
     pub(crate) remote_port: u16,
 }
 
-impl TryFrom<&Options> for NetOptions {
+impl TryFrom<&Options> for NetClientOptions {
     type Error = SpringError;
 
     fn try_from(options: &Options) -> Result<Self> {
@@ -35,6 +35,29 @@ impl TryFrom<&Options> for NetOptions {
             })?,
             remote_port: options.get("REMOTE_PORT", |remote_port_str| {
                 remote_port_str.parse().context("invalid remote port")
+            })?,
+        })
+    }
+}
+
+#[derive(Clone, Eq, PartialEq, Debug)]
+pub(crate) struct NetServerOptions {
+    pub(crate) protocol: NetProtocol,
+    pub(crate) port: u16,
+}
+
+impl TryFrom<&Options> for NetServerOptions {
+    type Error = SpringError;
+
+    fn try_from(options: &Options) -> Result<Self> {
+        Ok(Self {
+            protocol: options.get("PROTOCOL", |protocol_str| {
+                (protocol_str == "TCP")
+                    .then(|| NetProtocol::Tcp)
+                    .context("unsupported protocol")
+            })?,
+            port: options.get("PORT", |remote_port_str| {
+                remote_port_str.parse().context("invalid port")
             })?,
         })
     }

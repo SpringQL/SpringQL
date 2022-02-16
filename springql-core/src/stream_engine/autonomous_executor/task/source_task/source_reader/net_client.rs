@@ -11,7 +11,7 @@ use anyhow::Context;
 use crate::{
     error::{foreign_info::ForeignInfo, Result, SpringError},
     low_level_rs::SpringSourceReaderConfig,
-    pipeline::option::{net_options::NetOptions, Options},
+    pipeline::option::{net_options::NetClientOptions, Options},
     stream_engine::autonomous_executor::row::foreign_row::{
         format::json::JsonObject, source_row::SourceRow,
     },
@@ -31,7 +31,7 @@ impl SourceReader for NetClientSourceReader {
     /// - [SpringError::ForeignIo](crate::error::SpringError::ForeignIo)
     /// - [SpringError::InvalidOption](crate::error::SpringError::InvalidOption)
     fn start(options: &Options, config: &SpringSourceReaderConfig) -> Result<Self> {
-        let options = NetOptions::try_from(options)?;
+        let options = NetClientOptions::try_from(options)?;
         let sock_addr = SocketAddr::new(options.remote_host, options.remote_port);
 
         let tcp_stream = TcpStream::connect_timeout(
