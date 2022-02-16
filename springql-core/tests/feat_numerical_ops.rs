@@ -14,7 +14,7 @@ use springql_test_logger::setup_test_logger;
 use crate::test_support::{apply_ddls, drain_from_sink};
 
 #[test]
-fn test_feat_add_integer() {
+fn test_feat_add_mul_integer() {
     setup_test_logger();
 
     let json1 = json!({
@@ -36,14 +36,15 @@ fn test_feat_add_integer() {
         "
         CREATE SINK STREAM sink_1 (
           ts TIMESTAMP NOT NULL ROWTIME,
-          answer INTEGER NOT NULL
+          answer_add INTEGER NOT NULL,
+          answer_mul INTEGER NOT NULL
         );
         "
         .to_string(),
         "
         CREATE PUMP pu_add AS
-          INSERT INTO sink_1 (ts, answer)
-          SELECT STREAM source_1.ts, 1+1 AS two FROM source_1;
+          INSERT INTO sink_1 (ts, answer_add, answer_mul)
+          SELECT STREAM source_1.ts, 1+1, 2*2 AS two FROM source_1;
         "
         .to_string(),
         format!(
@@ -76,11 +77,12 @@ fn test_feat_add_integer() {
     let sink_received = drain_from_sink(&test_sink);
     let r = sink_received.get(0).unwrap();
 
-    assert_eq!(r["answer"], 2);
+    assert_eq!(r["answer_add"], 2);
+    assert_eq!(r["answer_mul"], 4);
 }
 
 #[test]
-fn test_feat_add_float() {
+fn test_feat_add_mul_float() {
     setup_test_logger();
 
     let json1 = json!({
@@ -102,14 +104,15 @@ fn test_feat_add_float() {
         "
         CREATE SINK STREAM sink_1 (
           ts TIMESTAMP NOT NULL ROWTIME,
-          answer FLOAT NOT NULL
+          answer_add FLOAT NOT NULL,
+          answer_mul FLOAT NOT NULL
         );
         "
         .to_string(),
         "
         CREATE PUMP pu_add AS
-          INSERT INTO sink_1 (ts, answer)
-          SELECT STREAM source_1.ts, 1.5+1.0 AS two FROM source_1;
+          INSERT INTO sink_1 (ts, answer_add, answer_mul)
+          SELECT STREAM source_1.ts, 1.5+1.0, 1.5*2.0 AS two FROM source_1;
         "
         .to_string(),
         format!(
@@ -142,5 +145,6 @@ fn test_feat_add_float() {
     let sink_received = drain_from_sink(&test_sink);
     let r = sink_received.get(0).unwrap();
 
-    assert!(approx_eq!(f64, r["answer"].as_f64().unwrap(), 2.5));
+    assert!(approx_eq!(f64, r["answer_add"].as_f64().unwrap(), 2.5));
+    assert!(approx_eq!(f64, r["answer_mul"].as_f64().unwrap(), 3.0));
 }
