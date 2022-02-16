@@ -1067,6 +1067,7 @@ impl PestParserImpl {
         )?;
         match typ.as_ref() {
             "NET_CLIENT" => Ok(SourceReaderType::NetClient),
+            "NET_SERVER" => Ok(SourceReaderType::NetServer),
             _ => Err(SpringError::Sql(anyhow!(
                 "Invalid source reader name: {}",
                 typ
