@@ -111,8 +111,8 @@ fn test_feat_add_mul_float() {
         .to_string(),
         "
         CREATE PUMP pu_add AS
-          INSERT INTO sink_1 (ts, answer_add)
-          SELECT STREAM source_1.ts, 1.5+1.0, 1.5*2 AS two FROM source_1;
+          INSERT INTO sink_1 (ts, answer_add, answer_mul)
+          SELECT STREAM source_1.ts, 1.5+1.0, 1.5*2.0 AS two FROM source_1;
         "
         .to_string(),
         format!(
@@ -146,5 +146,5 @@ fn test_feat_add_mul_float() {
     let r = sink_received.get(0).unwrap();
 
     assert!(approx_eq!(f64, r["answer_add"].as_f64().unwrap(), 2.5));
-    assert!(approx_eq!(f64, r["answer_add"].as_f64().unwrap(), 3.0));
+    assert!(approx_eq!(f64, r["answer_mul"].as_f64().unwrap(), 3.0));
 }
