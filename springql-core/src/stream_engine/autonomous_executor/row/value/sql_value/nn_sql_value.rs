@@ -1,6 +1,7 @@
 // Copyright (c) 2021 TOYOTA MOTOR CORPORATION. Licensed under MIT OR Apache-2.0.
 
 use std::mem::size_of;
+use std::ops::Add;
 use std::{fmt::Display, hash::Hash};
 
 use super::sql_compare_result::SqlCompareResult;
@@ -299,6 +300,37 @@ impl From<NnSqlValue> for serde_json::Value {
             NnSqlValue::Duration(_) => {
                 unimplemented!("never appear in stream definition (just an intermediate type)")
             }
+        }
+    }
+}
+
+impl Add for NnSqlValue {
+    type Output = Result<Self>;
+
+    fn add(self, rhs: Self) -> Self::Output {
+        match (self.sql_type(), rhs.sql_type()) {
+            (SqlType::NumericComparable(ref self_n), SqlType::NumericComparable(ref rhs_n)) => {
+                match (self_n, rhs_n) {
+                    (NumericComparableType::I64Loose(_), NumericComparableType::I64Loose(_)) => {
+                        let (self_i64, rhs_i64) = (self.unpack::<i64>()?, rhs.unpack::<i64>()?);
+                        Ok(Self::BigInt(self_i64 + rhs_i64))
+                    }
+                    (NumericComparableType::F32Loose(_), NumericComparableType::F32Loose(_)) => {
+                        let (self_f32, rhs_f32) = (self.unpack::<f32>()?, rhs.unpack::<f32>()?);
+                        Ok(Self::Float(OrderedFloat(self_f32 + rhs_f32)))
+                    }
+                    _ => Err(SpringError::Sql(anyhow!(
+                        "Cannot compare {:?} and {:?}",
+                        self_n,
+                        rhs_n
+                    ))),
+                }
+            }
+            (_, _) => Err(SpringError::Sql(anyhow!(
+                "`self` + `rhs` is undefined - self: {:?}, other: {:?}",
+                self,
+                rhs
+            ))),
         }
     }
 }

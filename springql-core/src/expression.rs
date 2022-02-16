@@ -188,18 +188,19 @@ impl ValueExprPh2 {
                     }
                 },
                 BooleanExpr::NumericalFunctionVariant(numerical_function) => {
-                    match numerical_function {
-                        NumericalFunction::AddVariant { left, right } => {
-                            let left_sql_value = left.eval()?;
-                            let right_sql_value = right.eval()?;
-
-                            let i = left_sql_value.to_i64()? + right_sql_value.to_i64()?;
-                            Ok(SqlValue::NotNull(NnSqlValue::BigInt(i)))
-                        }
-                    }
+                    Self::eval_numerical_function(numerical_function)
                 }
             },
             Self::FunctionCall(function_call) => Self::eval_function_call(function_call),
+        }
+    }
+    fn eval_numerical_function(numerical_function: NumericalFunction<Self>) -> Result<SqlValue> {
+        match numerical_function {
+            NumericalFunction::AddVariant { left, right } => {
+                let left_sql_value = left.eval()?;
+                let right_sql_value = right.eval()?;
+                left_sql_value + right_sql_value
+            }
         }
     }
 
