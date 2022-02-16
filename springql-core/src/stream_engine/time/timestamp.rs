@@ -5,7 +5,7 @@
 pub(crate) mod system_timestamp;
 
 use anyhow::Context;
-use chrono::{naive::MIN_DATETIME, Duration, NaiveDateTime};
+use chrono::{naive::MIN_DATETIME, DateTime, Duration, NaiveDateTime};
 use serde::{Deserialize, Serialize};
 use std::{
     ops::{Add, Sub},
@@ -13,7 +13,7 @@ use std::{
 };
 
 use crate::{
-    error::SpringError,
+    error::{Result, SpringError},
     mem_size::{chrono_naive_date_time_overhead_size, MemSize},
 };
 
@@ -59,20 +59,33 @@ impl Timestamp {
             floor + resolution
         }
     }
+
+    fn try_parse_original(s: &str) -> Result<Self> {
+        let ndt = NaiveDateTime::parse_from_str(s, FORMAT)
+            .with_context(|| format!("failed to parse timestamp: {}", s))
+            .map_err(|e| SpringError::InvalidFormat {
+                s: s.to_string(),
+                source: e,
+            })?;
+        Ok(Timestamp(ndt))
+    }
+    fn try_parse_rfc3339(s: &str) -> Result<Self> {
+        let dt = DateTime::parse_from_rfc3339(s)
+            .with_context(|| format!("failed to parse timestamp: {}", s))
+            .map_err(|e| SpringError::InvalidFormat {
+                s: s.to_string(),
+                source: e,
+            })?;
+        Ok(Timestamp(dt.naive_utc()))
+    }
 }
 
 impl FromStr for Timestamp {
     type Err = SpringError;
 
-    /// Parse as `"%Y-%m-%d %H:%M:%S%.9f"` format.
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let ndt = NaiveDateTime::parse_from_str(s, FORMAT)
-            .with_context(|| format!(r#"failed to parse as {}"#, FORMAT))
-            .map_err(|e| SpringError::InvalidFormat {
-                s: s.to_string(),
-                source: e,
-            })?;
-        Ok(Self(ndt))
+    /// Parse as RFC-3339 or `"%Y-%m-%d %H:%M:%S%.9f"` format.
+    fn from_str(s: &str) -> Result<Self> {
+        Self::try_parse_rfc3339(s).or_else(|_| Self::try_parse_original(s))
     }
 }
 
@@ -340,6 +353,15 @@ mod tests {
             let de: Timestamp = serde_json::from_str(&ser).unwrap();
             assert_eq!(de, t);
         }
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_timestamp_parse_rfc3339() -> Result<()> {
+        let ts_rfc3339: Timestamp = "2020-01-01T09:12:34.56789+09:00".parse()?;
+        let ts: Timestamp = "2020-01-01 00:12:34.567890000".parse()?;
+        assert_eq!(ts_rfc3339, ts);
 
         Ok(())
     }
