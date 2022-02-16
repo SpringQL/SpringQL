@@ -6,6 +6,11 @@ where
     E: ValueExprType,
 {
     /// ```text
+    /// DURATION_MILLIS(1) -> EventDuration::from_millis(1)
+    /// ```
+    DurationMillis { duration_millis: Box<E> },
+
+    /// ```text
     /// DURATION_SECS(1) -> EventDuration::from_secs(1)
     /// ```
     DurationSecs { duration_secs: Box<E> },

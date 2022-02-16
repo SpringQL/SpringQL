@@ -26,6 +26,7 @@ keyword = {
     | ^"BIGINT"
     | ^"BY"
     | ^"CREATE"
+    | ^"DURATION_MILLIS"
     | ^"DURATION_SECS"
     | ^"FIXED"
     | ^"FLOAT"
@@ -258,7 +259,8 @@ function_call = {
     ~ ")"
 }
 function_name = {
-    ^"DURATION_SECS"
+    ^"DURATION_MILLIS"
+    | ^"DURATION_SECS"
     | ^"FLOOR_TIME"
     | ^"FLOOR"
 

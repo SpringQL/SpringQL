@@ -61,6 +61,12 @@ impl ValueExpr {
             }
 
             Self::FunctionCall(function_call) => match function_call {
+                FunctionCall::DurationMillis { duration_millis } => {
+                    let duration_millis_ph2 = duration_millis.resolve_colref(tuple)?;
+                    Ok(ValueExprPh2::FunctionCall(FunctionCall::DurationMillis {
+                        duration_millis: Box::new(duration_millis_ph2),
+                    }))
+                }
                 FunctionCall::DurationSecs { duration_secs } => {
                     let duration_secs_ph2 = duration_secs.resolve_colref(tuple)?;
                     Ok(ValueExprPh2::FunctionCall(FunctionCall::DurationSecs {
@@ -226,6 +232,9 @@ impl ValueExprPh2 {
             FunctionCall::FloorTime { target, resolution } => {
                 Self::eval_function_floor_time(*target, *resolution)
             }
+            FunctionCall::DurationMillis { duration_millis } => {
+                Self::eval_function_duration_millis(*duration_millis)
+            }
             FunctionCall::DurationSecs { duration_secs } => {
                 Self::eval_function_duration_secs(*duration_secs)
             }
@@ -252,6 +261,19 @@ impl ValueExprPh2 {
         }
     }
 
+    fn eval_function_duration_millis(duration_millis: Self) -> Result<SqlValue> {
+        let duration_value = duration_millis.eval()?;
+        let duration_millis = duration_value.to_i64()?;
+        if duration_millis >= 0 {
+            let duration = EventDuration::from_millis(duration_millis as u64);
+            Ok(SqlValue::NotNull(NnSqlValue::Duration(duration)))
+        } else {
+            Err(SpringError::Sql(anyhow!(
+                "DURATION_MILLIS should take positive integer but got `{}`",
+                duration_millis
+            )))
+        }
+    }
     fn eval_function_duration_secs(duration_secs: Self) -> Result<SqlValue> {
         let duration_value = duration_secs.eval()?;
         let duration_secs = duration_value.to_i64()?;

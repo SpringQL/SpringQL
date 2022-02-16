@@ -211,6 +211,10 @@ impl PerformanceMonitorWorkerThread {
             state.countdown_metrics_summary_msec = report_interval_msec;
 
             let metrics_summary = Arc::new(PerformanceMetricsSummary::from(metrics));
+            log::warn!(
+                "PerformanceMonitorWorkerThread::report_metrics_summary: metrics_summary={:?}",
+                metrics_summary
+            );
             event_queue.publish(Event::ReportMetricsSummary { metrics_summary })
         } else {
             state.countdown_metrics_summary_msec -= CLOCK_MSEC as i32;
