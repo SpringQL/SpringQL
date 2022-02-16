@@ -182,7 +182,7 @@ mod tests {
         );
 
         // [:00, :10): t(:00, 100)
-        let (out, _) = window.dispatch(
+        let (out, window_in_flow) = window.dispatch(
             &expr_resolver,
             Tuple::factory_trade(
                 Timestamp::from_str("2020-01-01 00:00:00.000000000").unwrap(),
@@ -192,6 +192,8 @@ mod tests {
             JoinDir::Left,
         );
         assert!(out.is_empty());
+        assert!(window_in_flow.window_gain_bytes_rows > 0);
+        assert_eq!(window_in_flow.window_gain_bytes_states, 0);
 
         // [:00, :10): t(:00, 100), c(:00, 10)
         let (out, _) = window.dispatch(

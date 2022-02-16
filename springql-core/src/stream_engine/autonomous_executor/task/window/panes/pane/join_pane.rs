@@ -81,7 +81,7 @@ impl Pane for JoinPane {
             JoinDir::Left => self.left_tuples.push(tuple.clone()),
             JoinDir::Right => self.right_tuples.push(tuple.clone()),
         }
-        WindowInFlowByWindowTask::new(tuple.mem_size() as i64, 1)
+        WindowInFlowByWindowTask::new(0, tuple.mem_size() as i64)
     }
 
     fn close(
