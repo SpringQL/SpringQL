@@ -167,8 +167,8 @@ pub(in crate::stream_engine::autonomous_executor) trait WorkerThread {
 
         for event_poll in event_polls {
             #[allow(clippy::single_match)]
-            match event_poll.poll() {
-                Some(ev) => match ev {
+            while let Some(ev) = event_poll.poll() {
+                match ev {
                     Event::UpdatePipeline {
                         pipeline_derivatives,
                     } => {
@@ -215,8 +215,7 @@ pub(in crate::stream_engine::autonomous_executor) trait WorkerThread {
                             event_queue.clone(),
                         )
                     }
-                },
-                None => {}
+                }
             }
         }
         state
