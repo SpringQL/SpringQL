@@ -20,7 +20,7 @@ use pump_subtask::query_subtask::QuerySubtask;
 
 /// Source tasks may require I/O but pump tasks are not.
 /// Pump tasks should yield CPU time when it cannot get input data, expecting source tasks get enough CPU time to feed source data.
-const WAIT_ON_NO_INPUT: Duration = Duration::from_millis(100);
+const WAIT_ON_NO_INPUT: Duration = Duration::from_micros(100);
 
 #[derive(Debug)]
 pub(crate) struct PumpTask {

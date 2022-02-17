@@ -10,7 +10,8 @@ use crate::{
     mem_size::MemSize,
     stream_engine::time::duration::event_duration::EventDuration,
 };
-use anyhow::{anyhow, Context};
+use anyhow::anyhow;
+use ordered_float::OrderedFloat;
 use std::{
     fmt::Display,
     hash::Hash,
@@ -179,14 +180,18 @@ impl TryFrom<&serde_json::Value> for SqlValue {
             serde_json::Value::Null => Ok(SqlValue::Null),
             serde_json::Value::Bool(b) => Ok(SqlValue::NotNull(NnSqlValue::Boolean(*b))),
 
-            serde_json::Value::Number(n) => n
-                .as_i64()
-                .map(|i| SqlValue::NotNull(NnSqlValue::BigInt(i)))
-                .context("unsigned integer or float are not supported as SQL type")
-                .map_err(|e| SpringError::InvalidFormat {
-                    source: e,
-                    s: format!("{:?}", value),
-                }),
+            serde_json::Value::Number(n) => {
+                if let Some(f) = n.as_f64() {
+                    Ok(SqlValue::NotNull(NnSqlValue::Float(OrderedFloat(f as f32))))
+                } else if let Some(i) = n.as_i64() {
+                    Ok(SqlValue::NotNull(NnSqlValue::BigInt(i)))
+                } else {
+                    Err(SpringError::Sql(anyhow!(
+                        "unsupported number as SQL type: {:?} cannot be evaluated as BIGINT",
+                        n
+                    )))
+                }
+            }
 
             serde_json::Value::String(s) => Ok(SqlValue::NotNull(NnSqlValue::Text(s.clone()))),
             serde_json::Value::Array(_) | serde_json::Value::Object(_) => {

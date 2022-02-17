@@ -93,20 +93,20 @@ impl WorkerThread for GenericWorkerThread {
 
         match memory_state_transition.to_state() {
             MemoryState::Moderate => {
-                log::info!(
+                log::warn!(
                     "[GenericWorker#{}] Switched to FlowEfficientScheduler",
                     thread_arg.worker_id
                 );
                 state.scheduler = GenericWorkerScheduler::flow_efficient_scheduler();
             }
             MemoryState::Severe => {
-                log::info!(
+                log::warn!(
                     "[GenericWorker#{}] Switched to MemoryReducingScheduler",
                     thread_arg.worker_id
                 );
                 state.scheduler = GenericWorkerScheduler::memory_reducing_scheduler();
             }
-            MemoryState::Critical => log::info!(
+            MemoryState::Critical => log::warn!(
                 "[GenericWorker#{}] Wait for PurgerWorker to transit memory state",
                 thread_arg.worker_id
             ),
