@@ -26,6 +26,10 @@ impl SqlConvertible for i16 {
             .with_context(|| format!("cannot convert i64 value ({}) into i16", v))
             .map_err(SpringError::Sql)
     }
+
+    fn try_from_f32(v: &f32) -> Result<Self> {
+        Ok(v.ceil() as i16)
+    }
 }
 
 impl SqlConvertible for i32 {
@@ -46,6 +50,10 @@ impl SqlConvertible for i32 {
             .with_context(|| format!("cannot convert i64 value ({}) into i32", v))
             .map_err(SpringError::Sql)
     }
+
+    fn try_from_f32(v: &f32) -> Result<Self> {
+        Ok(v.ceil() as i32)
+    }
 }
 
 impl SqlConvertible for i64 {
@@ -63,6 +71,10 @@ impl SqlConvertible for i64 {
 
     fn try_from_i64(v: &i64) -> Result<Self> {
         Ok(*v)
+    }
+
+    fn try_from_f32(v: &f32) -> Result<Self> {
+        Ok(v.ceil() as i64)
     }
 }
 
