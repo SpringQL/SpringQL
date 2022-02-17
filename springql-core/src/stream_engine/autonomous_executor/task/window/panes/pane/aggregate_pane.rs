@@ -104,7 +104,7 @@ impl Pane for AggrPane {
                         .expect("only f32 is supported currently"),
                 );
 
-                WindowInFlowByWindowTask::zero()
+                WindowInFlowByWindowTask::zero() // state in AVG is constant
             }
         }
     }
