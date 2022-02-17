@@ -30,10 +30,10 @@ critical_to_severe_percent = 80
 severe_to_moderate_percent = 40
 
 # Interval for MemoryStateMachineWorker to publish TransitPerformanceMetricsSummary event.
-memory_state_transition_interval_msec = 100
+memory_state_transition_interval_msec = 10
 
 # Interval for PerformanceMonitorWorker to publish ReportMetricsSummary event.
-performance_metrics_summary_report_interval_msec = 1_000
+performance_metrics_summary_report_interval_msec = 10
 
 [web_console]
 # Whether to enable POST API request to web console.

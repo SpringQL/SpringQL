@@ -18,7 +18,7 @@ use crate::stream_engine::autonomous_executor::{
 
 use super::{scheduler::Scheduler, task_executor_lock::TaskExecutorLock};
 
-const TASK_WAIT_MSEC: u64 = 100;
+const TASK_WAIT_MSEC: u64 = 10;
 
 #[derive(Debug)]
 pub(super) struct TaskWorkerThreadHandler;
