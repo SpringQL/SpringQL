@@ -179,7 +179,7 @@ impl MetricsUpdateByTaskExecution {
                 InQueueMetricsUpdateByCollect::Row { .. } => None,
                 InQueueMetricsUpdateByCollect::Window {
                     queue_id,
-                    waiting_rows_dispatched: waiting_bytes_dispatched,
+                    waiting_bytes_dispatched,
                     ..
                 } => (queue_id == id).then(|| waiting_bytes_dispatched),
             })
