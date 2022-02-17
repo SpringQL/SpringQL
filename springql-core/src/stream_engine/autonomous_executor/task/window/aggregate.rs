@@ -192,7 +192,7 @@ mod tests {
 
         // [:55, :05): ("GOOGL", 100)
         // [:00, :10): ("GOOGL", 100)
-        let (out, _) = window.dispatch(
+        let (out, window_in_flow) = window.dispatch(
             &expr_resolver,
             Tuple::factory_trade(
                 Timestamp::from_str("2020-01-01 00:00:00.000000000").unwrap(),
@@ -202,10 +202,12 @@ mod tests {
             (),
         );
         assert!(out.is_empty());
+        assert_eq!(window_in_flow.window_gain_bytes_states, 0);
+        assert_eq!(window_in_flow.window_gain_bytes_rows, 0);
 
         // [:55, :05): ("GOOGL", 100), ("ORCL", 100)
         // [:00, :10): ("GOOGL", 100), ("ORCL", 100)
-        let (out, _) = window.dispatch(
+        let (out, window_in_flow) = window.dispatch(
             &expr_resolver,
             Tuple::factory_trade(
                 Timestamp::from_str("2020-01-01 00:00:04.999999999").unwrap(),
@@ -215,12 +217,14 @@ mod tests {
             (),
         );
         assert!(out.is_empty());
+        assert_eq!(window_in_flow.window_gain_bytes_states, 0);
+        assert_eq!(window_in_flow.window_gain_bytes_rows, 0);
 
         // [:55, :05): -> "GOOGL" AVG = 100; "ORCL" AVG = 100
         //
         // [:00, :10): ("GOOGL", 100), ("ORCL", 100), ("ORCL", 400)
         // [:05, :15):                                ("ORCL", 400)
-        let (mut out, _) = window.dispatch(
+        let (mut out, window_in_flow) = window.dispatch(
             &expr_resolver,
             Tuple::factory_trade(
                 Timestamp::from_str("2020-01-01 00:00:06.000000000").unwrap(),
@@ -240,11 +244,13 @@ mod tests {
         });
         t_expect(out.get(0).cloned().unwrap(), "GOOGL", 100);
         t_expect(out.get(1).cloned().unwrap(), "ORCL", 100);
+        assert_eq!(window_in_flow.window_gain_bytes_states, 0);
+        assert_eq!(window_in_flow.window_gain_bytes_rows, 0);
 
         // [:00, :10): ("GOOGL", 100), ("ORCL", 100), ("ORCL", 400) <-- !!NOT CLOSED YET (within delay)!!
         // [:05, :15):                                ("ORCL", 400), ("ORCL", 100)
         // [:10, :20):                                               ("ORCL", 100)
-        let (out, _) = window.dispatch(
+        let (out, window_in_flow) = window.dispatch(
             &expr_resolver,
             Tuple::factory_trade(
                 Timestamp::from_str("2020-01-01 00:00:10.999999999").unwrap(),
@@ -254,13 +260,15 @@ mod tests {
             (),
         );
         assert!(out.is_empty());
+        assert_eq!(window_in_flow.window_gain_bytes_states, 0);
+        assert_eq!(window_in_flow.window_gain_bytes_rows, 0);
 
         // too late data to be ignored
         //
         // [:00, :10): ("GOOGL", 100), ("ORCL", 100), ("ORCL", 400)
         // [:05, :15):                                ("ORCL", 400), ("ORCL", 100)
         // [:10, :20):                                               ("ORCL", 100)
-        let (out, _) = window.dispatch(
+        let (out, window_in_flow) = window.dispatch(
             &expr_resolver,
             Tuple::factory_trade(
                 Timestamp::from_str("2020-01-01 00:00:09.999999998").unwrap(),
@@ -270,11 +278,13 @@ mod tests {
             (),
         );
         assert!(out.is_empty());
+        assert_eq!(window_in_flow.window_gain_bytes_states, 0);
+        assert_eq!(window_in_flow.window_gain_bytes_rows, 0);
 
         // [:00, :10): ("GOOGL", 100), ("ORCL", 100), ("ORCL", 400),                ("ORCL", 100) <-- !!LATE DATA!!
         // [:05, :15):                                ("ORCL", 400), ("ORCL", 100), ("ORCL", 100)
         // [:10, :20):                                               ("ORCL", 100)
-        let (out, _) = window.dispatch(
+        let (out, window_in_flow) = window.dispatch(
             &expr_resolver,
             Tuple::factory_trade(
                 Timestamp::from_str("2020-01-01 00:00:09.9999999999").unwrap(),
@@ -284,12 +294,14 @@ mod tests {
             (),
         );
         assert!(out.is_empty());
+        assert_eq!(window_in_flow.window_gain_bytes_states, 0);
+        assert_eq!(window_in_flow.window_gain_bytes_rows, 0);
 
         // [:00, :10): -> "GOOGL" AVG = 100; "ORCL" AVG = 200
         //
         // [:05, :15):                                ("ORCL", 400), ("ORCL", 100), ("ORCL", 100), ("ORCL", 100)
         // [:10, :20):                                               ("ORCL", 100),                ("ORCL", 100)
-        let (mut out, _) = window.dispatch(
+        let (mut out, window_in_flow) = window.dispatch(
             &expr_resolver,
             Tuple::factory_trade(
                 Timestamp::from_str("2020-01-01 00:00:11.000000000").unwrap(),
@@ -309,13 +321,15 @@ mod tests {
         });
         t_expect(out.get(0).cloned().unwrap(), "GOOGL", 100);
         t_expect(out.get(1).cloned().unwrap(), "ORCL", 200);
+        assert_eq!(window_in_flow.window_gain_bytes_states, 0);
+        assert_eq!(window_in_flow.window_gain_bytes_rows, 0);
 
         // [:05, :15): -> "ORCL" = 175
         // [:10, :20): -> "ORCL" = 100
         //
         // [:15, :25):                                                                                           ("ORCL", 100)
         // [:20, :30):                                                                                           ("ORCL", 100)
-        let (out, _) = window.dispatch(
+        let (out, window_in_flow) = window.dispatch(
             &expr_resolver,
             Tuple::factory_trade(
                 Timestamp::from_str("2020-01-01 00:00:21.000000000").unwrap(),
@@ -327,6 +341,8 @@ mod tests {
         assert_eq!(out.len(), 2);
         t_expect(out.get(0).cloned().unwrap(), "ORCL", 175);
         t_expect(out.get(1).cloned().unwrap(), "ORCL", 100);
+        assert_eq!(window_in_flow.window_gain_bytes_states, 0);
+        assert_eq!(window_in_flow.window_gain_bytes_rows, 0);
     }
 
     #[test]
@@ -382,7 +398,7 @@ mod tests {
         );
 
         // [:00, :10): ("GOOGL", 100)
-        let (out, _) = window.dispatch(
+        let (out, window_in_flow) = window.dispatch(
             &expr_resolver,
             Tuple::factory_trade(
                 Timestamp::from_str("2020-01-01 00:00:00.000000000").unwrap(),
@@ -392,9 +408,11 @@ mod tests {
             (),
         );
         assert!(out.is_empty());
+        assert_eq!(window_in_flow.window_gain_bytes_states, 0);
+        assert_eq!(window_in_flow.window_gain_bytes_rows, 0);
 
         // [:00, :10): ("GOOGL", 100), ("ORCL", 100)
-        let (out, _) = window.dispatch(
+        let (out, window_in_flow) = window.dispatch(
             &expr_resolver,
             Tuple::factory_trade(
                 Timestamp::from_str("2020-01-01 00:00:09.000000000").unwrap(),
@@ -404,9 +422,11 @@ mod tests {
             (),
         );
         assert!(out.is_empty());
+        assert_eq!(window_in_flow.window_gain_bytes_states, 0);
+        assert_eq!(window_in_flow.window_gain_bytes_rows, 0);
 
         // [:00, :10): ("GOOGL", 100), ("ORCL", 100), ("ORCL", 400)
-        let (out, _) = window.dispatch(
+        let (out, window_in_flow) = window.dispatch(
             &expr_resolver,
             Tuple::factory_trade(
                 Timestamp::from_str("2020-01-01 00:00:09.999999999").unwrap(),
@@ -416,10 +436,12 @@ mod tests {
             (),
         );
         assert!(out.is_empty());
+        assert_eq!(window_in_flow.window_gain_bytes_states, 0);
+        assert_eq!(window_in_flow.window_gain_bytes_rows, 0);
 
         // [:00, :10): ("GOOGL", 100), ("ORCL", 100), ("ORCL", 400) <-- !!NOT CLOSED YET (within delay)!!
         // [:10, :20):                                               ("ORCL", 100)
-        let (out, _) = window.dispatch(
+        let (out, window_in_flow) = window.dispatch(
             &expr_resolver,
             Tuple::factory_trade(
                 Timestamp::from_str("2020-01-01 00:00:10.999999999").unwrap(),
@@ -429,12 +451,14 @@ mod tests {
             (),
         );
         assert!(out.is_empty());
+        assert_eq!(window_in_flow.window_gain_bytes_states, 0);
+        assert_eq!(window_in_flow.window_gain_bytes_rows, 0);
 
         // too late data to be ignored
         //
         // [:00, :10): ("GOOGL", 100), ("ORCL", 100), ("ORCL", 400)
         // [:10, :20):                                               ("ORCL", 100)
-        let (out, _) = window.dispatch(
+        let (out, window_in_flow) = window.dispatch(
             &expr_resolver,
             Tuple::factory_trade(
                 Timestamp::from_str("2020-01-01 00:00:09.999999998").unwrap(),
@@ -444,10 +468,12 @@ mod tests {
             (),
         );
         assert!(out.is_empty());
+        assert_eq!(window_in_flow.window_gain_bytes_states, 0);
+        assert_eq!(window_in_flow.window_gain_bytes_rows, 0);
 
         // [:00, :10): ("GOOGL", 100), ("ORCL", 100), ("ORCL", 400),                ("ORCL", 100) <-- !!LATE DATA!!
         // [:10, :20):                                               ("ORCL", 100)
-        let (out, _) = window.dispatch(
+        let (out, window_in_flow) = window.dispatch(
             &expr_resolver,
             Tuple::factory_trade(
                 Timestamp::from_str("2020-01-01 00:00:09.9999999999").unwrap(),
@@ -457,11 +483,13 @@ mod tests {
             (),
         );
         assert!(out.is_empty());
+        assert_eq!(window_in_flow.window_gain_bytes_states, 0);
+        assert_eq!(window_in_flow.window_gain_bytes_rows, 0);
 
         // [:00, :10): -> "GOOGL" AVG = 100; "ORCL" AVG = 200
         //
         // [:10, :20):                                               ("ORCL", 100),                ("ORCL", 100)
-        let (mut out, _) = window.dispatch(
+        let (mut out, window_in_flow) = window.dispatch(
             &expr_resolver,
             Tuple::factory_trade(
                 Timestamp::from_str("2020-01-01 00:00:11.000000000").unwrap(),
@@ -481,11 +509,13 @@ mod tests {
         });
         t_expect(out.get(0).cloned().unwrap(), "GOOGL", 100);
         t_expect(out.get(1).cloned().unwrap(), "ORCL", 200);
+        assert_eq!(window_in_flow.window_gain_bytes_states, 0);
+        assert_eq!(window_in_flow.window_gain_bytes_rows, 0);
 
         // [:10, :20): -> "ORCL" = 100
         //
         // [:20, :30):                                                                                           ("ORCL", 100)
-        let (out, _) = window.dispatch(
+        let (out, window_in_flow) = window.dispatch(
             &expr_resolver,
             Tuple::factory_trade(
                 Timestamp::from_str("2020-01-01 00:00:21.000000000").unwrap(),
@@ -496,5 +526,7 @@ mod tests {
         );
         assert_eq!(out.len(), 1);
         t_expect(out.get(0).cloned().unwrap(), "ORCL", 100);
+        assert_eq!(window_in_flow.window_gain_bytes_states, 0);
+        assert_eq!(window_in_flow.window_gain_bytes_rows, 0);
     }
 }
