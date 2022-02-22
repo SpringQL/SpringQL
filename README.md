@@ -1,169 +1,101 @@
-**Status: Implementing important feature internally. We want to soon announce initial usable version.**
+# SpringQL
+
+[![crates.io](https://img.shields.io/crates/v/springql-core.svg)](https://crates.io/crates/springql-core)
+[![Crates.io](https://img.shields.io/crates/d/springql-core?label=cargo%20installs)](https://crates.io/crates/springql-core)
+[![docs.rs](https://img.shields.io/badge/API%20doc-docs.rs-blueviolet)](https://docs.rs/springql-core)
+![MSRV](https://img.shields.io/badge/rustc-1.56+-lightgray.svg)
+[![ci](https://github.com/SpringQL/SpringQL/actions/workflows/ci.yml/badge.svg?branch=main&event=push)](https://github.com/SpringQL/SpringQL/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/SpringQL/SpringQL/branch/main/graph/badge.svg?token=XI0IR5QVU3)](https://codecov.io/gh/laysakura/springql-core)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/laysakura/springql-core/blob/master/LICENSE-MIT)
+[![License: Apache 2.0](https://img.shields.io/badge/license-Apache_2.0-blue.svg)](https://github.com/laysakura/springql-core/blob/master/LICENSE-APACHE)
+
+**A stream processor for IoT devices and in-vehicle computers**
 
 ## What is SpringQL?
 
-SpringQL is an open-source stream processor specialized in memory efficiency. It is supposed to run on embedded systems like IoT devices and in-vehicle computers.
+SpringQL is an open-source stream processor working with low and hard-limited working memory. It is supposed to run on resource-poor such as IoT devices and in-vehicle computers.
 
 - **SQL support**
 
-  Like other stream processors, infinite number of rows flow through SpringQL system. You can register SQL-like (continuous) queries to filter, transform, and analyze rows. The query language is named SpringQL as well as the whole system itself.
+  Like other stream processors, infinite number of rows flow through SpringQL system. You can register SQL-like (continuous) queries to filter, transform, and analyze rows.
   SpringQL has the ability to make windows from stream of rows so that you can perform `GROUP BY`, `JOIN`, and even more operations targeting on finite number of rows.
 
-- **Memory efficient**
+- **Small memory footprint**
 
-  Unlike other stream processors, the goal of SpringQL is saving working memory during stream processing. Of course the end-to-end latency and throughput are also important but they aren't the main targets.
+  SpringQL usually works with as low working memory as around 1MB.
+  Even when processing heavy workload (e.g. with large size windows, or with rapid stream inputs), SpringQL tries to recover from high memory pressure by switching the internal task schedulers.
 
-- **Minimum dependencies**
-
-  Embedded systems may have small storage size and only have quite fundamental libraries (`libc`, for example). SpringQL depends only on... **TBD**
+  You can set maximum memory allowed to consumed by SpringQL by configuration.
 
 ## Why SpringQL?
 
-Complex stream analysis (heavy machine learning, visualization, and so on) would be done in server-side. SpringQL is useful to **reduce upload data size** from embedded devices to servers.
+- **Realtime stream processing completed in edge**
 
-You can sample, filter (`WHERE`), aggregate (`GROUP BY`), shrink (`SELECT necessary_column, ...`) stream rows to reduce data size inside embedded devices.
+  Some computations uses real-time data, such as sensor data, emerged from edge devices themselves.
+  If such computations need to calculate results quickly, you may not have time to send the data to servers and get the result back from them.
+
+  For real-time processing in edge devices, SpringQL provides fundamental tools to time-series calculations including window operations via SQL-like language.
+
+- **Reducing data size before sending to servers**
+
+  If you would perform complex stream analysis, such as heavy machine learning, visualization, using data from edge devices, you may perform stream processing mainly on resource-rich servers.
+
+  If you have so many edge devices and need to shrink costs for data transfer, storage, and computation in servers, you may want to shrink data size in edges before sending them to servers.
+
+  SpringQL helps you reduce data size by filtering, aggregation, and projection.
 
 ## Getting started
 
 You can use SpringQL in 3 ways:
 
-1. **Embedded mode**: Link `libspringql` from your apprecation binary and call API functions using a client library for each programming language.
-2. **IPC mode**: IPC (Iterprocess Communication) with `springqld` from your applications. Multiple applications can share stream in this mode.
-3. **Command line mode**: Run `springql` from shell and write SpringQL. This mode is mostly for demonstration.
+1. **Embedded mode**: Link `libspringql` from your application binary and call API functions using a client library for each programming language.
+2. **Embedded mode (Rust)**: Almost the same as normal embedded mode but you statically link to `springql-core` crate from your Rust application.
+3. **(TODO) IPC mode**: IPC (Iter-Process Communication) with `springqld` from your applications. Multiple applications can share the same pipeline (stream processing definition) in this mode.
 
-Here introduces "Command line mode" first to quickly grasp SpringQL usage.
+Here introduces Rust embedded mode.
 
-### Command line mode demo
+### Pipeline to create
 
-`springql` command is available from [`springql-cmd` crate](https://github.com/SpringQL/springql-cmd).
+We define the following data flow (called pipeline in SpringQL) in this demo.
 
-#### Requirements
+![Demo pipeline](https://raw.githubusercontent.com/SpringQL/SpringQL.github.io/main/static/img/demo-pipeline.svg)
+
+### Requirements
 
 - [Rust toolchain](https://rustup.rs/)
+- [replayman](https://github.com/SpringQL/replayman), a log agent to replay time-stamped logs.
 
-#### Installation
+    ```bash
+    cargo install replayman
+    ```
 
-```bash
-cargo install springql-cmd
-```
+- `nc` (netcat) command
 
-#### Running demo
-
-In this demo, you will make a _pipeline_ to process stock trade data.
-
-A pipeline represents rules to process stream data and it consists of the following stuffs.
-
-**TODO Diagram**
-
-- Source: Streaming data source outside of SpringQL.
-- Sink: ...
-- Stream: Relational schema like tables in RDBMS. While tables in RDBMS hold rows inside, rows flow streams.
-  - Native stream: ...
-  - Foreign stream: ...
-- Pump: ...
-- Server: ...
-
-You firstly need streaming data source to organize pipeline. `springql-cmd` crate provides `springql-trade-source` command and it provides trade logs in JSON format.
+### Running demo
 
 ```bash
-$ springql-trade-source --port 17890
-
-Waiting for connection from input server...
-Sample row: {"timestamp": "2021-10-28 13:20:51.310480519", "ticker": "GOOGL", "amount": 100}
-```
-
-Now you can start your pipeline and input from `springql-trade-source` to a foreign stream.
-
-```sql
-$ springql --output fst_trade_oracle.log
-
-⛲> CREATE FOREIGN STREAM "fst_trade" (
- ->   "timestamp" TIMESTAMP NOT NULL ROWTIME,
- ->   "ticker" TEXT NOT NULL,
- ->   "amount" INTEGER NOT NULL
- -> ) SERVER NET_CLIENT OPTIONS (
- ->   remote_port 17890  
- -> );
-```
-
-`ROWTIME` keyword means `"timestamp"` field is used as timestamp of each row.
-
-Data do not start to flow until you create a pump which input rows from `"trade"` stream.
-A pump needs output stream so here creates `"trade_oracle"` stream too.
-
-```sql
-⛲> CREATE STREAM "st_trade_oracle" (
- ->   "timestamp" TIMESTAMP NOT NULL ROWTIME,
- ->   "ticker" TEXT NOT NULL,
- ->   "amount" INTEGER NOT NULL
- -> );
-
-⛲> CREATE PUMP "pu_filter_oracle" AS
- ->   INSERT INTO "st_trade_oracle" ("timestamp", "ticker", "amount")
- ->   SELECT STREAM "timestamp", "ticker", "amount" FROM "fst_trade" WHERE "ticker" = "ORCL";
-```
-
-Unfortunately, you cannot see records from `"st_trade_oracle"` directly because you can only observe output data from sink. Let's create in-memory queue sink and pump to it here.
-
-```sql
-⛲> CREATE FOREIGN STREAM "fst_trade_oracle" (
- ->   "ts" TIMESTAMP NOT NULL,
- ->   "ticker" TEXT NOT NULL,
- ->   "amount" INTEGER NOT NULL
- -> ) SERVER IN_MEMORY_QUEUE;
-
-⛲> CREATE PUMP "pu_oracle_to_sink" AS
- ->   INSERT INTO "fst_trade_oracle" ("ts", "ticker", "amount")
- ->   SELECT STREAM "timestamp", "ticker", "amount" FROM "st_trade_oracle";
-```
-
-You might realize that `"timestamp"` column has changed into `"ts"` and `ROWTIME` keyword disappears.
-A sink does not have a concept of `ROWTIME` so it is meaningless to specify `ROWTIME` keyword to output foreign stream.
-
-After activating 2 pumps, you can finally get output stream.
-
-```sql
-⛲> ALTER PUMP "pu_filter_oracle", "pu_oracle_to_sink" START;
-
-⛲> SELECT "ts", "ticker", "amount" FROM "fst_trade_oracle";
-Output are written to: `fst_trade_oracle.log` ...
+nc -l 19872  # waits for outputs from demo pipeline
 ```
 
 ```bash
-$ tail -f fst_trade_oracle.log
-{"ts":"2021-10-28 13:23:34.826434031","ticker":"ORCL","amount":100}
-{"ts":"2021-10-28 13:23:36.382103952","ticker":"ORCL","amount":200}
-...
+cargo new --bin springql-demo
+cd springql-demo
+
+curl https://raw.githubusercontent.com/SpringQL/SpringQL/main/springql-core/examples/demo_pipeline.rs -O src/main.rs
+
+cargo run
 ```
 
-### Embedded mode
+Then the terminal running nc will show the following output.
 
-Client libraries for the following languages are currently available:
-
-- [C](https://github.com/SpringQL/SpringQL-client-c)
-
-C client, for example, is composed of a header file and a dynamic library.
-See [C client repository](https://github.com/SpringQL/SpringQL-client-c) for more details on how to use SpringQL in embedded mode.
-
-### IPC mode
-
-#### Installation
-
-```bash
-cargo install springql-daemon
+```json
+TODO
 ```
 
-**TBD** launch `sqringqld` via systemctl?
+## Learn more
 
-#### Launch daemon with a pipeline commonly used by applications
-
-TODO config file?
-
-share the same interm streams and sinks (not in memory but like redis)
-
-#### Writing and building sample application
-
-TODO read from redis sink
+- [C library for embedded mode](https://github.com/SpringQL/SpringQL-client-c)
+- TODO paper after accepted
 
 ## License
 
@@ -173,4 +105,4 @@ Unless you explicitly state otherwise, any contribution intentionally submitted
 for inclusion in SpringQL by you, as defined in the Apache-2.0 license, shall be
 dual licensed as above, without any additional terms or conditions.
 
-Copyright (c) 2021 TOYOTA MOTOR CORPORATION.
+Copyright (c) 2022 TOYOTA MOTOR CORPORATION.
