@@ -69,13 +69,11 @@ We define the following data flow (called pipeline in SpringQL) in this demo.
     cargo install replayman
     ```
 
-- `nc` (netcat) command
+- [springql-foreign-service](https://crates.io/crates/springql-foreign-service) lib crate, providing a simple sink implementation.
+
+springql-foreign-service
 
 ### Running demo
-
-```bash
-nc -l 19872  # waits for outputs from demo pipeline
-```
 
 ```bash
 cargo new --bin springql-demo
@@ -83,13 +81,18 @@ cd springql-demo
 
 curl https://raw.githubusercontent.com/SpringQL/SpringQL/main/springql-core/examples/demo_pipeline.rs -O src/main.rs
 
+echo 'springql-foreign-service = "0.1' >> Cargo.toml
+
 cargo run
 ```
 
-Then the terminal running nc will show the following output.
+Then you get the following output from the stdout.
 
 ```json
-TODO
+sink_vehicle_speed      Object({"speed": Number(46.20000076293945), "ts": String("2020-10-21 01:37:56.000000000")})
+sink_vehicle_speed      Object({"speed": Number(46.20000076293945), "ts": String("2020-10-21 01:37:56.100000000")})
+sink_engine_wheel_speed {"rpm":1742.0,"speed":154.0,"ts":"2020-10-21 01:37:56.000000000"}
+...
 ```
 
 ## Learn more
