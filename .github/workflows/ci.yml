@@ -30,6 +30,9 @@ jobs:
             task: lint
           - name: test
             task: build test
+          - name: example
+            task: example
+            install-replayman: true
           - name: doc
             task: doc
           - name: deadlink
@@ -151,6 +154,11 @@ jobs:
           curl -L "${BASE_URL}/v${VERSION}/${FILE_BASE}.tar.bz2" --output /tmp/grcov.tar.bz2
           tar xvf /tmp/grcov.tar.bz2 --directory=$HOME/.local/bin/
           grcov --version
+
+      - name: Install replayman
+        if: ${{ matrix.make.install-replayman }}
+        run: |
+          cargo install replayman
 
       - name: ${{ matrix.make.name }}
         run: |

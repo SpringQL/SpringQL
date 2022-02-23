@@ -29,6 +29,12 @@ script = ['''
 RUSTFLAGS='-D warnings' cargo test --workspace --all-targets --all-features
 ''']
 
+[tasks.example]
+script = ['''
+#!/usr/bin/env bash -eux
+cargo run --example demo_pipeline
+''']
+
 [tasks.doc]
 script = ['''
 #!/usr/bin/env bash -eux
