@@ -53,11 +53,6 @@ impl From<SinkRow> for SpringRow {
 }
 
 /// Creates and open an in-process stream pipeline.
-///
-/// # Parameters
-///
-/// - `overwrite_config_toml`: TOML format configuration to overwrite default. See `SPRING_CONFIG_DEFAULT` in [spring_config.rs](https://github.com/SpringQL/SpringQL/tree/main/springql-core/src/api/low_level_rs/spring_config.rs) for full-set default configuration.
-///
 pub fn spring_open(config: SpringConfig) -> Result<SpringPipeline> {
     setup_logger();
 

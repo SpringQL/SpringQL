@@ -87,6 +87,12 @@ pub struct SpringConfig {
     pub sink_writer: SpringSinkWriterConfig,
 }
 
+impl Default for SpringConfig {
+    fn default() -> Self {
+        spring_config_default()
+    }
+}
+
 impl SpringConfig {
     /// # Failures
     ///
