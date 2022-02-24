@@ -6,18 +6,17 @@ mod query_planner;
 
 use self::{
     query_planner::QueryPlanner,
-    sql_parser::{syntax::SelectStreamSyntax, SqlParser},
+    sql_parser::{parse_success::CreatePump, syntax::SelectStreamSyntax, SqlParser},
 };
 use crate::{
     error::Result,
     pipeline::{
-        name::PumpName, pump_model::PumpModel, sink_writer_model::SinkWriterModel,
+        pump_model::PumpModel, sink_writer_model::SinkWriterModel,
         source_reader_model::SourceReaderModel, stream_model::StreamModel, Pipeline,
     },
     sql_processor::sql_parser::parse_success::ParseSuccess,
     stream_engine::command::{
-        alter_pipeline_command::AlterPipelineCommand, insert_plan::InsertPlan,
-        query_plan::QueryPlan, Command,
+        alter_pipeline_command::AlterPipelineCommand, query_plan::QueryPlan, Command,
     },
 };
 
@@ -45,12 +44,8 @@ impl SqlProcessor {
             ParseSuccess::CreateSinkWriter(sink_writer_model) => {
                 self.compile_create_sink_writer(sink_writer_model, pipeline)?
             }
-            ParseSuccess::CreatePump {
-                pump_name,
-                select_stream_syntax,
-                insert_plan,
-            } => {
-                self.compile_create_pump(pump_name, select_stream_syntax, insert_plan, pipeline)?
+            ParseSuccess::CreatePump(create_pump) => {
+                self.compile_create_pump(*create_pump, pipeline)?
             }
         };
         Ok(command)
@@ -111,15 +106,9 @@ impl SqlProcessor {
         ))
     }
 
-    fn compile_create_pump(
-        &self,
-        pump_name: PumpName,
-        select_stream_syntax: SelectStreamSyntax,
-        insert_plan: InsertPlan,
-        pipeline: &Pipeline,
-    ) -> Result<Command> {
-        let query_plan = self.compile_select_stream(select_stream_syntax, pipeline)?;
-        let pump = PumpModel::new(pump_name, query_plan, insert_plan);
+    fn compile_create_pump(&self, create_pump: CreatePump, pipeline: &Pipeline) -> Result<Command> {
+        let query_plan = self.compile_select_stream(create_pump.select_stream_syntax, pipeline)?;
+        let pump = PumpModel::new(create_pump.pump_name, query_plan, create_pump.insert_plan);
         Ok(Command::AlterPipeline(AlterPipelineCommand::CreatePump(
             Box::new(pump),
         )))

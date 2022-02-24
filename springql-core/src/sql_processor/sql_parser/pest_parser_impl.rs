@@ -44,7 +44,7 @@ use ordered_float::OrderedFloat;
 use pest::{iterators::Pairs, Parser};
 use std::convert::identity;
 
-use super::parse_success::ParseSuccess;
+use super::parse_success::{CreatePump, ParseSuccess};
 use super::syntax::{
     DurationFunction, FromItemSyntax, GroupingElementSyntax, SelectFieldSyntax, SubFromItemSyntax,
 };
@@ -523,11 +523,11 @@ impl PestParserImpl {
             identity,
         )?;
 
-        Ok(ParseSuccess::CreatePump {
+        Ok(ParseSuccess::CreatePump(Box::new(CreatePump {
             pump_name,
             select_stream_syntax,
             insert_plan: InsertPlan::new(into_stream, insert_column_names),
-        })
+        })))
     }
 
     /*

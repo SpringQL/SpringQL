@@ -18,9 +18,12 @@ pub(in crate::sql_processor) enum ParseSuccess {
     CreateStream(StreamModel),
     CreateSinkStream(StreamModel),
     CreateSinkWriter(SinkWriterModel),
-    CreatePump {
-        pump_name: PumpName,
-        select_stream_syntax: SelectStreamSyntax,
-        insert_plan: InsertPlan,
-    },
+    CreatePump(Box<CreatePump>),
+}
+
+#[derive(Clone, PartialEq, Debug)]
+pub(in crate::sql_processor) struct CreatePump {
+    pub(in crate::sql_processor) pump_name: PumpName,
+    pub(in crate::sql_processor) select_stream_syntax: SelectStreamSyntax,
+    pub(in crate::sql_processor) insert_plan: InsertPlan,
 }
