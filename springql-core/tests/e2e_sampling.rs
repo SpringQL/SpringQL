@@ -166,7 +166,7 @@ fn test_e2e_sampling_sliding_window() -> Result<()> {
         CREATE PUMP pu_passthrough AS
           INSERT INTO sink_sampled_trade_amount (ts, amount)
           SELECT STREAM
-            FLOOR_TIME(source_trade.ts, DURATION_SECS(5)) AS sampled_ts,
+            FLOOR_TIME(source_trade.ts, DURATION_SECS(10)) AS sampled_ts,
             AVG(source_trade.amount) AS avg_amount
           FROM source_trade
           GROUP BY sampled_ts
@@ -214,7 +214,7 @@ fn test_e2e_sampling_sliding_window() -> Result<()> {
 
     assert_eq!(
         sink_received[1]["ts"].as_str().unwrap(),
-        "2020-01-01 00:00:05.000000000"
+        "2020-01-01 00:00:00.000000000"
     );
     assert_eq!(
         sink_received[1]["amount"].as_f64().unwrap().round() as i32,
@@ -222,15 +222,15 @@ fn test_e2e_sampling_sliding_window() -> Result<()> {
     );
 
     assert_eq!(
-      sink_received[2]["ts"].as_str().unwrap(),
-      "2020-01-01 00:00:10.000000000"
-  );
-  assert_eq!(
-      sink_received[2]["amount"].as_f64().unwrap().round() as i32,
-      50,
-  );
+        sink_received[2]["ts"].as_str().unwrap(),
+        "2020-01-01 00:00:10.000000000"
+    );
+    assert_eq!(
+        sink_received[2]["amount"].as_f64().unwrap().round() as i32,
+        50,
+    );
 
-  Ok(())
+    Ok(())
 }
 
 #[test]

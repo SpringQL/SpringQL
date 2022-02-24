@@ -54,6 +54,7 @@ keyword = {
     | ^"SELECT"
     | ^"SERVER"
     | ^"SINK"
+    | ^"SLIDING"
     | ^"SMALLINT"
     | ^"SOURCE"
     | ^"START"
@@ -505,10 +506,23 @@ grouping_element = {
 }
 
 window_clause = {
+    fixed_window_clause
+    | sliding_window_clause
+}
+
+fixed_window_clause = {
     ^"FIXED" ~ ^"WINDOW" ~ window_length ~ "," ~ allowed_delay
 }
 
+sliding_window_clause = {
+    ^"SLIDING" ~ ^"WINDOW" ~ window_length ~ "," ~ window_period ~ "," ~ allowed_delay
+}
+
 window_length = {
+    duration_constant
+}
+
+window_period = {
     duration_constant
 }
 
