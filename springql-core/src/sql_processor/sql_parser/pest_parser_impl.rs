@@ -699,6 +699,22 @@ impl PestParserImpl {
     }
 
     fn parse_window_clause(mut params: FnParseParams) -> Result<WindowParameter> {
+        try_parse_child(
+            &mut params,
+            Rule::fixed_window_clause,
+            Self::parse_fixed_window_clause,
+            identity,
+        )?
+        .or(try_parse_child(
+            &mut params,
+            Rule::sliding_window_clause,
+            Self::parse_sliding_window_clause,
+            identity,
+        )?)
+        .ok_or_else(|| SpringError::Sql(anyhow!("Failed to parse window clause: {}", params.sql)))
+    }
+
+    fn parse_fixed_window_clause(mut params: FnParseParams) -> Result<WindowParameter> {
         let length = parse_child(
             &mut params,
             Rule::window_length,
@@ -721,7 +737,47 @@ impl PestParserImpl {
         })
     }
 
+    fn parse_sliding_window_clause(mut params: FnParseParams) -> Result<WindowParameter> {
+        let length = parse_child(
+            &mut params,
+            Rule::window_length,
+            Self::parse_window_length,
+            identity,
+        )?;
+        let length = length.to_event_duration()?;
+
+        let period = parse_child(
+            &mut params,
+            Rule::window_period,
+            Self::parse_window_period,
+            identity,
+        )?;
+        let period = period.to_event_duration()?;
+
+        let allowed_delay = parse_child(
+            &mut params,
+            Rule::allowed_delay,
+            Self::parse_allowed_delay,
+            identity,
+        )?;
+        let allowed_delay = allowed_delay.to_event_duration()?;
+
+        Ok(WindowParameter::TimedSlidingWindow {
+            length,
+            period,
+            allowed_delay,
+        })
+    }
+
     fn parse_window_length(mut params: FnParseParams) -> Result<SqlValue> {
+        parse_child(
+            &mut params,
+            Rule::duration_constant,
+            Self::parse_duration_constant,
+            identity,
+        )
+    }
+    fn parse_window_period(mut params: FnParseParams) -> Result<SqlValue> {
         parse_child(
             &mut params,
             Rule::duration_constant,
