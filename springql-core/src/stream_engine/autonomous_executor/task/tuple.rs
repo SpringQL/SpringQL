@@ -81,7 +81,7 @@ impl Tuple {
 
 #[cfg(test)]
 mod tests {
-    use crate::expression::{boolean_expression::BooleanExpr, operator::UnaryOperator, ValueExpr};
+    use crate::expression::{operator::UnaryOperator, ValueExpr};
 
     use super::*;
 
@@ -137,11 +137,11 @@ mod tests {
             ),
             TestDatum::new(
                 ValueExpr::factory_and(
-                    BooleanExpr::factory_eq(
+                    ValueExpr::factory_eq(
                         ValueExpr::factory_integer(123),
                         ValueExpr::factory_integer(123),
                     ),
-                    BooleanExpr::factory_eq(
+                    ValueExpr::factory_eq(
                         ValueExpr::factory_integer(456),
                         ValueExpr::factory_integer(456),
                     ),
@@ -151,11 +151,11 @@ mod tests {
             ),
             TestDatum::new(
                 ValueExpr::factory_and(
-                    BooleanExpr::factory_eq(
+                    ValueExpr::factory_eq(
                         ValueExpr::factory_integer(-123),
                         ValueExpr::factory_integer(123),
                     ),
-                    BooleanExpr::factory_eq(
+                    ValueExpr::factory_eq(
                         ValueExpr::factory_integer(456),
                         ValueExpr::factory_integer(456),
                     ),

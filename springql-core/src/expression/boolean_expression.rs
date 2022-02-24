@@ -14,7 +14,7 @@ use super::ValueExprType;
 /// Boolean expression.
 #[allow(clippy::enum_variant_names)]
 #[derive(Clone, PartialEq, Hash, Debug)]
-pub(crate) enum BooleanExpr<E>
+pub(crate) enum BinaryExpr<E>
 where
     E: ValueExprType,
 {

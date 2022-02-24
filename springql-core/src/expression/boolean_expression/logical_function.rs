@@ -2,8 +2,6 @@
 
 use crate::expression::ValueExprType;
 
-use super::BooleanExpr;
-
 /// AND, OR, NOT
 #[derive(Clone, PartialEq, Hash, Debug)]
 pub(crate) enum LogicalFunction<E>
@@ -13,8 +11,8 @@ where
     /// `AND` operation
     AndVariant {
         /// Left operand
-        left: Box<BooleanExpr<E>>,
+        left: Box<E>,
         /// Right operand
-        right: Box<BooleanExpr<E>>,
+        right: Box<E>,
     },
 }

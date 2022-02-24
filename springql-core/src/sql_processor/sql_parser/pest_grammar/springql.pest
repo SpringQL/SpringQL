@@ -22,12 +22,15 @@
 keyword = { 
     ^"AS"
     | ^"ALTER"
+    | ^"AND"
     | ^"AVG"
     | ^"BIGINT"
+    | ^"BOOLEAN"
     | ^"BY"
     | ^"CREATE"
     | ^"DURATION_MILLIS"
     | ^"DURATION_SECS"
+    | ^"FALSE"
     | ^"FIXED"
     | ^"FLOAT"
     | ^"FLOOR_TIME"
@@ -57,6 +60,7 @@ keyword = {
     | ^"STREAM"
     | ^"TEXT"
     | ^"TIMESTAMP"
+    | ^"TRUE"
     | ^"TYPE"
     | ^"WINDOW"
     | ^"WRITER"
@@ -143,6 +147,7 @@ string_character = _{
 constant = {
     null_constant
     | numeric_constant
+    | boolean_constant
     | string_constant
     | duration_constant
 }
@@ -154,6 +159,11 @@ null_constant = {
 numeric_constant = {
     float_constant
     | integer_constant
+}
+
+boolean_constant = {
+    ^"TRUE"
+    | ^"FALSE"
 }
 
 integer_constant = @{
@@ -196,6 +206,8 @@ binary_operator = {
     "="
     | "+"
     | "*"
+    | "*"
+    | ^"AND"
 }
 
 /*
@@ -288,6 +300,7 @@ aggregate_name = {
 data_type = {
     integer_type
     | float_type
+    | boolean_type
     | character_type
     | timestamp_type
 }
@@ -313,6 +326,16 @@ integer_type = {
 
 float_type = {
     ^"FLOAT"
+}
+
+/*
+ * ----------------------------------------------------------------------------
+ * FBoolean Types
+ * ----------------------------------------------------------------------------
+ */
+
+boolean_type = {
+    ^"BOOLEAN"
 }
 
 /*

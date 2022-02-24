@@ -18,4 +18,7 @@ pub enum BinaryOperator {
 
     /// *
     Mul,
+
+    /// AND
+    And,
 }

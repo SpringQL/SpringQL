@@ -5,8 +5,9 @@ mod helper;
 
 use crate::error::{Result, SpringError};
 use crate::expression::boolean_expression::comparison_function::ComparisonFunction;
+use crate::expression::boolean_expression::logical_function::LogicalFunction;
 use crate::expression::boolean_expression::numerical_function::NumericalFunction;
-use crate::expression::boolean_expression::BooleanExpr;
+use crate::expression::boolean_expression::BinaryExpr;
 use crate::expression::function_call::FunctionCall;
 use crate::expression::operator::{BinaryOperator, UnaryOperator};
 use crate::expression::{AggrExpr, ValueExpr};
@@ -95,6 +96,12 @@ impl PestParserImpl {
         )?)
         .or(try_parse_child(
             &mut params,
+            Rule::boolean_constant,
+            Self::parse_boolean_constant,
+            identity,
+        )?)
+        .or(try_parse_child(
+            &mut params,
             Rule::string_constant,
             Self::parse_string_constant,
             identity,
@@ -160,6 +167,18 @@ impl PestParserImpl {
                     s
                 ))
             })
+    }
+
+    fn parse_boolean_constant(mut params: FnParseParams) -> Result<SqlValue> {
+        let s = self_as_str(&mut params);
+        match s.to_lowercase().as_ref() {
+            "true" => Ok(SqlValue::NotNull(NnSqlValue::Boolean(true))),
+            "false" => Ok(SqlValue::NotNull(NnSqlValue::Boolean(false))),
+            _ => Err(SpringError::Sql(anyhow!(
+                "duration function `{}` is invalid",
+                s
+            ))),
+        }
     }
 
     fn parse_string_constant(mut params: FnParseParams) -> Result<SqlValue> {
@@ -236,6 +255,7 @@ impl PestParserImpl {
             "=" => Ok(BinaryOperator::Equal),
             "+" => Ok(BinaryOperator::Add),
             "*" => Ok(BinaryOperator::Mul),
+            "and" => Ok(BinaryOperator::And),
             _ => Err(SpringError::Sql(anyhow!(
                 "Does not match any child rule of binary_operator.",
             ))),
@@ -755,20 +775,26 @@ impl PestParserImpl {
             )?;
 
             match bin_op {
-                BinaryOperator::Equal => Ok(ValueExpr::BooleanExpr(
-                    BooleanExpr::ComparisonFunctionVariant(ComparisonFunction::EqualVariant {
+                BinaryOperator::Equal => Ok(ValueExpr::BinaryExpr(
+                    BinaryExpr::ComparisonFunctionVariant(ComparisonFunction::EqualVariant {
                         left: Box::new(expr),
                         right: Box::new(right_expr),
                     }),
                 )),
-                BinaryOperator::Add => Ok(ValueExpr::BooleanExpr(
-                    BooleanExpr::NumericalFunctionVariant(NumericalFunction::AddVariant {
+                BinaryOperator::Add => Ok(ValueExpr::BinaryExpr(
+                    BinaryExpr::NumericalFunctionVariant(NumericalFunction::AddVariant {
                         left: Box::new(expr),
                         right: Box::new(right_expr),
                     }),
                 )),
-                BinaryOperator::Mul => Ok(ValueExpr::BooleanExpr(
-                    BooleanExpr::NumericalFunctionVariant(NumericalFunction::MulVariant {
+                BinaryOperator::Mul => Ok(ValueExpr::BinaryExpr(
+                    BinaryExpr::NumericalFunctionVariant(NumericalFunction::MulVariant {
+                        left: Box::new(expr),
+                        right: Box::new(right_expr),
+                    }),
+                )),
+                BinaryOperator::And => Ok(ValueExpr::BinaryExpr(
+                    BinaryExpr::LogicalFunctionVariant(LogicalFunction::AndVariant {
                         left: Box::new(expr),
                         right: Box::new(right_expr),
                     }),
@@ -974,6 +1000,12 @@ impl PestParserImpl {
         )?)
         .or(try_parse_child(
             &mut params,
+            Rule::boolean_type,
+            Self::parse_boolean_type,
+            identity,
+        )?)
+        .or(try_parse_child(
+            &mut params,
             Rule::character_type,
             Self::parse_character_type,
             identity,
@@ -1013,6 +1045,17 @@ impl PestParserImpl {
         let s = self_as_str(&mut params);
         match s.to_ascii_uppercase().as_str() {
             "FLOAT" => Ok(SqlType::float()),
+            x => {
+                eprintln!("Unexpected data type parsed: {}", x);
+                unreachable!();
+            }
+        }
+    }
+
+    fn parse_boolean_type(mut params: FnParseParams) -> Result<SqlType> {
+        let s = self_as_str(&mut params);
+        match s.to_ascii_uppercase().as_str() {
+            "BOOLEAN" => Ok(SqlType::boolean()),
             x => {
                 eprintln!("Unexpected data type parsed: {}", x);
                 unreachable!();
