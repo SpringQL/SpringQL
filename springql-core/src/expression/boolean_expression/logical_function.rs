@@ -2,7 +2,7 @@
 
 use crate::expression::ValueExprType;
 
-use super::BooleanExpr;
+use super::BinaryExpr;
 
 /// AND, OR, NOT
 #[derive(Clone, PartialEq, Hash, Debug)]
@@ -13,8 +13,8 @@ where
     /// `AND` operation
     AndVariant {
         /// Left operand
-        left: Box<BooleanExpr<E>>,
+        left: Box<BinaryExpr<E>>,
         /// Right operand
-        right: Box<BooleanExpr<E>>,
+        right: Box<BinaryExpr<E>>,
     },
 }

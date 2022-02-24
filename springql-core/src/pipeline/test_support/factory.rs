@@ -4,7 +4,7 @@ use crate::{
     expression::{
         boolean_expression::{
             comparison_function::ComparisonFunction, logical_function::LogicalFunction,
-            numerical_function::NumericalFunction, BooleanExpr,
+            numerical_function::NumericalFunction, BinaryExpr,
         },
         operator::UnaryOperator,
         ValueExpr, ValueExprType,
@@ -41,15 +41,15 @@ impl ValueExpr {
     }
 
     pub fn factory_eq(left: ValueExpr, right: ValueExpr) -> Self {
-        Self::BooleanExpr(BooleanExpr::factory_eq(left, right))
+        Self::BinaryExpr(BinaryExpr::factory_eq(left, right))
     }
 
     pub fn factory_add(left: ValueExpr, right: ValueExpr) -> Self {
-        Self::BooleanExpr(BooleanExpr::factory_add(left, right))
+        Self::BinaryExpr(BinaryExpr::factory_add(left, right))
     }
 
-    pub fn factory_and(left: BooleanExpr<Self>, right: BooleanExpr<Self>) -> Self {
-        Self::BooleanExpr(BooleanExpr::LogicalFunctionVariant(
+    pub fn factory_and(left: BinaryExpr<Self>, right: BinaryExpr<Self>) -> Self {
+        Self::BinaryExpr(BinaryExpr::LogicalFunctionVariant(
             LogicalFunction::AndVariant {
                 left: Box::new(left),
                 right: Box::new(right),
@@ -58,15 +58,15 @@ impl ValueExpr {
     }
 }
 
-impl<E: ValueExprType> BooleanExpr<E> {
+impl<E: ValueExprType> BinaryExpr<E> {
     pub fn factory_eq(left: E, right: E) -> Self {
-        BooleanExpr::ComparisonFunctionVariant(ComparisonFunction::EqualVariant {
+        BinaryExpr::ComparisonFunctionVariant(ComparisonFunction::EqualVariant {
             left: Box::new(left),
             right: Box::new(right),
         })
     }
     pub fn factory_add(left: E, right: E) -> Self {
-        BooleanExpr::NumericalFunctionVariant(NumericalFunction::AddVariant {
+        BinaryExpr::NumericalFunctionVariant(NumericalFunction::AddVariant {
             left: Box::new(left),
             right: Box::new(right),
         })

@@ -29,7 +29,7 @@ use crate::{
 use self::{
     boolean_expression::{
         comparison_function::ComparisonFunction, logical_function::LogicalFunction,
-        numerical_function::NumericalFunction, BooleanExpr,
+        numerical_function::NumericalFunction, BinaryExpr,
     },
     function_call::FunctionCall,
     operator::UnaryOperator,
@@ -45,7 +45,7 @@ pub(crate) trait ValueExprType {}
 pub(crate) enum ValueExpr {
     Constant(SqlValue),
     UnaryOperator(UnaryOperator, Box<Self>),
-    BooleanExpr(BooleanExpr<Self>),
+    BinaryExpr(BinaryExpr<Self>),
     FunctionCall(FunctionCall<Self>),
 
     ColumnReference(ColumnReference),
@@ -88,17 +88,17 @@ impl ValueExpr {
                 let expr_ph2 = expr_ph1.resolve_colref(tuple)?;
                 Ok(ValueExprPh2::UnaryOperator(op, Box::new(expr_ph2)))
             }
-            Self::BooleanExpr(bool_expr) => match bool_expr {
-                BooleanExpr::LogicalFunctionVariant(logical_function) => match logical_function {
+            Self::BinaryExpr(bool_expr) => match bool_expr {
+                BinaryExpr::LogicalFunctionVariant(logical_function) => match logical_function {
                     LogicalFunction::AndVariant { left, right } => {
-                        let left_ph2 = Self::BooleanExpr(*left).resolve_colref(tuple)?;
-                        let right_ph2 = Self::BooleanExpr(*right).resolve_colref(tuple)?;
+                        let left_ph2 = Self::BinaryExpr(*left).resolve_colref(tuple)?;
+                        let right_ph2 = Self::BinaryExpr(*right).resolve_colref(tuple)?;
                         match (left_ph2, right_ph2) {
                             (
                                 ValueExprPh2::BooleanExpr(left_ph2),
                                 ValueExprPh2::BooleanExpr(right_ph2),
                             ) => Ok(ValueExprPh2::BooleanExpr(
-                                BooleanExpr::LogicalFunctionVariant(LogicalFunction::AndVariant {
+                                BinaryExpr::LogicalFunctionVariant(LogicalFunction::AndVariant {
                                     left: Box::new(left_ph2),
                                     right: Box::new(right_ph2),
                                 }),
@@ -107,13 +107,13 @@ impl ValueExpr {
                         }
                     }
                 },
-                BooleanExpr::ComparisonFunctionVariant(comparison_function) => {
+                BinaryExpr::ComparisonFunctionVariant(comparison_function) => {
                     match comparison_function {
                         ComparisonFunction::EqualVariant { left, right } => {
                             let left_ph2 = left.resolve_colref(tuple)?;
                             let right_ph2 = right.resolve_colref(tuple)?;
                             Ok(ValueExprPh2::BooleanExpr(
-                                BooleanExpr::ComparisonFunctionVariant(
+                                BinaryExpr::ComparisonFunctionVariant(
                                     ComparisonFunction::EqualVariant {
                                         left: Box::new(left_ph2),
                                         right: Box::new(right_ph2),
@@ -123,13 +123,13 @@ impl ValueExpr {
                         }
                     }
                 }
-                BooleanExpr::NumericalFunctionVariant(numerical_function) => {
+                BinaryExpr::NumericalFunctionVariant(numerical_function) => {
                     match numerical_function {
                         NumericalFunction::AddVariant { left, right } => {
                             let left_ph2 = left.resolve_colref(tuple)?;
                             let right_ph2 = right.resolve_colref(tuple)?;
                             Ok(ValueExprPh2::BooleanExpr(
-                                BooleanExpr::NumericalFunctionVariant(
+                                BinaryExpr::NumericalFunctionVariant(
                                     NumericalFunction::AddVariant {
                                         left: Box::new(left_ph2),
                                         right: Box::new(right_ph2),
@@ -141,7 +141,7 @@ impl ValueExpr {
                             let left_ph2 = left.resolve_colref(tuple)?;
                             let right_ph2 = right.resolve_colref(tuple)?;
                             Ok(ValueExprPh2::BooleanExpr(
-                                BooleanExpr::NumericalFunctionVariant(
+                                BinaryExpr::NumericalFunctionVariant(
                                     NumericalFunction::MulVariant {
                                         left: Box::new(left_ph2),
                                         right: Box::new(right_ph2),
@@ -163,7 +163,7 @@ impl ValueExpr {
 pub(crate) enum ValueExprPh2 {
     Constant(SqlValue),
     UnaryOperator(UnaryOperator, Box<Self>),
-    BooleanExpr(BooleanExpr<Self>),
+    BooleanExpr(BinaryExpr<Self>),
     FunctionCall(FunctionCall<Self>),
 }
 impl ValueExprType for ValueExprPh2 {}
@@ -182,7 +182,7 @@ impl ValueExprPh2 {
                 }
             }
             Self::BooleanExpr(bool_expr) => match bool_expr {
-                BooleanExpr::ComparisonFunctionVariant(comparison_function) => {
+                BinaryExpr::ComparisonFunctionVariant(comparison_function) => {
                     match comparison_function {
                         ComparisonFunction::EqualVariant { left, right } => {
                             let left_sql_value = left.eval()?;
@@ -198,7 +198,7 @@ impl ValueExprPh2 {
                         }
                     }
                 }
-                BooleanExpr::LogicalFunctionVariant(logical_function) => match logical_function {
+                BinaryExpr::LogicalFunctionVariant(logical_function) => match logical_function {
                     LogicalFunction::AndVariant { left, right } => {
                         let left_sql_value = Self::BooleanExpr(*left).eval()?;
                         let right_sql_value = Self::BooleanExpr(*right).eval()?;
@@ -207,7 +207,7 @@ impl ValueExprPh2 {
                         Ok(SqlValue::NotNull(NnSqlValue::Boolean(b)))
                     }
                 },
-                BooleanExpr::NumericalFunctionVariant(numerical_function) => {
+                BinaryExpr::NumericalFunctionVariant(numerical_function) => {
                     Self::eval_numerical_function(numerical_function)
                 }
             },

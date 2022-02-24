@@ -6,7 +6,7 @@ mod helper;
 use crate::error::{Result, SpringError};
 use crate::expression::boolean_expression::comparison_function::ComparisonFunction;
 use crate::expression::boolean_expression::numerical_function::NumericalFunction;
-use crate::expression::boolean_expression::BooleanExpr;
+use crate::expression::boolean_expression::BinaryExpr;
 use crate::expression::function_call::FunctionCall;
 use crate::expression::operator::{BinaryOperator, UnaryOperator};
 use crate::expression::{AggrExpr, ValueExpr};
@@ -773,20 +773,20 @@ impl PestParserImpl {
             )?;
 
             match bin_op {
-                BinaryOperator::Equal => Ok(ValueExpr::BooleanExpr(
-                    BooleanExpr::ComparisonFunctionVariant(ComparisonFunction::EqualVariant {
+                BinaryOperator::Equal => Ok(ValueExpr::BinaryExpr(
+                    BinaryExpr::ComparisonFunctionVariant(ComparisonFunction::EqualVariant {
                         left: Box::new(expr),
                         right: Box::new(right_expr),
                     }),
                 )),
-                BinaryOperator::Add => Ok(ValueExpr::BooleanExpr(
-                    BooleanExpr::NumericalFunctionVariant(NumericalFunction::AddVariant {
+                BinaryOperator::Add => Ok(ValueExpr::BinaryExpr(
+                    BinaryExpr::NumericalFunctionVariant(NumericalFunction::AddVariant {
                         left: Box::new(expr),
                         right: Box::new(right_expr),
                     }),
                 )),
-                BinaryOperator::Mul => Ok(ValueExpr::BooleanExpr(
-                    BooleanExpr::NumericalFunctionVariant(NumericalFunction::MulVariant {
+                BinaryOperator::Mul => Ok(ValueExpr::BinaryExpr(
+                    BinaryExpr::NumericalFunctionVariant(NumericalFunction::MulVariant {
                         left: Box::new(expr),
                         right: Box::new(right_expr),
                     }),
