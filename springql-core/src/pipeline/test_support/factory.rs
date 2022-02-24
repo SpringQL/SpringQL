@@ -48,7 +48,7 @@ impl ValueExpr {
         Self::BinaryExpr(BinaryExpr::factory_add(left, right))
     }
 
-    pub fn factory_and(left: BinaryExpr<Self>, right: BinaryExpr<Self>) -> Self {
+    pub fn factory_and(left: ValueExpr, right: ValueExpr) -> Self {
         Self::BinaryExpr(BinaryExpr::LogicalFunctionVariant(
             LogicalFunction::AndVariant {
                 left: Box::new(left),

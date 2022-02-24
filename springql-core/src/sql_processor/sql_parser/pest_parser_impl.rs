@@ -5,6 +5,7 @@ mod helper;
 
 use crate::error::{Result, SpringError};
 use crate::expression::boolean_expression::comparison_function::ComparisonFunction;
+use crate::expression::boolean_expression::logical_function::LogicalFunction;
 use crate::expression::boolean_expression::numerical_function::NumericalFunction;
 use crate::expression::boolean_expression::BinaryExpr;
 use crate::expression::function_call::FunctionCall;
@@ -254,6 +255,7 @@ impl PestParserImpl {
             "=" => Ok(BinaryOperator::Equal),
             "+" => Ok(BinaryOperator::Add),
             "*" => Ok(BinaryOperator::Mul),
+            "and" => Ok(BinaryOperator::And),
             _ => Err(SpringError::Sql(anyhow!(
                 "Does not match any child rule of binary_operator.",
             ))),
@@ -791,6 +793,12 @@ impl PestParserImpl {
                         right: Box::new(right_expr),
                     }),
                 )),
+                BinaryOperator::And => Ok(ValueExpr::BinaryExpr(
+                    BinaryExpr::LogicalFunctionVariant(LogicalFunction::AndVariant {
+                        left: Box::new(expr),
+                        right: Box::new(right_expr),
+                    }),
+                )),
             }
         } else {
             Ok(expr)
@@ -1047,7 +1055,7 @@ impl PestParserImpl {
     fn parse_boolean_type(mut params: FnParseParams) -> Result<SqlType> {
         let s = self_as_str(&mut params);
         match s.to_ascii_uppercase().as_str() {
-            "BOOLEAN" => Ok(SqlType::float()),
+            "BOOLEAN" => Ok(SqlType::boolean()),
             x => {
                 eprintln!("Unexpected data type parsed: {}", x);
                 unreachable!();

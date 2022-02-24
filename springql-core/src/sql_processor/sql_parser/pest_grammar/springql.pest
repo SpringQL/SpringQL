@@ -22,6 +22,7 @@
 keyword = { 
     ^"AS"
     | ^"ALTER"
+    | ^"AND"
     | ^"AVG"
     | ^"BIGINT"
     | ^"BOOLEAN"
@@ -205,6 +206,8 @@ binary_operator = {
     "="
     | "+"
     | "*"
+    | "*"
+    | ^"AND"
 }
 
 /*

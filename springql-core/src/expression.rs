@@ -91,20 +91,14 @@ impl ValueExpr {
             Self::BinaryExpr(bool_expr) => match bool_expr {
                 BinaryExpr::LogicalFunctionVariant(logical_function) => match logical_function {
                     LogicalFunction::AndVariant { left, right } => {
-                        let left_ph2 = Self::BinaryExpr(*left).resolve_colref(tuple)?;
-                        let right_ph2 = Self::BinaryExpr(*right).resolve_colref(tuple)?;
-                        match (left_ph2, right_ph2) {
-                            (
-                                ValueExprPh2::BooleanExpr(left_ph2),
-                                ValueExprPh2::BooleanExpr(right_ph2),
-                            ) => Ok(ValueExprPh2::BooleanExpr(
-                                BinaryExpr::LogicalFunctionVariant(LogicalFunction::AndVariant {
-                                    left: Box::new(left_ph2),
-                                    right: Box::new(right_ph2),
-                                }),
-                            )),
-                            _ => unreachable!(),
-                        }
+                        let left_ph2 = left.resolve_colref(tuple)?;
+                        let right_ph2 = right.resolve_colref(tuple)?;
+                        Ok(ValueExprPh2::BinaryExpr(
+                            BinaryExpr::LogicalFunctionVariant(LogicalFunction::AndVariant {
+                                left: Box::new(left_ph2),
+                                right: Box::new(right_ph2),
+                            }),
+                        ))
                     }
                 },
                 BinaryExpr::ComparisonFunctionVariant(comparison_function) => {
@@ -112,7 +106,7 @@ impl ValueExpr {
                         ComparisonFunction::EqualVariant { left, right } => {
                             let left_ph2 = left.resolve_colref(tuple)?;
                             let right_ph2 = right.resolve_colref(tuple)?;
-                            Ok(ValueExprPh2::BooleanExpr(
+                            Ok(ValueExprPh2::BinaryExpr(
                                 BinaryExpr::ComparisonFunctionVariant(
                                     ComparisonFunction::EqualVariant {
                                         left: Box::new(left_ph2),
@@ -128,7 +122,7 @@ impl ValueExpr {
                         NumericalFunction::AddVariant { left, right } => {
                             let left_ph2 = left.resolve_colref(tuple)?;
                             let right_ph2 = right.resolve_colref(tuple)?;
-                            Ok(ValueExprPh2::BooleanExpr(
+                            Ok(ValueExprPh2::BinaryExpr(
                                 BinaryExpr::NumericalFunctionVariant(
                                     NumericalFunction::AddVariant {
                                         left: Box::new(left_ph2),
@@ -140,7 +134,7 @@ impl ValueExpr {
                         NumericalFunction::MulVariant { left, right } => {
                             let left_ph2 = left.resolve_colref(tuple)?;
                             let right_ph2 = right.resolve_colref(tuple)?;
-                            Ok(ValueExprPh2::BooleanExpr(
+                            Ok(ValueExprPh2::BinaryExpr(
                                 BinaryExpr::NumericalFunctionVariant(
                                     NumericalFunction::MulVariant {
                                         left: Box::new(left_ph2),
@@ -163,7 +157,7 @@ impl ValueExpr {
 pub(crate) enum ValueExprPh2 {
     Constant(SqlValue),
     UnaryOperator(UnaryOperator, Box<Self>),
-    BooleanExpr(BinaryExpr<Self>),
+    BinaryExpr(BinaryExpr<Self>),
     FunctionCall(FunctionCall<Self>),
 }
 impl ValueExprType for ValueExprPh2 {}
@@ -181,7 +175,7 @@ impl ValueExprPh2 {
                     }
                 }
             }
-            Self::BooleanExpr(bool_expr) => match bool_expr {
+            Self::BinaryExpr(bool_expr) => match bool_expr {
                 BinaryExpr::ComparisonFunctionVariant(comparison_function) => {
                     match comparison_function {
                         ComparisonFunction::EqualVariant { left, right } => {
@@ -200,8 +194,8 @@ impl ValueExprPh2 {
                 }
                 BinaryExpr::LogicalFunctionVariant(logical_function) => match logical_function {
                     LogicalFunction::AndVariant { left, right } => {
-                        let left_sql_value = Self::BooleanExpr(*left).eval()?;
-                        let right_sql_value = Self::BooleanExpr(*right).eval()?;
+                        let left_sql_value = left.eval()?;
+                        let right_sql_value = right.eval()?;
 
                         let b = left_sql_value.to_bool()? && right_sql_value.to_bool()?;
                         Ok(SqlValue::NotNull(NnSqlValue::Boolean(b)))

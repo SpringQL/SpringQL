@@ -35,16 +35,16 @@ fn test_feat_and() {
         "
         CREATE SINK STREAM sink_1 (
           ts TIMESTAMP NOT NULL ROWTIME,
-          answer_and BOOLEAN NOT NULL,
-          answer_true_and BOOLEAN NOT NULL,
-          answer_false_and BOOLEAN NOT NULL
+          answer_true_and_true BOOLEAN NOT NULL,
+          answer_true_and_false BOOLEAN NOT NULL,
+          answer_false_and_true BOOLEAN NOT NULL
         );
         "
         .to_string(),
         "
         CREATE PUMP pu_add AS
-          INSERT INTO sink_1 (ts, answer_and, answer_true_and, answer_false_and)
-          SELECT STREAM source_1.ts, 1+1 = 2 AND 2+2 = 4, TRUE AND FALSE, FALSE AND TRUE FROM source_1;
+          INSERT INTO sink_1 (ts, answer_true_and_true, answer_true_and_false, answer_false_and_true)
+          SELECT STREAM source_1.ts, TRUE AND TRUE, TRUE AND FALSE, FALSE AND TRUE FROM source_1;
         "
         .to_string(),
         format!(
@@ -77,7 +77,7 @@ fn test_feat_and() {
     let sink_received = drain_from_sink(&test_sink);
     let r = sink_received.get(0).unwrap();
 
-    assert_eq!(r["answer_and"], true);
-    assert_eq!(r["answer_true_and"], false);
-    assert_eq!(r["answer_false_and"], false);
+    assert_eq!(r["answer_true_and_true"], true);
+    assert_eq!(r["answer_true_and_false"], false);
+    assert_eq!(r["answer_false_and_true"], false);
 }
