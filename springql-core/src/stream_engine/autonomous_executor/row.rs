@@ -54,18 +54,6 @@ impl Row {
     ///
     /// - (default) Arrival time to a stream.
     /// - Promoted from a column in a stream.
-    pub(in crate::stream_engine::autonomous_executor) fn arrival_rowtime(
-        &self,
-    ) -> Option<&Timestamp> {
-        self.arrival_rowtime.as_ref()
-    }
-
-    /// ROWTIME. See: <https://docs.sqlstream.com/glossary/rowtime-gl/>
-    ///
-    /// ROWTIME is a:
-    ///
-    /// - (default) Arrival time to a stream.
-    /// - Promoted from a column in a stream.
     pub(in crate::stream_engine::autonomous_executor) fn rowtime(&self) -> Timestamp {
         self.arrival_rowtime.unwrap_or_else(|| {
             self.cols
