@@ -1,3 +1,5 @@
+// Copyright (c) 2022 TOYOTA MOTOR CORPORATION. Licensed under MIT OR Apache-2.0.
+
 //! Memory-Reducing Scheduler, intended to reducing working memory in task queues at the cost of fairness.
 //!
 //! It schedules tasks to minimize loss function below:

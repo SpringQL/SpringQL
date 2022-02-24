@@ -1,3 +1,5 @@
+// Copyright (c) 2022 TOYOTA MOTOR CORPORATION. Licensed under MIT OR Apache-2.0.
+
 use crate::{expr_resolver::ExprResolver, stream_engine::{Tuple, autonomous_executor::performance_metrics::metrics_update_command::metrics_update_by_task_execution::WindowInFlowByWindowTask}};
 
 use self::{

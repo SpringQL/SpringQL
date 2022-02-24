@@ -1,3 +1,5 @@
+// Copyright (c) 2022 TOYOTA MOTOR CORPORATION. Licensed under MIT OR Apache-2.0.
+
 #[derive(Clone, Eq, PartialEq, Debug, Default)]
 pub(crate) struct ExprLabelGenerator {
     value: u16,

@@ -1,3 +1,5 @@
+// Copyright (c) 2022 TOYOTA MOTOR CORPORATION. Licensed under MIT OR Apache-2.0.
+
 use crate::stream_engine::time::duration::event_duration::EventDuration;
 
 /// Window parameters

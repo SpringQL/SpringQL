@@ -1,3 +1,5 @@
+// Copyright (c) 2022 TOYOTA MOTOR CORPORATION. Licensed under MIT OR Apache-2.0.
+
 //! Source Scheduler dedicating to schedule source tasks eagerly at Moderate and Severe state.
 
 use std::{cell::RefCell, collections::HashSet};

@@ -1,3 +1,5 @@
+// Copyright (c) 2022 TOYOTA MOTOR CORPORATION. Licensed under MIT OR Apache-2.0.
+
 pub(crate) mod comparison_function;
 pub(crate) mod logical_function;
 pub(crate) mod numerical_function;

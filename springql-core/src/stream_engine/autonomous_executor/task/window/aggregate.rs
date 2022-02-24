@@ -1,3 +1,5 @@
+// Copyright (c) 2022 TOYOTA MOTOR CORPORATION. Licensed under MIT OR Apache-2.0.
+
 use crate::{
     error::{Result, SpringError},
     expr_resolver::expr_label::{AggrExprLabel, ValueExprLabel},

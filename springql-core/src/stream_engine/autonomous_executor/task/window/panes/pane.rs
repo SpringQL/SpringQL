@@ -1,3 +1,5 @@
+// Copyright (c) 2022 TOYOTA MOTOR CORPORATION. Licensed under MIT OR Apache-2.0.
+
 use crate::{
     expr_resolver::ExprResolver,
     pipeline::pump_model::window_operation_parameter::WindowOperationParameter,

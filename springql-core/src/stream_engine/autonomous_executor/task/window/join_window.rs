@@ -1,3 +1,5 @@
+// Copyright (c) 2022 TOYOTA MOTOR CORPORATION. Licensed under MIT OR Apache-2.0.
+
 use crate::pipeline::pump_model::{
     window_operation_parameter::{join_parameter::JoinParameter, WindowOperationParameter},
     window_parameter::WindowParameter,

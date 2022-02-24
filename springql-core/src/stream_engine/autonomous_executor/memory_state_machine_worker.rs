@@ -1,3 +1,5 @@
+// Copyright (c) 2022 TOYOTA MOTOR CORPORATION. Licensed under MIT OR Apache-2.0.
+
 //! Memory State Machine has 3 states: Moderate, Severe, and Critical.
 //! State transition occurs when task executor's memory usage cross the threshold.
 //! Threshold is calculated from memory usage upper limit configuration.
