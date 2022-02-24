@@ -95,6 +95,12 @@ impl PestParserImpl {
         )?)
         .or(try_parse_child(
             &mut params,
+            Rule::boolean_constant,
+            Self::parse_boolean_constant,
+            identity,
+        )?)
+        .or(try_parse_child(
+            &mut params,
             Rule::string_constant,
             Self::parse_string_constant,
             identity,
@@ -160,6 +166,18 @@ impl PestParserImpl {
                     s
                 ))
             })
+    }
+
+    fn parse_boolean_constant(mut params: FnParseParams) -> Result<SqlValue> {
+        let s = self_as_str(&mut params);
+        match s.to_lowercase().as_ref() {
+            "true" => Ok(SqlValue::NotNull(NnSqlValue::Boolean(true))),
+            "false" => Ok(SqlValue::NotNull(NnSqlValue::Boolean(false))),
+            _ => Err(SpringError::Sql(anyhow!(
+                "duration function `{}` is invalid",
+                s
+            ))),
+        }
     }
 
     fn parse_string_constant(mut params: FnParseParams) -> Result<SqlValue> {
@@ -974,6 +992,12 @@ impl PestParserImpl {
         )?)
         .or(try_parse_child(
             &mut params,
+            Rule::boolean_type,
+            Self::parse_boolean_type,
+            identity,
+        )?)
+        .or(try_parse_child(
+            &mut params,
             Rule::character_type,
             Self::parse_character_type,
             identity,
@@ -1013,6 +1037,17 @@ impl PestParserImpl {
         let s = self_as_str(&mut params);
         match s.to_ascii_uppercase().as_str() {
             "FLOAT" => Ok(SqlType::float()),
+            x => {
+                eprintln!("Unexpected data type parsed: {}", x);
+                unreachable!();
+            }
+        }
+    }
+
+    fn parse_boolean_type(mut params: FnParseParams) -> Result<SqlType> {
+        let s = self_as_str(&mut params);
+        match s.to_ascii_uppercase().as_str() {
+            "BOOLEAN" => Ok(SqlType::float()),
             x => {
                 eprintln!("Unexpected data type parsed: {}", x);
                 unreachable!();
