@@ -43,7 +43,7 @@ fn _gen_source_input(n: u64) -> impl Iterator<Item = serde_json::Value> {
 }
 
 fn _config(mock: &WebConsoleMock) -> SpringConfig {
-    let mut config = spring_config_default();
+    let mut config = SpringConfig::default();
     config.web_console.enable_report_post = true;
     config.web_console.report_interval_msec = 100;
     config.web_console.host = mock.sock_addr().ip().to_string();

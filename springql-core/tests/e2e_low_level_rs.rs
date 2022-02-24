@@ -243,7 +243,7 @@ fn test_e2e_pop_from_in_memory_queue() {
         ),
     ];
 
-    let pipeline = apply_ddls(&ddls, spring_config_default());
+    let pipeline = apply_ddls_low_level(&ddls, spring_config_default());
 
     for _ in 0..trade_times {
         let row = spring_pop(&pipeline, queue_name).unwrap();

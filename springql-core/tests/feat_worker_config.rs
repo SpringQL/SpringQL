@@ -83,8 +83,10 @@ fn t(worker_config: SpringWorkerConfig) {
         ),
     ];
 
-    let mut config = spring_config_default();
-    config.worker = worker_config;
+    let config = SpringConfig {
+        worker: worker_config,
+        ..Default::default()
+    };
 
     let _pipeline = apply_ddls(&ddls, config);
     let sink_received = drain_from_sink(&test_sink);
