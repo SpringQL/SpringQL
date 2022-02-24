@@ -201,34 +201,27 @@ fn test_e2e_sampling_sliding_window() -> Result<()> {
 
     let sink_received = run_and_drain(&ddls, &test_sink);
 
-    assert_eq!(sink_received.len(), 3);
+    assert_eq!(sink_received.len(), 5);
 
-    assert_eq!(
-        sink_received[0]["ts"].as_str().unwrap(),
-        "2020-01-01 00:00:00.000000000"
-    );
-    assert_eq!(
-        sink_received[0]["amount"].as_f64().unwrap().round() as i32,
-        20,
-    );
+    let r = &sink_received[0];
+    assert_eq!(r["ts"].as_str().unwrap(), "2020-01-01 00:00:00.000000000");
+    assert_eq!(r["amount"].as_f64().unwrap().round() as i32, 10,);
 
-    assert_eq!(
-        sink_received[1]["ts"].as_str().unwrap(),
-        "2020-01-01 00:00:00.000000000"
-    );
-    assert_eq!(
-        sink_received[1]["amount"].as_f64().unwrap().round() as i32,
-        40,
-    );
+    let r = &sink_received[1];
+    assert_eq!(r["ts"].as_str().unwrap(), "2020-01-01 00:00:00.000000000");
+    assert_eq!(r["amount"].as_f64().unwrap().round() as i32, 20,);
 
-    assert_eq!(
-        sink_received[2]["ts"].as_str().unwrap(),
-        "2020-01-01 00:00:10.000000000"
-    );
-    assert_eq!(
-        sink_received[2]["amount"].as_f64().unwrap().round() as i32,
-        50,
-    );
+    let r = &sink_received[2];
+    assert_eq!(r["ts"].as_str().unwrap(), "2020-01-01 00:00:00.000000000");
+    assert_eq!(r["amount"].as_f64().unwrap().round() as i32, 30,);
+
+    let r = &sink_received[3];
+    assert_eq!(r["ts"].as_str().unwrap(), "2020-01-01 00:00:10.000000000");
+    assert_eq!(r["amount"].as_f64().unwrap().round() as i32, 50,);
+
+    let r = &sink_received[4];
+    assert_eq!(r["ts"].as_str().unwrap(), "2020-01-01 00:00:10.000000000");
+    assert_eq!(r["amount"].as_f64().unwrap().round() as i32, 50,);
 
     Ok(())
 }
