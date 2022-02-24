@@ -1,3 +1,5 @@
+// Copyright (c) 2022 TOYOTA MOTOR CORPORATION. Licensed under MIT OR Apache-2.0.
+
 //! Expression has two forms:
 //!
 //! 1. Value expression, which is evaluated into an SqlValue from a row.

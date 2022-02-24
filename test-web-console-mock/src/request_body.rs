@@ -1,3 +1,5 @@
+// Copyright (c) 2022 TOYOTA MOTOR CORPORATION. Licensed under MIT OR Apache-2.0.
+
 use serde_derive::Deserialize;
 
 #[derive(Debug, Clone, PartialEq, Deserialize)]

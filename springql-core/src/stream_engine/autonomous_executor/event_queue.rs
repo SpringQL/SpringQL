@@ -1,3 +1,5 @@
+// Copyright (c) 2022 TOYOTA MOTOR CORPORATION. Licensed under MIT OR Apache-2.0.
+
 //! This mod provides event queue mechanism.
 //!
 //! To add/del events, modify `self::event` module.

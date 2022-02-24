@@ -1,4 +1,4 @@
-// Copyright (c) 2021 TOYOTA MOTOR CORPORATION. Licensed under MIT OR Apache-2.0.
+// Copyright (c) 2022 TOYOTA MOTOR CORPORATION. Licensed under MIT OR Apache-2.0.
 
 //! Low-level API functions to execute / register SpringQL from Rust.
 //!

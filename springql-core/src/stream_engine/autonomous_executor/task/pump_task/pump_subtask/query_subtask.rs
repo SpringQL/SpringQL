@@ -1,4 +1,4 @@
-// Copyright (c) 2021 TOYOTA MOTOR CORPORATION. Licensed under MIT OR Apache-2.0.
+// Copyright (c) 2022 TOYOTA MOTOR CORPORATION. Licensed under MIT OR Apache-2.0.
 
 pub(super) mod aggr_projection_subtask;
 pub(super) mod collect_subtask;

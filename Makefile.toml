@@ -52,7 +52,9 @@ mlc --ignore-path target
 [tasks.copyright]
 script = ['''
 #!/usr/bin/env bash -eux
-for rs in $(git ls-files |grep -e '\.rs$') ; do grep '// Copyright (c) 2021 TOYOTA MOTOR CORPORATION. Licensed under MIT OR Apache-2.0.' $rs ; done
+for rs in $(git ls-files |grep -e '\.rs$') ; do
+  grep '// Copyright (c) 2022 TOYOTA MOTOR CORPORATION. Licensed under MIT OR Apache-2.0.' $rs
+done
 ''']
 
 [tasks.publish]

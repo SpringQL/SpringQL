@@ -1,3 +1,5 @@
+// Copyright (c) 2022 TOYOTA MOTOR CORPORATION. Licensed under MIT OR Apache-2.0.
+
 use serde::{Deserialize, Serialize};
 
 use crate::stream_engine::autonomous_executor::{
@@ -42,4 +44,3 @@ impl RowQueueMetrics {
         floor0(self.bytes)
     }
 }
-
