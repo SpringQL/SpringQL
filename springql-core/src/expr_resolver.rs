@@ -95,9 +95,12 @@ impl ExprResolver {
             })
     }
 
+    /// TODO use in HAVING clause
+    ///
     /// # Failures
     ///
     /// - `SpringError::Sql` if alias is not in select_list.
+    #[allow(dead_code)]
     pub(crate) fn resolve_aggr_alias(&self, aggr_alias: AggrAlias) -> Result<AggrExprLabel> {
         self.aggr_aliased_labels
             .get(&aggr_alias)
@@ -127,7 +130,10 @@ impl ExprResolver {
         label
     }
 
+    /// TODO use in HAVING clause
+    ///
     /// Register aggregate expression which is not in select_list
+    #[allow(dead_code)]
     pub(crate) fn register_aggr_expr(&mut self, aggr_expr: AggrExpr) -> AggrExprLabel {
         let label = self.label_gen.next_aggr();
         self.aggr_expressions.insert(label, aggr_expr);
