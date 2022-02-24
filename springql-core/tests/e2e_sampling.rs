@@ -49,7 +49,7 @@ fn run_and_drain(ddls: &[String], test_sink: &ForeignSink) -> Vec<serde_json::Va
 }
 
 #[test]
-fn test_e2e_sampling() -> Result<()> {
+fn test_e2e_sampling_fixed_window() -> Result<()> {
     setup_test_logger();
 
     let source_input = gen_source_input();
@@ -134,6 +134,103 @@ fn test_e2e_sampling() -> Result<()> {
     );
 
     Ok(())
+}
+
+#[test]
+fn test_e2e_sampling_sliding_window() -> Result<()> {
+    setup_test_logger();
+
+    let source_input = gen_source_input();
+
+    let test_source =
+        ForeignSource::start(ForeignSourceInput::new_fifo_batch(source_input)).unwrap();
+    let test_sink = ForeignSink::start().unwrap();
+
+    let ddls = vec![
+        "
+        CREATE SOURCE STREAM source_trade (
+          ts TIMESTAMP NOT NULL ROWTIME,    
+          ticker TEXT NOT NULL,
+          amount INTEGER NOT NULL
+        );
+        "
+        .to_string(),
+        "
+        CREATE SINK STREAM sink_sampled_trade_amount (
+          ts TIMESTAMP NOT NULL ROWTIME,    
+          amount FLOAT NOT NULL
+        );
+        "
+        .to_string(),
+        "
+        CREATE PUMP pu_passthrough AS
+          INSERT INTO sink_sampled_trade_amount (ts, amount)
+          SELECT STREAM
+            FLOOR_TIME(source_trade.ts, DURATION_SECS(5)) AS sampled_ts,
+            AVG(source_trade.amount) AS avg_amount
+          FROM source_trade
+          GROUP BY sampled_ts
+          SLIDING WINDOW DURATION_SECS(10), DURATION_SECS(5), DURATION_SECS(0);
+        "
+        .to_string(),
+        format!(
+            "
+        CREATE SINK WRITER tcp_sink_trade FOR sink_sampled_trade_amount
+          TYPE NET_CLIENT OPTIONS (
+            PROTOCOL 'TCP',
+            REMOTE_HOST '{remote_host}',
+            REMOTE_PORT '{remote_port}'
+        );
+        ",
+            remote_host = test_sink.host_ip(),
+            remote_port = test_sink.port()
+        ),
+        format!(
+            "
+        CREATE SOURCE READER tcp_trade FOR source_trade
+          TYPE NET_CLIENT OPTIONS (
+            PROTOCOL 'TCP',
+            REMOTE_HOST '{remote_host}',
+            REMOTE_PORT '{remote_port}'
+          );
+        ",
+            remote_host = test_source.host_ip(),
+            remote_port = test_source.port()
+        ),
+    ];
+
+    let sink_received = run_and_drain(&ddls, &test_sink);
+
+    assert_eq!(sink_received.len(), 3);
+
+    assert_eq!(
+        sink_received[0]["ts"].as_str().unwrap(),
+        "2020-01-01 00:00:00.000000000"
+    );
+    assert_eq!(
+        sink_received[0]["amount"].as_f64().unwrap().round() as i32,
+        20,
+    );
+
+    assert_eq!(
+        sink_received[1]["ts"].as_str().unwrap(),
+        "2020-01-01 00:00:05.000000000"
+    );
+    assert_eq!(
+        sink_received[1]["amount"].as_f64().unwrap().round() as i32,
+        40,
+    );
+
+    assert_eq!(
+      sink_received[2]["ts"].as_str().unwrap(),
+      "2020-01-01 00:00:10.000000000"
+  );
+  assert_eq!(
+      sink_received[2]["amount"].as_f64().unwrap().round() as i32,
+      50,
+  );
+
+  Ok(())
 }
 
 #[test]
