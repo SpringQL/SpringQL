@@ -79,9 +79,17 @@ springql-foreign-service
 cargo new --bin springql-demo
 cd springql-demo
 
-curl https://raw.githubusercontent.com/SpringQL/SpringQL/main/springql-core/examples/demo_pipeline.rs -O src/main.rs
+curl https://raw.githubusercontent.com/SpringQL/SpringQL/main/springql-core/examples/demo_pipeline.rs -o src/main.rs
 
-echo 'springql-foreign-service = "0.1' >> Cargo.toml
+cat >> Cargo.toml <<EOF
+springql-core = "*"
+springql-foreign-service = "*"
+
+tempfile = "3.3"
+env_logger = "0.9"
+log = "0.4"
+reqwest = {version = "0.11", features = ["json", "blocking"]}
+EOF
 
 cargo run
 ```
