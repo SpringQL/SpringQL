@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog][Keep a Changelog] and this project adh
 
 ## [Unreleased]
 
+## [v0.2.0]
+
 ### Added
 
 - Features to comply memory upper limit presented in the paper "Memory Efficient and Flexible Stream Processor for In-Vehicle Computers and IoT Devises".
@@ -39,7 +41,8 @@ The format is based on [Keep a Changelog][Keep a Changelog] and this project adh
 [Semantic Versioning]: https://semver.org/
 
 <!-- Versions -->
-[Unreleased]: https://github.com/SpringQL/SpringQL/compare/v0.1.1...HEAD
+[Unreleased]: https://github.com/SpringQL/SpringQL/compare/v0.2.0...HEAD
 [Released]: https://github.com/SpringQL/SpringQL/releases
+[v0.2.0]: https://github.com/SpringQL/SpringQL/compare/0.1.1...0.2.0
 [v0.1.1]: https://github.com/SpringQL/SpringQL/compare/0.1.0...0.1.1
 [v0.1.0]: https://github.com/SpringQL/SpringQL/releases/0.1.0
