@@ -2,7 +2,7 @@
 
 use std::sync::Arc;
 
-use crate::{WebConsoleMock, request_body::PostTaskGraphBody};
+use crate::{request_body::PostTaskGraphBody, WebConsoleMock};
 
 #[derive(Default)]
 pub struct WebConsoleMockBuilder {

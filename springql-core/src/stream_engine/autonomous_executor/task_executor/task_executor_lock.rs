@@ -20,7 +20,7 @@ impl TaskExecutorLock {
             .0
             .write()
             .expect("another thread sharing the same TaskExecutorLock must not panic");
-            TaskExecutionBarrierGuard(write_lock)
+        TaskExecutionBarrierGuard(write_lock)
     }
 
     /// # Returns

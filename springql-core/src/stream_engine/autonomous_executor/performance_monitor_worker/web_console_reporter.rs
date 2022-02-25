@@ -47,7 +47,7 @@ impl WebConsoleReporter {
                 match resp.text() {
                     Ok(body) => log::warn!("error response from web-console: {:?} - {}", e_status, body),
                     Err(e_resp) => log::warn!("error response (status {}) from web-console but failed to read response body: {:?}", e_status.status().unwrap(), e_resp),
-                }                
+                }
             }
         }
     }
