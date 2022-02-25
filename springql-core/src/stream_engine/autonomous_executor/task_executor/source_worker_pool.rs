@@ -24,7 +24,7 @@ pub(super) struct SourceWorkerPool {
     ///
     /// Mutation to workers only happens inside task executor lock like `PipelineUpdateLockGuard`,
     /// so here uses RefCell instead of Mutex nor RwLock to avoid lock cost to workers.
-    workers: RefCell<Vec<SourceWorker>>,
+    _workers: RefCell<Vec<SourceWorker>>,
 }
 
 impl SourceWorkerPool {
@@ -46,7 +46,7 @@ impl SourceWorkerPool {
             })
             .collect();
         Self {
-            workers: RefCell::new(workers),
+            _workers: RefCell::new(workers),
         }
     }
 }

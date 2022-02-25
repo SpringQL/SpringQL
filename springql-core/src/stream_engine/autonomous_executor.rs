@@ -51,9 +51,11 @@ pub(in crate::stream_engine) struct AutonomousExecutor {
     event_queue: Arc<EventQueue>,
 
     task_executor: TaskExecutor,
-    memory_state_machine_worker: MemoryStateMachineWorker,
-    performance_monitor_worker: PerformanceMonitorWorker,
-    purger_worker: PurgerWorker,
+
+    // just holds these ownership
+    _memory_state_machine_worker: MemoryStateMachineWorker,
+    _performance_monitor_worker: PerformanceMonitorWorker,
+    _purger_worker: PurgerWorker,
 }
 
 impl AutonomousExecutor {
@@ -88,9 +90,9 @@ impl AutonomousExecutor {
         Self {
             event_queue,
             task_executor,
-            memory_state_machine_worker,
-            performance_monitor_worker,
-            purger_worker,
+            _memory_state_machine_worker: memory_state_machine_worker,
+            _performance_monitor_worker: performance_monitor_worker,
+            _purger_worker: purger_worker,
         }
     }
 

@@ -15,7 +15,7 @@ use self::generic_worker_thread::GenericWorkerThread;
 /// Worker to execute pump and sink tasks.
 #[derive(Debug)]
 pub(super) struct GenericWorker {
-    handle: WorkerHandle,
+    _handle: WorkerHandle,
 }
 
 impl GenericWorker {
@@ -29,6 +29,6 @@ impl GenericWorker {
             worker_stop_coordinate,
             thread_arg,
         );
-        Self { handle }
+        Self { _handle: handle }
     }
 }

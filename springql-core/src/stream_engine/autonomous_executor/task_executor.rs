@@ -29,8 +29,8 @@ pub(in crate::stream_engine) struct TaskExecutor {
     task_executor_lock: Arc<TaskExecutorLock>,
     repos: Arc<Repositories>,
 
-    generic_worker_pool: GenericWorkerPool,
-    source_worker_pool: SourceWorkerPool,
+    _generic_worker_pool: GenericWorkerPool,
+    _source_worker_pool: SourceWorkerPool,
 }
 
 impl TaskExecutor {
@@ -45,14 +45,14 @@ impl TaskExecutor {
             task_executor_lock: task_executor_lock.clone(),
             repos: repos.clone(),
 
-            generic_worker_pool: GenericWorkerPool::new(
+            _generic_worker_pool: GenericWorkerPool::new(
                 config.worker.n_generic_worker_threads,
                 event_queue.clone(),
                 worker_stop_coordinate.clone(),
                 task_executor_lock.clone(),
                 repos.clone(),
             ),
-            source_worker_pool: SourceWorkerPool::new(
+            _source_worker_pool: SourceWorkerPool::new(
                 config.worker.n_source_worker_threads,
                 event_queue,
                 worker_stop_coordinate,

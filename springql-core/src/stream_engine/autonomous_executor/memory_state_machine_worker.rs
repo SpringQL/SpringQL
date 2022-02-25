@@ -28,7 +28,7 @@ use super::{
 
 #[derive(Debug)]
 pub(in crate::stream_engine::autonomous_executor) struct MemoryStateMachineWorker {
-    handle: WorkerHandle,
+    _handle: WorkerHandle,
 }
 
 impl MemoryStateMachineWorker {
@@ -47,6 +47,6 @@ impl MemoryStateMachineWorker {
                 memory_config.memory_state_transition_interval_msec,
             ),
         );
-        Self { handle }
+        Self { _handle: handle }
     }
 }
