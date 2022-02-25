@@ -15,7 +15,7 @@ use self::source_worker_thread::SourceWorkerThread;
 /// Worker to execute pump and sink tasks.
 #[derive(Debug)]
 pub(super) struct SourceWorker {
-    handle: WorkerHandle,
+    _handle: WorkerHandle,
 }
 
 impl SourceWorker {
@@ -29,6 +29,6 @@ impl SourceWorker {
             worker_stop_coordinate,
             thread_arg,
         );
-        Self { handle }
+        Self { _handle: handle }
     }
 }

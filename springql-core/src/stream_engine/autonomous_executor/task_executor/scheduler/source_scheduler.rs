@@ -2,9 +2,7 @@
 
 //! Source Scheduler dedicating to schedule source tasks eagerly at Moderate and Severe state.
 
-use std::{cell::RefCell, collections::HashSet};
-
-use rand::prelude::ThreadRng;
+use std::collections::HashSet;
 
 use crate::stream_engine::autonomous_executor::{
     performance_metrics::PerformanceMetrics,
@@ -19,9 +17,7 @@ struct SourceTask {
 }
 
 #[derive(Debug, Default)]
-pub(in crate::stream_engine::autonomous_executor) struct SourceScheduler {
-    rng: RefCell<ThreadRng>,
-}
+pub(in crate::stream_engine::autonomous_executor) struct SourceScheduler {}
 
 impl Scheduler for SourceScheduler {
     /// TODO [prioritize source with lower source-miss rate](https://gh01.base.toyota-tokyo.tech/SpringQL-internal/SpringQL/issues/122)

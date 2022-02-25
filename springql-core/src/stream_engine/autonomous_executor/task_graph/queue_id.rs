@@ -25,7 +25,7 @@ impl QueueId {
         pump: &PumpModel,
         upstream: &StreamName,
     ) -> Self {
-        let name = format!("{}-{}", pump.name().to_string(), upstream);
+        let name = format!("{}-{}", pump.name(), upstream);
         match pump.input_type() {
             PumpInputType::Row => Self::Row(RowQueueId::new(name)),
             PumpInputType::Window => Self::Window(WindowQueueId::new(name)),

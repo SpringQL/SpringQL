@@ -24,7 +24,7 @@ use super::{
 
 #[derive(Debug)]
 pub(crate) enum Task {
-    Pump(PumpTask),
+    Pump(Box<PumpTask>),
     Source(SourceTask),
     Sink(SinkTask),
 }
@@ -33,7 +33,7 @@ impl Task {
     pub(super) fn new(edge: &Edge, pipeline_graph: &PipelineGraph) -> Self {
         match edge {
             Edge::Pump { pump_model, .. } => {
-                Self::Pump(PumpTask::new(pump_model.as_ref(), pipeline_graph))
+                Self::Pump(Box::new(PumpTask::new(pump_model.as_ref(), pipeline_graph)))
             }
             Edge::Source(s) => Self::Source(SourceTask::new(s)),
             Edge::Sink(s) => Self::Sink(SinkTask::new(s)),

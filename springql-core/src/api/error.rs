@@ -40,9 +40,7 @@ pub enum SpringError {
     ThreadPoisoned(anyhow::Error),
 
     #[error("invalid config")]
-    InvalidConfig {
-        source: anyhow::Error,
-    },
+    InvalidConfig { source: anyhow::Error },
 
     #[error("invalid option (key `{key:?}`, value `{value:?}`)")]
     InvalidOption {

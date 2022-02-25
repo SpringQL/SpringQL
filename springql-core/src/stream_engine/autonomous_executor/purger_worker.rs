@@ -14,7 +14,7 @@ use self::purger_worker_thread::{PurgerWorkerThread, PurgerWorkerThreadArg};
 /// Worker to execute pump and sink tasks.
 #[derive(Debug)]
 pub(super) struct PurgerWorker {
-    handle: WorkerHandle,
+    _handle: WorkerHandle,
 }
 
 impl PurgerWorker {
@@ -28,6 +28,6 @@ impl PurgerWorker {
             worker_stop_coordinate,
             thread_arg,
         );
-        Self { handle }
+        Self { _handle: handle }
     }
 }

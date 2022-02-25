@@ -23,7 +23,7 @@ use super::{
 /// 2. Report the performance to [AutonomousExecutor](crate::stream_processor::autonomous_executor::AutonomousExecutor) and web-console.
 #[derive(Debug)]
 pub(in crate::stream_engine::autonomous_executor) struct PerformanceMonitorWorker {
-    handle: WorkerHandle,
+    _handle: WorkerHandle,
 }
 
 impl PerformanceMonitorWorker {
@@ -37,6 +37,6 @@ impl PerformanceMonitorWorker {
             worker_stop_coordinate,
             PerformanceMonitorWorkerThreadArg::from(config),
         );
-        Self { handle }
+        Self { _handle: handle }
     }
 }
