@@ -53,10 +53,10 @@ impl From<SinkRow> for SpringRow {
 }
 
 /// Creates and open an in-process stream pipeline.
-pub fn spring_open(config: SpringConfig) -> Result<SpringPipeline> {
+pub fn spring_open(config: &SpringConfig) -> Result<SpringPipeline> {
     setup_logger();
 
-    let engine = EngineMutex::new(&config);
+    let engine = EngineMutex::new(config);
     let sql_processor = SqlProcessor::default();
 
     Ok(SpringPipeline {

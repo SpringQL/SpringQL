@@ -13,7 +13,7 @@ pub struct SpringPipelineHL(SpringPipeline);
 
 impl SpringPipelineHL {
     /// Creates and open an in-process stream pipeline.
-    pub fn new(config: SpringConfig) -> Result<Self> {
+    pub fn new(config: &SpringConfig) -> Result<Self> {
         let low_level = spring_open(config)?;
         Ok(Self(low_level))
     }
