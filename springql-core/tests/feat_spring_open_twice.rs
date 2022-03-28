@@ -4,6 +4,7 @@ use springql_core::low_level_rs::{spring_config_default, spring_open};
 
 #[test]
 fn test_spring_open_twice() {
-    let _ = spring_open(spring_config_default()).unwrap();
-    let _ = spring_open(spring_config_default()).unwrap();
+    let config = spring_config_default();
+    let _ = spring_open(&config).unwrap();
+    let _ = spring_open(&config).unwrap();
 }

@@ -78,7 +78,7 @@ fn main() {
     let sink_engine_wheel_speed = ForeignSink::start().unwrap();
     let sink_vehicle_speed = ForeignSink::start().unwrap();
 
-    let pipeline = SpringPipelineHL::new(SpringConfig::default()).unwrap();
+    let pipeline = SpringPipelineHL::new(&SpringConfig::default()).unwrap();
     pipeline
         .command(
             "

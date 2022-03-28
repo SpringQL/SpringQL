@@ -10,7 +10,7 @@ use springql_foreign_service::sink::ForeignSink;
 
 #[allow(dead_code)]
 pub(crate) fn apply_ddls(ddls: &[String], config: SpringConfig) -> SpringPipelineHL {
-    let pipeline = SpringPipelineHL::new(config).unwrap();
+    let pipeline = SpringPipelineHL::new(&config).unwrap();
     for ddl in ddls {
         pipeline.command(ddl).unwrap();
     }
@@ -19,7 +19,7 @@ pub(crate) fn apply_ddls(ddls: &[String], config: SpringConfig) -> SpringPipelin
 
 #[allow(dead_code)]
 pub(crate) fn apply_ddls_low_level(ddls: &[String], config: SpringConfig) -> SpringPipeline {
-    let pipeline = spring_open(config).unwrap();
+    let pipeline = spring_open(&config).unwrap();
     for ddl in ddls {
         spring_command(&pipeline, ddl).unwrap();
     }
