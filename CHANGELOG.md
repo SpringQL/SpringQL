@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog][Keep a Changelog] and this project adh
 
 ## [Unreleased]
 
+## [v0.3.0]
+
+### Changed
+
+- `spring_open()` and `SpringPipelineHL::new()` are changed to take `SpringConfig`'s reference instead of owned value.
+
 ## [v0.2.0]
 
 ### Added
@@ -43,6 +49,7 @@ The format is based on [Keep a Changelog][Keep a Changelog] and this project adh
 <!-- Versions -->
 [Unreleased]: https://github.com/SpringQL/SpringQL/compare/v0.2.0...HEAD
 [Released]: https://github.com/SpringQL/SpringQL/releases
+[v0.3.0]: https://github.com/SpringQL/SpringQL/compare/v0.2.0...v0.3.0
 [v0.2.0]: https://github.com/SpringQL/SpringQL/compare/v0.1.1...v0.2.0
 [v0.1.1]: https://github.com/SpringQL/SpringQL/compare/v0.1.0...v0.1.1
 [v0.1.0]: https://github.com/SpringQL/SpringQL/releases/v0.1.0
