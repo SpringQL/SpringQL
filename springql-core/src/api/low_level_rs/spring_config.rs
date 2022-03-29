@@ -1,5 +1,7 @@
 // Copyright (c) 2022 TOYOTA MOTOR CORPORATION. Licensed under MIT OR Apache-2.0.
 
+use std::ffi::CStr;
+
 use serde::Deserialize;
 
 use crate::error::{Result, SpringError};
@@ -64,6 +66,9 @@ pub fn spring_config_default() -> SpringConfig {
 
 /// Configuration by TOML format string.
 ///
+/// This function is intended to be called from FFI.
+/// Rust clients can use `SpringConfig::from_toml()` instead.
+///
 /// # Parameters
 ///
 /// - `overwrite_config_toml`: TOML format configuration to overwrite default. See `SPRING_CONFIG_DEFAULT` in [spring_config.rs](https://github.com/SpringQL/SpringQL/tree/main/springql-core/src/api/low_level_rs/spring_config.rs) for full-set default configuration.
@@ -74,8 +79,11 @@ pub fn spring_config_default() -> SpringConfig {
 ///   - `overwrite_config_toml` includes invalid key and/or value.
 /// - [SpringError::InvalidFormat](crate::error::SpringError::InvalidFormat) when:
 ///   - `overwrite_config_toml` is not valid as TOML.
-pub fn spring_config_toml(overwrite_config_toml: &str) -> Result<SpringConfig> {
-    SpringConfig::new(overwrite_config_toml)
+pub fn spring_config_toml(overwrite_config_toml: &CStr) -> Result<SpringConfig> {
+    let s = overwrite_config_toml
+        .to_str()
+        .expect("failed to parse TOML string into UTF-8");
+    SpringConfig::new(s)
 }
 
 /// Top-level config.
