@@ -64,6 +64,9 @@ pub fn spring_config_default() -> SpringConfig {
 
 /// Configuration by TOML format string.
 ///
+/// This function is intended to be called from FFI.
+/// Rust clients can use `SpringConfig::from_toml()` instead.
+///
 /// # Parameters
 ///
 /// - `overwrite_config_toml`: TOML format configuration to overwrite default. See `SPRING_CONFIG_DEFAULT` in [spring_config.rs](https://github.com/SpringQL/SpringQL/tree/main/springql-core/src/api/low_level_rs/spring_config.rs) for full-set default configuration.

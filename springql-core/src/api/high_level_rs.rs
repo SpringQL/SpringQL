@@ -32,3 +32,21 @@ impl SpringPipelineHL {
         spring_command(&self.0, sql.as_ref())
     }
 }
+
+impl SpringConfig {
+    /// Configuration by TOML format string.
+    ///
+    /// # Parameters
+    ///
+    /// - `overwrite_config_toml`: TOML format configuration to overwrite default. See `SPRING_CONFIG_DEFAULT` in [spring_config.rs](https://github.com/SpringQL/SpringQL/tree/main/springql-core/src/api/low_level_rs/spring_config.rs) for full-set default configuration.
+    ///
+    /// # Failures
+    ///
+    /// - [SpringError::InvalidConfig](crate::error::SpringError::InvalidConfig) when:
+    ///   - `overwrite_config_toml` includes invalid key and/or value.
+    /// - [SpringError::InvalidFormat](crate::error::SpringError::InvalidFormat) when:
+    ///   - `overwrite_config_toml` is not valid as TOML.
+    pub fn from_toml(overwrite_config_toml: &str) -> Result<SpringConfig> {
+        SpringConfig::new(overwrite_config_toml)
+    }
+}
