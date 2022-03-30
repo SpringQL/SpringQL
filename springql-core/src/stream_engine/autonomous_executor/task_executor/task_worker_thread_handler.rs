@@ -5,7 +5,7 @@
 use std::{
     fmt::Display,
     sync::Arc,
-    thread::{self, yield_now},
+    thread::{self, sleep, yield_now},
     time::Duration,
 };
 
@@ -112,8 +112,8 @@ impl TaskWorkerThreadHandler {
         if will_sleep {
             thread::sleep(Duration::from_millis(TASK_WAIT_MSEC));
         } else {
-            yield_now();
-            // sleep(Duration::from_nanos(100));
+            // yield_now();
+            sleep(Duration::from_nanos(100));
         }
 
         current_state
