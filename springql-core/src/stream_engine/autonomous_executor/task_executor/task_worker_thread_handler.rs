@@ -113,7 +113,7 @@ impl TaskWorkerThreadHandler {
             thread::sleep(Duration::from_millis(TASK_WAIT_MSEC));
         } else {
             // yield_now();
-            sleep(Duration::from_nanos(100));
+            sleep(Duration::from_nanos(10_000));
         }
 
         current_state
