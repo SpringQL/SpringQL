@@ -2,7 +2,7 @@
 
 use std::{
     sync::{mpsc, Arc},
-    thread::{self, yield_now},
+    thread::{self, sleep, yield_now}, time::Duration,
 };
 
 use crate::stream_engine::autonomous_executor::{
@@ -151,7 +151,8 @@ pub(in crate::stream_engine::autonomous_executor) trait WorkerThread {
             }
             state = Self::handle_events(state, &event_polls, &thread_arg, event_queue.clone());
 
-            yield_now();
+            // yield_now();
+            sleep(Duration::from_nanos(100));
         }
 
         log::info!(
