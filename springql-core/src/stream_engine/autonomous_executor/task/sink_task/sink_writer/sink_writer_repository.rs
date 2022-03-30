@@ -2,8 +2,10 @@
 
 use std::{
     collections::HashMap,
-    sync::{Arc, Mutex, RwLock},
+    sync::{Arc, Mutex},
 };
+
+use parking_lot::RwLock;
 
 use crate::{error::Result, pipeline::name::SinkWriterName};
 use crate::{
@@ -41,10 +43,7 @@ impl SinkWriterRepository {
         &self,
         sink_writer: &SinkWriterModel,
     ) -> Result<()> {
-        let mut sinks = self
-            .sinks
-            .write()
-            .expect("another thread sharing the same internal got panic");
+        let mut sinks = self.sinks.write();
 
         if sinks.get(sink_writer.name()).is_some() {
             Ok(())
@@ -73,7 +72,6 @@ impl SinkWriterRepository {
     ) -> Arc<Mutex<Box<dyn SinkWriter>>> {
         self.sinks
             .read()
-            .expect("another thread sharing the same internal got panic")
             .get(name)
             .unwrap_or_else(|| panic!("sink name ({}) not registered yet", name))
             .clone()
