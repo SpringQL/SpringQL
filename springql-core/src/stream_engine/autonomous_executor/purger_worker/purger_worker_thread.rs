@@ -65,7 +65,7 @@ impl WorkerThread for PurgerWorkerThread {
         _thread_arg: &Self::ThreadArg,
         _event_queue: &EventQueue,
     ) -> Self::LoopState {
-        // Do nothing in loop. Only curious about ReportMetricsSummary event.
+        // Do nothing in loop. Only curious about TransitMemoryState event.
         thread::sleep(Duration::from_millis(100));
         current_state
     }
