@@ -83,6 +83,8 @@ impl TaskWorkerThreadHandler {
         {
             let task_executor_lock = &thread_arg.task_executor_lock;
 
+            let mut will_sleep = false;
+
             if let Ok(_lock) = task_executor_lock.try_task_execution() {
                 let task_series = current_state
                     .scheduler
@@ -95,8 +97,12 @@ impl TaskWorkerThreadHandler {
                         event_queue,
                     );
                 } else {
-                    thread::sleep(Duration::from_millis(TASK_WAIT_MSEC));
+                    will_sleep = true;
                 }
+            }
+
+            if will_sleep {
+                thread::sleep(Duration::from_millis(TASK_WAIT_MSEC));
             }
 
             current_state
