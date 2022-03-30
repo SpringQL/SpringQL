@@ -86,6 +86,8 @@ impl TaskWorkerThreadHandler {
             let task_executor_lock = &thread_arg.task_executor_lock;
 
             if let Ok(_lock) = task_executor_lock.try_task_execution() {
+                log::error!("acquire lock!!!!!!!!!!!!!!");
+
                 let task_series = current_state
                     .scheduler
                     .next_task_series(pipeline_derivatives.task_graph(), metrics.as_ref());
@@ -103,6 +105,8 @@ impl TaskWorkerThreadHandler {
         } else {
             unreachable!("by integrity check")
         }
+
+        log::error!("release lock!!!!!!!!!!!!!!");
 
         if will_sleep {
             thread::sleep(Duration::from_millis(TASK_WAIT_MSEC));
