@@ -94,6 +94,8 @@ impl WorkerThread for PurgerWorkerThread {
                 // do nothing
             }
             MemoryState::Critical => {
+                log::warn!("[PurgerWorker] Start purging...",);
+
                 let task_executor_lock = &thread_arg.task_executor_lock;
                 let _lock = task_executor_lock.task_execution_barrier();
 
