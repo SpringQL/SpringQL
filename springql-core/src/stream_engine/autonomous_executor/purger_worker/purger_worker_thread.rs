@@ -116,7 +116,9 @@ impl WorkerThread for PurgerWorkerThread {
                     metrics_update_by_task_execution_or_purge: Arc::new(
                         MetricsUpdateByTaskExecutionOrPurge::Purge,
                     ),
-                })
+                });
+
+                log::warn!("[PurgerWorker] Finished purging. Sent `MetricsUpdateByTaskExecutionOrPurge::Purge` event.");
             }
         }
 
