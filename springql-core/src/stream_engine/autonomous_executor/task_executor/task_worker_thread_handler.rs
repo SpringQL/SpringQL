@@ -78,12 +78,12 @@ impl TaskWorkerThreadHandler {
     where
         S: Scheduler,
     {
+        let mut will_sleep = false;
+
         if let (Some(pipeline_derivatives), Some(metrics)) =
             (&current_state.pipeline_derivatives, &current_state.metrics)
         {
             let task_executor_lock = &thread_arg.task_executor_lock;
-
-            let mut will_sleep = false;
 
             if let Ok(_lock) = task_executor_lock.try_task_execution() {
                 let task_series = current_state
@@ -100,15 +100,15 @@ impl TaskWorkerThreadHandler {
                     will_sleep = true;
                 }
             }
-
-            if will_sleep {
-                thread::sleep(Duration::from_millis(TASK_WAIT_MSEC));
-            }
-
-            current_state
         } else {
             unreachable!("by integrity check")
         }
+
+        if will_sleep {
+            thread::sleep(Duration::from_millis(TASK_WAIT_MSEC));
+        }
+
+        current_state
     }
 
     fn execute_task_series<S>(
