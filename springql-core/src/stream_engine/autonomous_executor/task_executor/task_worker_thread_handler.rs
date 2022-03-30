@@ -2,7 +2,12 @@
 
 //! Task execution logics commonly used by GenericWorkerThread and SourceWorkerThread.
 
-use std::{fmt::Display, sync::Arc, thread, time::Duration};
+use std::{
+    fmt::Display,
+    sync::Arc,
+    thread::{self, yield_now},
+    time::Duration,
+};
 
 use crate::stream_engine::autonomous_executor::{
     event_queue::{event::Event, EventQueue},
@@ -106,6 +111,9 @@ impl TaskWorkerThreadHandler {
 
         if will_sleep {
             thread::sleep(Duration::from_millis(TASK_WAIT_MSEC));
+        } else {
+            yield_now();
+            // sleep(Duration::from_nanos(100));
         }
 
         current_state
