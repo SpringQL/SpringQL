@@ -2,8 +2,10 @@
 
 use std::{
     collections::{HashMap, HashSet},
-    sync::{Arc, RwLock},
+    sync::Arc,
 };
+
+use parking_lot::RwLock;
 
 use crate::stream_engine::autonomous_executor::task_graph::queue_id::row_queue_id::RowQueueId;
 
@@ -19,7 +21,7 @@ impl RowQueueRepository {
         &self,
         row_queue_id: &RowQueueId,
     ) -> Arc<RowQueue> {
-        let repo = self.repo.read().expect("RowQueueRepository lock poisoned");
+        let repo = self.repo.read();
         repo.get(row_queue_id)
             .unwrap_or_else(|| panic!("row queue id {} is not in RowQueueRepository", row_queue_id))
             .clone()
@@ -30,7 +32,7 @@ impl RowQueueRepository {
         &self,
         queue_ids: HashSet<RowQueueId>,
     ) {
-        let mut repo = self.repo.write().expect("RowQueueRepository lock poisoned");
+        let mut repo = self.repo.write();
         repo.clear();
 
         queue_ids.into_iter().for_each(|queue_id| {
@@ -39,7 +41,7 @@ impl RowQueueRepository {
     }
 
     pub(in crate::stream_engine::autonomous_executor) fn purge(&self) {
-        let mut repo = self.repo.write().expect("RowQueueRepository lock poisoned");
+        let mut repo = self.repo.write();
         repo.iter_mut().for_each(|(_, queue)| {
             queue.purge();
         });
