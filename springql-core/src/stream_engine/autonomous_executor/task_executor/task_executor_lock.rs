@@ -1,6 +1,11 @@
 // Copyright (c) 2022 TOYOTA MOTOR CORPORATION. Licensed under MIT OR Apache-2.0.
 
-use anyhow::{anyhow, Context};
+use anyhow::Context;
+
+// Fixes: <https://github.com/SpringQL/SpringQL/issues/61#issuecomment-1082615502>
+//
+// `std::sync::RwLock` uses `pthread_rwlock_wrlock`, which might cause writer starvation without setting `PTHREAD_RWLOCK_PREFER_WRITER_NONRECURSIVE_NP` attribute.
+// `parking_lot::RwLock` avoids writer starvation.
 use parking_lot::{RwLock, RwLockReadGuard, RwLockWriteGuard};
 
 /// Task executor is responsible for queues' cleanup on pipeline update.
