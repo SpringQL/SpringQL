@@ -28,10 +28,11 @@ impl MemoryStateMachine {
         memory_usage_bytes: u64,
     ) -> Option<MemoryStateTransition> {
         if memory_usage_bytes >= self.threshold.upper_limit_bytes {
-            panic!(
+            log::error!(
                 "Memory usage ({}) exceeds upper limit ({})",
                 memory_usage_bytes, self.threshold.upper_limit_bytes
             );
+            None
             // TODO no panic option in configuration
         } else {
             match self.state {
