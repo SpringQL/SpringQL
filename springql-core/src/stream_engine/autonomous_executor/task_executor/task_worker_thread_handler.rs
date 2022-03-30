@@ -2,12 +2,7 @@
 
 //! Task execution logics commonly used by GenericWorkerThread and SourceWorkerThread.
 
-use std::{
-    fmt::Display,
-    sync::Arc,
-    thread::{self, sleep, yield_now},
-    time::Duration,
-};
+use std::{fmt::Display, sync::Arc, thread, time::Duration};
 
 use crate::stream_engine::autonomous_executor::{
     event_queue::{event::Event, EventQueue},
@@ -83,8 +78,6 @@ impl TaskWorkerThreadHandler {
     where
         S: Scheduler,
     {
-        let mut will_sleep = false;
-
         if let (Some(pipeline_derivatives), Some(metrics)) =
             (&current_state.pipeline_derivatives, &current_state.metrics)
         {
@@ -102,21 +95,14 @@ impl TaskWorkerThreadHandler {
                         event_queue,
                     );
                 } else {
-                    will_sleep = true;
+                    thread::sleep(Duration::from_millis(TASK_WAIT_MSEC));
                 }
             }
+
+            current_state
         } else {
             unreachable!("by integrity check")
         }
-
-        if will_sleep {
-            thread::sleep(Duration::from_millis(TASK_WAIT_MSEC));
-        } else {
-            // yield_now();
-            sleep(Duration::from_nanos(10_000));
-        }
-
-        current_state
     }
 
     fn execute_task_series<S>(

@@ -2,8 +2,7 @@
 
 use std::{
     sync::{mpsc, Arc},
-    thread::{self, sleep, yield_now},
-    time::Duration,
+    thread,
 };
 
 use crate::stream_engine::autonomous_executor::{
