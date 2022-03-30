@@ -213,7 +213,7 @@ impl PerformanceMonitorWorkerThread {
             state.countdown_metrics_summary_msec = report_interval_msec;
 
             let metrics_summary = Arc::new(PerformanceMetricsSummary::from(metrics));
-            log::warn!(
+            log::debug!(
                 "PerformanceMonitorWorkerThread::report_metrics_summary: metrics_summary={:?}",
                 metrics_summary
             );
