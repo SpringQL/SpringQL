@@ -1,6 +1,6 @@
 [package]
 name = "springql-core"
-version = "0.3.2"
+version = "0.3.3"
 
 authors = ["Sho Nakatani <lay.sakura@gmail.com>"]
 license = "MIT OR Apache-2.0"
