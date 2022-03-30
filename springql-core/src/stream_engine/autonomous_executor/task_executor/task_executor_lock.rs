@@ -1,7 +1,12 @@
 // Copyright (c) 2022 TOYOTA MOTOR CORPORATION. Licensed under MIT OR Apache-2.0.
 
-use anyhow::anyhow;
-use std::sync::{RwLock, RwLockReadGuard, RwLockWriteGuard};
+use anyhow::Context;
+
+// Fixes: <https://github.com/SpringQL/SpringQL/issues/61#issuecomment-1082615502>
+//
+// `std::sync::RwLock` uses `pthread_rwlock_wrlock`, which might cause writer starvation without setting `PTHREAD_RWLOCK_PREFER_WRITER_NONRECURSIVE_NP` attribute.
+// `parking_lot::RwLock` avoids writer starvation.
+use parking_lot::{RwLock, RwLockReadGuard, RwLockWriteGuard};
 
 /// Task executor is responsible for queues' cleanup on pipeline update.
 ///
@@ -16,10 +21,7 @@ impl TaskExecutorLock {
     pub(in crate::stream_engine::autonomous_executor) fn task_execution_barrier(
         &self,
     ) -> TaskExecutionBarrierGuard {
-        let write_lock = self
-            .0
-            .write()
-            .expect("another thread sharing the same TaskExecutorLock must not panic");
+        let write_lock = self.0.write();
         TaskExecutionBarrierGuard(write_lock)
     }
 
@@ -32,7 +34,7 @@ impl TaskExecutorLock {
         self.0
             .try_read()
             .map(TaskExecutionLockGuard)
-            .map_err(|_| anyhow!("write lock may be taken"))
+            .context("write lock may be taken")
     }
 }
 
