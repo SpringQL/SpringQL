@@ -2,8 +2,10 @@
 
 use std::{
     collections::{HashMap, HashSet},
-    sync::{Arc, RwLock},
+    sync::Arc,
 };
+
+use parking_lot::RwLock;
 
 use crate::stream_engine::autonomous_executor::task_graph::queue_id::window_queue_id::WindowQueueId;
 
@@ -19,10 +21,7 @@ impl WindowQueueRepository {
         &self,
         window_queue_id: &WindowQueueId,
     ) -> Arc<WindowQueue> {
-        let repo = self
-            .repo
-            .read()
-            .expect("WindowQueueRepository lock poisoned");
+        let repo = self.repo.read();
         repo.get(window_queue_id)
             .unwrap_or_else(|| {
                 panic!(
@@ -38,10 +37,7 @@ impl WindowQueueRepository {
         &self,
         queue_ids: HashSet<WindowQueueId>,
     ) {
-        let mut repo = self
-            .repo
-            .write()
-            .expect("WindowQueueRepository lock poisoned");
+        let mut repo = self.repo.write();
         repo.clear();
 
         queue_ids.into_iter().for_each(|queue_id| {
@@ -50,10 +46,7 @@ impl WindowQueueRepository {
     }
 
     pub(in crate::stream_engine::autonomous_executor) fn purge(&self) {
-        let mut repo = self
-            .repo
-            .write()
-            .expect("WindowQueueRepository lock poisoned");
+        let mut repo = self.repo.write();
         repo.iter_mut().for_each(|(_, queue)| {
             queue.purge();
         });

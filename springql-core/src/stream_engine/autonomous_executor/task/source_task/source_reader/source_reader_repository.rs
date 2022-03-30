@@ -2,8 +2,10 @@
 
 use std::{
     collections::HashMap,
-    sync::{Arc, Mutex, RwLock},
+    sync::{Arc, Mutex},
 };
+
+use parking_lot::RwLock;
 
 use crate::{
     error::Result,
@@ -42,10 +44,7 @@ impl SourceReaderRepository {
         &self,
         source_reader: &SourceReaderModel,
     ) -> Result<()> {
-        let mut sources = self
-            .sources
-            .write()
-            .expect("another thread sharing the same internal got panic");
+        let mut sources = self.sources.write();
 
         if sources.get(source_reader.name()).is_some() {
             Ok(())
@@ -74,7 +73,6 @@ impl SourceReaderRepository {
     ) -> Arc<Mutex<Box<dyn SourceReader>>> {
         self.sources
             .read()
-            .expect("another thread sharing the same internal got panic")
             .get(name)
             .unwrap_or_else(|| panic!("source reader name ({}) not registered yet", name))
             .clone()
