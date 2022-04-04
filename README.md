@@ -6,8 +6,8 @@
 ![MSRV](https://img.shields.io/badge/rustc-1.56+-lightgray.svg)
 [![ci](https://github.com/SpringQL/SpringQL/actions/workflows/ci.yml/badge.svg?branch=main&event=push)](https://github.com/SpringQL/SpringQL/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/gh/SpringQL/SpringQL/branch/main/graph/badge.svg?token=XI0IR5QVU3)](https://codecov.io/gh/laysakura/springql-core)
-[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/laysakura/springql-core/blob/master/LICENSE-MIT)
-[![License: Apache 2.0](https://img.shields.io/badge/license-Apache_2.0-blue.svg)](https://github.com/laysakura/springql-core/blob/master/LICENSE-APACHE)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/SpringQL/SpringQL/blob/master/LICENSE-MIT)
+[![License: Apache 2.0](https://img.shields.io/badge/license-Apache_2.0-blue.svg)](https://github.com/SpringQL/SpringQL/blob/master/LICENSE-APACHE)
 
 **A stream processor for IoT devices and in-vehicle computers**
 
