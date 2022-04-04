@@ -166,12 +166,12 @@ jobs:
             cargo make ${task}
           done
 
-      # - name: Upload lcov to codecov
-      #   if: ${{ matrix.make.install-grcov }}
-      #   uses: codecov/codecov-action@v1
-      #   with:
-      #     token: ${{ secrets.CODECOV_SECRET }}
-      #     files: ./lcov.info
+      - name: Upload lcov to codecov
+        if: ${{ matrix.make.install-grcov }}
+        uses: codecov/codecov-action@v1
+        with:
+          token: ${{ secrets.CODECOV_SECRET }}
+          files: ./lcov.info
 
   slack-notify:
     if: always()
