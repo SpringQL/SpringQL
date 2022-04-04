@@ -7,6 +7,7 @@ use std::{
     time::Duration,
 };
 
+use log::LevelFilter;
 use springql_core::{high_level_rs::SpringPipelineHL, low_level_rs::SpringConfig};
 use springql_foreign_service::sink::ForeignSink;
 
@@ -20,7 +21,10 @@ const WHEEL_SPEED_REPLAYMAN_PORT: u16 = 19871;
 const INITIAL_TIMESTAMP: &str = "2020-10-21T10:37:56.000+09:00";
 
 fn setup_logger() {
-    let _ = env_logger::builder().is_test(false).try_init();
+    let _ = env_logger::builder()
+        .is_test(false)
+        .filter_level(LevelFilter::Info)
+        .try_init();
 }
 
 fn http_download_file_to_tempdir(url: &str) -> NamedTempFile {
