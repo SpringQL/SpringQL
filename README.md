@@ -1,3 +1,5 @@
+testing cla-assistant
+
 # SpringQL
 
 [![crates.io](https://img.shields.io/crates/v/springql-core.svg)](https://crates.io/crates/springql-core)
