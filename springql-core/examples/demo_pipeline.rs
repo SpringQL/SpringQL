@@ -227,10 +227,6 @@ fn main() {
         ))
         .unwrap();
 
-    // start external source streams
-    let mut engine_replayman = spawn_engine_replayman(engine_dataset.path());
-    let mut wheel_speed_replayman = spawn_wheel_speed_replayman(wheel_speed_dataset.path());
-
     // start source readers
     pipeline
         .command(format!(
@@ -256,6 +252,10 @@ fn main() {
             port = WHEEL_SPEED_REPLAYMAN_PORT
         ))
         .unwrap();
+
+    // start external source streams
+    let mut engine_replayman = spawn_engine_replayman(engine_dataset.path());
+    let mut wheel_speed_replayman = spawn_wheel_speed_replayman(wheel_speed_dataset.path());
 
     // print sinks' outputs while waiting for replayman processes to finish
     let mut ecode_engine = None;
