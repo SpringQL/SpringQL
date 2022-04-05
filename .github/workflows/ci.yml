@@ -24,64 +24,64 @@ jobs:
           - stable
           - 1.56.0  # MSRV
         make:
-          # - name: format
-          #   task: format
-          # - name: lint
-          #   task: lint
-          # - name: test
-          #   task: build test
+          - name: format
+            task: format
+          - name: lint
+            task: lint
+          - name: test
+            task: build test
           - name: example
             task: example
             install-replayman: true
-          # - name: doc
-          #   task: doc
-          # - name: deadlink
-          #   task: deadlink
-          #   install-cargo-deadlinks: true
-          #   install-mlc: true
-          # - name: codecov
-          #   task: lcov
-          #   install-grcov: true
-          # - name: copyright
-          #   task: copyright
-          #   rust-free: true
-        # exclude:
-          # - rust: nightly
-          #   make:
-          #     name: format
-          # - rust: 1.56.0
-          #   make:
-          #     name: format
-          # - rust: nightly
-          #   make:
-          #     name: lint
-          # - rust: 1.56.0
-          #   make:
-          #     name: lint
-          # - rust: nightly
-          #   make:
-          #     name: doc
-          # - rust: 1.56.0
-          #   make:
-          #     name: doc
-          # - rust: nightly
-          #   make:
-          #     name: deadlink
-          # - rust: 1.56.0
-          #   make:
-          #     name: deadlink
-          # - rust: stable
-          #   make:
-          #     name: codecov
-          # - rust: 1.56.0
-          #   make:
-          #     name: codecov
-          # - rust: nightly
-          #   make:
-          #     name: copyright
-          # - rust: 1.56.0
-          #   make:
-          #     name: copyright
+          - name: doc
+            task: doc
+          - name: deadlink
+            task: deadlink
+            install-cargo-deadlinks: true
+            install-mlc: true
+          - name: codecov
+            task: lcov
+            install-grcov: true
+          - name: copyright
+            task: copyright
+            rust-free: true
+        exclude:
+          - rust: nightly
+            make:
+              name: format
+          - rust: 1.56.0
+            make:
+              name: format
+          - rust: nightly
+            make:
+              name: lint
+          - rust: 1.56.0
+            make:
+              name: lint
+          - rust: nightly
+            make:
+              name: doc
+          - rust: 1.56.0
+            make:
+              name: doc
+          - rust: nightly
+            make:
+              name: deadlink
+          - rust: 1.56.0
+            make:
+              name: deadlink
+          - rust: stable
+            make:
+              name: codecov
+          - rust: 1.56.0
+            make:
+              name: codecov
+          - rust: nightly
+            make:
+              name: copyright
+          - rust: 1.56.0
+            make:
+              name: copyright
     env:
       RUST_BACKTRACE: full
       CACHE_RESET_KEY: 20211022-01
