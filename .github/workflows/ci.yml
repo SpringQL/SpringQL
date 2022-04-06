@@ -45,43 +45,45 @@ jobs:
           - name: copyright
             task: copyright
             rust-free: true
-        exclude:
-          - rust: nightly
-            make:
+        include:
+          - make:
               name: format
-          - rust: 1.56.0
-            make:
-              name: format
-          - rust: nightly
-            make:
+            rust: stable
+          - make:
               name: lint
-          - rust: 1.56.0
-            make:
-              name: lint
-          - rust: nightly
-            make:
+            rust: stable
+          - make:
               name: doc
-          - rust: 1.56.0
-            make:
-              name: doc
-          - rust: nightly
-            make:
+            rust: stable
+          - make:
               name: deadlink
-          - rust: 1.56.0
-            make:
-              name: deadlink
-          - rust: stable
-            make:
+            rust: stable
+          - make:
               name: codecov
-          - rust: 1.56.0
-            make:
-              name: codecov
-          - rust: nightly
-            make:
+            rust: stable
+          - make:
               name: copyright
-          - rust: 1.56.0
-            make:
-              name: copyright
+            rust: stable
+
+          - make:
+              name: test
+            rust: nightly
+          - make:
+              name: test
+            rust: stable
+          - make:
+              name: test
+            rust: 1.56.0
+
+          - make:
+              name: example
+            rust: nightly
+          - make:
+              name: example
+            rust: stable
+          - make:
+              name: example
+            rust: 1.56.0
     env:
       RUST_BACKTRACE: full
       CACHE_RESET_KEY: 20211022-01
