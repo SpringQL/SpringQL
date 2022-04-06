@@ -108,24 +108,27 @@ impl SpringConfig {
     /// - [SpringError::InvalidFormat](crate::error::SpringError::InvalidFormat) when:
     ///   - `overwrite_config_toml` is not valid as TOML.
     pub(crate) fn new(overwrite_config_toml: &str) -> Result<Self> {
-        let mut c = config::Config::new();
+        let default_conf = config::Config::builder()
+            .add_source(config::File::from_str(
+                SPRING_CONFIG_DEFAULT,
+                config::FileFormat::Toml,
+            ))
+            .build()
+            .expect("SPRING_CONFIG_DEFAULT is in wrong format");
 
-        c.merge(config::File::from_str(
-            SPRING_CONFIG_DEFAULT,
-            config::FileFormat::Toml,
-        ))
-        .expect("SPRING_CONFIG_DEFAULT is in wrong format");
+        let c = config::Config::builder()
+            .add_source(default_conf)
+            .add_source(config::File::from_str(
+                overwrite_config_toml,
+                config::FileFormat::Toml,
+            ))
+            .build()
+            .map_err(|e| SpringError::InvalidFormat {
+                s: overwrite_config_toml.to_string(),
+                source: e.into(),
+            })?;
 
-        c.merge(config::File::from_str(
-            overwrite_config_toml,
-            config::FileFormat::Toml,
-        ))
-        .map_err(|e| SpringError::InvalidFormat {
-            s: overwrite_config_toml.to_string(),
-            source: e.into(),
-        })?;
-
-        c.try_into()
+        c.try_deserialize()
             .map_err(|e| SpringError::InvalidConfig { source: e.into() })
     }
 }
