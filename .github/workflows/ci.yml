@@ -58,6 +58,10 @@ jobs:
               task: test
             os: ubuntu-latest
             rust: 1.56.0
+          - make:
+              task: test
+            os: macos-latest
+            rust: stable
 
           - make:
               task: example
@@ -74,6 +78,11 @@ jobs:
               install-replayman: true
             os: ubuntu-latest
             rust: 1.56.0
+          - make:
+              task: example
+              install-replayman: true
+            os: macos-latest
+            rust: stable
     env:
       RUST_BACKTRACE: full
       CACHE_RESET_KEY: 20211022-01
