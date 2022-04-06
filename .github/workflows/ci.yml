@@ -116,7 +116,11 @@ jobs:
           BASE_URL: https://github.com/sagiegurari/cargo-make/releases/download
           VERSION: 0.35.2
         run: |
-          FILE_BASE=cargo-make-v${VERSION}-x86_64-unknown-linux-musl
+          if [ "${{ matrix.os }}" = "macos-latest" ]; then
+            FILE_BASE=cargo-make-v${VERSION}-x86_64-apple-darwin
+          else
+            FILE_BASE=cargo-make-v${VERSION}-x86_64-unknown-linux-musl
+          fi
           mkdir -p ${HOME}/.local/bin
           curl -L "${BASE_URL}/${VERSION}/${FILE_BASE}.zip" --output /tmp/cargo-make.zip
           unzip /tmp/cargo-make.zip -d /tmp/cargo-make
