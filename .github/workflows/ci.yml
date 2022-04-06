@@ -129,7 +129,11 @@ jobs:
           BASE_URL: https://github.com/deadlinks/cargo-deadlinks/releases/download
           VERSION: 0.8.1
         run: |
-          FILE_BASE=cargo-deadlinks-linux
+          if [ "${{ matrix.os }}" = "macos-latest" ]; then
+            FILE_BASE=cargo-deadlinks-macos
+          else
+            FILE_BASE=cargo-deadlinks-linux
+          fi
           curl -L "${BASE_URL}/${VERSION}/${FILE_BASE}" --output $HOME/.local/bin/cargo-deadlinks
           chmod +x $HOME/.local/bin/cargo-deadlinks
           cargo deadlinks --version
@@ -140,7 +144,11 @@ jobs:
           BASE_URL: https://github.com/becheran/mlc/releases/download
           VERSION: 0.14.3
         run: |
-          FILE_BASE=mlc-x86_64-linux
+          if [ "${{ matrix.os }}" = "macos-latest" ]; then
+            FILE_BASE=mlc-x86_64-apple-darwin
+          else
+            FILE_BASE=mlc-x86_64-linux
+          fi
           curl -L "${BASE_URL}/v${VERSION}/${FILE_BASE}" --output $HOME/.local/bin/mlc
           chmod +x $HOME/.local/bin/mlc
           mlc --version
@@ -149,9 +157,13 @@ jobs:
         if: ${{ matrix.make.install-grcov }}
         env:
           BASE_URL: https://github.com/mozilla/grcov/releases/download
-          VERSION: 0.8.2
+          VERSION: 0.8.7
         run: |
-          FILE_BASE=grcov-linux-x86_64
+          if [ "${{ matrix.os }}" = "macos-latest" ]; then
+            FILE_BASE=grcov-x86_64-apple-darwin.tar.bz2
+          else
+            FILE_BASE=grcov-x86_64-unknown-linux-gnu.tar.bz2
+          fi
           curl -L "${BASE_URL}/v${VERSION}/${FILE_BASE}.tar.bz2" --output /tmp/grcov.tar.bz2
           tar xvf /tmp/grcov.tar.bz2 --directory=$HOME/.local/bin/
           grcov --version
