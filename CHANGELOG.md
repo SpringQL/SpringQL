@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog][Keep a Changelog] and this project adh
 
 ## [Unreleased]
 
+### Changed
+
+- Change task threads default number to 1 to keep in-order processing ([#81](https://github.com/SpringQL/SpringQL/pull/81))
+
+
 ## [v0.3.3]
 
 ### Fixed
