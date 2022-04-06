@@ -160,9 +160,9 @@ jobs:
           VERSION: 0.8.7
         run: |
           if [ "${{ matrix.os }}" = "macos-latest" ]; then
-            FILE_BASE=grcov-x86_64-apple-darwin.tar.bz2
+            FILE_BASE=grcov-x86_64-apple-darwin
           else
-            FILE_BASE=grcov-x86_64-unknown-linux-gnu.tar.bz2
+            FILE_BASE=grcov-x86_64-unknown-linux-gnu
           fi
           curl -L "${BASE_URL}/v${VERSION}/${FILE_BASE}.tar.bz2" --output /tmp/grcov.tar.bz2
           tar xvf /tmp/grcov.tar.bz2 --directory=$HOME/.local/bin/
