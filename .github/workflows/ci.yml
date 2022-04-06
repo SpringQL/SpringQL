@@ -40,7 +40,7 @@ jobs:
               task: lcov
               install-grcov: true
             os: ubuntu-latest
-            rust: stable
+            rust: nightly
           - make:
               task: copyright
               rust-free: true
