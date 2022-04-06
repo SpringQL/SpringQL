@@ -10,11 +10,13 @@ use crate::error::{Result, SpringError};
 const SPRING_CONFIG_DEFAULT: &str = r#"
 [worker]
 # Number of generic worker threads. Generic worker threads deal with internal and sink tasks.
-n_generic_worker_threads = 2
+# Setting this to > 1 may improve throughput but lead to out-of-order stream processing.
+n_generic_worker_threads = 1
 
 # Number of source worker threads. Source worker threads collect rows from foreign source.
 # Too many number may may cause row fraud in runtime.
-n_source_worker_threads = 2
+# Setting this to > 1 may improve throughput but lead to out-of-order stream processing.
+n_source_worker_threads = 1
 
 [memory]
 # How much memory is allowed to be used in SpringQL streaming runtime.
