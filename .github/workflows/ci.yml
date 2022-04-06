@@ -12,77 +12,67 @@ on:
 
 jobs:
   job-matrix:
-    name: ${{ matrix.make.name }} (${{ matrix.rust }}; ${{ matrix.os }})
+    name: ${{ matrix.make.task }} (${{ matrix.rust }}; ${{ matrix.os }})
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
-        os:
-          - ubuntu-latest
-        rust:
-          - nightly
-          - stable
-          - 1.56.0  # MSRV
-        make:
-          - name: format
-            task: format
-          - name: lint
-            task: lint
-          - name: test
-            task: build test
-          - name: example
-            task: example
-            install-replayman: true
-          - name: doc
-            task: doc
-          - name: deadlink
-            task: deadlink
-            install-cargo-deadlinks: true
-            install-mlc: true
-          - name: codecov
-            task: lcov
-            install-grcov: true
-          - name: copyright
-            task: copyright
-            rust-free: true
         include:
           - make:
-              name: format
+              task: format
+            os: ubuntu-latest
             rust: stable
           - make:
-              name: lint
+              task: lint
+            os: ubuntu-latest
             rust: stable
           - make:
-              name: doc
+              task: doc
+            os: ubuntu-latest
             rust: stable
           - make:
-              name: deadlink
+              task: deadlink
+              install-cargo-deadlinks: true
+              install-mlc: true
+            os: ubuntu-latest
             rust: stable
           - make:
-              name: codecov
+              task: lcov
+              install-grcov: true
+            os: ubuntu-latest
             rust: stable
           - make:
-              name: copyright
-            rust: stable
+              task: copyright
+              rust-free: true
+            os: ubuntu-latest
 
           - make:
-              name: test
+              task: test
+            os: ubuntu-latest
             rust: nightly
           - make:
-              name: test
+              task: test
+            os: ubuntu-latest
             rust: stable
           - make:
-              name: test
+              task: test
+            os: ubuntu-latest
             rust: 1.56.0
 
           - make:
-              name: example
+              task: example
+              install-replayman: true
+            os: ubuntu-latest
             rust: nightly
           - make:
-              name: example
+              task: example
+              install-replayman: true
+            os: ubuntu-latest
             rust: stable
           - make:
-              name: example
+              task: example
+              install-replayman: true
+            os: ubuntu-latest
             rust: 1.56.0
     env:
       RUST_BACKTRACE: full
@@ -107,9 +97,9 @@ jobs:
           path: |
             ~/.cargo/registry
             ~/.cargo/git
-          key: ${{ env.CACHE_RESET_KEY }}-${{ runner.os }}-${{ matrix.rust }}-cargo-${{ matrix.make.name }}-${{ hashFiles('**/Cargo.lock') }}
+          key: ${{ env.CACHE_RESET_KEY }}-${{ runner.os }}-${{ matrix.rust }}-cargo-${{ matrix.make.task }}-${{ hashFiles('**/Cargo.lock') }}
           restore-keys: |
-            ${{ env.CACHE_RESET_KEY }}-${{ runner.os }}-${{ matrix.rust }}-cargo-${{ matrix.make.name }}-
+            ${{ env.CACHE_RESET_KEY }}-${{ runner.os }}-${{ matrix.rust }}-cargo-${{ matrix.make.task }}-
             ${{ env.CACHE_RESET_KEY }}-${{ runner.os }}-${{ matrix.rust }}-cargo-
 
       - name: Install cargo-make
@@ -162,7 +152,7 @@ jobs:
         run: |
           cargo install replayman
 
-      - name: ${{ matrix.make.name }}
+      - name: ${{ matrix.make.task }}
         run: |
           for task in ${{ matrix.make.task }} ; do
             cargo make ${task}
