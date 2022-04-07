@@ -31,7 +31,7 @@ use self::{
 #[derive(Clone, Debug, new)]
 pub(super) struct QueueIdWithUpstream {
     queue_id: QueueId,
-    upstream: StreamName,
+    upstream: StreamName, // FIXME avoid mixing pipeline and task graph objects. It leads to [#86](https://github.com/SpringQL/SpringQL/pull/86)
 }
 
 #[derive(Debug)]
