@@ -95,10 +95,11 @@ impl TaskGraph {
             .collect()
     }
 
-    /// # Panics
+    /// # Returns
     ///
-    /// if `task_id` does not have incoming edge (queue) from `upstream`.
-    pub(super) fn input_queue(&self, task_id: &TaskId, upstream: &StreamName) -> QueueId {
+    /// `None` if `task_id` does not have incoming edge (queue) from `upstream`.
+    /// This may happen when `task_id` and `upstream` come from different versions of pipeline.
+    pub(super) fn input_queue(&self, task_id: &TaskId, upstream: &StreamName) -> Option<QueueId> {
         let i = self.find_node(task_id);
         self.g
             .edges_directed(i, petgraph::EdgeDirection::Incoming)
@@ -107,12 +108,6 @@ impl TaskGraph {
                 let queue_id_with_upstream = e.weight();
                 (&queue_id_with_upstream.upstream == upstream)
                     .then(|| queue_id_with_upstream.queue_id.clone())
-            })
-            .unwrap_or_else(|| {
-                panic!(
-                    "task id {:?} does not have upstream {}: task graph - {:#?}",
-                    task_id, upstream, self
-                )
             })
     }
 

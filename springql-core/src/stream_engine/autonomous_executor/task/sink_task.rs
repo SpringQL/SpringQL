@@ -46,18 +46,21 @@ impl SinkTask {
 
         let repos = context.repos();
 
-        let queue_id = context
+        let opt_in_queue_id = context
             .pipeline_derivatives()
             .task_graph()
             .input_queue(&context.task(), &self.upstream);
 
-        let in_queues_metrics =
-            if let Some((row, in_queue_metrics)) = self.use_row_from(queue_id, repos) {
+        let in_queues_metrics = if let Some(in_queue_id) = opt_in_queue_id {
+            if let Some((row, in_queue_metrics)) = self.use_row_from(in_queue_id, repos) {
                 self.emit(row, context)?;
                 vec![in_queue_metrics]
             } else {
                 vec![]
-            };
+            }
+        } else {
+            vec![]
+        };
 
         let execution_time = stopwatch.stop();
 
