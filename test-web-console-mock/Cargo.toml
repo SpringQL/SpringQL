@@ -7,11 +7,7 @@ license = "MIT OR Apache-2.0"
 
 edition = "2021"
 
-categories = ["development-tools"]
-description = "Mock of https://github.com/SpringQL/web-console"
-documentation = "https://docs.rs/springql-test-web-console-mock"
-keywords = ["springql"] # up to 5 keywords, each keyword should have <= 20 chars
-repository = "https://github.com/SpringQL/SpringQL"
+publish = false
 
 [dependencies]
 simple-server = {git = "https://github.com/laysakura/simple-server"}
