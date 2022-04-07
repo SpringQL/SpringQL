@@ -7,11 +7,7 @@ license = "MIT OR Apache-2.0"
 
 edition = "2021"
 
-categories = ["development-tools"]
-description = "Foregin Sources / Sinks for SpringQL"
-documentation = "https://docs.rs/springql-foreign-service"
-keywords = ["springql"] # up to 5 keywords, each keyword should have <= 20 chars
-repository = "https://github.com/SpringQL/SpringQL"
+publish = false
 
 [dependencies]
 anyhow = "^1.0"
