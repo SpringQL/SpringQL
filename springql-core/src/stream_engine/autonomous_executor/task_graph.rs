@@ -265,6 +265,8 @@ impl From<&Pipeline> for TaskGraph {
                 Edge::Source(_) => {} // no queue is created for source task
             };
         }
+        log::error!("{:#?}", task_graph);
+
         task_graph
     }
 }
