@@ -39,10 +39,11 @@ impl CollectSubtask {
         let pipeline_derivatives = context.pipeline_derivatives();
         let task_graph = pipeline_derivatives.task_graph();
 
-        let queue_id = task_graph.input_queue(&pump_task_id, &self.upstream);
-        match queue_id {
-            QueueId::Row(queue_id) => self.collect_from_row_queue(queue_id, repos),
-            QueueId::Window(queue_id) => self.collect_from_window_queue(queue_id, repos),
+        let opt_queue_id = task_graph.input_queue(&pump_task_id, &self.upstream);
+        match opt_queue_id {
+            Some(QueueId::Row(queue_id)) => self.collect_from_row_queue(queue_id, repos),
+            Some(QueueId::Window(queue_id)) => self.collect_from_window_queue(queue_id, repos),
+            None => None,
         }
     }
 

@@ -31,7 +31,7 @@ use self::{
 #[derive(Clone, Debug, new)]
 pub(super) struct QueueIdWithUpstream {
     queue_id: QueueId,
-    upstream: StreamName,
+    upstream: StreamName, // FIXME avoid mixing pipeline and task graph objects. It leads to [#86](https://github.com/SpringQL/SpringQL/pull/86)
 }
 
 #[derive(Debug)]
@@ -95,10 +95,11 @@ impl TaskGraph {
             .collect()
     }
 
-    /// # Panics
+    /// # Returns
     ///
-    /// if `task_id` does not have incoming edge (queue) from `upstream`.
-    pub(super) fn input_queue(&self, task_id: &TaskId, upstream: &StreamName) -> QueueId {
+    /// `None` if `task_id` does not have incoming edge (queue) from `upstream`.
+    /// This may happen when `task_id` and `upstream` come from different versions of pipeline.
+    pub(super) fn input_queue(&self, task_id: &TaskId, upstream: &StreamName) -> Option<QueueId> {
         let i = self.find_node(task_id);
         self.g
             .edges_directed(i, petgraph::EdgeDirection::Incoming)
@@ -108,7 +109,6 @@ impl TaskGraph {
                 (&queue_id_with_upstream.upstream == upstream)
                     .then(|| queue_id_with_upstream.queue_id.clone())
             })
-            .unwrap_or_else(|| panic!("task id {:?} does not have upstream {}", task_id, upstream))
     }
 
     pub(super) fn downstream_tasks(&self, task_id: &TaskId) -> Vec<TaskId> {

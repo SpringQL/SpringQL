@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog][Keep a Changelog] and this project adh
 
 ## [Unreleased]
 
+## [v0.4.1]
+
+### Fixed
+
+- Potential panic soon after a task graph has been changed by DDL ([#86](https://github.com/SpringQL/SpringQL/pull/86))
+
 ## [v0.4.0]
 
 ### Changed
@@ -71,8 +77,9 @@ The format is based on [Keep a Changelog][Keep a Changelog] and this project adh
 [Semantic Versioning]: https://semver.org/
 
 <!-- Versions -->
-[Unreleased]: https://github.com/SpringQL/SpringQL/compare/v0.4.0...HEAD
+[Unreleased]: https://github.com/SpringQL/SpringQL/compare/v0.4.1...HEAD
 [Released]: https://github.com/SpringQL/SpringQL/releases
+[v0.4.1]: https://github.com/SpringQL/SpringQL/compare/v0.4.0...v0.4.1
 [v0.4.0]: https://github.com/SpringQL/SpringQL/compare/v0.3.3...v0.4.0
 [v0.3.3]: https://github.com/SpringQL/SpringQL/compare/v0.3.2...v0.3.3
 [v0.3.2]: https://github.com/SpringQL/SpringQL/compare/v0.3.1...v0.3.2
