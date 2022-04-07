@@ -110,7 +110,7 @@ impl TaskGraph {
             })
             .unwrap_or_else(|| {
                 panic!(
-                    "task id {:?} does not have upstream {}: pipeline graph - {:#?}",
+                    "task id {:?} does not have upstream {}: task graph - {:#?}",
                     task_id, upstream, self.g
                 )
             })
