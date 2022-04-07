@@ -108,7 +108,12 @@ impl TaskGraph {
                 (&queue_id_with_upstream.upstream == upstream)
                     .then(|| queue_id_with_upstream.queue_id.clone())
             })
-            .unwrap_or_else(|| panic!("task id {:?} does not have upstream {}", task_id, upstream))
+            .unwrap_or_else(|| {
+                panic!(
+                    "task id {:?} does not have upstream {}: pipeline graph - {:#?}",
+                    task_id, upstream, self.g
+                )
+            })
     }
 
     pub(super) fn downstream_tasks(&self, task_id: &TaskId) -> Vec<TaskId> {
