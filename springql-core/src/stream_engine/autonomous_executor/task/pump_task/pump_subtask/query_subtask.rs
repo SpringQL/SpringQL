@@ -8,11 +8,6 @@ pub(super) mod value_projection_subtask;
 
 use std::sync::{Arc, Mutex, MutexGuard};
 
-use rand::{
-    prelude::{SliceRandom, SmallRng},
-    SeedableRng,
-};
-
 use crate::{
     error::Result,
     expr_resolver::ExprResolver,
@@ -64,8 +59,6 @@ pub(in crate::stream_engine::autonomous_executor) struct QuerySubtask {
         CollectSubtask, // right stream
     )>,
     left_collect_subtask: CollectSubtask, // left stream
-
-    rng: Mutex<SmallRng>,
 }
 
 #[derive(Clone, Debug, new)]
@@ -121,9 +114,6 @@ pub(in crate::stream_engine::autonomous_executor) struct QuerySubtaskOut {
 
 impl QuerySubtask {
     pub(in crate::stream_engine::autonomous_executor) fn new(plan: QueryPlan) -> Self {
-        let rng =
-            Mutex::new(SmallRng::from_rng(rand::thread_rng()).expect("this generally won't fail"));
-
         let (left_collect_subtask, join) = Self::subtasks_from_lower_ops(plan.lower_ops);
 
         if plan.upper_ops.projection.aggr_expr_labels.is_empty() {
@@ -137,7 +127,6 @@ impl QuerySubtask {
                 group_aggr_window_subtask: None,
                 left_collect_subtask,
                 join,
-                rng,
             }
         } else {
             assert_eq!(
@@ -170,7 +159,6 @@ impl QuerySubtask {
                 group_aggr_window_subtask: Some(group_aggr_window_subtask),
                 left_collect_subtask,
                 join,
-                rng,
             }
         }
     }
@@ -329,9 +317,7 @@ impl QuerySubtask {
         })
     }
     fn join_dir_candidates(&self) -> [JoinDir; 2] {
-        let first = [JoinDir::Left, JoinDir::Right]
-            .choose(&mut *self.rng.lock().expect("rng lock poisoned"))
-            .expect("not empty");
+        let first = &JoinDir::Left;
         if first == &JoinDir::Left {
             [JoinDir::Left, JoinDir::Right]
         } else {

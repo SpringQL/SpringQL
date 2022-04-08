@@ -34,11 +34,6 @@
 
 use std::{cell::RefCell, collections::HashSet};
 
-use rand::{
-    distributions::{Uniform, WeightedIndex},
-    prelude::{Distribution, ThreadRng},
-};
-
 use crate::stream_engine::autonomous_executor::{
     performance_metrics::PerformanceMetrics,
     task_graph::{task_id::TaskId, TaskGraph},
@@ -83,9 +78,7 @@ struct Stopper {
 }
 
 #[derive(Debug, Default)]
-pub(in crate::stream_engine::autonomous_executor) struct FlowEfficientScheduler {
-    rng: RefCell<ThreadRng>,
-}
+pub(in crate::stream_engine::autonomous_executor) struct FlowEfficientScheduler {}
 
 impl Scheduler for FlowEfficientScheduler {
     fn next_task_series(&self, graph: &TaskGraph, metrics: &PerformanceMetrics) -> Vec<TaskId> {
@@ -125,11 +118,9 @@ impl FlowEfficientScheduler {
 
             let idx = if in_rows.iter().all(|nr| *nr == 0) {
                 // No collector has input row. Pick a collector randomly.
-                let distribution = Uniform::from(0..collectors.len());
-                distribution.sample(&mut *self.rng.borrow_mut())
+                0
             } else {
-                let distribution = WeightedIndex::new(in_rows).expect("at least 1 collector");
-                distribution.sample(&mut *self.rng.borrow_mut())
+                0
             };
             let picked_collector = collectors.get(idx).expect("safe index");
 
