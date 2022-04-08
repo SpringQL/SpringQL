@@ -2,11 +2,9 @@
 
 use std::sync::Arc;
 
-use serde::{Deserialize, Serialize};
-
 use crate::pipeline::{name::StreamName, stream_model::StreamModel};
 
-#[derive(Clone, Eq, PartialEq, Debug, Serialize, Deserialize)]
+#[derive(Clone, Eq, PartialEq, Debug)]
 pub(crate) enum StreamNode {
     Stream(Arc<StreamModel>),
     VirtualRoot,

@@ -3,8 +3,6 @@
 pub(in crate::stream_engine::autonomous_executor) mod row_queue_id;
 pub(in crate::stream_engine::autonomous_executor) mod window_queue_id;
 
-use serde::{Deserialize, Serialize};
-
 use crate::pipeline::{
     name::StreamName,
     pump_model::{pump_input_type::PumpInputType, PumpModel},
@@ -13,7 +11,7 @@ use crate::pipeline::{
 
 use self::{row_queue_id::RowQueueId, window_queue_id::WindowQueueId};
 
-#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Serialize, Deserialize, new)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, new)]
 pub(in crate::stream_engine::autonomous_executor) enum QueueId {
     /// Sink tasks also have row queue.
     Row(RowQueueId),

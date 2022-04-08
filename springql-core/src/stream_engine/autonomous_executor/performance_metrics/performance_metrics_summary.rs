@@ -2,8 +2,6 @@
 
 use std::fmt::Display;
 
-use serde::{Deserialize, Serialize};
-
 use super::PerformanceMetrics;
 
 /// Summary of [PerformanceMetrics](super::PerformanceMetrics).
@@ -12,7 +10,7 @@ use super::PerformanceMetrics;
 /// - transits memory state diagram
 /// - changes task scheduler
 /// - launches purger
-#[derive(Clone, Eq, PartialEq, Debug, Serialize, Deserialize)]
+#[derive(Clone, Eq, PartialEq, Debug)]
 pub(in crate::stream_engine::autonomous_executor) struct PerformanceMetricsSummary {
     pub(in crate::stream_engine::autonomous_executor) queue_total_bytes: u64,
 }

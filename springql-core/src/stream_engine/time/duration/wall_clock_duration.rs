@@ -7,12 +7,10 @@ use std::{
     time::Duration,
 };
 
-use serde::{Deserialize, Serialize};
-
 use super::SpringDuration;
 
 /// Real-time (wall-clock) duration.
-#[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Debug, Serialize, Deserialize)]
+#[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Debug)]
 pub(in crate::stream_engine) struct WallClockDuration(Duration);
 
 impl SpringDuration for WallClockDuration {

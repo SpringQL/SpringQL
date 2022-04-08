@@ -7,14 +7,12 @@ use std::{
     time::Duration,
 };
 
-use serde::{Deserialize, Serialize};
-
 use crate::mem_size::MemSize;
 
 use super::SpringDuration;
 
 /// Event-time duration.
-#[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Serialize, Deserialize)]
+#[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub(crate) struct EventDuration(Duration);
 
 impl MemSize for EventDuration {
