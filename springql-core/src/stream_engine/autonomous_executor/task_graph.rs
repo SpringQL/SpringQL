@@ -252,7 +252,7 @@ impl From<&Pipeline> for TaskGraph {
                         .weight();
                     let source = TaskId::from(source_edge);
                     task_graph.add_queue(
-                        QueueIdWithUpstream::new(queue_id, sink.from_sink_stream().clone()),
+                        QueueIdWithUpstream::new(queue_id, sink.sink_upstream().clone()),
                         source,
                         target,
                     );

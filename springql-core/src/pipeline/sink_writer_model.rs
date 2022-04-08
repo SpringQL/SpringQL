@@ -13,7 +13,7 @@ use super::{
 pub(crate) struct SinkWriterModel {
     name: SinkWriterName,
     sink_writer_type: SinkWriterType,
-    from_sink_stream: StreamName,
+    sink_upstream: StreamName,
     options: Options,
 }
 
@@ -26,8 +26,8 @@ impl SinkWriterModel {
         &self.sink_writer_type
     }
 
-    pub(crate) fn from_sink_stream(&self) -> &StreamName {
-        &self.from_sink_stream
+    pub(crate) fn sink_upstream(&self) -> &StreamName {
+        &self.sink_upstream
     }
 
     pub(crate) fn options(&self) -> &Options {

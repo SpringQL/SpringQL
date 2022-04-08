@@ -2,8 +2,6 @@
 
 pub(crate) mod query_plan_operation;
 
-pub(in crate::stream_engine) mod child_direction;
-
 use crate::{
     expr_resolver::ExprResolver,
     pipeline::{name::StreamName, pump_model::pump_input_type::PumpInputType},

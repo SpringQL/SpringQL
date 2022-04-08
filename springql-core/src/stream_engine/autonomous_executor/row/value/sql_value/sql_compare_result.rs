@@ -16,10 +16,6 @@ pub(crate) enum SqlCompareResult {
     /// Only applicable for ordered values.
     GreaterThan,
 
-    /// v1 != v2.
-    /// Only applicable for non-ordered values.
-    NotEq,
-
     /// Either of v1 or v2 is NULL.
     Null,
 }
