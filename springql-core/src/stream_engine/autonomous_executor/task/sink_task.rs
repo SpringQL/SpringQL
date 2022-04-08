@@ -29,7 +29,7 @@ impl SinkTask {
         let id = TaskId::from_sink(sink_writer);
         Self {
             id,
-            upstream: sink_writer.from_sink_stream().clone(),
+            upstream: sink_writer.sink_upstream().clone(),
             sink_writer_name: sink_writer.name().clone(),
         }
     }

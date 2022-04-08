@@ -159,7 +159,7 @@ impl PipelineGraph {
     }
 
     pub(super) fn add_sink_writer(&mut self, sink_writer: SinkWriterModel) -> Result<()> {
-        let from_stream = sink_writer.from_sink_stream();
+        let from_stream = sink_writer.sink_upstream();
 
         let upstream_node = self.stream_nodes.get(from_stream).ok_or_else(|| {
             SpringError::Sql(anyhow!(
