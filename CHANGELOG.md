@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog][Keep a Changelog] and this project adh
 
 ## [Unreleased]
 
+### Removed
+
+- remove `Serialize, Deserialize` from most of (private) strct/enums ([#90](https://github.com/SpringQL/SpringQL/pull/90))
+
 ## [v0.4.1]
 
 ### Fixed
