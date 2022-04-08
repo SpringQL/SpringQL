@@ -36,7 +36,7 @@ env_logger = "0.9"
 log = "0.4"
 log-panics = {version = "2.0", features = ["with-backtrace"]}
 
-petgraph = {version = "0.6", features = ["serde-1"]}
+petgraph = "0.6"
 
 pest = "2.1"
 pest_derive = "2.1"
