@@ -27,7 +27,6 @@ fn setup_logger() {
         let _ = env_logger::builder()
             .is_test(false) // To enable color. Logs are not captured by test framework.
             .try_init();
-        log_panics::init();
     });
 
     log::info!("setup_logger(): done");
