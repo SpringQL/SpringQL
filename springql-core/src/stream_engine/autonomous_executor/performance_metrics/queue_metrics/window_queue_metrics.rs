@@ -1,7 +1,5 @@
 // This file is part of https://github.com/SpringQL/SpringQL which is licensed under MIT OR Apache-2.0. See file LICENSE-MIT or LICENSE-APACHE for full license details.
 
-use serde::{Deserialize, Serialize};
-
 use crate::stream_engine::autonomous_executor::{
     performance_metrics::{
         calculation::floor0,
@@ -11,7 +9,7 @@ use crate::stream_engine::autonomous_executor::{
 };
 
 /// Stock monitor of a window queue.
-#[derive(Clone, Eq, PartialEq, Debug, Default, Serialize, Deserialize)]
+#[derive(Clone, Eq, PartialEq, Debug, Default)]
 pub(in crate::stream_engine::autonomous_executor) struct WindowQueueMetrics {
     /// might be negative value if `dispatched` event is subscribed earlier than `put` event.
     rows_waiting: i64,

@@ -2,10 +2,8 @@
 
 use std::cmp::Ordering;
 
-use serde::{Deserialize, Serialize};
-
 /// Comparison result of two [SqlValue](crate::SqlValue)s.
-#[derive(Clone, Eq, PartialEq, Hash, Debug, Serialize, Deserialize)]
+#[derive(Clone, Eq, PartialEq, Hash, Debug)]
 pub(crate) enum SqlCompareResult {
     /// v1 = v2
     Eq,

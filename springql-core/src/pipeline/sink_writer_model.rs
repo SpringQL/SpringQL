@@ -2,8 +2,6 @@
 
 pub(crate) mod sink_writer_type;
 
-use serde::{Deserialize, Serialize};
-
 use self::sink_writer_type::SinkWriterType;
 
 use super::{
@@ -11,7 +9,7 @@ use super::{
     option::Options,
 };
 
-#[derive(Clone, PartialEq, Eq, Debug, Serialize, Deserialize, new)]
+#[derive(Clone, PartialEq, Eq, Debug, new)]
 pub(crate) struct SinkWriterModel {
     name: SinkWriterName,
     sink_writer_type: SinkWriterType,

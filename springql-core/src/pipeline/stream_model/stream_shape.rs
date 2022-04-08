@@ -1,7 +1,6 @@
 // This file is part of https://github.com/SpringQL/SpringQL which is licensed under MIT OR Apache-2.0. See file LICENSE-MIT or LICENSE-APACHE for full license details.
 
 use anyhow::{anyhow, Context};
-use serde::{Deserialize, Serialize};
 
 use crate::{
     error::{Result, SpringError},
@@ -11,7 +10,7 @@ use crate::{
 
 use crate::pipeline::relation::column::column_definition::ColumnDefinition;
 
-#[derive(Clone, Eq, PartialEq, Debug, Serialize, Deserialize)]
+#[derive(Clone, Eq, PartialEq, Debug)]
 pub(crate) struct StreamShape {
     cols: Vec<ColumnDefinition>,
     promoted_rowtime: Option<ColumnName>,

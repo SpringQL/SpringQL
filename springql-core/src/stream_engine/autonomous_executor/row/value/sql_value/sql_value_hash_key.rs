@@ -3,12 +3,10 @@
 use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
 
-use serde::{Deserialize, Serialize};
-
 use super::SqlValue;
 
 /// `Eq + Hash` hash key used for hash algorithms.
-#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Serialize, Deserialize)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct SqlValueHashKey(u64);
 
 impl From<&SqlValue> for SqlValueHashKey {

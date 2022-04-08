@@ -1,13 +1,11 @@
 // This file is part of https://github.com/SpringQL/SpringQL which is licensed under MIT OR Apache-2.0. See file LICENSE-MIT or LICENSE-APACHE for full license details.
 
-use serde::{Deserialize, Serialize};
-
 use crate::stream_engine::autonomous_executor::performance_metrics::calculation::next_avg;
 
 use super::metrics_update_command::metrics_update_by_task_execution::MetricsUpdateByTaskExecution;
 
 /// Flow monitor of a task (including in-memory queue sink) execution.
-#[derive(Clone, PartialEq, Debug, Default, Serialize, Deserialize)]
+#[derive(Clone, PartialEq, Debug, Default)]
 pub(in crate::stream_engine::autonomous_executor) struct TaskMetrics {
     avg_gain_bytes_per_sec: f32,
     n_executions: u64,

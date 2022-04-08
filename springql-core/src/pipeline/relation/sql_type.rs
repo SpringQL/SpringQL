@@ -1,7 +1,5 @@
 // This file is part of https://github.com/SpringQL/SpringQL which is licensed under MIT OR Apache-2.0. See file LICENSE-MIT or LICENSE-APACHE for full license details.
 
-use serde::{Deserialize, Serialize};
-
 /// SQL type.
 ///
 /// SQL types are hierarchically categorized as follows:
@@ -9,7 +7,7 @@ use serde::{Deserialize, Serialize};
 /// - Comparable types: two values are **comparable** (, and some types are also **ordered**).
 ///   - Loose types: values can be typed as 1 specific Rust type.
 ///     - SQL types: corresponds to an SQL type.
-#[derive(Clone, Eq, PartialEq, Hash, Debug, Serialize, Deserialize)]
+#[derive(Clone, Eq, PartialEq, Hash, Debug)]
 pub(crate) enum SqlType {
     /// Numeric types
     NumericComparable(NumericComparableType),
@@ -68,7 +66,7 @@ impl SqlType {
 }
 
 /// Numeric types (comparable).
-#[derive(Clone, Eq, PartialEq, Hash, Debug, Serialize, Deserialize)]
+#[derive(Clone, Eq, PartialEq, Hash, Debug)]
 pub enum NumericComparableType {
     /// Loosely typed as i64
     I64Loose(I64LooseType),
@@ -78,7 +76,7 @@ pub enum NumericComparableType {
 }
 
 /// Integer types (loosely typed as i64).
-#[derive(Clone, Eq, PartialEq, Hash, Debug, Serialize, Deserialize)]
+#[derive(Clone, Eq, PartialEq, Hash, Debug)]
 pub enum I64LooseType {
     /// 2-byte signed integer.
     SmallInt,
@@ -91,14 +89,14 @@ pub enum I64LooseType {
 }
 
 /// Float types (loosely typed as f64).
-#[derive(Clone, Eq, PartialEq, Hash, Debug, Serialize, Deserialize)]
+#[derive(Clone, Eq, PartialEq, Hash, Debug)]
 pub enum F32LooseType {
     /// fp32
     Float,
 }
 
 /// Text types (comparable, loosely typed as String).
-#[derive(Clone, Eq, PartialEq, Hash, Debug, Serialize, Deserialize)]
+#[derive(Clone, Eq, PartialEq, Hash, Debug)]
 pub enum StringComparableLoseType {
     /// Arbitrary length text (UTF-8).
     Text,

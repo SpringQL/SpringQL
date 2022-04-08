@@ -1,13 +1,11 @@
 // This file is part of https://github.com/SpringQL/SpringQL which is licensed under MIT OR Apache-2.0. See file LICENSE-MIT or LICENSE-APACHE for full license details.
 
-use serde::{Deserialize, Serialize};
-
 use crate::pipeline::name::ColumnName;
 
 use super::{column_constraint::ColumnConstraint, column_data_type::ColumnDataType};
 
 /// Column definition used in DDL.
-#[derive(Clone, Eq, PartialEq, Debug, Serialize, Deserialize, new)]
+#[derive(Clone, Eq, PartialEq, Debug, new)]
 pub(crate) struct ColumnDefinition {
     column_data_type: ColumnDataType,
     column_constraints: Vec<ColumnConstraint>,

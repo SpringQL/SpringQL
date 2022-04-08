@@ -9,9 +9,7 @@ use crate::pipeline::{
     source_reader_model::SourceReaderModel,
 };
 
-use serde::{Deserialize, Serialize};
-
-#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Serialize, Deserialize)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub(in crate::stream_engine::autonomous_executor) enum TaskId {
     Source {
         id: String,

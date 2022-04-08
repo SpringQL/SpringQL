@@ -2,9 +2,7 @@
 
 use std::fmt::Display;
 
-use serde::{Deserialize, Serialize};
-
-#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Serialize, Deserialize, new)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, new)]
 pub(in crate::stream_engine::autonomous_executor) struct RowQueueId(String);
 
 impl Display for RowQueueId {

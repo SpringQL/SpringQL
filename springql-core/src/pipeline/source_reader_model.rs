@@ -2,8 +2,6 @@
 
 pub(crate) mod source_reader_type;
 
-use serde::{Deserialize, Serialize};
-
 use self::source_reader_type::SourceReaderType;
 
 use super::{
@@ -11,7 +9,7 @@ use super::{
     option::Options,
 };
 
-#[derive(Clone, PartialEq, Eq, Debug, Serialize, Deserialize, new)]
+#[derive(Clone, PartialEq, Eq, Debug, new)]
 pub(crate) struct SourceReaderModel {
     name: SourceReaderName,
     source_reader_type: SourceReaderType,

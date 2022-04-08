@@ -2,40 +2,38 @@
 
 use std::fmt::Display;
 
-use serde::{Deserialize, Serialize};
-
 use crate::mem_size::MemSize;
 
-#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Serialize, Deserialize, new)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, new)]
 pub struct StreamName(String);
 
-#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Serialize, Deserialize, new)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, new)]
 pub struct PumpName(String);
 
-#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Serialize, Deserialize, new)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, new)]
 pub struct SourceReaderName(String);
 
-#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Serialize, Deserialize, new)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, new)]
 pub struct SinkWriterName(String);
 
-#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Serialize, Deserialize, new)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, new)]
 pub(crate) struct ColumnName(String);
 
-#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Serialize, Deserialize, new)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, new)]
 pub(crate) struct QueueName(String);
 
-#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Serialize, Deserialize, new)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, new)]
 pub(crate) struct CorrelationAlias(String);
 
-#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Serialize, Deserialize, new)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, new)]
 pub(crate) struct AttributeName(String);
 
 /// Alias to an value expression.
-#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Serialize, Deserialize, new)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, new)]
 pub(crate) struct ValueAlias(String);
 
 /// Alias to an aggregate expression.
-#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Serialize, Deserialize, new)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, new)]
 pub(crate) struct AggrAlias(String);
 
 impl Display for StreamName {

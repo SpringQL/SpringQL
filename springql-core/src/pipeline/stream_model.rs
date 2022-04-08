@@ -2,13 +2,11 @@
 
 pub(crate) mod stream_shape;
 
-use serde::{Deserialize, Serialize};
-
 use self::stream_shape::StreamShape;
 
 use super::{field::field_name::ColumnReference, name::StreamName};
 
-#[derive(Clone, Eq, PartialEq, Debug, Serialize, Deserialize, new)]
+#[derive(Clone, Eq, PartialEq, Debug, new)]
 pub(crate) struct StreamModel {
     name: StreamName,
     shape: StreamShape,

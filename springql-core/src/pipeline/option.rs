@@ -7,13 +7,13 @@ pub(crate) mod net_options;
 
 use crate::error::{Result, SpringError};
 use anyhow::Context;
-use serde::{Deserialize, Serialize};
+
 use std::collections::HashMap;
 
 use self::options_builder::OptionsBuilder;
 
 /// Options in CREATE statement.
-#[derive(Clone, Eq, PartialEq, Debug, Serialize, Deserialize)]
+#[derive(Clone, Eq, PartialEq, Debug)]
 pub(crate) struct Options(HashMap<String, String>);
 
 impl Options {
