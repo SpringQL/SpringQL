@@ -22,8 +22,6 @@ use crate::{
     },
 };
 
-use super::web_console_reporter::WebConsoleReporter;
-
 const CLOCK_MSEC: u64 = 10;
 
 /// Runs a worker thread.
@@ -33,19 +31,12 @@ pub(super) struct PerformanceMonitorWorkerThread;
 #[derive(Debug)]
 pub(in crate::stream_engine::autonomous_executor) struct PerformanceMonitorWorkerThreadArg {
     config: SpringConfig,
-    web_console_reporter: WebConsoleReporter,
 }
 
 impl From<&SpringConfig> for PerformanceMonitorWorkerThreadArg {
     fn from(config: &SpringConfig) -> Self {
-        let web_console_reporter = WebConsoleReporter::new(
-            &config.web_console.host,
-            config.web_console.port,
-            WallClockDuration::from_millis(config.web_console.timeout_msec as u64),
-        );
         Self {
             config: config.clone(),
-            web_console_reporter,
         }
     }
 }
@@ -116,16 +107,6 @@ impl WorkerThread for PerformanceMonitorWorkerThread {
                     .memory
                     .performance_metrics_summary_report_interval_msec as i32,
             );
-
-            if thread_arg.config.web_console.enable_report_post {
-                state = Self::post_web_console(
-                    state,
-                    pipeline_derivatives.as_ref(),
-                    metrics.as_ref(),
-                    &thread_arg.web_console_reporter,
-                    thread_arg.config.web_console.report_interval_msec as i32,
-                );
-            }
 
             thread::sleep(Duration::from_millis(CLOCK_MSEC));
 
@@ -229,15 +210,12 @@ impl PerformanceMonitorWorkerThread {
         state: PerformanceMonitorWorkerLoopState,
         pipeline_derivatives: &PipelineDerivatives,
         metrics: &PerformanceMetrics,
-        web_console_reporter: &WebConsoleReporter,
         report_interval_msec: i32,
     ) -> PerformanceMonitorWorkerLoopState {
         let mut state = state;
 
         if state.countdown_web_console_msec <= 0 {
             state.countdown_web_console_msec = report_interval_msec as i32;
-
-            web_console_reporter.report(metrics, pipeline_derivatives.task_graph());
         } else {
             state.countdown_web_console_msec -= CLOCK_MSEC as i32;
         }

@@ -2,8 +2,6 @@
 
 pub(in crate::stream_engine::autonomous_executor) mod performance_monitor_worker_thread;
 
-mod web_console_reporter;
-
 use std::sync::Arc;
 
 use crate::low_level_rs::SpringConfig;
