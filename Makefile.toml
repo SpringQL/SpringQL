@@ -32,7 +32,7 @@ RUSTFLAGS='-D warnings' cargo build --workspace --all-targets --all-features
 [tasks.test]
 script = ['''
 #!/usr/bin/env bash -eux
-RUSTFLAGS='-D warnings' while ( cargo test --package springql-core --test feat_join -- test_feat_left_outer_join --exact --nocapture ) ; do : ; done
+while ( cargo test --package springql-core --test feat_join -- test_feat_left_outer_join --exact --nocapture ) ; do : ; done
 ''']
 
 [tasks.example]
