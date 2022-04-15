@@ -149,6 +149,8 @@ fn test_feat_left_outer_join() {
 
     let sink_received = run_and_drain(&ddls, &test_sink);
 
+    log::error!("{:#?}", sink_received);
+    
     assert_eq!(sink_received.len(), 3);
 
     let r0 = sink_received[0].clone();
