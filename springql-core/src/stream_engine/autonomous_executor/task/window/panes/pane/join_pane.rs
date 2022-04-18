@@ -101,6 +101,8 @@ impl JoinPane {
         self,
         expr_resolver: &ExprResolver,
     ) -> (Vec<Tuple>, WindowInFlowByWindowTask) {
+        log::error!("[start] left_outer_join: {:#?}", self);
+
         let window_in_flow = self.calc_window_in_flow_on_close();
 
         let null_right = self.null_right_tuple();
@@ -132,6 +134,8 @@ impl JoinPane {
 
             res_tuples.extend(joined_to_the_left);
         }
+
+        log::error!("[end] left_outer_join: res_tuples = {:#?}", res_tuples);
 
         (res_tuples, window_in_flow)
     }
