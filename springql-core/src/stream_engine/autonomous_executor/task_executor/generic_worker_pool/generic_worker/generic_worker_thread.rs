@@ -57,10 +57,9 @@ impl WorkerThread for GenericWorkerThread {
         thread_arg: &Self::ThreadArg,
         _event_queue: Arc<EventQueue>,
     ) -> Self::LoopState {
-        log::error!(
-            "[GenericWorker#{}] got UpdatePipeline event {:#?}",
-            thread_arg.worker_id,
-            pipeline_derivatives.pipeline().as_graph()
+        log::debug!(
+            "[GenericWorker#{}] got UpdatePipeline event",
+            thread_arg.worker_id
         );
 
         std::thread::sleep(std::time::Duration::from_millis(1000));
