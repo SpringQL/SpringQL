@@ -29,7 +29,7 @@ pub(crate) fn apply_ddls_low_level(ddls: &[String], config: SpringConfig) -> Spr
 #[allow(dead_code)]
 pub(crate) fn drain_from_sink(sink: &ForeignSink) -> Vec<serde_json::Value> {
     let mut received = Vec::new();
-    while let Some(v) = sink.try_receive(Duration::from_secs(1)) {
+    while let Some(v) = sink.try_receive(Duration::from_secs(5)) {
         received.push(v);
     }
     received
