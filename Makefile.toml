@@ -32,7 +32,7 @@ RUSTFLAGS='-D warnings' cargo build --workspace --all-targets --all-features
 [tasks.test]
 script = ['''
 #!/usr/bin/env bash -eux
-RUSTFLAGS='-D warnings' cargo test --workspace --all-targets --all-features
+RUST_LOG=springql_core=info,warn RUSTFLAGS='-D warnings' cargo test --workspace --all-targets --all-features
 ''']
 
 [tasks.example]
