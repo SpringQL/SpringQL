@@ -57,9 +57,10 @@ impl WorkerThread for GenericWorkerThread {
         thread_arg: &Self::ThreadArg,
         _event_queue: Arc<EventQueue>,
     ) -> Self::LoopState {
-        log::debug!(
-            "[GenericWorker#{}] got UpdatePipeline event",
-            thread_arg.worker_id
+        log::error!(
+            "[GenericWorker#{}] got UpdatePipeline event {:#?}",
+            thread_arg.worker_id,
+            pipeline_derivatives.pipeline().as_graph()
         );
 
         let mut state = current_state;
