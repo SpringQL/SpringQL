@@ -58,6 +58,10 @@ impl InsertSubtask {
             let window_q_repo = repos.window_queue_repository();
             let output_queues = context.output_queues();
 
+            if output_queues.is_empty() {
+                log::error!("output_queues is empty!!!");
+            }
+
             let rows = values_seq
                 .into_iter()
                 .map(|values| values.into_row(self.into_stream.clone(), self.column_order.clone()))
