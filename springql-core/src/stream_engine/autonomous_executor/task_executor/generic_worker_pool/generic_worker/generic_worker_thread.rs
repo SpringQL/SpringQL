@@ -2,7 +2,7 @@
 
 mod generic_worker_scheduler;
 
-use std::sync::Arc;
+use std::{sync::Arc, time::Duration};
 
 use crate::stream_engine::autonomous_executor::{
     event_queue::{event::EventTag, EventQueue},
@@ -62,6 +62,8 @@ impl WorkerThread for GenericWorkerThread {
             thread_arg.worker_id,
             pipeline_derivatives.pipeline().as_graph()
         );
+
+        std::thread::sleep(std::time::Duration::from_millis(1000));
 
         let mut state = current_state;
         state.pipeline_derivatives = Some(pipeline_derivatives);
