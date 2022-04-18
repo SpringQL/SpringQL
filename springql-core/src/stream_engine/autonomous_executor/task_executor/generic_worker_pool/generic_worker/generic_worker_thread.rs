@@ -62,7 +62,7 @@ impl WorkerThread for GenericWorkerThread {
             thread_arg.worker_id
         );
 
-        std::thread::sleep(std::time::Duration::from_millis(1000));
+        std::thread::sleep(std::time::Duration::from_millis(100));
 
         let mut state = current_state;
         state.pipeline_derivatives = Some(pipeline_derivatives);
