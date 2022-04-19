@@ -124,8 +124,8 @@ pub(in crate::stream_engine::autonomous_executor) trait WorkerThread {
         let event_polls = Self::event_subscription()
             .into_iter()
             .map(|ev| match ev {
-                EventTag::UpdatePipeline => event_queues.blocking.subscribe(ev),
-                _ => event_queues.non_blocking.subscribe(ev),
+                EventTag::Blocking(_) => event_queues.blocking.subscribe(ev),
+                EventTag::NonBlocking(_) => event_queues.non_blocking.subscribe(ev),
             })
             .collect();
         let _ = thread::Builder::new()

@@ -4,7 +4,7 @@ use std::{sync::Arc, thread, time::Duration};
 
 use crate::stream_engine::autonomous_executor::{
     event_queue::{
-        event::{Event, EventTag},
+        event::{BlockingEventTag, Event, EventTag, NonBlockingEventTag},
         non_blocking_event_queue::NonBlockingEventQueue,
     },
     memory_state_machine::{MemoryState, MemoryStateTransition},
@@ -64,7 +64,10 @@ impl WorkerThread for PurgerWorkerThread {
     }
 
     fn event_subscription() -> Vec<EventTag> {
-        vec![EventTag::UpdatePipeline, EventTag::TransitMemoryState]
+        vec![
+            EventTag::Blocking(BlockingEventTag::UpdatePipeline),
+            EventTag::NonBlocking(NonBlockingEventTag::TransitMemoryState),
+        ]
     }
 
     fn main_loop_cycle(

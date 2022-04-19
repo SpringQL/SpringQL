@@ -4,7 +4,7 @@ use std::{sync::Arc, thread, time::Duration};
 
 use crate::stream_engine::autonomous_executor::{
     event_queue::{
-        event::{Event, EventTag},
+        event::{Event, EventTag, NonBlockingEventTag},
         non_blocking_event_queue::NonBlockingEventQueue,
     },
     memory_state_machine::{
@@ -66,7 +66,9 @@ impl WorkerThread for MemoryStateMachineWorkerThread {
     }
 
     fn event_subscription() -> Vec<EventTag> {
-        vec![EventTag::ReportMetricsSummary]
+        vec![EventTag::NonBlocking(
+            NonBlockingEventTag::ReportMetricsSummary,
+        )]
     }
 
     fn main_loop_cycle(

@@ -7,7 +7,7 @@ use crate::{
     stream_engine::{
         autonomous_executor::{
             event_queue::{
-                event::{Event, EventTag},
+                event::{BlockingEventTag, Event, EventTag, NonBlockingEventTag},
                 non_blocking_event_queue::NonBlockingEventQueue,
             },
             memory_state_machine::MemoryStateTransition,
@@ -100,7 +100,10 @@ impl WorkerThread for PerformanceMonitorWorkerThread {
     }
 
     fn event_subscription() -> Vec<EventTag> {
-        vec![EventTag::UpdatePipeline, EventTag::IncrementalUpdateMetrics]
+        vec![
+            EventTag::Blocking(BlockingEventTag::UpdatePipeline),
+            EventTag::NonBlocking(NonBlockingEventTag::IncrementalUpdateMetrics),
+        ]
     }
 
     fn main_loop_cycle(

@@ -36,7 +36,17 @@ pub(in crate::stream_engine::autonomous_executor) enum Event {
 
 #[derive(Copy, Clone, Eq, PartialEq, Hash, Debug)]
 pub(in crate::stream_engine::autonomous_executor) enum EventTag {
+    Blocking(BlockingEventTag),
+    NonBlocking(NonBlockingEventTag),
+}
+
+#[derive(Copy, Clone, Eq, PartialEq, Hash, Debug)]
+pub(in crate::stream_engine::autonomous_executor) enum BlockingEventTag {
     UpdatePipeline,
+}
+
+#[derive(Copy, Clone, Eq, PartialEq, Hash, Debug)]
+pub(in crate::stream_engine::autonomous_executor) enum NonBlockingEventTag {
     ReplacePerformanceMetrics,
     IncrementalUpdateMetrics,
     ReportMetricsSummary,
@@ -46,11 +56,19 @@ pub(in crate::stream_engine::autonomous_executor) enum EventTag {
 impl From<&Event> for EventTag {
     fn from(event: &Event) -> Self {
         match event {
-            Event::UpdatePipeline { .. } => Self::UpdatePipeline,
-            Event::ReplacePerformanceMetrics { .. } => Self::ReplacePerformanceMetrics,
-            Event::IncrementalUpdateMetrics { .. } => Self::IncrementalUpdateMetrics,
-            Event::ReportMetricsSummary { .. } => Self::ReportMetricsSummary,
-            Event::TransitMemoryState { .. } => Self::TransitMemoryState,
+            Event::UpdatePipeline { .. } => Self::Blocking(BlockingEventTag::UpdatePipeline),
+            Event::ReplacePerformanceMetrics { .. } => {
+                Self::NonBlocking(NonBlockingEventTag::ReplacePerformanceMetrics)
+            }
+            Event::IncrementalUpdateMetrics { .. } => {
+                Self::NonBlocking(NonBlockingEventTag::IncrementalUpdateMetrics)
+            }
+            Event::ReportMetricsSummary { .. } => {
+                Self::NonBlocking(NonBlockingEventTag::ReportMetricsSummary)
+            }
+            Event::TransitMemoryState { .. } => {
+                Self::NonBlocking(NonBlockingEventTag::TransitMemoryState)
+            }
         }
     }
 }

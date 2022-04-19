@@ -5,7 +5,10 @@ mod generic_worker_scheduler;
 use std::sync::Arc;
 
 use crate::stream_engine::autonomous_executor::{
-    event_queue::{event::EventTag, non_blocking_event_queue::NonBlockingEventQueue},
+    event_queue::{
+        event::{BlockingEventTag, EventTag, NonBlockingEventTag},
+        non_blocking_event_queue::NonBlockingEventQueue,
+    },
     memory_state_machine::{MemoryState, MemoryStateTransition},
     performance_metrics::{
         metrics_update_command::metrics_update_by_task_execution::MetricsUpdateByTaskExecutionOrPurge,
@@ -37,9 +40,9 @@ impl WorkerThread for GenericWorkerThread {
 
     fn event_subscription() -> Vec<EventTag> {
         vec![
-            EventTag::UpdatePipeline,
-            EventTag::ReplacePerformanceMetrics,
-            EventTag::TransitMemoryState,
+            EventTag::Blocking(BlockingEventTag::UpdatePipeline),
+            EventTag::NonBlocking(NonBlockingEventTag::ReplacePerformanceMetrics),
+            EventTag::NonBlocking(NonBlockingEventTag::TransitMemoryState),
         ]
     }
 
