@@ -37,15 +37,15 @@ fn gen_source_trade() -> Vec<serde_json::Value> {
     vec![json_00_1, json_00_2, json_10_1, json_20_1]
 }
 
-// fn gen_source_city_temperature() -> Vec<serde_json::Value> {
-//     let json_00_1 = json!({
-//         "ts": "2020-01-01 00:00:00.000000000",
-//         "city": "Tokyo",
-//         "temperature": -3,
-//     });
+fn gen_source_city_temperature() -> Vec<serde_json::Value> {
+    let json_00_1 = json!({
+        "ts": "2020-01-01 00:00:00.000000000",
+        "city": "Tokyo",
+        "temperature": -3,
+    });
 
-//     vec![json_00_1]
-// }
+    vec![json_00_1]
+}
 
 fn run_and_drain(ddls: &[String], test_sink: &ForeignSink) -> Vec<serde_json::Value> {
     let _pipeline = apply_ddls(ddls, spring_config_default());
@@ -62,12 +62,12 @@ fn test_feat_left_outer_join() {
     setup_test_logger();
 
     let source_trade = gen_source_trade();
-    // let source_city_temperature = gen_source_city_temperature();
+    let source_city_temperature = gen_source_city_temperature();
 
     let test_source_trade =
         ForeignSource::start(ForeignSourceInput::new_fifo_batch(source_trade)).unwrap();
-    // let test_source_city_temperature =
-    //     ForeignSource::start(ForeignSourceInput::new_fifo_batch(source_city_temperature)).unwrap();
+    let test_source_city_temperature =
+        ForeignSource::start(ForeignSourceInput::new_fifo_batch(source_city_temperature)).unwrap();
 
     let test_sink = ForeignSink::start().unwrap();
 
@@ -133,18 +133,18 @@ fn test_feat_left_outer_join() {
             remote_host = test_source_trade.host_ip(),
             remote_port = test_source_trade.port()
         ),
-      //   format!(
-      //       "
-      //   CREATE SOURCE READER tcp_source_city_temperature FOR source_city_temperature
-      //     TYPE NET_CLIENT OPTIONS (
-      //       PROTOCOL 'TCP',
-      //       REMOTE_HOST '{remote_host}',
-      //       REMOTE_PORT '{remote_port}'
-      //   );
-      // ",
-      //       remote_host = test_source_city_temperature.host_ip(),
-      //       remote_port = test_source_city_temperature.port()
-      //   ),
+        format!(
+            "
+        CREATE SOURCE READER tcp_source_city_temperature FOR source_city_temperature
+          TYPE NET_CLIENT OPTIONS (
+            PROTOCOL 'TCP',
+            REMOTE_HOST '{remote_host}',
+            REMOTE_PORT '{remote_port}'
+        );
+      ",
+            remote_host = test_source_city_temperature.host_ip(),
+            remote_port = test_source_city_temperature.port()
+        ),
     ];
 
     let sink_received = run_and_drain(&ddls, &test_sink);
