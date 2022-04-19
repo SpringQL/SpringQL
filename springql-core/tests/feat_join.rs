@@ -47,8 +47,19 @@ fn gen_source_city_temperature() -> Vec<serde_json::Value> {
     vec![json_00_1]
 }
 
-fn run_and_drain(ddls: &[String], test_sink: &ForeignSink) -> Vec<serde_json::Value> {
+fn run_and_drain(
+    ddls: &[String],
+    test_source_trade_input: ForeignSourceInput,
+    test_source_trade: ForeignSource,
+    test_source_city_temperature_input: ForeignSourceInput,
+    test_source_city_temperature: ForeignSource,
+    test_sink: &ForeignSink,
+) -> Vec<serde_json::Value> {
     let _pipeline = apply_ddls(ddls, spring_config_default());
+
+    test_source_trade.start(test_source_trade_input);
+    test_source_city_temperature.start(test_source_city_temperature_input);
+
     let mut sink_received = drain_from_sink(test_sink);
     sink_received.sort_by_key(|r| {
         let ts = &r["ts"];
@@ -64,10 +75,8 @@ fn test_feat_left_outer_join() {
     let source_trade = gen_source_trade();
     let source_city_temperature = gen_source_city_temperature();
 
-    let test_source_trade =
-        ForeignSource::start(ForeignSourceInput::new_fifo_batch(source_trade)).unwrap();
-    let test_source_city_temperature =
-        ForeignSource::start(ForeignSourceInput::new_fifo_batch(source_city_temperature)).unwrap();
+    let test_source_trade = ForeignSource::new().unwrap();
+    let test_source_city_temperature = ForeignSource::new().unwrap();
 
     let test_sink = ForeignSink::start().unwrap();
 
@@ -147,7 +156,14 @@ fn test_feat_left_outer_join() {
         ),
     ];
 
-    let sink_received = run_and_drain(&ddls, &test_sink);
+    let sink_received = run_and_drain(
+        &ddls,
+        ForeignSourceInput::new_fifo_batch(source_trade),
+        test_source_trade,
+        ForeignSourceInput::new_fifo_batch(source_city_temperature),
+        test_source_city_temperature,
+        &test_sink,
+    );
 
     assert_eq!(sink_received.len(), 3);
 

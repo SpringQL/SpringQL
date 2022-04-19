@@ -123,18 +123,19 @@ mod tests {
         let j2 = JsonObject::fx_city_temperature_osaka();
         let j3 = JsonObject::fx_city_temperature_london();
 
-        let source = ForeignSource::start(ForeignSourceInput::new_fifo_batch(vec![
-            serde_json::Value::from(j2.clone()),
-            serde_json::Value::from(j3.clone()),
-            serde_json::Value::from(j1.clone()),
-        ]))
-        .unwrap();
+        let source = ForeignSource::new().unwrap();
 
         let options = OptionsBuilder::default()
             .add("PROTOCOL", "TCP")
             .add("REMOTE_HOST", source.host_ip().to_string())
             .add("REMOTE_PORT", source.port().to_string())
             .build();
+
+        source.start(ForeignSourceInput::new_fifo_batch(vec![
+            serde_json::Value::from(j2.clone()),
+            serde_json::Value::from(j3.clone()),
+            serde_json::Value::from(j1.clone()),
+        ]));
 
         let mut subtask =
             NetClientSourceReader::start(&options, &SpringSourceReaderConfig::fx_default())?;

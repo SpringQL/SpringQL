@@ -12,13 +12,19 @@ use self::source_input::ForeignSourceInput;
 
 /// Runs as a TCP server and write(2)s foreign rows to socket.
 pub struct ForeignSource {
+    listener: TcpListener,
     my_addr: SocketAddr,
 }
 
 impl ForeignSource {
-    pub fn start(input: ForeignSourceInput) -> Result<Self> {
-        let listener = TcpListener::bind("127.0.0.1:0").unwrap();
-        let my_addr = listener.local_addr().unwrap();
+    pub fn new() -> Result<Self> {
+        let listener = TcpListener::bind("127.0.0.1:0")?;
+        let my_addr = listener.local_addr()?;
+        Ok(Self { listener, my_addr })
+    }
+
+    pub fn start(self, input: ForeignSourceInput) {
+        let listener = self.listener;
 
         let _ = thread::Builder::new()
             .name("ForeignSource".into())
@@ -27,8 +33,6 @@ impl ForeignSource {
                 stream.shutdown(Shutdown::Read).unwrap();
                 Self::stream_handler(stream, input).unwrap();
             });
-
-        Ok(Self { my_addr })
     }
 
     pub fn host_ip(&self) -> IpAddr {

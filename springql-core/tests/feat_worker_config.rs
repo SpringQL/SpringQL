@@ -30,8 +30,7 @@ fn t(worker_config: SpringWorkerConfig) {
     });
     let source_input = vec![json_oracle, json_ibm, json_google];
 
-    let test_source =
-        ForeignSource::start(ForeignSourceInput::new_fifo_batch(source_input.clone())).unwrap();
+    let test_source = ForeignSource::new().unwrap();
     let test_sink = ForeignSink::start().unwrap();
 
     let ddls = vec![
@@ -89,6 +88,7 @@ fn t(worker_config: SpringWorkerConfig) {
     };
 
     let _pipeline = apply_ddls(&ddls, config);
+    test_source.start(ForeignSourceInput::new_fifo_batch(source_input.clone()));
     let sink_received = drain_from_sink(&test_sink);
 
     // because worker takes source input in multi-thread, order may be changed
