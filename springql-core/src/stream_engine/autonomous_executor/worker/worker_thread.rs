@@ -6,6 +6,7 @@ use std::{
 };
 
 use crate::stream_engine::autonomous_executor::{
+    event_queue::EventPoll,
     main_job_lock::MainJobLock,
     memory_state_machine::MemoryStateTransition,
     performance_metrics::{
@@ -17,7 +18,6 @@ use crate::stream_engine::autonomous_executor::{
 use crate::stream_engine::autonomous_executor::{
     event_queue::{
         event::{Event, EventTag},
-        non_blocking_event_queue::NonBlockingEventPoll,
         non_blocking_event_queue::NonBlockingEventQueue,
     },
     pipeline_derivatives::PipelineDerivatives,
@@ -143,7 +143,7 @@ pub(in crate::stream_engine::autonomous_executor) trait WorkerThread {
     fn main_loop(
         main_job_lock: Arc<MainJobLock>,
         event_queue: Arc<NonBlockingEventQueue>,
-        event_polls: Vec<NonBlockingEventPoll>,
+        event_polls: Vec<EventPoll>,
         stop_receiver: mpsc::Receiver<()>,
         worker_setup_coordinator: Arc<WorkerSetupCoordinator>,
         worker_stop_coordinator: Arc<WorkerStopCoordinator>,
@@ -175,9 +175,9 @@ pub(in crate::stream_engine::autonomous_executor) trait WorkerThread {
 
     fn handle_events(
         current_state: Self::LoopState,
-        event_polls: &[NonBlockingEventPoll],
+        event_polls: &[EventPoll],
         thread_arg: &Self::ThreadArg,
-        event_queue: Arc<NonBlockingEventQueue>,
+        nb_event_queue: Arc<NonBlockingEventQueue>, // to publish next events in event handlers
     ) -> Self::LoopState {
         let mut state = current_state;
 
@@ -192,7 +192,7 @@ pub(in crate::stream_engine::autonomous_executor) trait WorkerThread {
                             state,
                             pipeline_derivatives,
                             thread_arg,
-                            event_queue.clone(),
+                            nb_event_queue.clone(),
                         );
                     }
                     Event::ReplacePerformanceMetrics { metrics } => {
@@ -200,7 +200,7 @@ pub(in crate::stream_engine::autonomous_executor) trait WorkerThread {
                             state,
                             metrics,
                             thread_arg,
-                            event_queue.clone(),
+                            nb_event_queue.clone(),
                         );
                     }
                     Event::IncrementalUpdateMetrics {
@@ -210,7 +210,7 @@ pub(in crate::stream_engine::autonomous_executor) trait WorkerThread {
                             state,
                             metrics_update_by_task_execution_or_purge,
                             thread_arg,
-                            event_queue.clone(),
+                            nb_event_queue.clone(),
                         )
                     }
                     Event::ReportMetricsSummary { metrics_summary } => {
@@ -218,7 +218,7 @@ pub(in crate::stream_engine::autonomous_executor) trait WorkerThread {
                             state,
                             metrics_summary,
                             thread_arg,
-                            event_queue.clone(),
+                            nb_event_queue.clone(),
                         )
                     }
                     Event::TransitMemoryState {
@@ -228,7 +228,7 @@ pub(in crate::stream_engine::autonomous_executor) trait WorkerThread {
                             state,
                             memory_state_transition,
                             thread_arg,
-                            event_queue.clone(),
+                            nb_event_queue.clone(),
                         )
                     }
                 }

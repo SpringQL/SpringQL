@@ -5,7 +5,10 @@ use std::{
     sync::{mpsc, Mutex, MutexGuard},
 };
 
-use super::event::{Event, EventTag};
+use super::{
+    event::{Event, EventTag},
+    EventPoll,
+};
 
 /// Event queue (message broker) for Choreography-based Saga pattern.
 #[derive(Debug, Default)]
@@ -34,10 +37,10 @@ impl NonBlockingEventQueue {
     pub(in crate::stream_engine::autonomous_executor) fn subscribe(
         &self,
         tag: EventTag,
-    ) -> NonBlockingEventPoll {
+    ) -> EventPoll {
         let (sender, receiver) = mpsc::channel();
         let event_push = EventPush::new(sender);
-        let event_poll = NonBlockingEventPoll::new(receiver);
+        let event_poll = EventPoll::new(receiver);
 
         let mut subscribers_by_tag = self.lock();
 
@@ -75,18 +78,6 @@ impl Subscribers {
         for event_push in self.event_push_list.iter() {
             event_push.push(event.clone());
         }
-    }
-}
-
-#[derive(Debug, new)]
-pub(in crate::stream_engine::autonomous_executor) struct NonBlockingEventPoll {
-    receiver: mpsc::Receiver<Event>,
-}
-
-impl NonBlockingEventPoll {
-    /// Non-blocking call
-    pub(in crate::stream_engine::autonomous_executor) fn poll(&self) -> Option<Event> {
-        self.receiver.try_recv().ok()
     }
 }
 
