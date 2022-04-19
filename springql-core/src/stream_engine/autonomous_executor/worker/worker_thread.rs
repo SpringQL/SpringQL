@@ -145,7 +145,8 @@ pub(in crate::stream_engine::autonomous_executor) trait WorkerThread {
         thread_arg: Self::ThreadArg,
     ) {
         log::info!("[{}] main loop started", Self::THREAD_NAME);
-        Self::setup_ready(worker_setup_coordinator);
+        Self::setup_ready(worker_setup_coordinator.clone());
+        worker_setup_coordinator.sync_wait_all_workers();
 
         let mut state = Self::LoopState::new(&thread_arg);
 
