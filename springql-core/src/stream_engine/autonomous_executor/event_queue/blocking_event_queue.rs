@@ -2,17 +2,18 @@
 
 use std::{
     collections::{hash_map::Entry, HashMap},
-    sync::{Mutex, MutexGuard},
+    sync::{mpsc, Mutex, MutexGuard},
 };
 
-use bus::{Bus, BusReader};
-
-use super::event::{Event, EventTag};
+use super::{
+    event::{Event, EventTag},
+    EventPoll,
+};
 
 /// Event queue (message broker) for Choreography-based Saga pattern.
 #[derive(Default)]
 pub(in crate::stream_engine::autonomous_executor) struct BlockingEventQueue {
-    bus_by_tag: Mutex<HashMap<EventTag, Bus<Event>>>,
+    subscribers_by_tag: Mutex<HashMap<EventTag, Subscribers>>,
 }
 
 impl BlockingEventQueue {
@@ -20,11 +21,11 @@ impl BlockingEventQueue {
     pub(in crate::stream_engine::autonomous_executor) fn publish_blocking(&self, event: Event) {
         let tag = EventTag::from(&event);
 
-        let mut bus_by_tag = self.lock();
-        let opt_bus = bus_by_tag.get_mut(&tag);
+        let mut subscribers_by_tag = self.lock();
+        let opt_subscribers = subscribers_by_tag.get(&tag);
 
-        if let Some(bus) = opt_bus {
-            bus.broadcast(event)
+        if let Some(subscribers) = opt_subscribers {
+            subscribers.push_all_blocking(event)
         }
     }
 
@@ -34,37 +35,60 @@ impl BlockingEventQueue {
     pub(in crate::stream_engine::autonomous_executor) fn subscribe(
         &self,
         tag: EventTag,
-    ) -> BlockingEventPoll {
-        let mut bus_by_tag = self.lock();
+    ) -> EventPoll {
+        let (sender, receiver) = mpsc::sync_channel(0); // rendezvous channel
+        let event_push = EventPush::new(sender);
+        let event_poll = EventPoll::new(receiver);
 
-        let bus_rx = match bus_by_tag.entry(tag) {
-            Entry::Occupied(mut bus) => bus.get_mut().add_rx(),
+        let mut subscribers_by_tag = self.lock();
+
+        // add new subscriber to self.subscribers
+        match subscribers_by_tag.entry(tag) {
+            Entry::Occupied(mut sub) => sub.get_mut().add(event_push),
             Entry::Vacant(v) => {
-                let mut bus = Bus::new(100);
-                let rx = bus.add_rx();
-                v.insert(bus);
-                rx
+                let mut sub = Subscribers::default();
+                sub.add(event_push);
+                v.insert(sub);
             }
-        };
+        }
 
-        BlockingEventPoll::new(bus_rx)
+        event_poll
     }
 
-    fn lock(&self) -> MutexGuard<HashMap<EventTag, Bus<Event>>> {
-        self.bus_by_tag.lock().expect("EventQueue lock poisoned")
+    fn lock(&self) -> MutexGuard<HashMap<EventTag, Subscribers>> {
+        self.subscribers_by_tag
+            .lock()
+            .expect("BlockingEventQueue lock poisoned")
     }
 }
 
-#[derive(new)]
-pub(in crate::stream_engine::autonomous_executor) struct BlockingEventPoll {
-    rx: BusReader<Event>,
+#[derive(Debug, Default)]
+struct Subscribers {
+    event_push_list: Vec<EventPush>,
 }
 
-impl BlockingEventPoll {
-    /// Blocking call
-    pub(in crate::stream_engine::autonomous_executor) fn poll(&mut self) -> Event {
-        self.rx
-            .recv()
-            .expect("Bus in BlockingEventQueue has dropped")
+impl Subscribers {
+    fn add(&mut self, event_push: EventPush) {
+        self.event_push_list.push(event_push);
+    }
+
+    fn push_all_blocking(&self, event: Event) {
+        for event_push in self.event_push_list.iter() {
+            event_push.push_blocking(event.clone());
+        }
+    }
+}
+
+#[derive(Debug, new)]
+struct EventPush {
+    sender: mpsc::SyncSender<Event>,
+}
+
+impl EventPush {
+    fn push_blocking(&self, event: Event) {
+        let event_tag = EventTag::from(&event);
+        self.sender
+            .send(event)
+            .unwrap_or_else(|_| panic!("failed to send event to subscriber: {:?}", event_tag));
     }
 }

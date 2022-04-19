@@ -60,7 +60,7 @@ impl NonBlockingEventQueue {
     fn lock(&self) -> MutexGuard<HashMap<EventTag, Subscribers>> {
         self.subscribers_by_tag
             .lock()
-            .expect("EventQueue lock poisoned")
+            .expect("NonBlockingEventQueue lock poisoned")
     }
 }
 
