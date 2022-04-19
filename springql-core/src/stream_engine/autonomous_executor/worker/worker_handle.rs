@@ -1,10 +1,12 @@
 // This file is part of https://github.com/SpringQL/SpringQL which is licensed under MIT OR Apache-2.0. See file LICENSE-MIT or LICENSE-APACHE for full license details.
 
 use std::{
-    sync::{mpsc, Arc, Mutex, MutexGuard, TryLockError},
+    sync::{mpsc, Arc},
     thread,
     time::Duration,
 };
+
+use parking_lot::{Mutex, MutexGuard};
 
 use crate::{
     low_level_rs::SpringConfig, stream_engine::autonomous_executor::event_queue::EventQueue,
@@ -114,27 +116,26 @@ impl WorkerSetupCoordinator {
     fn sync<T, F: Fn(&T) -> bool>(&self, v: &Mutex<T>, is_sync: F) {
         loop {
             match v.try_lock() {
-                Ok(v_) => {
+                Some(v_) => {
                     if is_sync(&v_) {
                         break;
                     } else {
                         thread::sleep(Self::SYNC_SLEEP);
                     }
                 }
-                Err(TryLockError::WouldBlock) => thread::sleep(Self::SYNC_SLEEP),
-                _ => panic!("failed to try_lock"),
+                None => thread::sleep(Self::SYNC_SLEEP),
             }
         }
     }
 
     fn ready_i64(&self, n: &Mutex<i64>) {
-        let mut n_ = n.lock().expect("failed to lock");
+        let mut n_ = n.lock();
         assert!(*n_ > 0);
         *n_ -= 1;
     }
 
     fn ready_bool(&self, b: &Mutex<bool>) {
-        let mut b_ = b.lock().expect("failed to lock");
+        let mut b_ = b.lock();
         assert!(!*b_);
         *b_ = true;
     }
@@ -158,10 +159,7 @@ impl WorkerStopCoordinator {
     }
 
     fn join(&self) {
-        let mut live_worker_count = self
-            .live_worker_count
-            .lock()
-            .expect("live_worker_count mutex got poisoned");
+        let mut live_worker_count = self.live_worker_count.lock();
         *live_worker_count += 1;
     }
 
@@ -171,8 +169,6 @@ impl WorkerStopCoordinator {
     }
 
     fn locked_count(&self) -> MutexGuard<u16> {
-        self.live_worker_count
-            .lock()
-            .expect("live_worker_count mutex got poisoned")
+        self.live_worker_count.lock()
     }
 }
