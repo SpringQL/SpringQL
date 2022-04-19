@@ -7,8 +7,8 @@ use crate::{
     stream_engine::{
         autonomous_executor::{
             event_queue::{
-                event::{Event, EventTag},
-                EventQueue,
+                event::{BlockingEventTag, Event, EventTag, NonBlockingEventTag},
+                non_blocking_event_queue::NonBlockingEventQueue,
             },
             memory_state_machine::MemoryStateTransition,
             performance_metrics::{
@@ -100,13 +100,16 @@ impl WorkerThread for PerformanceMonitorWorkerThread {
     }
 
     fn event_subscription() -> Vec<EventTag> {
-        vec![EventTag::UpdatePipeline, EventTag::IncrementalUpdateMetrics]
+        vec![
+            EventTag::Blocking(BlockingEventTag::UpdatePipeline),
+            EventTag::NonBlocking(NonBlockingEventTag::IncrementalUpdateMetrics),
+        ]
     }
 
     fn main_loop_cycle(
         current_state: Self::LoopState,
         thread_arg: &Self::ThreadArg,
-        event_queue: &EventQueue,
+        event_queue: &NonBlockingEventQueue,
     ) -> Self::LoopState {
         if let (Some(pipeline_derivatives), Some(metrics)) = (
             current_state.pipeline_derivatives.clone(),
@@ -146,7 +149,7 @@ impl WorkerThread for PerformanceMonitorWorkerThread {
         current_state: Self::LoopState,
         pipeline_derivatives: Arc<PipelineDerivatives>,
         _thread_arg: &Self::ThreadArg,
-        event_queue: Arc<EventQueue>,
+        event_queue: Arc<NonBlockingEventQueue>,
     ) -> Self::LoopState {
         let mut state = current_state;
 
@@ -165,7 +168,7 @@ impl WorkerThread for PerformanceMonitorWorkerThread {
         _current_state: Self::LoopState,
         _metrics: Arc<PerformanceMetrics>,
         _thread_arg: &Self::ThreadArg,
-        _event_queue: Arc<EventQueue>,
+        _event_queue: Arc<NonBlockingEventQueue>,
     ) -> Self::LoopState {
         unreachable!()
     }
@@ -174,7 +177,7 @@ impl WorkerThread for PerformanceMonitorWorkerThread {
         current_state: Self::LoopState,
         metrics: Arc<MetricsUpdateByTaskExecutionOrPurge>,
         _thread_arg: &Self::ThreadArg,
-        _event_queue: Arc<EventQueue>,
+        _event_queue: Arc<NonBlockingEventQueue>,
     ) -> Self::LoopState {
         let state = current_state;
         if let Some(m) = state.metrics.as_ref() {
@@ -192,7 +195,7 @@ impl WorkerThread for PerformanceMonitorWorkerThread {
         _current_state: Self::LoopState,
         _metrics_summary: Arc<PerformanceMetricsSummary>,
         _thread_arg: &Self::ThreadArg,
-        _event_queue: Arc<EventQueue>,
+        _event_queue: Arc<NonBlockingEventQueue>,
     ) -> Self::LoopState {
         unreachable!()
     }
@@ -201,7 +204,7 @@ impl WorkerThread for PerformanceMonitorWorkerThread {
         _current_state: Self::LoopState,
         _memory_state_transition: Arc<MemoryStateTransition>,
         _thread_arg: &Self::ThreadArg,
-        _event_queue: Arc<EventQueue>,
+        _event_queue: Arc<NonBlockingEventQueue>,
     ) -> Self::LoopState {
         unreachable!()
     }
@@ -211,7 +214,7 @@ impl PerformanceMonitorWorkerThread {
     fn report_metrics_summary(
         state: PerformanceMonitorWorkerLoopState,
         metrics: &PerformanceMetrics,
-        event_queue: &EventQueue,
+        event_queue: &NonBlockingEventQueue,
         report_interval_msec: i32,
     ) -> PerformanceMonitorWorkerLoopState {
         let mut state = state;

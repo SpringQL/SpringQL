@@ -13,8 +13,9 @@ use self::performance_monitor_worker_thread::{
 };
 
 use super::{
-    event_queue::EventQueue,
-    worker::worker_handle::{WorkerHandle, WorkerSetupCoordinator, WorkerStopCoordinator},
+    args::{Coordinators, EventQueues},
+    main_job_lock::MainJobLock,
+    worker::worker_handle::WorkerHandle,
 };
 
 /// Dedicated thread to:
@@ -29,14 +30,14 @@ pub(in crate::stream_engine::autonomous_executor) struct PerformanceMonitorWorke
 impl PerformanceMonitorWorker {
     pub(in crate::stream_engine::autonomous_executor) fn new(
         config: &SpringConfig,
-        event_queue: Arc<EventQueue>,
-        worker_setup_coordinator: Arc<WorkerSetupCoordinator>,
-        worker_stop_coordinator: Arc<WorkerStopCoordinator>,
+        main_job_lock: Arc<MainJobLock>,
+        event_queues: EventQueues,
+        coordinators: Coordinators,
     ) -> Self {
         let handle = WorkerHandle::new::<PerformanceMonitorWorkerThread>(
-            event_queue,
-            worker_setup_coordinator,
-            worker_stop_coordinator,
+            main_job_lock,
+            event_queues,
+            coordinators,
             PerformanceMonitorWorkerThreadArg::from(config),
         );
         Self { _handle: handle }

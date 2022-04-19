@@ -5,17 +5,13 @@ pub(super) mod source_worker;
 use std::{cell::RefCell, sync::Arc};
 
 use crate::stream_engine::autonomous_executor::{
-    event_queue::EventQueue,
+    args::{Coordinators, EventQueues, Locks},
     repositories::Repositories,
-    worker::worker_handle::{WorkerSetupCoordinator, WorkerStopCoordinator},
 };
 
 use self::source_worker::SourceWorker;
 
-use super::{
-    task_executor_lock::TaskExecutorLock,
-    task_worker_thread_handler::{TaskWorkerId, TaskWorkerThreadArg},
-};
+use super::task_worker_thread_handler::{TaskWorkerId, TaskWorkerThreadArg};
 
 /// Workers to execute pump and sink tasks.
 #[derive(Debug)]
@@ -31,23 +27,22 @@ pub(super) struct SourceWorkerPool {
 impl SourceWorkerPool {
     pub(super) fn new(
         n_worker_threads: u16,
-        event_queue: Arc<EventQueue>,
-        worker_setup_coordinator: Arc<WorkerSetupCoordinator>,
-        worker_stop_coordinator: Arc<WorkerStopCoordinator>,
-        task_executor_lock: Arc<TaskExecutorLock>,
+        locks: Locks,
+        event_queues: EventQueues,
+        coordinators: Coordinators,
         repos: Arc<Repositories>,
     ) -> Self {
         let workers = (0..n_worker_threads)
             .map(|id| {
                 let arg = TaskWorkerThreadArg::new(
                     TaskWorkerId::new(id as u16),
-                    task_executor_lock.clone(),
+                    locks.task_executor_lock.clone(),
                     repos.clone(),
                 );
                 SourceWorker::new(
-                    event_queue.clone(),
-                    worker_setup_coordinator.clone(),
-                    worker_stop_coordinator.clone(),
+                    locks.main_job_lock.clone(),
+                    event_queues.clone(),
+                    coordinators.clone(),
                     arg,
                 )
             })

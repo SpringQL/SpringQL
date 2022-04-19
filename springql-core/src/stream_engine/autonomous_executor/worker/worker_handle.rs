@@ -9,7 +9,11 @@ use std::{
 use parking_lot::{Mutex, MutexGuard};
 
 use crate::{
-    low_level_rs::SpringConfig, stream_engine::autonomous_executor::event_queue::EventQueue,
+    low_level_rs::SpringConfig,
+    stream_engine::autonomous_executor::{
+        args::{Coordinators, EventQueues},
+        main_job_lock::MainJobLock,
+    },
 };
 
 use super::worker_thread::WorkerThread;
@@ -22,19 +26,19 @@ pub(in crate::stream_engine::autonomous_executor) struct WorkerHandle {
 
 impl WorkerHandle {
     pub(in crate::stream_engine::autonomous_executor) fn new<T: WorkerThread>(
-        event_queue: Arc<EventQueue>,
-        worker_setup_coordinator: Arc<WorkerSetupCoordinator>,
-        worker_stop_coordinator: Arc<WorkerStopCoordinator>,
+        main_job_lock: Arc<MainJobLock>,
+        event_queues: EventQueues,
+        coordinators: Coordinators,
         thread_arg: T::ThreadArg,
     ) -> Self {
         let (stop_button, stop_receiver) = mpsc::sync_channel(0);
-        worker_stop_coordinator.join();
+        coordinators.worker_stop_coordinator.join();
 
         let _ = T::run(
-            event_queue,
+            main_job_lock,
+            event_queues,
             stop_receiver,
-            worker_setup_coordinator,
-            worker_stop_coordinator,
+            coordinators,
             thread_arg,
         );
         Self { stop_button }

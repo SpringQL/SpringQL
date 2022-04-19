@@ -4,8 +4,8 @@ use std::{sync::Arc, thread, time::Duration};
 
 use crate::stream_engine::autonomous_executor::{
     event_queue::{
-        event::{Event, EventTag},
-        EventQueue,
+        event::{Event, EventTag, NonBlockingEventTag},
+        non_blocking_event_queue::NonBlockingEventQueue,
     },
     memory_state_machine::{
         MemoryStateMachine, MemoryStateMachineThreshold, MemoryStateTransition,
@@ -66,13 +66,15 @@ impl WorkerThread for MemoryStateMachineWorkerThread {
     }
 
     fn event_subscription() -> Vec<EventTag> {
-        vec![EventTag::ReportMetricsSummary]
+        vec![EventTag::NonBlocking(
+            NonBlockingEventTag::ReportMetricsSummary,
+        )]
     }
 
     fn main_loop_cycle(
         current_state: Self::LoopState,
         thread_arg: &Self::ThreadArg,
-        _event_queue: &EventQueue,
+        _event_queue: &NonBlockingEventQueue,
     ) -> Self::LoopState {
         // Do nothing in loop. Only curious about ReportMetricsSummary event.
         thread::sleep(Duration::from_millis(
@@ -85,7 +87,7 @@ impl WorkerThread for MemoryStateMachineWorkerThread {
         _current_state: Self::LoopState,
         _pipeline_derivatives: Arc<PipelineDerivatives>,
         _thread_arg: &Self::ThreadArg,
-        _event_queue: Arc<EventQueue>,
+        _event_queue: Arc<NonBlockingEventQueue>,
     ) -> Self::LoopState {
         unreachable!()
     }
@@ -94,7 +96,7 @@ impl WorkerThread for MemoryStateMachineWorkerThread {
         _current_state: Self::LoopState,
         _metrics: Arc<PerformanceMetrics>,
         _thread_arg: &Self::ThreadArg,
-        _event_queue: Arc<EventQueue>,
+        _event_queue: Arc<NonBlockingEventQueue>,
     ) -> Self::LoopState {
         unreachable!()
     }
@@ -103,7 +105,7 @@ impl WorkerThread for MemoryStateMachineWorkerThread {
         _current_state: Self::LoopState,
         _metrics: Arc<MetricsUpdateByTaskExecutionOrPurge>,
         _thread_arg: &Self::ThreadArg,
-        _event_queue: Arc<EventQueue>,
+        _event_queue: Arc<NonBlockingEventQueue>,
     ) -> Self::LoopState {
         unreachable!()
     }
@@ -112,7 +114,7 @@ impl WorkerThread for MemoryStateMachineWorkerThread {
         current_state: Self::LoopState,
         metrics_summary: Arc<PerformanceMetricsSummary>,
         _thread_arg: &Self::ThreadArg,
-        event_queue: Arc<EventQueue>,
+        event_queue: Arc<NonBlockingEventQueue>,
     ) -> Self::LoopState {
         let mut state = current_state;
 
@@ -134,7 +136,7 @@ impl WorkerThread for MemoryStateMachineWorkerThread {
         _current_state: Self::LoopState,
         _memory_state_transition: Arc<MemoryStateTransition>,
         _thread_arg: &Self::ThreadArg,
-        _event_queue: Arc<EventQueue>,
+        _event_queue: Arc<NonBlockingEventQueue>,
     ) -> Self::LoopState {
         unreachable!()
     }

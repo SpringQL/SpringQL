@@ -6,6 +6,9 @@ use std::{
 };
 
 use crate::stream_engine::autonomous_executor::{
+    args::{Coordinators, EventQueues},
+    event_queue::EventPoll,
+    main_job_lock::MainJobLock,
     memory_state_machine::MemoryStateTransition,
     performance_metrics::{
         metrics_update_command::metrics_update_by_task_execution::MetricsUpdateByTaskExecutionOrPurge,
@@ -16,12 +19,12 @@ use crate::stream_engine::autonomous_executor::{
 use crate::stream_engine::autonomous_executor::{
     event_queue::{
         event::{Event, EventTag},
-        EventPoll, EventQueue,
+        non_blocking_event_queue::NonBlockingEventQueue,
     },
     pipeline_derivatives::PipelineDerivatives,
 };
 
-use super::worker_handle::{WorkerSetupCoordinator, WorkerStopCoordinator};
+use super::worker_handle::WorkerSetupCoordinator;
 
 /// State updated by loop cycles and event handlers.
 pub(in crate::stream_engine::autonomous_executor) trait WorkerThreadLoopState {
@@ -62,7 +65,7 @@ pub(in crate::stream_engine::autonomous_executor) trait WorkerThread {
         thread_arg: &Self::ThreadArg,
 
         // for a cycle to push event
-        event_queue: &EventQueue,
+        event_queue: &NonBlockingEventQueue,
     ) -> Self::LoopState;
 
     fn ev_update_pipeline(
@@ -71,7 +74,7 @@ pub(in crate::stream_engine::autonomous_executor) trait WorkerThread {
         thread_arg: &Self::ThreadArg,
 
         // for cascading event
-        event_queue: Arc<EventQueue>,
+        event_queue: Arc<NonBlockingEventQueue>,
     ) -> Self::LoopState;
 
     fn ev_replace_performance_metrics(
@@ -80,7 +83,7 @@ pub(in crate::stream_engine::autonomous_executor) trait WorkerThread {
         thread_arg: &Self::ThreadArg,
 
         // for cascading event
-        event_queue: Arc<EventQueue>,
+        event_queue: Arc<NonBlockingEventQueue>,
     ) -> Self::LoopState;
 
     fn ev_incremental_update_metrics(
@@ -89,7 +92,7 @@ pub(in crate::stream_engine::autonomous_executor) trait WorkerThread {
         thread_arg: &Self::ThreadArg,
 
         // for cascading event
-        event_queue: Arc<EventQueue>,
+        event_queue: Arc<NonBlockingEventQueue>,
     ) -> Self::LoopState;
 
     fn ev_report_metrics_summary(
@@ -98,7 +101,7 @@ pub(in crate::stream_engine::autonomous_executor) trait WorkerThread {
         thread_arg: &Self::ThreadArg,
 
         // for cascading event
-        event_queue: Arc<EventQueue>,
+        event_queue: Arc<NonBlockingEventQueue>,
     ) -> Self::LoopState;
 
     fn ev_transit_memory_state(
@@ -107,52 +110,59 @@ pub(in crate::stream_engine::autonomous_executor) trait WorkerThread {
         thread_arg: &Self::ThreadArg,
 
         // for cascading event
-        event_queue: Arc<EventQueue>,
+        event_queue: Arc<NonBlockingEventQueue>,
     ) -> Self::LoopState;
 
     /// Worker thread's entry point
     fn run(
-        event_queue: Arc<EventQueue>,
+        main_job_lock: Arc<MainJobLock>,
+        event_queues: EventQueues,
         stop_receiver: mpsc::Receiver<()>,
-        worker_setup_coordinator: Arc<WorkerSetupCoordinator>,
-        worker_stop_coordinator: Arc<WorkerStopCoordinator>,
+        coordinators: Coordinators,
         thread_arg: Self::ThreadArg,
     ) {
         let event_polls = Self::event_subscription()
             .into_iter()
-            .map(|ev| event_queue.subscribe(ev))
+            .map(|ev| match ev {
+                EventTag::Blocking(_) => event_queues.blocking.subscribe(ev),
+                EventTag::NonBlocking(_) => event_queues.non_blocking.subscribe(ev),
+            })
             .collect();
         let _ = thread::Builder::new()
             .name(Self::THREAD_NAME.into())
             .spawn(move || {
                 Self::main_loop(
-                    event_queue,
+                    main_job_lock,
+                    event_queues.non_blocking,
                     event_polls,
                     stop_receiver,
-                    worker_setup_coordinator,
-                    worker_stop_coordinator,
+                    coordinators,
                     thread_arg,
                 )
             });
     }
 
     fn main_loop(
-        event_queue: Arc<EventQueue>,
+        main_job_lock: Arc<MainJobLock>,
+        event_queue: Arc<NonBlockingEventQueue>,
         event_polls: Vec<EventPoll>,
         stop_receiver: mpsc::Receiver<()>,
-        worker_setup_coordinator: Arc<WorkerSetupCoordinator>,
-        worker_stop_coordinator: Arc<WorkerStopCoordinator>,
+        coordinators: Coordinators,
         thread_arg: Self::ThreadArg,
     ) {
         log::info!("[{}] main loop started", Self::THREAD_NAME);
-        Self::setup_ready(worker_setup_coordinator.clone());
-        worker_setup_coordinator.sync_wait_all_workers();
+        Self::setup_ready(coordinators.worker_setup_coordinator.clone());
+        coordinators
+            .worker_setup_coordinator
+            .sync_wait_all_workers();
 
         let mut state = Self::LoopState::new(&thread_arg);
 
         while stop_receiver.try_recv().is_err() {
-            if state.is_integral() {
-                state = Self::main_loop_cycle(state, &thread_arg, event_queue.as_ref());
+            if let Ok(_lock) = main_job_lock.try_main_job() {
+                if state.is_integral() {
+                    state = Self::main_loop_cycle(state, &thread_arg, event_queue.as_ref());
+                }
             }
             state = Self::handle_events(state, &event_polls, &thread_arg, event_queue.clone());
         }
@@ -161,7 +171,7 @@ pub(in crate::stream_engine::autonomous_executor) trait WorkerThread {
             "[{}] main loop finished. Synchronize other threads to finish...",
             Self::THREAD_NAME
         );
-        worker_stop_coordinator.sync_wait_all_workers();
+        coordinators.worker_stop_coordinator.sync_wait_all_workers();
     }
 
     fn setup_ready(worker_setup_coordinator: Arc<WorkerSetupCoordinator>);
@@ -170,7 +180,7 @@ pub(in crate::stream_engine::autonomous_executor) trait WorkerThread {
         current_state: Self::LoopState,
         event_polls: &[EventPoll],
         thread_arg: &Self::ThreadArg,
-        event_queue: Arc<EventQueue>,
+        nb_event_queue: Arc<NonBlockingEventQueue>, // to publish next events in event handlers
     ) -> Self::LoopState {
         let mut state = current_state;
 
@@ -185,7 +195,7 @@ pub(in crate::stream_engine::autonomous_executor) trait WorkerThread {
                             state,
                             pipeline_derivatives,
                             thread_arg,
-                            event_queue.clone(),
+                            nb_event_queue.clone(),
                         );
                     }
                     Event::ReplacePerformanceMetrics { metrics } => {
@@ -193,7 +203,7 @@ pub(in crate::stream_engine::autonomous_executor) trait WorkerThread {
                             state,
                             metrics,
                             thread_arg,
-                            event_queue.clone(),
+                            nb_event_queue.clone(),
                         );
                     }
                     Event::IncrementalUpdateMetrics {
@@ -203,7 +213,7 @@ pub(in crate::stream_engine::autonomous_executor) trait WorkerThread {
                             state,
                             metrics_update_by_task_execution_or_purge,
                             thread_arg,
-                            event_queue.clone(),
+                            nb_event_queue.clone(),
                         )
                     }
                     Event::ReportMetricsSummary { metrics_summary } => {
@@ -211,7 +221,7 @@ pub(in crate::stream_engine::autonomous_executor) trait WorkerThread {
                             state,
                             metrics_summary,
                             thread_arg,
-                            event_queue.clone(),
+                            nb_event_queue.clone(),
                         )
                     }
                     Event::TransitMemoryState {
@@ -221,7 +231,7 @@ pub(in crate::stream_engine::autonomous_executor) trait WorkerThread {
                             state,
                             memory_state_transition,
                             thread_arg,
-                            event_queue.clone(),
+                            nb_event_queue.clone(),
                         )
                     }
                 }

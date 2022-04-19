@@ -3,7 +3,10 @@
 use std::sync::Arc;
 
 use crate::stream_engine::autonomous_executor::{
-    event_queue::{event::EventTag, EventQueue},
+    event_queue::{
+        event::{BlockingEventTag, EventTag, NonBlockingEventTag},
+        non_blocking_event_queue::NonBlockingEventQueue,
+    },
     memory_state_machine::MemoryStateTransition,
     performance_metrics::{
         metrics_update_command::metrics_update_by_task_execution::MetricsUpdateByTaskExecutionOrPurge,
@@ -36,15 +39,15 @@ impl WorkerThread for SourceWorkerThread {
 
     fn event_subscription() -> Vec<EventTag> {
         vec![
-            EventTag::UpdatePipeline,
-            EventTag::ReplacePerformanceMetrics,
+            EventTag::Blocking(BlockingEventTag::UpdatePipeline),
+            EventTag::NonBlocking(NonBlockingEventTag::ReplacePerformanceMetrics),
         ]
     }
 
     fn main_loop_cycle(
         current_state: Self::LoopState,
         thread_arg: &Self::ThreadArg,
-        event_queue: &EventQueue,
+        event_queue: &NonBlockingEventQueue,
     ) -> Self::LoopState {
         TaskWorkerThreadHandler::main_loop_cycle::<SourceScheduler>(
             current_state,
@@ -57,7 +60,7 @@ impl WorkerThread for SourceWorkerThread {
         current_state: Self::LoopState,
         pipeline_derivatives: Arc<PipelineDerivatives>,
         thread_arg: &Self::ThreadArg,
-        _event_queue: Arc<EventQueue>,
+        _event_queue: Arc<NonBlockingEventQueue>,
     ) -> Self::LoopState {
         log::debug!(
             "[SourceWorker#{}] got UpdatePipeline event",
@@ -73,7 +76,7 @@ impl WorkerThread for SourceWorkerThread {
         current_state: Self::LoopState,
         metrics: Arc<PerformanceMetrics>,
         thread_arg: &Self::ThreadArg,
-        _event_queue: Arc<EventQueue>,
+        _event_queue: Arc<NonBlockingEventQueue>,
     ) -> Self::LoopState {
         log::debug!(
             "[SourceWorker#{}] got ReplacePerformanceMetrics event",
@@ -89,7 +92,7 @@ impl WorkerThread for SourceWorkerThread {
         _current_state: Self::LoopState,
         _memory_state_transition: Arc<MemoryStateTransition>,
         _thread_arg: &Self::ThreadArg,
-        _event_queue: Arc<EventQueue>,
+        _event_queue: Arc<NonBlockingEventQueue>,
     ) -> Self::LoopState {
         unreachable!();
     }
@@ -98,7 +101,7 @@ impl WorkerThread for SourceWorkerThread {
         _current_state: Self::LoopState,
         _metrics: Arc<MetricsUpdateByTaskExecutionOrPurge>,
         _thread_arg: &Self::ThreadArg,
-        _event_queue: Arc<EventQueue>,
+        _event_queue: Arc<NonBlockingEventQueue>,
     ) -> Self::LoopState {
         unreachable!()
     }
@@ -107,7 +110,7 @@ impl WorkerThread for SourceWorkerThread {
         _current_state: Self::LoopState,
         _metrics_summary: Arc<PerformanceMetricsSummary>,
         _thread_arg: &Self::ThreadArg,
-        _event_queue: Arc<EventQueue>,
+        _event_queue: Arc<NonBlockingEventQueue>,
     ) -> Self::LoopState {
         unreachable!()
     }
