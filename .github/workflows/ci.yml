@@ -188,7 +188,7 @@ jobs:
         uses: codecov/codecov-action@v1
         with:
           token: ${{ secrets.CODECOV_SECRET }}
-          files: ./lcov.info
+          files: ./target/lcov.info
 
   slack-notify:
     if: always()
