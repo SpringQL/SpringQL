@@ -2,7 +2,7 @@
 
 mod generic_worker_scheduler;
 
-use std::{sync::Arc, time::Duration};
+use std::sync::Arc;
 
 use crate::stream_engine::autonomous_executor::{
     event_queue::{event::EventTag, EventQueue},
