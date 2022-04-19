@@ -38,8 +38,14 @@ fn gen_source_input() -> Vec<serde_json::Value> {
     vec![json_00_1, json_00_2, json_10_1, json_20_1]
 }
 
-fn run_and_drain(ddls: &[String], test_sink: &ForeignSink) -> Vec<serde_json::Value> {
+fn run_and_drain(
+    ddls: &[String],
+    source_input: ForeignSourceInput,
+    test_source: ForeignSource,
+    test_sink: &ForeignSink,
+) -> Vec<serde_json::Value> {
     let _pipeline = apply_ddls(ddls, spring_config_default());
+    test_source.start(source_input);
     let mut sink_received = drain_from_sink(test_sink);
     sink_received.sort_by_key(|r| {
         let ts = &r["ts"];
@@ -54,8 +60,7 @@ fn test_e2e_sampling_fixed_window() -> Result<()> {
 
     let source_input = gen_source_input();
 
-    let test_source =
-        ForeignSource::start(ForeignSourceInput::new_fifo_batch(source_input)).unwrap();
+    let test_source = ForeignSource::new().unwrap();
     let test_sink = ForeignSink::start().unwrap();
 
     let ddls = vec![
@@ -111,7 +116,12 @@ fn test_e2e_sampling_fixed_window() -> Result<()> {
         ),
     ];
 
-    let sink_received = run_and_drain(&ddls, &test_sink);
+    let sink_received = run_and_drain(
+        &ddls,
+        ForeignSourceInput::new_fifo_batch(source_input),
+        test_source,
+        &test_sink,
+    );
 
     assert_eq!(sink_received.len(), 2);
 
@@ -142,8 +152,7 @@ fn test_e2e_sampling_sliding_window() -> Result<()> {
 
     let source_input = gen_source_input();
 
-    let test_source =
-        ForeignSource::start(ForeignSourceInput::new_fifo_batch(source_input)).unwrap();
+    let test_source = ForeignSource::new().unwrap();
     let test_sink = ForeignSink::start().unwrap();
 
     let ddls = vec![
@@ -199,7 +208,12 @@ fn test_e2e_sampling_sliding_window() -> Result<()> {
         ),
     ];
 
-    let sink_received = run_and_drain(&ddls, &test_sink);
+    let sink_received = run_and_drain(
+        &ddls,
+        ForeignSourceInput::new_fifo_batch(source_input),
+        test_source,
+        &test_sink,
+    );
 
     assert_eq!(sink_received.len(), 5);
 
@@ -232,8 +246,7 @@ fn test_e2e_sampling_pump_insert_to_window_queue() -> Result<()> {
 
     let source_input = gen_source_input();
 
-    let test_source =
-        ForeignSource::start(ForeignSourceInput::new_fifo_batch(source_input)).unwrap();
+    let test_source = ForeignSource::new().unwrap();
     let test_sink = ForeignSink::start().unwrap();
 
     let ddls = vec![
@@ -305,7 +318,12 @@ fn test_e2e_sampling_pump_insert_to_window_queue() -> Result<()> {
         ),
     ];
 
-    let sink_received = run_and_drain(&ddls, &test_sink);
+    let sink_received = run_and_drain(
+        &ddls,
+        ForeignSourceInput::new_fifo_batch(source_input),
+        test_source,
+        &test_sink,
+    );
 
     assert_eq!(sink_received.len(), 2);
 

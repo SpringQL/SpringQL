@@ -46,7 +46,7 @@ impl NnSqlValue {
 
 impl NetClientSourceReader {
     pub(in crate::stream_engine) fn factory_with_test_source(input: ForeignSourceInput) -> Self {
-        let source = ForeignSource::start(input).unwrap();
+        let source = ForeignSource::new().unwrap();
 
         let options = OptionsBuilder::default()
             .add("PROTOCOL", "TCP")
@@ -54,6 +54,7 @@ impl NetClientSourceReader {
             .add("REMOTE_PORT", source.port().to_string())
             .build();
 
+        source.start(input);
         NetClientSourceReader::start(&options, &SpringSourceReaderConfig::fx_default()).unwrap()
     }
 }

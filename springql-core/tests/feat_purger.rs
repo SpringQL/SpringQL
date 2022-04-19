@@ -34,10 +34,8 @@ fn t(n_in_rows: u64, upper_limit_bytes: u64) {
 
     let source_trade = _gen_source_input(n_in_rows).collect();
 
-    let test_source_trade =
-        ForeignSource::start(ForeignSourceInput::new_fifo_batch(source_trade)).unwrap();
-    let test_source_city_temperature =
-        ForeignSource::start(ForeignSourceInput::new_fifo_batch(vec![])).unwrap();
+    let test_source_trade = ForeignSource::new().unwrap();
+    let test_source_city_temperature = ForeignSource::new().unwrap();
 
     let test_sink = ForeignSink::start().unwrap();
 
@@ -126,6 +124,8 @@ fn t(n_in_rows: u64, upper_limit_bytes: u64) {
     config.memory.severe_to_moderate_percent = 20;
 
     let _pipeline = apply_ddls(&ddls, config);
+    test_source_trade.start(ForeignSourceInput::new_fifo_batch(source_trade));
+    test_source_city_temperature.start(ForeignSourceInput::new_fifo_batch(vec![]));
     thread::sleep(Duration::from_secs(10));
 }
 
