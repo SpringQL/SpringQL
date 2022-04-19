@@ -11,13 +11,14 @@ use crate::{error::Result, low_level_rs::SpringConfig};
 use std::sync::Arc;
 
 use self::{
-    generic_worker_pool::GenericWorkerPool,
-    source_worker_pool::SourceWorkerPool,
-    task_executor_lock::{TaskExecutionBarrierGuard, TaskExecutorLock},
+    generic_worker_pool::GenericWorkerPool, source_worker_pool::SourceWorkerPool,
+    task_executor_lock::TaskExecutorLock,
 };
 use super::{
-    event_queue::non_blocking_event_queue::NonBlockingEventQueue,
-    main_job_lock::MainJobLock,
+    event_queue::{
+        blocking_event_queue::BlockingEventQueue, non_blocking_event_queue::NonBlockingEventQueue,
+    },
+    main_job_lock::{MainJobBarrierGuard, MainJobLock},
     pipeline_derivatives::PipelineDerivatives,
     repositories::Repositories,
     task_graph::TaskGraph,
@@ -30,7 +31,6 @@ use super::{
 /// All interface methods are called from main thread, while `new()` spawns worker threads.
 #[derive(Debug)]
 pub(in crate::stream_engine) struct TaskExecutor {
-    task_executor_lock: Arc<TaskExecutorLock>,
     repos: Arc<Repositories>,
 
     _generic_worker_pool: GenericWorkerPool,
@@ -43,18 +43,19 @@ impl TaskExecutor {
         repos: Arc<Repositories>,
         main_job_lock: Arc<MainJobLock>,
         task_executor_lock: Arc<TaskExecutorLock>,
-        event_queue: Arc<NonBlockingEventQueue>,
+        b_event_queue: Arc<BlockingEventQueue>,
+        nb_event_queue: Arc<NonBlockingEventQueue>,
         worker_setup_coordinator: Arc<WorkerSetupCoordinator>,
         worker_stop_coordinator: Arc<WorkerStopCoordinator>,
     ) -> Self {
         Self {
-            task_executor_lock: task_executor_lock.clone(),
             repos: repos.clone(),
 
             _generic_worker_pool: GenericWorkerPool::new(
                 config.worker.n_generic_worker_threads,
                 main_job_lock.clone(),
-                event_queue.clone(),
+                b_event_queue.clone(),
+                nb_event_queue.clone(),
                 worker_setup_coordinator.clone(),
                 worker_stop_coordinator.clone(),
                 task_executor_lock.clone(),
@@ -63,7 +64,8 @@ impl TaskExecutor {
             _source_worker_pool: SourceWorkerPool::new(
                 config.worker.n_source_worker_threads,
                 main_job_lock,
-                event_queue,
+                b_event_queue,
+                nb_event_queue,
                 worker_setup_coordinator,
                 worker_stop_coordinator,
                 task_executor_lock,
@@ -72,17 +74,10 @@ impl TaskExecutor {
         }
     }
 
-    /// AutonomousExecutor acquires lock when pipeline is updated.
-    pub(in crate::stream_engine::autonomous_executor) fn pipeline_update_lock(
-        &self,
-    ) -> TaskExecutionBarrierGuard {
-        self.task_executor_lock.task_execution_barrier()
-    }
-
     /// Update workers' internal current pipeline.
     pub(in crate::stream_engine::autonomous_executor) fn update_pipeline(
         &self,
-        _lock_guard: &TaskExecutionBarrierGuard,
+        _lock_guard: &MainJobBarrierGuard,
         pipeline_derivatives: Arc<PipelineDerivatives>,
     ) -> Result<()> {
         let pipeline = pipeline_derivatives.pipeline();
@@ -107,7 +102,7 @@ impl TaskExecutor {
     /// Stop all source tasks and executes pump tasks and sink tasks to finish all rows remaining in queues.
     pub(in crate::stream_engine::autonomous_executor) fn cleanup(
         &self,
-        _lock_guard: &TaskExecutionBarrierGuard,
+        _lock_guard: &MainJobBarrierGuard,
         task_graph: &TaskGraph,
     ) {
         // TODO do not just remove rows in queues. Do the things in doc comment.

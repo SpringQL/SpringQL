@@ -11,7 +11,10 @@ use crate::stream_engine::autonomous_executor::{
 
 use self::purger_worker_thread::{PurgerWorkerThread, PurgerWorkerThreadArg};
 
-use super::{main_job_lock::MainJobLock, worker::worker_handle::WorkerSetupCoordinator};
+use super::{
+    event_queue::blocking_event_queue::BlockingEventQueue, main_job_lock::MainJobLock,
+    worker::worker_handle::WorkerSetupCoordinator,
+};
 
 /// Worker to execute pump and sink tasks.
 #[derive(Debug)]
@@ -22,14 +25,16 @@ pub(super) struct PurgerWorker {
 impl PurgerWorker {
     pub(super) fn new(
         main_job_lock: Arc<MainJobLock>,
-        event_queue: Arc<NonBlockingEventQueue>,
+        b_event_queue: Arc<BlockingEventQueue>,
+        nb_event_queue: Arc<NonBlockingEventQueue>,
         worker_setup_coordinator: Arc<WorkerSetupCoordinator>,
         worker_stop_coordinator: Arc<WorkerStopCoordinator>,
         thread_arg: PurgerWorkerThreadArg,
     ) -> Self {
         let handle = WorkerHandle::new::<PurgerWorkerThread>(
             main_job_lock,
-            event_queue,
+            b_event_queue,
+            nb_event_queue,
             worker_setup_coordinator,
             worker_stop_coordinator,
             thread_arg,

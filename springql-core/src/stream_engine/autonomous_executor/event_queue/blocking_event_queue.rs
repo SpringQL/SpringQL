@@ -11,7 +11,7 @@ use super::{
 };
 
 /// Event queue (message broker) for Choreography-based Saga pattern.
-#[derive(Default)]
+#[derive(Debug, Default)]
 pub(in crate::stream_engine::autonomous_executor) struct BlockingEventQueue {
     subscribers_by_tag: Mutex<HashMap<EventTag, Subscribers>>,
 }
@@ -21,7 +21,7 @@ impl BlockingEventQueue {
     pub(in crate::stream_engine::autonomous_executor) fn publish_blocking(&self, event: Event) {
         let tag = EventTag::from(&event);
 
-        let mut subscribers_by_tag = self.lock();
+        let subscribers_by_tag = self.lock();
         let opt_subscribers = subscribers_by_tag.get(&tag);
 
         if let Some(subscribers) = opt_subscribers {

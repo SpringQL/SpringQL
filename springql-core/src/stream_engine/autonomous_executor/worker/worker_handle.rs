@@ -11,7 +11,11 @@ use parking_lot::{Mutex, MutexGuard};
 use crate::{
     low_level_rs::SpringConfig,
     stream_engine::autonomous_executor::{
-        event_queue::non_blocking_event_queue::NonBlockingEventQueue, main_job_lock::MainJobLock,
+        event_queue::{
+            blocking_event_queue::BlockingEventQueue,
+            non_blocking_event_queue::NonBlockingEventQueue,
+        },
+        main_job_lock::MainJobLock,
     },
 };
 
@@ -26,7 +30,8 @@ pub(in crate::stream_engine::autonomous_executor) struct WorkerHandle {
 impl WorkerHandle {
     pub(in crate::stream_engine::autonomous_executor) fn new<T: WorkerThread>(
         main_job_lock: Arc<MainJobLock>,
-        event_queue: Arc<NonBlockingEventQueue>,
+        b_event_queue: Arc<BlockingEventQueue>,
+        nb_event_queue: Arc<NonBlockingEventQueue>,
         worker_setup_coordinator: Arc<WorkerSetupCoordinator>,
         worker_stop_coordinator: Arc<WorkerStopCoordinator>,
         thread_arg: T::ThreadArg,
@@ -36,7 +41,8 @@ impl WorkerHandle {
 
         let _ = T::run(
             main_job_lock,
-            event_queue,
+            b_event_queue,
+            nb_event_queue,
             stop_receiver,
             worker_setup_coordinator,
             worker_stop_coordinator,

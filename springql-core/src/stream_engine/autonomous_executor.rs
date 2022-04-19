@@ -28,6 +28,7 @@ use std::sync::Arc;
 
 pub(crate) use row::SinkRow;
 
+use self::event_queue::blocking_event_queue::BlockingEventQueue;
 use self::event_queue::non_blocking_event_queue::NonBlockingEventQueue;
 use self::memory_state_machine_worker::MemoryStateMachineWorker;
 use self::purger_worker::purger_worker_thread::PurgerWorkerThreadArg;
@@ -50,8 +51,9 @@ pub(super) mod test_support;
 /// All interface methods are called from main thread, while `new()` spawns worker threads.
 #[derive(Debug)]
 pub(in crate::stream_engine) struct AutonomousExecutor {
-    event_queue: Arc<NonBlockingEventQueue>,
+    b_event_queue: Arc<BlockingEventQueue>,
 
+    main_job_lock: Arc<MainJobLock>,
     task_executor: TaskExecutor,
 
     // just holds these ownership
@@ -65,7 +67,8 @@ impl AutonomousExecutor {
         let repos = Arc::new(Repositories::new(config));
         let main_job_lock = Arc::new(MainJobLock::default());
         let task_executor_lock = Arc::new(TaskExecutorLock::default());
-        let event_queue = Arc::new(NonBlockingEventQueue::default());
+        let b_event_queue = Arc::new(BlockingEventQueue::default());
+        let nb_event_queue = Arc::new(NonBlockingEventQueue::default());
         let worker_setup_coordinator = Arc::new(WorkerSetupCoordinator::new(config));
         let worker_stop_coordinator = Arc::new(WorkerStopCoordinator::default());
 
@@ -74,27 +77,31 @@ impl AutonomousExecutor {
             repos.clone(),
             main_job_lock.clone(),
             task_executor_lock.clone(),
-            event_queue.clone(),
+            b_event_queue.clone(),
+            nb_event_queue.clone(),
             worker_setup_coordinator.clone(),
             worker_stop_coordinator.clone(),
         );
         let memory_state_machine_worker = MemoryStateMachineWorker::new(
             &config.memory,
             main_job_lock.clone(),
-            event_queue.clone(),
+            b_event_queue.clone(),
+            nb_event_queue.clone(),
             worker_setup_coordinator.clone(),
             worker_stop_coordinator.clone(),
         );
         let performance_monitor_worker = PerformanceMonitorWorker::new(
             config,
             main_job_lock.clone(),
-            event_queue.clone(),
+            b_event_queue.clone(),
+            nb_event_queue.clone(),
             worker_setup_coordinator.clone(),
             worker_stop_coordinator.clone(),
         );
         let purger_worker = PurgerWorker::new(
-            main_job_lock,
-            event_queue.clone(),
+            main_job_lock.clone(),
+            b_event_queue.clone(),
+            nb_event_queue,
             worker_setup_coordinator.clone(),
             worker_stop_coordinator,
             PurgerWorkerThreadArg::new(repos, task_executor_lock),
@@ -104,7 +111,8 @@ impl AutonomousExecutor {
         log::info!("[AutonomousExecutor] All workers started");
 
         Self {
-            event_queue,
+            b_event_queue,
+            main_job_lock,
             task_executor,
             _memory_state_machine_worker: memory_state_machine_worker,
             _performance_monitor_worker: performance_monitor_worker,
@@ -116,18 +124,19 @@ impl AutonomousExecutor {
         &self,
         pipeline: Pipeline,
     ) -> Result<()> {
-        let task_executor = &self.task_executor;
-        let lock = task_executor.pipeline_update_lock();
+        let main_job_lock = &self.main_job_lock;
+        let lock = main_job_lock.main_job_barrier();
 
         let pipeline_derivatives = Arc::new(PipelineDerivatives::new(pipeline));
 
+        let task_executor = &self.task_executor;
         task_executor.cleanup(&lock, pipeline_derivatives.task_graph());
         task_executor.update_pipeline(&lock, pipeline_derivatives.clone())?;
 
         let event = Event::UpdatePipeline {
             pipeline_derivatives,
         };
-        self.event_queue.publish(event);
+        self.b_event_queue.publish_blocking(event);
 
         Ok(())
     }
