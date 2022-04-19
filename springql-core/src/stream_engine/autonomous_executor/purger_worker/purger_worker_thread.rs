@@ -5,7 +5,7 @@ use std::{sync::Arc, thread, time::Duration};
 use crate::stream_engine::autonomous_executor::{
     event_queue::{
         event::{Event, EventTag},
-        EventQueue,
+        non_blocking_event_queue::NonBlockingEventQueue,
     },
     memory_state_machine::{MemoryState, MemoryStateTransition},
     performance_metrics::{
@@ -70,7 +70,7 @@ impl WorkerThread for PurgerWorkerThread {
     fn main_loop_cycle(
         current_state: Self::LoopState,
         _thread_arg: &Self::ThreadArg,
-        _event_queue: &EventQueue,
+        _event_queue: &NonBlockingEventQueue,
     ) -> Self::LoopState {
         // Do nothing in loop. Only curious about TransitMemoryState event.
         thread::sleep(Duration::from_millis(100));
@@ -81,7 +81,7 @@ impl WorkerThread for PurgerWorkerThread {
         current_state: Self::LoopState,
         pipeline_derivatives: Arc<PipelineDerivatives>,
         _thread_arg: &Self::ThreadArg,
-        _event_queue: Arc<EventQueue>,
+        _event_queue: Arc<NonBlockingEventQueue>,
     ) -> Self::LoopState {
         log::debug!("[PurgerWorker] got UpdatePipeline event",);
 
@@ -94,7 +94,7 @@ impl WorkerThread for PurgerWorkerThread {
         current_state: Self::LoopState,
         memory_state_transition: Arc<MemoryStateTransition>,
         thread_arg: &Self::ThreadArg,
-        event_queue: Arc<EventQueue>,
+        event_queue: Arc<NonBlockingEventQueue>,
     ) -> Self::LoopState {
         match memory_state_transition.to_state() {
             MemoryState::Moderate | MemoryState::Severe => {
@@ -136,7 +136,7 @@ impl WorkerThread for PurgerWorkerThread {
         _current_state: Self::LoopState,
         _metrics: Arc<PerformanceMetrics>,
         _thread_arg: &Self::ThreadArg,
-        _event_queue: Arc<EventQueue>,
+        _event_queue: Arc<NonBlockingEventQueue>,
     ) -> Self::LoopState {
         unreachable!()
     }
@@ -145,7 +145,7 @@ impl WorkerThread for PurgerWorkerThread {
         _current_state: Self::LoopState,
         _metrics: Arc<MetricsUpdateByTaskExecutionOrPurge>,
         _thread_arg: &Self::ThreadArg,
-        _event_queue: Arc<EventQueue>,
+        _event_queue: Arc<NonBlockingEventQueue>,
     ) -> Self::LoopState {
         unreachable!()
     }
@@ -154,7 +154,7 @@ impl WorkerThread for PurgerWorkerThread {
         _current_state: Self::LoopState,
         _metrics_summary: Arc<PerformanceMetricsSummary>,
         _thread_arg: &Self::ThreadArg,
-        _event_queue: Arc<EventQueue>,
+        _event_queue: Arc<NonBlockingEventQueue>,
     ) -> Self::LoopState {
         unreachable!()
     }

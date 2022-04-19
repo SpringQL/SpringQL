@@ -16,7 +16,7 @@ use self::{
     task_executor_lock::{TaskExecutionBarrierGuard, TaskExecutorLock},
 };
 use super::{
-    event_queue::EventQueue,
+    event_queue::non_blocking_event_queue::NonBlockingEventQueue,
     main_job_lock::MainJobLock,
     pipeline_derivatives::PipelineDerivatives,
     repositories::Repositories,
@@ -43,7 +43,7 @@ impl TaskExecutor {
         repos: Arc<Repositories>,
         main_job_lock: Arc<MainJobLock>,
         task_executor_lock: Arc<TaskExecutorLock>,
-        event_queue: Arc<EventQueue>,
+        event_queue: Arc<NonBlockingEventQueue>,
         worker_setup_coordinator: Arc<WorkerSetupCoordinator>,
         worker_stop_coordinator: Arc<WorkerStopCoordinator>,
     ) -> Self {

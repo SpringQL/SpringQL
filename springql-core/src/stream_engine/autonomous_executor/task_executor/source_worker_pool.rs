@@ -5,7 +5,7 @@ pub(super) mod source_worker;
 use std::{cell::RefCell, sync::Arc};
 
 use crate::stream_engine::autonomous_executor::{
-    event_queue::EventQueue,
+    event_queue::non_blocking_event_queue::NonBlockingEventQueue,
     main_job_lock::MainJobLock,
     repositories::Repositories,
     worker::worker_handle::{WorkerSetupCoordinator, WorkerStopCoordinator},
@@ -33,7 +33,7 @@ impl SourceWorkerPool {
     pub(super) fn new(
         n_worker_threads: u16,
         main_job_lock: Arc<MainJobLock>,
-        event_queue: Arc<EventQueue>,
+        event_queue: Arc<NonBlockingEventQueue>,
         worker_setup_coordinator: Arc<WorkerSetupCoordinator>,
         worker_stop_coordinator: Arc<WorkerStopCoordinator>,
         task_executor_lock: Arc<TaskExecutorLock>,

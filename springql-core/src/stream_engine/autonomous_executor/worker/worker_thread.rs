@@ -17,7 +17,8 @@ use crate::stream_engine::autonomous_executor::{
 use crate::stream_engine::autonomous_executor::{
     event_queue::{
         event::{Event, EventTag},
-        EventPoll, EventQueue,
+        non_blocking_event_queue::NonBlockingEventPoll,
+        non_blocking_event_queue::NonBlockingEventQueue,
     },
     pipeline_derivatives::PipelineDerivatives,
 };
@@ -63,7 +64,7 @@ pub(in crate::stream_engine::autonomous_executor) trait WorkerThread {
         thread_arg: &Self::ThreadArg,
 
         // for a cycle to push event
-        event_queue: &EventQueue,
+        event_queue: &NonBlockingEventQueue,
     ) -> Self::LoopState;
 
     fn ev_update_pipeline(
@@ -72,7 +73,7 @@ pub(in crate::stream_engine::autonomous_executor) trait WorkerThread {
         thread_arg: &Self::ThreadArg,
 
         // for cascading event
-        event_queue: Arc<EventQueue>,
+        event_queue: Arc<NonBlockingEventQueue>,
     ) -> Self::LoopState;
 
     fn ev_replace_performance_metrics(
@@ -81,7 +82,7 @@ pub(in crate::stream_engine::autonomous_executor) trait WorkerThread {
         thread_arg: &Self::ThreadArg,
 
         // for cascading event
-        event_queue: Arc<EventQueue>,
+        event_queue: Arc<NonBlockingEventQueue>,
     ) -> Self::LoopState;
 
     fn ev_incremental_update_metrics(
@@ -90,7 +91,7 @@ pub(in crate::stream_engine::autonomous_executor) trait WorkerThread {
         thread_arg: &Self::ThreadArg,
 
         // for cascading event
-        event_queue: Arc<EventQueue>,
+        event_queue: Arc<NonBlockingEventQueue>,
     ) -> Self::LoopState;
 
     fn ev_report_metrics_summary(
@@ -99,7 +100,7 @@ pub(in crate::stream_engine::autonomous_executor) trait WorkerThread {
         thread_arg: &Self::ThreadArg,
 
         // for cascading event
-        event_queue: Arc<EventQueue>,
+        event_queue: Arc<NonBlockingEventQueue>,
     ) -> Self::LoopState;
 
     fn ev_transit_memory_state(
@@ -108,13 +109,13 @@ pub(in crate::stream_engine::autonomous_executor) trait WorkerThread {
         thread_arg: &Self::ThreadArg,
 
         // for cascading event
-        event_queue: Arc<EventQueue>,
+        event_queue: Arc<NonBlockingEventQueue>,
     ) -> Self::LoopState;
 
     /// Worker thread's entry point
     fn run(
         main_job_lock: Arc<MainJobLock>,
-        event_queue: Arc<EventQueue>,
+        event_queue: Arc<NonBlockingEventQueue>,
         stop_receiver: mpsc::Receiver<()>,
         worker_setup_coordinator: Arc<WorkerSetupCoordinator>,
         worker_stop_coordinator: Arc<WorkerStopCoordinator>,
@@ -141,8 +142,8 @@ pub(in crate::stream_engine::autonomous_executor) trait WorkerThread {
 
     fn main_loop(
         main_job_lock: Arc<MainJobLock>,
-        event_queue: Arc<EventQueue>,
-        event_polls: Vec<EventPoll>,
+        event_queue: Arc<NonBlockingEventQueue>,
+        event_polls: Vec<NonBlockingEventPoll>,
         stop_receiver: mpsc::Receiver<()>,
         worker_setup_coordinator: Arc<WorkerSetupCoordinator>,
         worker_stop_coordinator: Arc<WorkerStopCoordinator>,
@@ -174,9 +175,9 @@ pub(in crate::stream_engine::autonomous_executor) trait WorkerThread {
 
     fn handle_events(
         current_state: Self::LoopState,
-        event_polls: &[EventPoll],
+        event_polls: &[NonBlockingEventPoll],
         thread_arg: &Self::ThreadArg,
-        event_queue: Arc<EventQueue>,
+        event_queue: Arc<NonBlockingEventQueue>,
     ) -> Self::LoopState {
         let mut state = current_state;
 

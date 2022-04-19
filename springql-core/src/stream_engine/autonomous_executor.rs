@@ -28,6 +28,7 @@ use std::sync::Arc;
 
 pub(crate) use row::SinkRow;
 
+use self::event_queue::non_blocking_event_queue::NonBlockingEventQueue;
 use self::memory_state_machine_worker::MemoryStateMachineWorker;
 use self::purger_worker::purger_worker_thread::PurgerWorkerThreadArg;
 use self::purger_worker::PurgerWorker;
@@ -35,10 +36,8 @@ use self::repositories::Repositories;
 use self::task_executor::task_executor_lock::TaskExecutorLock;
 use self::worker::worker_handle::WorkerStopCoordinator;
 use self::{
-    event_queue::{event::Event, EventQueue},
-    performance_monitor_worker::PerformanceMonitorWorker,
-    pipeline_derivatives::PipelineDerivatives,
-    task_executor::TaskExecutor,
+    event_queue::event::Event, performance_monitor_worker::PerformanceMonitorWorker,
+    pipeline_derivatives::PipelineDerivatives, task_executor::TaskExecutor,
 };
 
 #[cfg(test)]
@@ -51,7 +50,7 @@ pub(super) mod test_support;
 /// All interface methods are called from main thread, while `new()` spawns worker threads.
 #[derive(Debug)]
 pub(in crate::stream_engine) struct AutonomousExecutor {
-    event_queue: Arc<EventQueue>,
+    event_queue: Arc<NonBlockingEventQueue>,
 
     task_executor: TaskExecutor,
 
@@ -66,7 +65,7 @@ impl AutonomousExecutor {
         let repos = Arc::new(Repositories::new(config));
         let main_job_lock = Arc::new(MainJobLock::default());
         let task_executor_lock = Arc::new(TaskExecutorLock::default());
-        let event_queue = Arc::new(EventQueue::default());
+        let event_queue = Arc::new(NonBlockingEventQueue::default());
         let worker_setup_coordinator = Arc::new(WorkerSetupCoordinator::new(config));
         let worker_stop_coordinator = Arc::new(WorkerStopCoordinator::default());
 

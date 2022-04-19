@@ -21,7 +21,7 @@ use self::memory_state_machine_worker_thread::{
 };
 
 use super::{
-    event_queue::EventQueue,
+    event_queue::non_blocking_event_queue::NonBlockingEventQueue,
     main_job_lock::MainJobLock,
     memory_state_machine::MemoryStateMachineThreshold,
     worker::worker_handle::{WorkerHandle, WorkerSetupCoordinator, WorkerStopCoordinator},
@@ -36,7 +36,7 @@ impl MemoryStateMachineWorker {
     pub(in crate::stream_engine::autonomous_executor) fn new(
         memory_config: &SpringMemoryConfig,
         main_job_lock: Arc<MainJobLock>,
-        event_queue: Arc<EventQueue>,
+        event_queue: Arc<NonBlockingEventQueue>,
         worker_setup_coordinator: Arc<WorkerSetupCoordinator>,
         worker_stop_coordinator: Arc<WorkerStopCoordinator>,
     ) -> Self {

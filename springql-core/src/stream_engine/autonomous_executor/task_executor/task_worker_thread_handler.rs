@@ -5,7 +5,7 @@
 use std::{fmt::Display, sync::Arc, thread, time::Duration};
 
 use crate::stream_engine::autonomous_executor::{
-    event_queue::{event::Event, EventQueue},
+    event_queue::{event::Event, non_blocking_event_queue::NonBlockingEventQueue},
     performance_metrics::{
         metrics_update_command::metrics_update_by_task_execution::MetricsUpdateByTaskExecutionOrPurge,
         PerformanceMetrics,
@@ -73,7 +73,7 @@ impl TaskWorkerThreadHandler {
     pub(super) fn main_loop_cycle<S>(
         current_state: TaskWorkerLoopState<S>,
         thread_arg: &TaskWorkerThreadArg,
-        event_queue: &EventQueue,
+        event_queue: &NonBlockingEventQueue,
     ) -> TaskWorkerLoopState<S>
     where
         S: Scheduler,
@@ -109,7 +109,7 @@ impl TaskWorkerThreadHandler {
         task_series: &[TaskId],
         pipeline_derivatives: Arc<PipelineDerivatives>,
         thread_arg: &TaskWorkerThreadArg,
-        event_queue: &EventQueue,
+        event_queue: &NonBlockingEventQueue,
     ) where
         S: Scheduler,
     {
