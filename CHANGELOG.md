@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog][Keep a Changelog] and this project adh
 
 ## [Unreleased]
 
+## [v0.5.0]
+
+### Fixed
+
+- Made DDL strongly-consistent among internal worker threads ([#108](https://github.com/SpringQL/SpringQL/pull/108))
+
 ## [v0.4.2]
 
 ### Removed
@@ -83,8 +89,9 @@ The format is based on [Keep a Changelog][Keep a Changelog] and this project adh
 [Semantic Versioning]: https://semver.org/
 
 <!-- Versions -->
-[Unreleased]: https://github.com/SpringQL/SpringQL/compare/v0.4.2...HEAD
+[Unreleased]: https://github.com/SpringQL/SpringQL/compare/v0.5.0...HEAD
 [Released]: https://github.com/SpringQL/SpringQL/releases
+[v0.5.0]: https://github.com/SpringQL/SpringQL/compare/v0.4.2...v0.5.0
 [v0.4.2]: https://github.com/SpringQL/SpringQL/compare/v0.4.1...v0.4.2
 [v0.4.1]: https://github.com/SpringQL/SpringQL/compare/v0.4.0...v0.4.1
 [v0.4.0]: https://github.com/SpringQL/SpringQL/compare/v0.3.3...v0.4.0
