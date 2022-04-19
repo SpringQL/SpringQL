@@ -23,7 +23,7 @@ mod task_graph;
 use crate::error::{Result, SpringError};
 use crate::low_level_rs::SpringConfig;
 use crate::pipeline::Pipeline;
-use crate::stream_engine::autonomous_executor::args::Locks;
+use crate::stream_engine::autonomous_executor::args::{Coordinators, Locks};
 use crate::stream_engine::autonomous_executor::main_job_lock::MainJobLock;
 use crate::stream_engine::autonomous_executor::worker::worker_handle::WorkerSetupCoordinator;
 use std::sync::Arc;
@@ -73,8 +73,10 @@ impl AutonomousExecutor {
         );
         let b_event_queue = Arc::new(BlockingEventQueue::default());
         let nb_event_queue = Arc::new(NonBlockingEventQueue::default());
-        let worker_setup_coordinator = Arc::new(WorkerSetupCoordinator::new(config));
-        let worker_stop_coordinator = Arc::new(WorkerStopCoordinator::default());
+        let coordinators = Coordinators::new(
+            Arc::new(WorkerSetupCoordinator::new(config)),
+            Arc::new(WorkerStopCoordinator::default()),
+        );
 
         let task_executor = TaskExecutor::new(
             config,
@@ -82,35 +84,33 @@ impl AutonomousExecutor {
             locks.clone(),
             b_event_queue.clone(),
             nb_event_queue.clone(),
-            worker_setup_coordinator.clone(),
-            worker_stop_coordinator.clone(),
+            coordinators.clone(),
         );
         let memory_state_machine_worker = MemoryStateMachineWorker::new(
             &config.memory,
             locks.main_job_lock.clone(),
             b_event_queue.clone(),
             nb_event_queue.clone(),
-            worker_setup_coordinator.clone(),
-            worker_stop_coordinator.clone(),
+            coordinators.clone(),
         );
         let performance_monitor_worker = PerformanceMonitorWorker::new(
             config,
             locks.main_job_lock.clone(),
             b_event_queue.clone(),
             nb_event_queue.clone(),
-            worker_setup_coordinator.clone(),
-            worker_stop_coordinator.clone(),
+            coordinators.clone(),
         );
         let purger_worker = PurgerWorker::new(
             locks.main_job_lock.clone(),
             b_event_queue.clone(),
             nb_event_queue,
-            worker_setup_coordinator.clone(),
-            worker_stop_coordinator,
+            coordinators.clone(),
             PurgerWorkerThreadArg::new(repos, locks.task_executor_lock.clone()),
         );
 
-        worker_setup_coordinator.sync_wait_all_workers();
+        coordinators
+            .worker_setup_coordinator
+            .sync_wait_all_workers();
         log::info!("[AutonomousExecutor] All workers started");
 
         Self {

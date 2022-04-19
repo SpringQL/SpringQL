@@ -6,6 +6,7 @@ use std::{
 };
 
 use crate::stream_engine::autonomous_executor::{
+    args::Coordinators,
     event_queue::{blocking_event_queue::BlockingEventQueue, EventPoll},
     main_job_lock::MainJobLock,
     memory_state_machine::MemoryStateTransition,
@@ -23,7 +24,7 @@ use crate::stream_engine::autonomous_executor::{
     pipeline_derivatives::PipelineDerivatives,
 };
 
-use super::worker_handle::{WorkerSetupCoordinator, WorkerStopCoordinator};
+use super::worker_handle::WorkerSetupCoordinator;
 
 /// State updated by loop cycles and event handlers.
 pub(in crate::stream_engine::autonomous_executor) trait WorkerThreadLoopState {
@@ -118,8 +119,7 @@ pub(in crate::stream_engine::autonomous_executor) trait WorkerThread {
         b_event_queue: Arc<BlockingEventQueue>,
         nb_event_queue: Arc<NonBlockingEventQueue>,
         stop_receiver: mpsc::Receiver<()>,
-        worker_setup_coordinator: Arc<WorkerSetupCoordinator>,
-        worker_stop_coordinator: Arc<WorkerStopCoordinator>,
+        coordinators: Coordinators,
         thread_arg: Self::ThreadArg,
     ) {
         let event_polls = Self::event_subscription()
@@ -137,8 +137,7 @@ pub(in crate::stream_engine::autonomous_executor) trait WorkerThread {
                     nb_event_queue,
                     event_polls,
                     stop_receiver,
-                    worker_setup_coordinator,
-                    worker_stop_coordinator,
+                    coordinators,
                     thread_arg,
                 )
             });
@@ -149,13 +148,14 @@ pub(in crate::stream_engine::autonomous_executor) trait WorkerThread {
         event_queue: Arc<NonBlockingEventQueue>,
         event_polls: Vec<EventPoll>,
         stop_receiver: mpsc::Receiver<()>,
-        worker_setup_coordinator: Arc<WorkerSetupCoordinator>,
-        worker_stop_coordinator: Arc<WorkerStopCoordinator>,
+        coordinators: Coordinators,
         thread_arg: Self::ThreadArg,
     ) {
         log::info!("[{}] main loop started", Self::THREAD_NAME);
-        Self::setup_ready(worker_setup_coordinator.clone());
-        worker_setup_coordinator.sync_wait_all_workers();
+        Self::setup_ready(coordinators.worker_setup_coordinator.clone());
+        coordinators
+            .worker_setup_coordinator
+            .sync_wait_all_workers();
 
         let mut state = Self::LoopState::new(&thread_arg);
 
@@ -172,7 +172,7 @@ pub(in crate::stream_engine::autonomous_executor) trait WorkerThread {
             "[{}] main loop finished. Synchronize other threads to finish...",
             Self::THREAD_NAME
         );
-        worker_stop_coordinator.sync_wait_all_workers();
+        coordinators.worker_stop_coordinator.sync_wait_all_workers();
     }
 
     fn setup_ready(worker_setup_coordinator: Arc<WorkerSetupCoordinator>);

@@ -6,14 +6,14 @@ use std::sync::Arc;
 
 use crate::stream_engine::autonomous_executor::{
     event_queue::non_blocking_event_queue::NonBlockingEventQueue,
-    worker::worker_handle::{WorkerHandle, WorkerStopCoordinator},
+    worker::worker_handle::WorkerHandle,
 };
 
 use self::purger_worker_thread::{PurgerWorkerThread, PurgerWorkerThreadArg};
 
 use super::{
-    event_queue::blocking_event_queue::BlockingEventQueue, main_job_lock::MainJobLock,
-    worker::worker_handle::WorkerSetupCoordinator,
+    args::Coordinators, event_queue::blocking_event_queue::BlockingEventQueue,
+    main_job_lock::MainJobLock,
 };
 
 /// Worker to execute pump and sink tasks.
@@ -27,16 +27,14 @@ impl PurgerWorker {
         main_job_lock: Arc<MainJobLock>,
         b_event_queue: Arc<BlockingEventQueue>,
         nb_event_queue: Arc<NonBlockingEventQueue>,
-        worker_setup_coordinator: Arc<WorkerSetupCoordinator>,
-        worker_stop_coordinator: Arc<WorkerStopCoordinator>,
+        coordinators: Coordinators,
         thread_arg: PurgerWorkerThreadArg,
     ) -> Self {
         let handle = WorkerHandle::new::<PurgerWorkerThread>(
             main_job_lock,
             b_event_queue,
             nb_event_queue,
-            worker_setup_coordinator,
-            worker_stop_coordinator,
+            coordinators,
             thread_arg,
         );
         Self { _handle: handle }

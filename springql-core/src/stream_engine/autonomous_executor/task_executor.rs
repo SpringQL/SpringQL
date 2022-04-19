@@ -12,7 +12,7 @@ use std::sync::Arc;
 
 use self::{generic_worker_pool::GenericWorkerPool, source_worker_pool::SourceWorkerPool};
 use super::{
-    args::Locks,
+    args::{Coordinators, Locks},
     event_queue::{
         blocking_event_queue::BlockingEventQueue, non_blocking_event_queue::NonBlockingEventQueue,
     },
@@ -20,7 +20,6 @@ use super::{
     pipeline_derivatives::PipelineDerivatives,
     repositories::Repositories,
     task_graph::TaskGraph,
-    worker::worker_handle::{WorkerSetupCoordinator, WorkerStopCoordinator},
 };
 
 /// Task executor executes task graph's dataflow by internal worker threads.
@@ -42,8 +41,7 @@ impl TaskExecutor {
         locks: Locks,
         b_event_queue: Arc<BlockingEventQueue>,
         nb_event_queue: Arc<NonBlockingEventQueue>,
-        worker_setup_coordinator: Arc<WorkerSetupCoordinator>,
-        worker_stop_coordinator: Arc<WorkerStopCoordinator>,
+        coordinators: Coordinators,
     ) -> Self {
         Self {
             repos: repos.clone(),
@@ -53,8 +51,7 @@ impl TaskExecutor {
                 locks.clone(),
                 b_event_queue.clone(),
                 nb_event_queue.clone(),
-                worker_setup_coordinator.clone(),
-                worker_stop_coordinator.clone(),
+                coordinators.clone(),
                 repos.clone(),
             ),
             _source_worker_pool: SourceWorkerPool::new(
@@ -62,8 +59,7 @@ impl TaskExecutor {
                 locks,
                 b_event_queue,
                 nb_event_queue,
-                worker_setup_coordinator,
-                worker_stop_coordinator,
+                coordinators,
                 repos,
             ),
         }

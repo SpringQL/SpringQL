@@ -21,12 +21,13 @@ use self::memory_state_machine_worker_thread::{
 };
 
 use super::{
+    args::Coordinators,
     event_queue::{
         blocking_event_queue::BlockingEventQueue, non_blocking_event_queue::NonBlockingEventQueue,
     },
     main_job_lock::MainJobLock,
     memory_state_machine::MemoryStateMachineThreshold,
-    worker::worker_handle::{WorkerHandle, WorkerSetupCoordinator, WorkerStopCoordinator},
+    worker::worker_handle::WorkerHandle,
 };
 
 #[derive(Debug)]
@@ -40,8 +41,7 @@ impl MemoryStateMachineWorker {
         main_job_lock: Arc<MainJobLock>,
         b_event_queue: Arc<BlockingEventQueue>,
         nb_event_queue: Arc<NonBlockingEventQueue>,
-        worker_setup_coordinator: Arc<WorkerSetupCoordinator>,
-        worker_stop_coordinator: Arc<WorkerStopCoordinator>,
+        coordinators: Coordinators,
     ) -> Self {
         let threshold = MemoryStateMachineThreshold::from(memory_config);
 
@@ -49,8 +49,7 @@ impl MemoryStateMachineWorker {
             main_job_lock,
             b_event_queue,
             nb_event_queue,
-            worker_setup_coordinator,
-            worker_stop_coordinator,
+            coordinators,
             MemoryStateMachineWorkerThreadArg::new(
                 threshold,
                 memory_config.memory_state_transition_interval_msec,

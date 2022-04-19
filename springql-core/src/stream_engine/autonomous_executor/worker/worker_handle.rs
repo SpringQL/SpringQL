@@ -11,6 +11,7 @@ use parking_lot::{Mutex, MutexGuard};
 use crate::{
     low_level_rs::SpringConfig,
     stream_engine::autonomous_executor::{
+        args::Coordinators,
         event_queue::{
             blocking_event_queue::BlockingEventQueue,
             non_blocking_event_queue::NonBlockingEventQueue,
@@ -32,20 +33,18 @@ impl WorkerHandle {
         main_job_lock: Arc<MainJobLock>,
         b_event_queue: Arc<BlockingEventQueue>,
         nb_event_queue: Arc<NonBlockingEventQueue>,
-        worker_setup_coordinator: Arc<WorkerSetupCoordinator>,
-        worker_stop_coordinator: Arc<WorkerStopCoordinator>,
+        coordinators: Coordinators,
         thread_arg: T::ThreadArg,
     ) -> Self {
         let (stop_button, stop_receiver) = mpsc::sync_channel(0);
-        worker_stop_coordinator.join();
+        coordinators.worker_stop_coordinator.join();
 
         let _ = T::run(
             main_job_lock,
             b_event_queue,
             nb_event_queue,
             stop_receiver,
-            worker_setup_coordinator,
-            worker_stop_coordinator,
+            coordinators,
             thread_arg,
         );
         Self { stop_button }
