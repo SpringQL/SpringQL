@@ -19,16 +19,16 @@ pub(in crate::stream_engine::autonomous_executor) struct WorkerHandle {
 impl WorkerHandle {
     pub(in crate::stream_engine::autonomous_executor) fn new<T: WorkerThread>(
         event_queue: Arc<EventQueue>,
-        worker_stop_coordinate: Arc<WorkerStopCoordinate>,
+        worker_stop_coordinator: Arc<WorkerStopCoordinator>,
         thread_arg: T::ThreadArg,
     ) -> Self {
         let (stop_button, stop_receiver) = mpsc::sync_channel(0);
-        worker_stop_coordinate.join();
+        worker_stop_coordinator.join();
 
         let _ = T::run(
             event_queue,
             stop_receiver,
-            worker_stop_coordinate,
+            worker_stop_coordinator,
             thread_arg,
         );
         Self { stop_button }
@@ -48,11 +48,11 @@ impl Drop for WorkerHandle {
 /// Since worker threads publish and subscribe event, a worker cannot be dropped before waiting for other workers to finish
 /// (event publisher might fail to send event to channel if the receiver is already dropped).
 #[derive(Debug, Default)]
-pub(in crate::stream_engine::autonomous_executor) struct WorkerStopCoordinate {
+pub(in crate::stream_engine::autonomous_executor) struct WorkerStopCoordinator {
     live_worker_count: Mutex<u16>,
 }
 
-impl WorkerStopCoordinate {
+impl WorkerStopCoordinator {
     pub(in crate::stream_engine::autonomous_executor) fn sync_wait_all_workers(&self) {
         self.leave();
         while *self.locked_count() > 0 {

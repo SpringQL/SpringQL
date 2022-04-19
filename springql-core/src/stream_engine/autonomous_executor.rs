@@ -30,7 +30,7 @@ use self::purger_worker::purger_worker_thread::PurgerWorkerThreadArg;
 use self::purger_worker::PurgerWorker;
 use self::repositories::Repositories;
 use self::task_executor::task_executor_lock::TaskExecutorLock;
-use self::worker::worker_handle::WorkerStopCoordinate;
+use self::worker::worker_handle::WorkerStopCoordinator;
 use self::{
     event_queue::{event::Event, EventQueue},
     performance_monitor_worker::PerformanceMonitorWorker,
@@ -63,28 +63,28 @@ impl AutonomousExecutor {
         let repos = Arc::new(Repositories::new(config));
         let task_executor_lock = Arc::new(TaskExecutorLock::default());
         let event_queue = Arc::new(EventQueue::default());
-        let worker_stop_coordinate = Arc::new(WorkerStopCoordinate::default());
+        let worker_stop_coordinator = Arc::new(WorkerStopCoordinator::default());
 
         let task_executor = TaskExecutor::new(
             config,
             repos.clone(),
             task_executor_lock.clone(),
             event_queue.clone(),
-            worker_stop_coordinate.clone(),
+            worker_stop_coordinator.clone(),
         );
         let memory_state_machine_worker = MemoryStateMachineWorker::new(
             &config.memory,
             event_queue.clone(),
-            worker_stop_coordinate.clone(),
+            worker_stop_coordinator.clone(),
         );
         let performance_monitor_worker = PerformanceMonitorWorker::new(
             config,
             event_queue.clone(),
-            worker_stop_coordinate.clone(),
+            worker_stop_coordinator.clone(),
         );
         let purger_worker = PurgerWorker::new(
             event_queue.clone(),
-            worker_stop_coordinate,
+            worker_stop_coordinator,
             PurgerWorkerThreadArg::new(repos, task_executor_lock),
         );
         Self {

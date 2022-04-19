@@ -17,7 +17,7 @@ use self::{
 };
 use super::{
     event_queue::EventQueue, pipeline_derivatives::PipelineDerivatives, repositories::Repositories,
-    task_graph::TaskGraph, worker::worker_handle::WorkerStopCoordinate,
+    task_graph::TaskGraph, worker::worker_handle::WorkerStopCoordinator,
 };
 
 /// Task executor executes task graph's dataflow by internal worker threads.
@@ -39,7 +39,7 @@ impl TaskExecutor {
         repos: Arc<Repositories>,
         task_executor_lock: Arc<TaskExecutorLock>,
         event_queue: Arc<EventQueue>,
-        worker_stop_coordinate: Arc<WorkerStopCoordinate>,
+        worker_stop_coordinator: Arc<WorkerStopCoordinator>,
     ) -> Self {
         Self {
             task_executor_lock: task_executor_lock.clone(),
@@ -48,14 +48,14 @@ impl TaskExecutor {
             _generic_worker_pool: GenericWorkerPool::new(
                 config.worker.n_generic_worker_threads,
                 event_queue.clone(),
-                worker_stop_coordinate.clone(),
+                worker_stop_coordinator.clone(),
                 task_executor_lock.clone(),
                 repos.clone(),
             ),
             _source_worker_pool: SourceWorkerPool::new(
                 config.worker.n_source_worker_threads,
                 event_queue,
-                worker_stop_coordinate,
+                worker_stop_coordinator,
                 task_executor_lock,
                 repos,
             ),

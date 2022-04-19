@@ -6,7 +6,7 @@ use std::sync::Arc;
 
 use crate::stream_engine::autonomous_executor::{
     event_queue::EventQueue,
-    worker::worker_handle::{WorkerHandle, WorkerStopCoordinate},
+    worker::worker_handle::{WorkerHandle, WorkerStopCoordinator},
 };
 
 use self::purger_worker_thread::{PurgerWorkerThread, PurgerWorkerThreadArg};
@@ -20,12 +20,12 @@ pub(super) struct PurgerWorker {
 impl PurgerWorker {
     pub(super) fn new(
         event_queue: Arc<EventQueue>,
-        worker_stop_coordinate: Arc<WorkerStopCoordinate>,
+        worker_stop_coordinator: Arc<WorkerStopCoordinator>,
         thread_arg: PurgerWorkerThreadArg,
     ) -> Self {
         let handle = WorkerHandle::new::<PurgerWorkerThread>(
             event_queue,
-            worker_stop_coordinate,
+            worker_stop_coordinator,
             thread_arg,
         );
         Self { _handle: handle }
