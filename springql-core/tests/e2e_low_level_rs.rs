@@ -34,8 +34,7 @@ fn test_e2e_source_sink() -> Result<()> {
     });
     let source_input = vec![json_oracle, json_ibm, json_google];
 
-    let test_source =
-        ForeignSource::start(ForeignSourceInput::new_fifo_batch(source_input.clone())).unwrap();
+    let test_source = ForeignSource::new().unwrap();
     let test_sink = ForeignSink::start().unwrap();
 
     let ddls = vec![
@@ -88,6 +87,7 @@ fn test_e2e_source_sink() -> Result<()> {
     ];
 
     let _pipeline = apply_ddls(&ddls, spring_config_default());
+    test_source.start(ForeignSourceInput::new_fifo_batch(source_input.clone()));
     let sink_received = drain_from_sink(&test_sink);
 
     // because worker takes source input in multi-thread, order may be changed
@@ -108,8 +108,7 @@ fn test_e2e_projection() -> Result<()> {
         "amount": 20,
     });
 
-    let test_source =
-        ForeignSource::start(ForeignSourceInput::new_fifo_batch(vec![json_oracle])).unwrap();
+    let test_source = ForeignSource::new().unwrap();
     let test_sink = ForeignSink::start().unwrap();
 
     let ddls = vec![
@@ -161,6 +160,7 @@ fn test_e2e_projection() -> Result<()> {
     ];
 
     let _pipeline = apply_ddls(&ddls, spring_config_default());
+    test_source.start(ForeignSourceInput::new_fifo_batch(vec![json_oracle]));
     let sink_received = drain_from_sink(&test_sink);
 
     assert_eq!(
@@ -190,13 +190,7 @@ fn test_e2e_pop_from_in_memory_queue() {
     });
     let trade_times = 5;
 
-    let test_source = ForeignSource::start(ForeignSourceInput::new_fifo_batch(
-        (0..trade_times)
-            .into_iter()
-            .map(|_| json_oracle.clone())
-            .collect(),
-    ))
-    .unwrap();
+    let test_source = ForeignSource::new().unwrap();
 
     let ddls = vec![
         "
@@ -244,6 +238,12 @@ fn test_e2e_pop_from_in_memory_queue() {
     ];
 
     let pipeline = apply_ddls_low_level(&ddls, spring_config_default());
+    test_source.start(ForeignSourceInput::new_fifo_batch(
+        (0..trade_times)
+            .into_iter()
+            .map(|_| json_oracle.clone())
+            .collect(),
+    ));
 
     for _ in 0..trade_times {
         let row = spring_pop(&pipeline, queue_name).unwrap();

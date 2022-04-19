@@ -23,8 +23,7 @@ fn test_feat_floor_time() {
     });
     let source_input = vec![json_oracle];
 
-    let test_source =
-        ForeignSource::start(ForeignSourceInput::new_fifo_batch(source_input)).unwrap();
+    let test_source = ForeignSource::new().unwrap();
     let test_sink = ForeignSink::start().unwrap();
 
     let ddls = vec![
@@ -77,6 +76,7 @@ fn test_feat_floor_time() {
     ];
 
     let _pipeline = apply_ddls(&ddls, spring_config_default());
+    test_source.start(ForeignSourceInput::new_fifo_batch(source_input));
     let sink_received = drain_from_sink(&test_sink);
     let r = sink_received.get(0).unwrap();
 

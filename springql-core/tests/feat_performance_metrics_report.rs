@@ -62,6 +62,8 @@ fn _set_callback(
 
 fn start_pile_reports(
     ddls: &[String],
+    source_input: ForeignSourceInput,
+    test_source: ForeignSource,
     test_sink: &ForeignSink,
 ) -> Arc<Mutex<Vec<PostTaskGraphBody>>> {
     let body_pile = Arc::new(Mutex::new(Vec::new()));
@@ -75,6 +77,7 @@ fn start_pile_reports(
     mock.start();
 
     let _pipeline = apply_ddls(ddls, config);
+    test_source.start(source_input);
     let _sink_received = drain_from_sink(test_sink);
 
     body_pile
@@ -86,8 +89,7 @@ fn test_performance_metrics_report_floor_time() {
 
     let source_input = _gen_source_input(10000).collect();
 
-    let test_source =
-        ForeignSource::start(ForeignSourceInput::new_fifo_batch(source_input)).unwrap();
+    let test_source = ForeignSource::new().unwrap();
     let test_sink = ForeignSink::start().unwrap();
 
     let ddls = vec![
@@ -139,7 +141,12 @@ fn test_performance_metrics_report_floor_time() {
         ),
     ];
 
-    let body_pile = start_pile_reports(&ddls, &test_sink);
+    let body_pile = start_pile_reports(
+        &ddls,
+        ForeignSourceInput::new_fifo_batch(source_input),
+        test_source,
+        &test_sink,
+    );
     let body_pile = body_pile.lock().unwrap();
 
     assert!(body_pile
@@ -225,8 +232,7 @@ fn test_performance_metrics_report_sampling() {
 
     let source_input = _gen_source_input(100000).collect();
 
-    let test_source =
-        ForeignSource::start(ForeignSourceInput::new_fifo_batch(source_input)).unwrap();
+    let test_source = ForeignSource::new().unwrap();
     let test_sink = ForeignSink::start().unwrap();
 
     let ddls = vec![
@@ -282,7 +288,12 @@ fn test_performance_metrics_report_sampling() {
         ),
     ];
 
-    let body_pile = start_pile_reports(&ddls, &test_sink);
+    let body_pile = start_pile_reports(
+        &ddls,
+        ForeignSourceInput::new_fifo_batch(source_input),
+        test_source,
+        &test_sink,
+    );
     let body_pile = body_pile.lock().unwrap();
 
     assert!(body_pile
