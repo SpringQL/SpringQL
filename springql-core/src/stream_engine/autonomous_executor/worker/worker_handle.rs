@@ -61,7 +61,7 @@ pub(in crate::stream_engine::autonomous_executor) struct WorkerSetupCoordinator 
 }
 
 impl WorkerSetupCoordinator {
-    const SYNC_SLEEP: Duration = Duration::from_millis(50);
+    const SYNC_SLEEP: Duration = Duration::from_millis(1);
 
     pub(in crate::stream_engine::autonomous_executor) fn new(config: &SpringConfig) -> Self {
         let n_generic_workers = config.worker.n_generic_worker_threads as i64;
