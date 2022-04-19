@@ -1,7 +1,7 @@
 // This file is part of https://github.com/SpringQL/SpringQL which is licensed under MIT OR Apache-2.0. See file LICENSE-MIT or LICENSE-APACHE for full license details.
 
 use std::{
-    sync::{mpsc, Arc, Mutex, MutexGuard},
+    sync::{mpsc, Arc, Mutex, MutexGuard, TryLockError},
     thread,
     time::Duration,
 };
@@ -104,23 +104,25 @@ impl WorkerSetupCoordinator {
     }
 
     fn sync_i64(&self, n: &Mutex<i64>) {
-        loop {
-            let n_ = n.try_lock().expect("failed to try_lock");
-            if *n_ == 0 {
-                break;
-            } else {
-                thread::sleep(Self::SYNC_SLEEP);
-            }
-        }
+        self.sync(n, |n_| *n_ == 0);
     }
 
     fn sync_bool(&self, b: &Mutex<bool>) {
+        self.sync(b, |b_| *b_);
+    }
+
+    fn sync<T, F: Fn(&T) -> bool>(&self, v: &Mutex<T>, is_sync: F) {
         loop {
-            let b_ = b.try_lock().expect("failed to try_lock");
-            if *b_ {
-                break;
-            } else {
-                thread::sleep(Self::SYNC_SLEEP);
+            match v.try_lock() {
+                Ok(v_) => {
+                    if is_sync(&v_) {
+                        break;
+                    } else {
+                        thread::sleep(Self::SYNC_SLEEP);
+                    }
+                }
+                Err(TryLockError::WouldBlock) => thread::sleep(Self::SYNC_SLEEP),
+                _ => panic!("failed to try_lock"),
             }
         }
     }
