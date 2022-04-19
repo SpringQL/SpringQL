@@ -12,10 +12,7 @@ use std::sync::Arc;
 
 use self::{generic_worker_pool::GenericWorkerPool, source_worker_pool::SourceWorkerPool};
 use super::{
-    args::{Coordinators, Locks},
-    event_queue::{
-        blocking_event_queue::BlockingEventQueue, non_blocking_event_queue::NonBlockingEventQueue,
-    },
+    args::{Coordinators, EventQueues, Locks},
     main_job_lock::MainJobBarrierGuard,
     pipeline_derivatives::PipelineDerivatives,
     repositories::Repositories,
@@ -39,8 +36,7 @@ impl TaskExecutor {
         config: &SpringConfig,
         repos: Arc<Repositories>,
         locks: Locks,
-        b_event_queue: Arc<BlockingEventQueue>,
-        nb_event_queue: Arc<NonBlockingEventQueue>,
+        event_queues: EventQueues,
         coordinators: Coordinators,
     ) -> Self {
         Self {
@@ -49,16 +45,14 @@ impl TaskExecutor {
             _generic_worker_pool: GenericWorkerPool::new(
                 config.worker.n_generic_worker_threads,
                 locks.clone(),
-                b_event_queue.clone(),
-                nb_event_queue.clone(),
+                event_queues.clone(),
                 coordinators.clone(),
                 repos.clone(),
             ),
             _source_worker_pool: SourceWorkerPool::new(
                 config.worker.n_source_worker_threads,
                 locks,
-                b_event_queue,
-                nb_event_queue,
+                event_queues,
                 coordinators,
                 repos,
             ),

@@ -5,10 +5,7 @@ pub(in crate::stream_engine::autonomous_executor) mod generic_worker_thread;
 use std::sync::Arc;
 
 use crate::stream_engine::autonomous_executor::{
-    args::Coordinators,
-    event_queue::{
-        blocking_event_queue::BlockingEventQueue, non_blocking_event_queue::NonBlockingEventQueue,
-    },
+    args::{Coordinators, EventQueues},
     main_job_lock::MainJobLock,
     task_executor::task_worker_thread_handler::TaskWorkerThreadArg,
     worker::worker_handle::WorkerHandle,
@@ -25,15 +22,13 @@ pub(super) struct GenericWorker {
 impl GenericWorker {
     pub(super) fn new(
         main_job_lock: Arc<MainJobLock>,
-        b_event_queue: Arc<BlockingEventQueue>,
-        nb_event_queue: Arc<NonBlockingEventQueue>,
+        event_queues: EventQueues,
         coordinators: Coordinators,
         thread_arg: TaskWorkerThreadArg,
     ) -> Self {
         let handle = WorkerHandle::new::<GenericWorkerThread>(
             main_job_lock,
-            b_event_queue,
-            nb_event_queue,
+            event_queues,
             coordinators,
             thread_arg,
         );

@@ -6,8 +6,8 @@ use std::{
 };
 
 use crate::stream_engine::autonomous_executor::{
-    args::Coordinators,
-    event_queue::{blocking_event_queue::BlockingEventQueue, EventPoll},
+    args::{Coordinators, EventQueues},
+    event_queue::EventPoll,
     main_job_lock::MainJobLock,
     memory_state_machine::MemoryStateTransition,
     performance_metrics::{
@@ -116,8 +116,7 @@ pub(in crate::stream_engine::autonomous_executor) trait WorkerThread {
     /// Worker thread's entry point
     fn run(
         main_job_lock: Arc<MainJobLock>,
-        b_event_queue: Arc<BlockingEventQueue>,
-        nb_event_queue: Arc<NonBlockingEventQueue>,
+        event_queues: EventQueues,
         stop_receiver: mpsc::Receiver<()>,
         coordinators: Coordinators,
         thread_arg: Self::ThreadArg,
@@ -125,8 +124,8 @@ pub(in crate::stream_engine::autonomous_executor) trait WorkerThread {
         let event_polls = Self::event_subscription()
             .into_iter()
             .map(|ev| match ev {
-                EventTag::UpdatePipeline => b_event_queue.subscribe(ev),
-                _ => nb_event_queue.subscribe(ev),
+                EventTag::UpdatePipeline => event_queues.blocking.subscribe(ev),
+                _ => event_queues.non_blocking.subscribe(ev),
             })
             .collect();
         let _ = thread::Builder::new()
@@ -134,7 +133,7 @@ pub(in crate::stream_engine::autonomous_executor) trait WorkerThread {
             .spawn(move || {
                 Self::main_loop(
                     main_job_lock,
-                    nb_event_queue,
+                    event_queues.non_blocking,
                     event_polls,
                     stop_receiver,
                     coordinators,
