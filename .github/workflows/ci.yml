@@ -114,7 +114,7 @@ jobs:
       - name: Install cargo-make
         env:
           BASE_URL: https://github.com/sagiegurari/cargo-make/releases/download
-          VERSION: 0.35.2
+          VERSION: 0.35.10
         run: |
           if [ "${{ matrix.os }}" = "macos-latest" ]; then
             FILE_BASE=cargo-make-v${VERSION}-x86_64-apple-darwin
