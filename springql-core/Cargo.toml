@@ -47,6 +47,8 @@ once_cell = "1.8"
 
 parking_lot = "0.12"
 
+bus = "2.2"
+
 [dev-dependencies]
 springql-foreign-service = {path = "../foreign-service"}
 springql-test-logger = {path = "../test-logger"}

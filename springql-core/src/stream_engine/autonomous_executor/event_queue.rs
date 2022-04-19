@@ -4,5 +4,6 @@
 //!
 //! To add/del events, modify `self::event` module.
 
+pub(in crate::stream_engine::autonomous_executor) mod blocking_event_queue;
 pub(in crate::stream_engine::autonomous_executor) mod event;
 pub(in crate::stream_engine::autonomous_executor) mod non_blocking_event_queue;

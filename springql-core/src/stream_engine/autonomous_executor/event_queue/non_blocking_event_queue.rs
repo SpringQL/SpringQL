@@ -14,7 +14,7 @@ pub(in crate::stream_engine::autonomous_executor) struct NonBlockingEventQueue {
 }
 
 impl NonBlockingEventQueue {
-    /// Publish an event to queue.
+    /// Publish an event to queue and return immediately (non-blocking).
     ///
     /// Then queue will make the event ready for subscribers of the event tag.
     pub(in crate::stream_engine::autonomous_executor) fn publish(&self, event: Event) {
