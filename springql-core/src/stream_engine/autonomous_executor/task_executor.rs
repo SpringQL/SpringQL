@@ -17,6 +17,7 @@ use self::{
 };
 use super::{
     event_queue::EventQueue,
+    main_job_lock::MainJobLock,
     pipeline_derivatives::PipelineDerivatives,
     repositories::Repositories,
     task_graph::TaskGraph,
@@ -40,6 +41,7 @@ impl TaskExecutor {
     pub(in crate::stream_engine::autonomous_executor) fn new(
         config: &SpringConfig,
         repos: Arc<Repositories>,
+        main_job_lock: Arc<MainJobLock>,
         task_executor_lock: Arc<TaskExecutorLock>,
         event_queue: Arc<EventQueue>,
         worker_setup_coordinator: Arc<WorkerSetupCoordinator>,
@@ -51,6 +53,7 @@ impl TaskExecutor {
 
             _generic_worker_pool: GenericWorkerPool::new(
                 config.worker.n_generic_worker_threads,
+                main_job_lock.clone(),
                 event_queue.clone(),
                 worker_setup_coordinator.clone(),
                 worker_stop_coordinator.clone(),
@@ -59,6 +62,7 @@ impl TaskExecutor {
             ),
             _source_worker_pool: SourceWorkerPool::new(
                 config.worker.n_source_worker_threads,
+                main_job_lock,
                 event_queue,
                 worker_setup_coordinator,
                 worker_stop_coordinator,

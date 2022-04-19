@@ -6,6 +6,7 @@ use std::{
 };
 
 use crate::stream_engine::autonomous_executor::{
+    main_job_lock::MainJobLock,
     memory_state_machine::MemoryStateTransition,
     performance_metrics::{
         metrics_update_command::metrics_update_by_task_execution::MetricsUpdateByTaskExecutionOrPurge,
@@ -112,6 +113,7 @@ pub(in crate::stream_engine::autonomous_executor) trait WorkerThread {
 
     /// Worker thread's entry point
     fn run(
+        main_job_lock: Arc<MainJobLock>,
         event_queue: Arc<EventQueue>,
         stop_receiver: mpsc::Receiver<()>,
         worker_setup_coordinator: Arc<WorkerSetupCoordinator>,
@@ -126,6 +128,7 @@ pub(in crate::stream_engine::autonomous_executor) trait WorkerThread {
             .name(Self::THREAD_NAME.into())
             .spawn(move || {
                 Self::main_loop(
+                    main_job_lock,
                     event_queue,
                     event_polls,
                     stop_receiver,
@@ -137,6 +140,7 @@ pub(in crate::stream_engine::autonomous_executor) trait WorkerThread {
     }
 
     fn main_loop(
+        main_job_lock: Arc<MainJobLock>,
         event_queue: Arc<EventQueue>,
         event_polls: Vec<EventPoll>,
         stop_receiver: mpsc::Receiver<()>,
@@ -151,8 +155,10 @@ pub(in crate::stream_engine::autonomous_executor) trait WorkerThread {
         let mut state = Self::LoopState::new(&thread_arg);
 
         while stop_receiver.try_recv().is_err() {
-            if state.is_integral() {
-                state = Self::main_loop_cycle(state, &thread_arg, event_queue.as_ref());
+            if let Ok(_lock) = main_job_lock.try_main_job() {
+                if state.is_integral() {
+                    state = Self::main_loop_cycle(state, &thread_arg, event_queue.as_ref());
+                }
             }
             state = Self::handle_events(state, &event_polls, &thread_arg, event_queue.clone());
         }

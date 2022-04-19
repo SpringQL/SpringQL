@@ -22,6 +22,7 @@ mod task_graph;
 use crate::error::{Result, SpringError};
 use crate::low_level_rs::SpringConfig;
 use crate::pipeline::Pipeline;
+use crate::stream_engine::autonomous_executor::main_job_lock::MainJobLock;
 use crate::stream_engine::autonomous_executor::worker::worker_handle::WorkerSetupCoordinator;
 use std::sync::Arc;
 
@@ -63,6 +64,7 @@ pub(in crate::stream_engine) struct AutonomousExecutor {
 impl AutonomousExecutor {
     pub(in crate::stream_engine) fn new(config: &SpringConfig) -> Self {
         let repos = Arc::new(Repositories::new(config));
+        let main_job_lock = Arc::new(MainJobLock::default());
         let task_executor_lock = Arc::new(TaskExecutorLock::default());
         let event_queue = Arc::new(EventQueue::default());
         let worker_setup_coordinator = Arc::new(WorkerSetupCoordinator::new(config));
@@ -71,6 +73,7 @@ impl AutonomousExecutor {
         let task_executor = TaskExecutor::new(
             config,
             repos.clone(),
+            main_job_lock.clone(),
             task_executor_lock.clone(),
             event_queue.clone(),
             worker_setup_coordinator.clone(),
@@ -78,17 +81,20 @@ impl AutonomousExecutor {
         );
         let memory_state_machine_worker = MemoryStateMachineWorker::new(
             &config.memory,
+            main_job_lock.clone(),
             event_queue.clone(),
             worker_setup_coordinator.clone(),
             worker_stop_coordinator.clone(),
         );
         let performance_monitor_worker = PerformanceMonitorWorker::new(
             config,
+            main_job_lock.clone(),
             event_queue.clone(),
             worker_setup_coordinator.clone(),
             worker_stop_coordinator.clone(),
         );
         let purger_worker = PurgerWorker::new(
+            main_job_lock,
             event_queue.clone(),
             worker_setup_coordinator.clone(),
             worker_stop_coordinator,

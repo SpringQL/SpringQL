@@ -8,6 +8,8 @@ use parking_lot::{RwLock, RwLockReadGuard, RwLockWriteGuard};
 ///
 /// This lock is to assure for workers to safely execute tasks while acquiring MainJobLockGuard,
 /// while it also gives MainJobBarrierGuard for publishers of strongly-consistent events to block main jobs in other worker threads.
+/// 
+/// See [sequence diagram](https://github.com/SpringQL/SpringQL/issues/100#issuecomment-1101732796) to understand the strongly-consistent events flow.
 #[derive(Debug, Default)]
 pub(in crate::stream_engine::autonomous_executor) struct MainJobLock(RwLock<MainJobLockToken>);
 

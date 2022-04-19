@@ -14,6 +14,7 @@ use self::performance_monitor_worker_thread::{
 
 use super::{
     event_queue::EventQueue,
+    main_job_lock::MainJobLock,
     worker::worker_handle::{WorkerHandle, WorkerSetupCoordinator, WorkerStopCoordinator},
 };
 
@@ -29,11 +30,13 @@ pub(in crate::stream_engine::autonomous_executor) struct PerformanceMonitorWorke
 impl PerformanceMonitorWorker {
     pub(in crate::stream_engine::autonomous_executor) fn new(
         config: &SpringConfig,
+        main_job_lock: Arc<MainJobLock>,
         event_queue: Arc<EventQueue>,
         worker_setup_coordinator: Arc<WorkerSetupCoordinator>,
         worker_stop_coordinator: Arc<WorkerStopCoordinator>,
     ) -> Self {
         let handle = WorkerHandle::new::<PerformanceMonitorWorkerThread>(
+            main_job_lock,
             event_queue,
             worker_setup_coordinator,
             worker_stop_coordinator,
