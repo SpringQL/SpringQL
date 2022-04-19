@@ -64,6 +64,7 @@ pub(crate) struct StreamEngine {
 }
 
 impl StreamEngine {
+    /// Setup sequence is drawn in a diagram: <https://github.com/SpringQL/SpringQL/issues/100#issuecomment-1101732796>
     pub(crate) fn new(config: &SpringConfig) -> Self {
         Self {
             reactive_executor: SqlExecutor::default(),
