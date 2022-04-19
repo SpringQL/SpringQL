@@ -7,7 +7,7 @@ use std::sync::Arc;
 use crate::stream_engine::autonomous_executor::{
     event_queue::EventQueue,
     task_executor::task_worker_thread_handler::TaskWorkerThreadArg,
-    worker::worker_handle::{WorkerHandle, WorkerStopCoordinator},
+    worker::worker_handle::{WorkerHandle, WorkerSetupCoordinator, WorkerStopCoordinator},
 };
 
 use self::source_worker_thread::SourceWorkerThread;
@@ -21,11 +21,13 @@ pub(super) struct SourceWorker {
 impl SourceWorker {
     pub(super) fn new(
         event_queue: Arc<EventQueue>,
+        worker_setup_coordinator: Arc<WorkerSetupCoordinator>,
         worker_stop_coordinator: Arc<WorkerStopCoordinator>,
         thread_arg: TaskWorkerThreadArg,
     ) -> Self {
         let handle = WorkerHandle::new::<SourceWorkerThread>(
             event_queue,
+            worker_setup_coordinator,
             worker_stop_coordinator,
             thread_arg,
         );

@@ -6,7 +6,9 @@ use std::{
     time::Duration,
 };
 
-use crate::stream_engine::autonomous_executor::event_queue::EventQueue;
+use crate::{
+    low_level_rs::SpringConfig, stream_engine::autonomous_executor::event_queue::EventQueue,
+};
 
 use super::worker_thread::WorkerThread;
 
@@ -19,6 +21,7 @@ pub(in crate::stream_engine::autonomous_executor) struct WorkerHandle {
 impl WorkerHandle {
     pub(in crate::stream_engine::autonomous_executor) fn new<T: WorkerThread>(
         event_queue: Arc<EventQueue>,
+        worker_setup_coordinator: Arc<WorkerSetupCoordinator>,
         worker_stop_coordinator: Arc<WorkerStopCoordinator>,
         thread_arg: T::ThreadArg,
     ) -> Self {
@@ -28,6 +31,7 @@ impl WorkerHandle {
         let _ = T::run(
             event_queue,
             stop_receiver,
+            worker_setup_coordinator,
             worker_stop_coordinator,
             thread_arg,
         );
@@ -40,6 +44,97 @@ impl Drop for WorkerHandle {
         self.stop_button
             .send(())
             .expect("failed to wait for worker thread to finish its job");
+    }
+}
+
+/// Coordinator to setup worker threads.
+///
+/// Any worker cannot start its main job before the whole setup sequence finish.
+#[derive(Debug)]
+pub(in crate::stream_engine::autonomous_executor) struct WorkerSetupCoordinator {
+    n_generic_workers: Mutex<i64>, // do not use usize to detect < 0
+    n_source_workers: Mutex<i64>,
+
+    has_setup_memory_state_machine_worker: Mutex<bool>,
+    has_setup_performance_monitor_worker: Mutex<bool>,
+    has_setup_purger_worker: Mutex<bool>,
+}
+
+impl WorkerSetupCoordinator {
+    const SYNC_SLEEP: Duration = Duration::from_millis(50);
+
+    pub(in crate::stream_engine::autonomous_executor) fn new(config: &SpringConfig) -> Self {
+        let n_generic_workers = config.worker.n_generic_worker_threads as i64;
+        let n_source_workers = config.worker.n_source_worker_threads as i64;
+        Self {
+            n_generic_workers: Mutex::new(n_generic_workers),
+            n_source_workers: Mutex::new(n_source_workers),
+            has_setup_memory_state_machine_worker: Mutex::new(false),
+            has_setup_performance_monitor_worker: Mutex::new(false),
+            has_setup_purger_worker: Mutex::new(false),
+        }
+    }
+
+    pub(in crate::stream_engine::autonomous_executor) fn sync_wait_all_workers(&self) {
+        self.sync_i64(&self.n_generic_workers);
+        self.sync_i64(&self.n_source_workers);
+
+        self.sync_bool(&self.has_setup_memory_state_machine_worker);
+        self.sync_bool(&self.has_setup_performance_monitor_worker);
+        self.sync_bool(&self.has_setup_purger_worker);
+    }
+
+    pub(in crate::stream_engine::autonomous_executor) fn ready_generic_worker(&self) {
+        self.ready_i64(&self.n_generic_workers)
+    }
+    pub(in crate::stream_engine::autonomous_executor) fn ready_source_worker(&self) {
+        self.ready_i64(&self.n_source_workers)
+    }
+
+    pub(in crate::stream_engine::autonomous_executor) fn ready_memory_state_machine_worker(&self) {
+        self.ready_bool(&self.has_setup_memory_state_machine_worker);
+    }
+    pub(in crate::stream_engine::autonomous_executor) fn ready_performance_monitor_worker_worker(
+        &self,
+    ) {
+        self.ready_bool(&self.has_setup_performance_monitor_worker);
+    }
+    pub(in crate::stream_engine::autonomous_executor) fn ready_purger_worker(&self) {
+        self.ready_bool(&self.has_setup_purger_worker);
+    }
+
+    fn sync_i64(&self, n: &Mutex<i64>) {
+        loop {
+            let n_ = n.try_lock().expect("failed to try_lock");
+            if *n_ == 0 {
+                break;
+            } else {
+                thread::sleep(Self::SYNC_SLEEP);
+            }
+        }
+    }
+
+    fn sync_bool(&self, b: &Mutex<bool>) {
+        loop {
+            let b_ = b.try_lock().expect("failed to try_lock");
+            if *b_ {
+                break;
+            } else {
+                thread::sleep(Self::SYNC_SLEEP);
+            }
+        }
+    }
+
+    fn ready_i64(&self, n: &Mutex<i64>) {
+        let mut n_ = n.lock().expect("failed to lock");
+        assert!(*n_ > 0);
+        *n_ -= 1;
+    }
+
+    fn ready_bool(&self, b: &Mutex<bool>) {
+        let mut b_ = b.lock().expect("failed to lock");
+        assert!(!*b_);
+        *b_ = true;
     }
 }
 

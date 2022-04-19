@@ -16,7 +16,7 @@ use crate::stream_engine::autonomous_executor::{
             TaskWorkerLoopState, TaskWorkerThreadArg, TaskWorkerThreadHandler,
         },
     },
-    worker::worker_thread::WorkerThread,
+    worker::{worker_handle::WorkerSetupCoordinator, worker_thread::WorkerThread},
 };
 
 /// Runs a worker thread.
@@ -29,6 +29,10 @@ impl WorkerThread for SourceWorkerThread {
     type ThreadArg = TaskWorkerThreadArg;
 
     type LoopState = TaskWorkerLoopState<SourceScheduler>;
+
+    fn setup_ready(worker_setup_coordinator: Arc<WorkerSetupCoordinator>) {
+        worker_setup_coordinator.ready_source_worker()
+    }
 
     fn event_subscription() -> Vec<EventTag> {
         vec![

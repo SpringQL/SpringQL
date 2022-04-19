@@ -15,7 +15,10 @@ use crate::stream_engine::autonomous_executor::{
     pipeline_derivatives::PipelineDerivatives,
     repositories::Repositories,
     task_executor::task_executor_lock::TaskExecutorLock,
-    worker::worker_thread::{WorkerThread, WorkerThreadLoopState},
+    worker::{
+        worker_handle::WorkerSetupCoordinator,
+        worker_thread::{WorkerThread, WorkerThreadLoopState},
+    },
 };
 
 #[derive(Debug, new)]
@@ -55,6 +58,10 @@ impl WorkerThread for PurgerWorkerThread {
     type ThreadArg = PurgerWorkerThreadArg;
 
     type LoopState = PurgerWorkerLoopState;
+
+    fn setup_ready(worker_setup_coordinator: Arc<WorkerSetupCoordinator>) {
+        worker_setup_coordinator.ready_purger_worker()
+    }
 
     fn event_subscription() -> Vec<EventTag> {
         vec![EventTag::UpdatePipeline, EventTag::TransitMemoryState]
