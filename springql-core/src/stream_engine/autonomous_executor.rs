@@ -5,6 +5,7 @@ pub(crate) mod task;
 
 pub(in crate::stream_engine) mod event_queue;
 
+pub(in crate::stream_engine::autonomous_executor) mod main_job_lock;
 pub(in crate::stream_engine::autonomous_executor) mod worker;
 
 mod memory_state_machine;
