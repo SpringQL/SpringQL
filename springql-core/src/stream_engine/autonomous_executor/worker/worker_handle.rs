@@ -1,12 +1,16 @@
 // This file is part of https://github.com/SpringQL/SpringQL which is licensed under MIT OR Apache-2.0. See file LICENSE-MIT or LICENSE-APACHE for full license details.
 
 use std::{
-    sync::{mpsc, Arc, Mutex, MutexGuard},
+    sync::{mpsc, Arc},
     thread,
     time::Duration,
 };
 
-use crate::stream_engine::autonomous_executor::event_queue::EventQueue;
+use parking_lot::{Mutex, MutexGuard};
+
+use crate::{
+    low_level_rs::SpringConfig, stream_engine::autonomous_executor::event_queue::EventQueue,
+};
 
 use super::worker_thread::WorkerThread;
 
@@ -19,16 +23,18 @@ pub(in crate::stream_engine::autonomous_executor) struct WorkerHandle {
 impl WorkerHandle {
     pub(in crate::stream_engine::autonomous_executor) fn new<T: WorkerThread>(
         event_queue: Arc<EventQueue>,
-        worker_stop_coordinate: Arc<WorkerStopCoordinate>,
+        worker_setup_coordinator: Arc<WorkerSetupCoordinator>,
+        worker_stop_coordinator: Arc<WorkerStopCoordinator>,
         thread_arg: T::ThreadArg,
     ) -> Self {
         let (stop_button, stop_receiver) = mpsc::sync_channel(0);
-        worker_stop_coordinate.join();
+        worker_stop_coordinator.join();
 
         let _ = T::run(
             event_queue,
             stop_receiver,
-            worker_stop_coordinate,
+            worker_setup_coordinator,
+            worker_stop_coordinator,
             thread_arg,
         );
         Self { stop_button }
@@ -43,16 +49,108 @@ impl Drop for WorkerHandle {
     }
 }
 
+/// Coordinator to setup worker threads.
+///
+/// Any worker cannot start its main job before the whole setup sequence finish.
+#[derive(Debug)]
+pub(in crate::stream_engine::autonomous_executor) struct WorkerSetupCoordinator {
+    n_generic_workers: Mutex<i64>, // do not use usize to detect < 0
+    n_source_workers: Mutex<i64>,
+
+    has_setup_memory_state_machine_worker: Mutex<bool>,
+    has_setup_performance_monitor_worker: Mutex<bool>,
+    has_setup_purger_worker: Mutex<bool>,
+}
+
+impl WorkerSetupCoordinator {
+    const SYNC_SLEEP: Duration = Duration::from_millis(1);
+
+    pub(in crate::stream_engine::autonomous_executor) fn new(config: &SpringConfig) -> Self {
+        let n_generic_workers = config.worker.n_generic_worker_threads as i64;
+        let n_source_workers = config.worker.n_source_worker_threads as i64;
+        Self {
+            n_generic_workers: Mutex::new(n_generic_workers),
+            n_source_workers: Mutex::new(n_source_workers),
+            has_setup_memory_state_machine_worker: Mutex::new(false),
+            has_setup_performance_monitor_worker: Mutex::new(false),
+            has_setup_purger_worker: Mutex::new(false),
+        }
+    }
+
+    pub(in crate::stream_engine::autonomous_executor) fn sync_wait_all_workers(&self) {
+        self.sync_i64(&self.n_generic_workers);
+        self.sync_i64(&self.n_source_workers);
+
+        self.sync_bool(&self.has_setup_memory_state_machine_worker);
+        self.sync_bool(&self.has_setup_performance_monitor_worker);
+        self.sync_bool(&self.has_setup_purger_worker);
+    }
+
+    pub(in crate::stream_engine::autonomous_executor) fn ready_generic_worker(&self) {
+        self.ready_i64(&self.n_generic_workers)
+    }
+    pub(in crate::stream_engine::autonomous_executor) fn ready_source_worker(&self) {
+        self.ready_i64(&self.n_source_workers)
+    }
+
+    pub(in crate::stream_engine::autonomous_executor) fn ready_memory_state_machine_worker(&self) {
+        self.ready_bool(&self.has_setup_memory_state_machine_worker);
+    }
+    pub(in crate::stream_engine::autonomous_executor) fn ready_performance_monitor_worker_worker(
+        &self,
+    ) {
+        self.ready_bool(&self.has_setup_performance_monitor_worker);
+    }
+    pub(in crate::stream_engine::autonomous_executor) fn ready_purger_worker(&self) {
+        self.ready_bool(&self.has_setup_purger_worker);
+    }
+
+    fn sync_i64(&self, n: &Mutex<i64>) {
+        self.sync(n, |n_| *n_ == 0);
+    }
+
+    fn sync_bool(&self, b: &Mutex<bool>) {
+        self.sync(b, |b_| *b_);
+    }
+
+    fn sync<T, F: Fn(&T) -> bool>(&self, v: &Mutex<T>, is_sync: F) {
+        loop {
+            match v.try_lock() {
+                Some(v_) => {
+                    if is_sync(&v_) {
+                        break;
+                    } else {
+                        thread::sleep(Self::SYNC_SLEEP);
+                    }
+                }
+                None => thread::sleep(Self::SYNC_SLEEP),
+            }
+        }
+    }
+
+    fn ready_i64(&self, n: &Mutex<i64>) {
+        let mut n_ = n.lock();
+        assert!(*n_ > 0);
+        *n_ -= 1;
+    }
+
+    fn ready_bool(&self, b: &Mutex<bool>) {
+        let mut b_ = b.lock();
+        assert!(!*b_);
+        *b_ = true;
+    }
+}
+
 /// Coordinator to stop worker threads.
 ///
 /// Since worker threads publish and subscribe event, a worker cannot be dropped before waiting for other workers to finish
 /// (event publisher might fail to send event to channel if the receiver is already dropped).
 #[derive(Debug, Default)]
-pub(in crate::stream_engine::autonomous_executor) struct WorkerStopCoordinate {
+pub(in crate::stream_engine::autonomous_executor) struct WorkerStopCoordinator {
     live_worker_count: Mutex<u16>,
 }
 
-impl WorkerStopCoordinate {
+impl WorkerStopCoordinator {
     pub(in crate::stream_engine::autonomous_executor) fn sync_wait_all_workers(&self) {
         self.leave();
         while *self.locked_count() > 0 {
@@ -61,10 +159,7 @@ impl WorkerStopCoordinate {
     }
 
     fn join(&self) {
-        let mut live_worker_count = self
-            .live_worker_count
-            .lock()
-            .expect("live_worker_count mutex got poisoned");
+        let mut live_worker_count = self.live_worker_count.lock();
         *live_worker_count += 1;
     }
 
@@ -74,8 +169,6 @@ impl WorkerStopCoordinate {
     }
 
     fn locked_count(&self) -> MutexGuard<u16> {
-        self.live_worker_count
-            .lock()
-            .expect("live_worker_count mutex got poisoned")
+        self.live_worker_count.lock()
     }
 }

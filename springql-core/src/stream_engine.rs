@@ -53,26 +53,27 @@ use self::{
     in_memory_queue_repository::InMemoryQueueRepository, sql_executor::SqlExecutor,
 };
 
-/// Stream engine has reactive executor and autonomous executor inside.
+/// Stream engine has SQL executor and autonomous executor inside.
 ///
 /// Stream engine has Access Methods.
 /// External components (sql-processor) call Access Methods to change stream engine's states and get result from it.
 #[derive(Debug)]
 pub(crate) struct StreamEngine {
-    reactive_executor: SqlExecutor,
+    sql_executor: SqlExecutor,
     autonomous_executor: AutonomousExecutor,
 }
 
 impl StreamEngine {
+    /// Setup sequence is drawn in a diagram: <https://github.com/SpringQL/SpringQL/issues/100#issuecomment-1101732796>
     pub(crate) fn new(config: &SpringConfig) -> Self {
         Self {
-            reactive_executor: SqlExecutor::default(),
+            sql_executor: SqlExecutor::default(),
             autonomous_executor: AutonomousExecutor::new(config),
         }
     }
 
     pub(crate) fn current_pipeline(&self) -> &Pipeline {
-        self.reactive_executor.current_pipeline()
+        self.sql_executor.current_pipeline()
     }
 
     pub(crate) fn alter_pipeline(&mut self, command: AlterPipelineCommand) -> Result<()> {

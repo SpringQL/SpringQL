@@ -16,7 +16,10 @@ use crate::{
                 performance_metrics_summary::PerformanceMetricsSummary, PerformanceMetrics,
             },
             pipeline_derivatives::PipelineDerivatives,
-            worker::worker_thread::{WorkerThread, WorkerThreadLoopState},
+            worker::{
+                worker_handle::WorkerSetupCoordinator,
+                worker_thread::{WorkerThread, WorkerThreadLoopState},
+            },
         },
         time::duration::{wall_clock_duration::WallClockDuration, SpringDuration},
     },
@@ -91,6 +94,10 @@ impl WorkerThread for PerformanceMonitorWorkerThread {
     type ThreadArg = PerformanceMonitorWorkerThreadArg;
 
     type LoopState = PerformanceMonitorWorkerLoopState;
+
+    fn setup_ready(worker_setup_coordinator: Arc<WorkerSetupCoordinator>) {
+        worker_setup_coordinator.ready_performance_monitor_worker_worker()
+    }
 
     fn event_subscription() -> Vec<EventTag> {
         vec![EventTag::UpdatePipeline, EventTag::IncrementalUpdateMetrics]
