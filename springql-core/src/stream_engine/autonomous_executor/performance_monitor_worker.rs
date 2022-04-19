@@ -14,7 +14,7 @@ use self::performance_monitor_worker_thread::{
 
 use super::{
     event_queue::EventQueue,
-    worker::worker_handle::{WorkerHandle, WorkerStopCoordinate},
+    worker::worker_handle::{WorkerHandle, WorkerSetupCoordinator, WorkerStopCoordinator},
 };
 
 /// Dedicated thread to:
@@ -30,11 +30,13 @@ impl PerformanceMonitorWorker {
     pub(in crate::stream_engine::autonomous_executor) fn new(
         config: &SpringConfig,
         event_queue: Arc<EventQueue>,
-        worker_stop_coordinate: Arc<WorkerStopCoordinate>,
+        worker_setup_coordinator: Arc<WorkerSetupCoordinator>,
+        worker_stop_coordinator: Arc<WorkerStopCoordinator>,
     ) -> Self {
         let handle = WorkerHandle::new::<PerformanceMonitorWorkerThread>(
             event_queue,
-            worker_stop_coordinate,
+            worker_setup_coordinator,
+            worker_stop_coordinator,
             PerformanceMonitorWorkerThreadArg::from(config),
         );
         Self { _handle: handle }

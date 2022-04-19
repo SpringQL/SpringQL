@@ -21,7 +21,7 @@ use crate::stream_engine::autonomous_executor::{
     pipeline_derivatives::PipelineDerivatives,
 };
 
-use super::worker_handle::WorkerStopCoordinate;
+use super::worker_handle::{WorkerSetupCoordinator, WorkerStopCoordinator};
 
 /// State updated by loop cycles and event handlers.
 pub(in crate::stream_engine::autonomous_executor) trait WorkerThreadLoopState {
@@ -114,7 +114,8 @@ pub(in crate::stream_engine::autonomous_executor) trait WorkerThread {
     fn run(
         event_queue: Arc<EventQueue>,
         stop_receiver: mpsc::Receiver<()>,
-        worker_stop_coordinate: Arc<WorkerStopCoordinate>,
+        worker_setup_coordinator: Arc<WorkerSetupCoordinator>,
+        worker_stop_coordinator: Arc<WorkerStopCoordinator>,
         thread_arg: Self::ThreadArg,
     ) {
         let event_polls = Self::event_subscription()
@@ -128,7 +129,8 @@ pub(in crate::stream_engine::autonomous_executor) trait WorkerThread {
                     event_queue,
                     event_polls,
                     stop_receiver,
-                    worker_stop_coordinate,
+                    worker_setup_coordinator,
+                    worker_stop_coordinator,
                     thread_arg,
                 )
             });
@@ -138,10 +140,13 @@ pub(in crate::stream_engine::autonomous_executor) trait WorkerThread {
         event_queue: Arc<EventQueue>,
         event_polls: Vec<EventPoll>,
         stop_receiver: mpsc::Receiver<()>,
-        worker_stop_coordinate: Arc<WorkerStopCoordinate>,
+        worker_setup_coordinator: Arc<WorkerSetupCoordinator>,
+        worker_stop_coordinator: Arc<WorkerStopCoordinator>,
         thread_arg: Self::ThreadArg,
     ) {
         log::info!("[{}] main loop started", Self::THREAD_NAME);
+        Self::setup_ready(worker_setup_coordinator.clone());
+        worker_setup_coordinator.sync_wait_all_workers();
 
         let mut state = Self::LoopState::new(&thread_arg);
 
@@ -156,8 +161,10 @@ pub(in crate::stream_engine::autonomous_executor) trait WorkerThread {
             "[{}] main loop finished. Synchronize other threads to finish...",
             Self::THREAD_NAME
         );
-        worker_stop_coordinate.sync_wait_all_workers();
+        worker_stop_coordinator.sync_wait_all_workers();
     }
+
+    fn setup_ready(worker_setup_coordinator: Arc<WorkerSetupCoordinator>);
 
     fn handle_events(
         current_state: Self::LoopState,

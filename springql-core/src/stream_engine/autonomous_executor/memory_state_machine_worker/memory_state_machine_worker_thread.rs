@@ -15,7 +15,10 @@ use crate::stream_engine::autonomous_executor::{
         performance_metrics_summary::PerformanceMetricsSummary, PerformanceMetrics,
     },
     pipeline_derivatives::PipelineDerivatives,
-    worker::worker_thread::{WorkerThread, WorkerThreadLoopState},
+    worker::{
+        worker_handle::WorkerSetupCoordinator,
+        worker_thread::{WorkerThread, WorkerThreadLoopState},
+    },
 };
 
 /// Runs a worker thread.
@@ -57,6 +60,10 @@ impl WorkerThread for MemoryStateMachineWorkerThread {
     type ThreadArg = MemoryStateMachineWorkerThreadArg;
 
     type LoopState = MemoryStateMachineWorkerLoopState;
+
+    fn setup_ready(worker_setup_coordinator: Arc<WorkerSetupCoordinator>) {
+        worker_setup_coordinator.ready_memory_state_machine_worker()
+    }
 
     fn event_subscription() -> Vec<EventTag> {
         vec![EventTag::ReportMetricsSummary]
