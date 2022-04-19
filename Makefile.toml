@@ -1,3 +1,8 @@
+extend= [
+  { path = "coverage_grcov.makefile.toml" }
+]
+
+
 [config]
 default_to_workspace = false
 skip_core_tasks = true
@@ -74,18 +79,4 @@ cargo workspaces publish
 ]
 
 [tasks.lcov]
-script = [
-  '''
-#!/usr/bin/env bash -eux
-rm -rf target/debug/deps/${PROJ_NAME}-*
-
-export CARGO_INCREMENTAL=0
-export RUSTFLAGS="-Zinstrument-coverage"
-export LLVM_PROFILE_FILE="${PROJ_NAME}-%p-%m.profraw"
-
-cargo +nightly build --workspace --verbose
-cargo +nightly test --workspace --verbose
-
-grcov . -s . --binary-path ./target/debug/ -t lcov --branch --ignore-not-existing -o lcov.info
-''',
-]
+alias="coverage_grcov"
