@@ -80,3 +80,6 @@ cargo workspaces publish
 
 [tasks.lcov]
 alias="coverage_grcov"
+
+  [tasks.lcov.env]
+  SKIP_INSTALL_GRCOV = 1
