@@ -2,13 +2,13 @@ extend= [
   { path = "coverage_grcov.makefile.toml" }
 ]
 
-
 [config]
 default_to_workspace = false
 skip_core_tasks = true
 
 [env]
 PROJ_NAME = "SpringQL"
+SKIP_INSTALL_GRCOV = 1
 
 [tasks.help]
 script = ['''
@@ -80,3 +80,4 @@ cargo workspaces publish
 
 [tasks.lcov]
 alias="coverage_grcov"
+

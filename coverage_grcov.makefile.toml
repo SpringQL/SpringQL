@@ -94,6 +94,7 @@ mkdir -p ${COVERAGE_PROF_OUTPUT}
 '''
 
 [tasks.install_grcov]
+condition = { env_not_set = ["SKIP_INSTALL_GRCOV"] }
 workspace=true
 install_crate= {crate_name="grcov"}
 
