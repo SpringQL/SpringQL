@@ -27,7 +27,7 @@ config = {version = "0.13", features = ["toml"], default-features = false}
 
 derive-new = "0.5"
 
-ordered-float = "2.10"
+ordered-float = "3.0"
 
 fastrand = "1.5"
 rand = {version = "0.8", features = ["small_rng"]}
