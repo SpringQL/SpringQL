@@ -86,7 +86,7 @@ fn test_e2e_source_sink() -> Result<()> {
         ),
     ];
 
-    let _pipeline = apply_ddls(&ddls, spring_config_default());
+    let _pipeline = apply_ddls_low_level(&ddls, spring_config_default());
     test_source.start(ForeignSourceInput::new_fifo_batch(source_input.clone()));
     let sink_received = drain_from_sink(&test_sink);
 
@@ -159,7 +159,7 @@ fn test_e2e_projection() -> Result<()> {
         ),
     ];
 
-    let _pipeline = apply_ddls(&ddls, spring_config_default());
+    let _pipeline = apply_ddls_low_level(&ddls, spring_config_default());
     test_source.start(ForeignSourceInput::new_fifo_batch(vec![json_oracle]));
     let sink_received = drain_from_sink(&test_sink);
 
