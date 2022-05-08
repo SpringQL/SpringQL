@@ -6,6 +6,15 @@ The format is based on [Keep a Changelog][Keep a Changelog] and this project adh
 
 ## [Unreleased]
 
+### Added
+
+- `SpringPipelineHL::pop()` to get `SpringRowHL` from an in-memory queue ([#119](https://github.com/SpringQL/SpringQL/pull/119)).
+- `SpringRowHL::get_not_null_by_index()` to get a column value from `SpringRowHL` ([#119](https://github.com/SpringQL/SpringQL/pull/119)).
+- Made public ([#119](https://github.com/SpringQL/SpringQL/pull/119)):
+  - `SpringTimestamp`
+  - `SpringEventDuration`
+  - `SpringValue` trait
+
 ## [v0.5.0]
 
 ### Fixed
