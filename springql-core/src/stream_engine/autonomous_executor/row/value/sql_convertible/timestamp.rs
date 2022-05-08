@@ -8,18 +8,20 @@ use crate::{
     },
 };
 
-use super::SqlConvertible;
+use super::{SpringValue, ToNnSqlValue};
 
-impl SqlConvertible for Timestamp {
-    fn into_sql_value(self) -> NnSqlValue {
-        NnSqlValue::Timestamp(self)
-    }
-
+impl SpringValue for Timestamp {
     fn try_from_string(s: &str) -> Result<Self> {
         s.parse()
     }
 
     fn try_from_timestamp(v: &Timestamp) -> Result<Self> {
         Ok(*v)
+    }
+}
+
+impl ToNnSqlValue for Timestamp {
+    fn into_sql_value(self) -> NnSqlValue {
+        NnSqlValue::Timestamp(self)
     }
 }

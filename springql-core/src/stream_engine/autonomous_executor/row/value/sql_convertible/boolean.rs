@@ -5,14 +5,16 @@ use crate::{
     stream_engine::autonomous_executor::row::value::sql_value::nn_sql_value::NnSqlValue,
 };
 
-use super::SqlConvertible;
+use super::{SpringValue, ToNnSqlValue};
 
-impl SqlConvertible for bool {
-    fn into_sql_value(self) -> NnSqlValue {
-        NnSqlValue::Boolean(self)
-    }
-
+impl SpringValue for bool {
     fn try_from_bool(v: &bool) -> Result<Self> {
         Ok(*v)
+    }
+}
+
+impl ToNnSqlValue for bool {
+    fn into_sql_value(self) -> NnSqlValue {
+        NnSqlValue::Boolean(self)
     }
 }

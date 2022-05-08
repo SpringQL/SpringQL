@@ -6,7 +6,7 @@ pub mod foreign_info;
 
 use thiserror::Error;
 
-use crate::{pipeline::name::StreamName, stream_engine::SinkRow};
+use crate::pipeline::name::StreamName;
 
 use self::foreign_info::ForeignInfo;
 

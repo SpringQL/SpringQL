@@ -5,7 +5,7 @@
 use crate::{
     error::{Result, SpringError},
     low_level_rs::{spring_command, spring_open, spring_pop, SpringConfig, SpringPipeline},
-    stream_engine::{SinkRow, SqlConvertible, SqlValue},
+    stream_engine::{SinkRow, SpringValue, SqlValue},
 };
 
 /// Pipeline.
@@ -59,7 +59,7 @@ impl SpringRowHL {
     ///   - Column value is NULL
     pub fn get_not_null_by_index<T>(&self, i_col: usize) -> Result<T>
     where
-        T: SqlConvertible, // TODO use this function in spring_column_*()
+        T: SpringValue, // TODO use this function in spring_column_*()
     {
         let sql_value = self.0.get_by_index(i_col)?;
 
