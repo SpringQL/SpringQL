@@ -38,12 +38,12 @@ use crate::{
             row::foreign_row::source_row::SourceRow,
             task_graph::TaskGraph,
         },
-        time::timestamp::Timestamp,
+        time::timestamp::SpringTimestamp,
         SinkRow,
     },
 };
 
-impl Timestamp {
+impl SpringTimestamp {
     pub(crate) fn fx_ts1() -> Self {
         "2021-01-01 13:00:00.000000001".parse().unwrap()
     }
@@ -58,7 +58,7 @@ impl Timestamp {
 impl JsonObject {
     pub(in crate::stream_engine) fn fx_city_temperature_tokyo() -> Self {
         Self::new(json!({
-            "ts": Timestamp::fx_ts1().to_string(),
+            "ts": SpringTimestamp::fx_ts1().to_string(),
             "city": "Tokyo",
             "temperature": 21,
         }))
@@ -66,7 +66,7 @@ impl JsonObject {
 
     pub(in crate::stream_engine) fn fx_city_temperature_osaka() -> Self {
         Self::new(json!({
-            "ts": Timestamp::fx_ts2().to_string(),
+            "ts": SpringTimestamp::fx_ts2().to_string(),
             "city": "Osaka",
             "temperature": 23,
         }))
@@ -74,7 +74,7 @@ impl JsonObject {
 
     pub(in crate::stream_engine) fn fx_city_temperature_london() -> Self {
         Self::new(json!({
-            "ts": Timestamp::fx_ts3().to_string(),
+            "ts": SpringTimestamp::fx_ts3().to_string(),
             "city": "London",
             "temperature": 13,
         }))
@@ -82,7 +82,7 @@ impl JsonObject {
 
     pub(in crate::stream_engine) fn fx_trade_oracle() -> Self {
         Self::new(json!({
-            "ts": Timestamp::fx_ts1().to_string(),
+            "ts": SpringTimestamp::fx_ts1().to_string(),
             "ticker": "ORCL",
             "amount": 20,
         }))
@@ -90,7 +90,7 @@ impl JsonObject {
 
     pub(in crate::stream_engine) fn fx_trade_ibm() -> Self {
         Self::new(json!({
-            "ts": Timestamp::fx_ts2().to_string(),
+            "ts": SpringTimestamp::fx_ts2().to_string(),
             "ticker": "IBM",
             "amount": 30,
         }))
@@ -98,7 +98,7 @@ impl JsonObject {
 
     pub(in crate::stream_engine) fn fx_trade_google() -> Self {
         Self::new(json!({
-            "ts": Timestamp::fx_ts3().to_string(),
+            "ts": SpringTimestamp::fx_ts3().to_string(),
             "ticker": "GOOGL",
             "amount": 100,
         }))
@@ -184,23 +184,23 @@ impl Tuple {
 
 impl StreamColumns {
     pub(in crate::stream_engine) fn fx_city_temperature_tokyo() -> Self {
-        Self::factory_city_temperature(Timestamp::fx_ts1(), "Tokyo", 21)
+        Self::factory_city_temperature(SpringTimestamp::fx_ts1(), "Tokyo", 21)
     }
     pub(in crate::stream_engine) fn fx_city_temperature_osaka() -> Self {
-        Self::factory_city_temperature(Timestamp::fx_ts2(), "Osaka", 23)
+        Self::factory_city_temperature(SpringTimestamp::fx_ts2(), "Osaka", 23)
     }
     pub(in crate::stream_engine) fn fx_city_temperature_london() -> Self {
-        Self::factory_city_temperature(Timestamp::fx_ts3(), "London", 13)
+        Self::factory_city_temperature(SpringTimestamp::fx_ts3(), "London", 13)
     }
 
     pub(in crate::stream_engine) fn fx_trade_oracle() -> Self {
-        Self::factory_trade(Timestamp::fx_ts1(), "ORCL", 20)
+        Self::factory_trade(SpringTimestamp::fx_ts1(), "ORCL", 20)
     }
     pub(in crate::stream_engine) fn fx_trade_ibm() -> Self {
-        Self::factory_trade(Timestamp::fx_ts2(), "IBM", 30)
+        Self::factory_trade(SpringTimestamp::fx_ts2(), "IBM", 30)
     }
     pub(in crate::stream_engine) fn fx_trade_google() -> Self {
-        Self::factory_trade(Timestamp::fx_ts3(), "GOOGL", 100)
+        Self::factory_trade(SpringTimestamp::fx_ts3(), "GOOGL", 100)
     }
 
     pub(in crate::stream_engine) fn fx_no_promoted_rowtime() -> Self {

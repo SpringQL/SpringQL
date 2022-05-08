@@ -44,7 +44,7 @@ pub struct SpringPipeline {
 
 /// Row object from an in memory queue.
 #[derive(Debug)]
-pub struct SpringRow(SinkRow);
+pub struct SpringRow(pub(in crate::api) SinkRow);
 
 impl From<SinkRow> for SpringRow {
     fn from(sink_row: SinkRow) -> Self {

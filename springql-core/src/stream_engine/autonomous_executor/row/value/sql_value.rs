@@ -8,7 +8,7 @@ use self::{nn_sql_value::NnSqlValue, sql_compare_result::SqlCompareResult};
 use crate::{
     error::{Result, SpringError},
     mem_size::MemSize,
-    stream_engine::time::duration::event_duration::EventDuration,
+    stream_engine::time::duration::event_duration::SpringEventDuration,
 };
 use anyhow::anyhow;
 use ordered_float::OrderedFloat;
@@ -162,12 +162,12 @@ impl SqlValue {
     ///
     /// - `SpringError::Sql` when:
     ///   - this SqlValue cannot be evaluated as event duration
-    pub(crate) fn to_event_duration(&self) -> Result<EventDuration> {
+    pub(crate) fn to_event_duration(&self) -> Result<SpringEventDuration> {
         match self {
             SqlValue::Null => Err(SpringError::Sql(anyhow!(
                 "NULL cannot be evaluated as event duration",
             ))),
-            SqlValue::NotNull(nn_sql_value) => nn_sql_value.unpack::<EventDuration>(),
+            SqlValue::NotNull(nn_sql_value) => nn_sql_value.unpack::<SpringEventDuration>(),
         }
     }
 }

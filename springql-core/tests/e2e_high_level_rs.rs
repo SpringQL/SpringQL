@@ -5,7 +5,7 @@ mod test_support;
 use pretty_assertions::assert_eq;
 use serde_json::json;
 use springql_core::error::Result;
-use springql_core::low_level_rs::*;
+use springql_core::low_level_rs::SpringConfig;
 use springql_foreign_service::sink::ForeignSink;
 use springql_foreign_service::source::source_input::ForeignSourceInput;
 use springql_foreign_service::source::ForeignSource;
@@ -86,7 +86,7 @@ fn test_e2e_source_sink() -> Result<()> {
         ),
     ];
 
-    let _pipeline = apply_ddls_low_level(&ddls, spring_config_default());
+    let _pipeline = apply_ddls(&ddls, SpringConfig::default());
     test_source.start(ForeignSourceInput::new_fifo_batch(source_input.clone()));
     let sink_received = drain_from_sink(&test_sink);
 
@@ -159,7 +159,7 @@ fn test_e2e_projection() -> Result<()> {
         ),
     ];
 
-    let _pipeline = apply_ddls_low_level(&ddls, spring_config_default());
+    let _pipeline = apply_ddls(&ddls, SpringConfig::default());
     test_source.start(ForeignSourceInput::new_fifo_batch(vec![json_oracle]));
     let sink_received = drain_from_sink(&test_sink);
 
@@ -237,7 +237,7 @@ fn test_e2e_pop_from_in_memory_queue() {
         ),
     ];
 
-    let pipeline = apply_ddls_low_level(&ddls, spring_config_default());
+    let pipeline = apply_ddls(&ddls, SpringConfig::default());
     test_source.start(ForeignSourceInput::new_fifo_batch(
         (0..trade_times)
             .into_iter()
@@ -246,8 +246,8 @@ fn test_e2e_pop_from_in_memory_queue() {
     ));
 
     for _ in 0..trade_times {
-        let row = spring_pop(&pipeline, queue_name).unwrap();
-        assert_eq!(spring_column_text(&row, 0).unwrap(), ts);
-        assert_eq!(spring_column_i32(&row, 1).unwrap(), amount);
+        let row = pipeline.pop(queue_name).unwrap();
+        assert_eq!(row.get_not_null_by_index::<String>(0).unwrap(), ts);
+        assert_eq!(row.get_not_null_by_index::<i32>(1).unwrap(), amount);
     }
 }

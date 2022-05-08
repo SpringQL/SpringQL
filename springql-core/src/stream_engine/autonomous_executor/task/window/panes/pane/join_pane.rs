@@ -17,7 +17,7 @@ use crate::{
             performance_metrics::metrics_update_command::metrics_update_by_task_execution::WindowInFlowByWindowTask,
             task::tuple::Tuple,
         },
-        time::timestamp::Timestamp,
+        time::timestamp::SpringTimestamp,
         SqlValue,
     },
 };
@@ -32,8 +32,8 @@ pub(in crate::stream_engine::autonomous_executor) enum JoinDir {
 
 #[derive(Debug)]
 pub(in crate::stream_engine::autonomous_executor) struct JoinPane {
-    open_at: Timestamp,
-    close_at: Timestamp,
+    open_at: SpringTimestamp,
+    close_at: SpringTimestamp,
 
     join_parameter: JoinParameter,
 
@@ -48,7 +48,7 @@ impl Pane for JoinPane {
     /// # Panics
     ///
     /// if `op_param` is not `JoinParameter`
-    fn new(open_at: Timestamp, close_at: Timestamp, op_param: WindowOperationParameter) -> Self {
+    fn new(open_at: SpringTimestamp, close_at: SpringTimestamp, op_param: WindowOperationParameter) -> Self {
         let join_parameter = if let WindowOperationParameter::Join(p) = op_param {
             p
         } else {
@@ -64,11 +64,11 @@ impl Pane for JoinPane {
         }
     }
 
-    fn open_at(&self) -> Timestamp {
+    fn open_at(&self) -> SpringTimestamp {
         self.open_at
     }
 
-    fn close_at(&self) -> Timestamp {
+    fn close_at(&self) -> SpringTimestamp {
         self.close_at
     }
 
@@ -149,7 +149,7 @@ impl JoinPane {
 
     fn null_right_tuple(&self) -> Tuple {
         // unused
-        let rowtime = Timestamp::from_str("1970-01-01 00:00:00.0000000000").unwrap();
+        let rowtime = SpringTimestamp::from_str("1970-01-01 00:00:00.0000000000").unwrap();
 
         let fields = self
             .join_parameter

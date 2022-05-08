@@ -72,8 +72,8 @@ mod tests {
         stream_engine::{
             autonomous_executor::task::window::panes::pane::join_pane::JoinDir,
             time::{
-                duration::{event_duration::EventDuration, SpringDuration},
-                timestamp::Timestamp,
+                duration::{event_duration::SpringEventDuration, SpringDuration},
+                timestamp::SpringTimestamp,
             },
             SqlValue, Tuple,
         },
@@ -83,7 +83,7 @@ mod tests {
 
     fn t_expect(
         tuple: Tuple,
-        expected_timestamp: Timestamp,
+        expected_timestamp: SpringTimestamp,
         expected_amount: i32,
         expected_temperature: Option<i32>,
     ) {
@@ -91,7 +91,7 @@ mod tests {
             .get_value(&ColumnReference::fx_trade_timestamp())
             .unwrap()
             .unwrap();
-        assert_eq!(timestamp.unpack::<Timestamp>().unwrap(), expected_timestamp);
+        assert_eq!(timestamp.unpack::<SpringTimestamp>().unwrap(), expected_timestamp);
 
         let amount = tuple
             .get_value(&ColumnReference::fx_trade_amount())
@@ -164,8 +164,8 @@ mod tests {
 
         let mut window = JoinWindow::new(
             WindowParameter::TimedFixedWindow {
-                length: EventDuration::from_secs(10),
-                allowed_delay: EventDuration::from_secs(1),
+                length: SpringEventDuration::from_secs(10),
+                allowed_delay: SpringEventDuration::from_secs(1),
             },
             JoinParameter {
                 join_type: JoinType::LeftOuter,
@@ -187,7 +187,7 @@ mod tests {
         let (out, window_in_flow) = window.dispatch(
             &expr_resolver,
             Tuple::factory_trade(
-                Timestamp::from_str("2020-01-01 00:00:00.000000000").unwrap(),
+                SpringTimestamp::from_str("2020-01-01 00:00:00.000000000").unwrap(),
                 "",
                 100,
             ),
@@ -201,7 +201,7 @@ mod tests {
         let (out, window_in_flow) = window.dispatch(
             &expr_resolver,
             Tuple::factory_city_temperature(
-                Timestamp::from_str("2020-01-01 00:00:00.0000000000").unwrap(),
+                SpringTimestamp::from_str("2020-01-01 00:00:00.0000000000").unwrap(),
                 "",
                 10,
             ),
@@ -215,7 +215,7 @@ mod tests {
         let (out, window_in_flow) = window.dispatch(
             &expr_resolver,
             Tuple::factory_trade(
-                Timestamp::from_str("2020-01-01 00:00:09.999999999").unwrap(),
+                SpringTimestamp::from_str("2020-01-01 00:00:09.999999999").unwrap(),
                 "",
                 200,
             ),
@@ -230,7 +230,7 @@ mod tests {
         let (out, window_in_flow) = window.dispatch(
             &expr_resolver,
             Tuple::factory_trade(
-                Timestamp::from_str("2020-01-01 00:00:10.999999999").unwrap(),
+                SpringTimestamp::from_str("2020-01-01 00:00:10.999999999").unwrap(),
                 "",
                 300,
             ),
@@ -247,7 +247,7 @@ mod tests {
         let (out, window_in_flow) = window.dispatch(
             &expr_resolver,
             Tuple::factory_trade(
-                Timestamp::from_str("2020-01-01 00:00:09.999999998").unwrap(),
+                SpringTimestamp::from_str("2020-01-01 00:00:09.999999998").unwrap(),
                 "",
                 400,
             ),
@@ -262,7 +262,7 @@ mod tests {
         let (out, window_in_flow) = window.dispatch(
             &expr_resolver,
             Tuple::factory_trade(
-                Timestamp::from_str("2020-01-01 00:00:09.999999999").unwrap(),
+                SpringTimestamp::from_str("2020-01-01 00:00:09.999999999").unwrap(),
                 "",
                 500,
             ),
@@ -278,7 +278,7 @@ mod tests {
         let (out, window_in_flow) = window.dispatch(
             &expr_resolver,
             Tuple::factory_trade(
-                Timestamp::from_str("2020-01-01 00:00:11.0000000000").unwrap(),
+                SpringTimestamp::from_str("2020-01-01 00:00:11.0000000000").unwrap(),
                 "",
                 600,
             ),
@@ -287,19 +287,19 @@ mod tests {
         assert_eq!(out.len(), 3);
         t_expect(
             out.get(0).cloned().unwrap(),
-            Timestamp::from_str("2020-01-01 00:00:00.0000000000").unwrap(),
+            SpringTimestamp::from_str("2020-01-01 00:00:00.0000000000").unwrap(),
             100,
             Some(10),
         );
         t_expect(
             out.get(1).cloned().unwrap(),
-            Timestamp::from_str("2020-01-01 00:00:09.999999999").unwrap(),
+            SpringTimestamp::from_str("2020-01-01 00:00:09.999999999").unwrap(),
             200,
             None,
         );
         t_expect(
             out.get(2).cloned().unwrap(),
-            Timestamp::from_str("2020-01-01 00:00:09.999999999").unwrap(),
+            SpringTimestamp::from_str("2020-01-01 00:00:09.999999999").unwrap(),
             500,
             None,
         );

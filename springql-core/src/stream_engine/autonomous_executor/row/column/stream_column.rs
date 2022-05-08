@@ -9,7 +9,7 @@ use crate::{
     pipeline::{relation::column::column_definition::ColumnDefinition, stream_model::StreamModel},
     stream_engine::{
         autonomous_executor::row::{column_values::ColumnValues, value::sql_value::SqlValue},
-        time::timestamp::Timestamp,
+        time::timestamp::SpringTimestamp,
     },
 };
 use std::{sync::Arc, vec};
@@ -67,7 +67,7 @@ impl StreamColumns {
 
     pub(in crate::stream_engine::autonomous_executor) fn promoted_rowtime(
         &self,
-    ) -> Option<Timestamp> {
+    ) -> Option<SpringTimestamp> {
         let rowtime_col = self.stream_model.shape().promoted_rowtime()?;
         let rowtime_sql_value = self
             .get_by_column_name(rowtime_col)
@@ -173,7 +173,7 @@ impl IntoIterator for StreamColumns {
 mod tests {
     use crate::stream_engine::{
         autonomous_executor::row::value::sql_value::nn_sql_value::NnSqlValue,
-        time::timestamp::Timestamp,
+        time::timestamp::SpringTimestamp,
     };
 
     use super::*;
@@ -184,7 +184,7 @@ mod tests {
         column_values
             .insert(
                 ColumnName::fx_timestamp(),
-                SqlValue::NotNull(NnSqlValue::Timestamp(Timestamp::fx_ts1())),
+                SqlValue::NotNull(NnSqlValue::Timestamp(SpringTimestamp::fx_ts1())),
             )
             .unwrap();
         column_values
@@ -210,7 +210,7 @@ mod tests {
         column_values
             .insert(
                 ColumnName::new("timestamp".to_string()),
-                SqlValue::NotNull(NnSqlValue::Timestamp(Timestamp::fx_ts1())),
+                SqlValue::NotNull(NnSqlValue::Timestamp(SpringTimestamp::fx_ts1())),
             )
             .unwrap();
         column_values
@@ -234,7 +234,7 @@ mod tests {
         column_values
             .insert(
                 ColumnName::new("timestamp".to_string()),
-                SqlValue::NotNull(NnSqlValue::Timestamp(Timestamp::fx_ts1())),
+                SqlValue::NotNull(NnSqlValue::Timestamp(SpringTimestamp::fx_ts1())),
             )
             .unwrap();
         column_values
@@ -263,7 +263,7 @@ mod tests {
         column_values
             .insert(
                 ColumnName::new("timestamp".to_string()),
-                SqlValue::NotNull(NnSqlValue::Timestamp(Timestamp::fx_ts1())),
+                SqlValue::NotNull(NnSqlValue::Timestamp(SpringTimestamp::fx_ts1())),
             )
             .unwrap();
         column_values

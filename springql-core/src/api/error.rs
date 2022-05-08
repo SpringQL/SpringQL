@@ -6,6 +6,8 @@ pub mod foreign_info;
 
 use thiserror::Error;
 
+use crate::pipeline::name::StreamName;
+
 use self::foreign_info::ForeignInfo;
 
 /// Result type
@@ -60,4 +62,12 @@ pub enum SpringError {
 
     #[error("SQL error")]
     Sql(anyhow::Error),
+
+    /// Occurs only when a value is fetched from a SpringRow.
+    #[error("unexpectedly got NULL")]
+    Null {
+        stream_name: StreamName,
+        /// Column index
+        i_col: usize,
+    },
 }

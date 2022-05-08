@@ -17,7 +17,7 @@ use crate::{
             performance_metrics::metrics_update_command::metrics_update_by_task_execution::WindowInFlowByWindowTask,
             task::{tuple::Tuple, window::aggregate::GroupAggrOut},
         },
-        time::timestamp::Timestamp,
+        time::timestamp::SpringTimestamp,
         NnSqlValue, SqlValue,
     },
 };
@@ -28,8 +28,8 @@ use super::Pane;
 
 #[derive(Debug)]
 pub(in crate::stream_engine::autonomous_executor) struct AggrPane {
-    open_at: Timestamp,
-    close_at: Timestamp,
+    open_at: SpringTimestamp,
+    close_at: SpringTimestamp,
 
     group_aggregation_parameter: GroupAggregateParameter,
 
@@ -43,7 +43,7 @@ impl Pane for AggrPane {
     /// # Panics
     ///
     /// if `op_param` is not `GroupAggregateParameter`
-    fn new(open_at: Timestamp, close_at: Timestamp, op_param: WindowOperationParameter) -> Self {
+    fn new(open_at: SpringTimestamp, close_at: SpringTimestamp, op_param: WindowOperationParameter) -> Self {
         if let WindowOperationParameter::GroupAggregation(group_aggregation_parameter) = op_param {
             let inner = match group_aggregation_parameter.aggr_func {
                 AggregateFunctionParameter::Avg => AggrPaneInner::Avg {
@@ -62,11 +62,11 @@ impl Pane for AggrPane {
         }
     }
 
-    fn open_at(&self) -> Timestamp {
+    fn open_at(&self) -> SpringTimestamp {
         self.open_at
     }
 
-    fn close_at(&self) -> Timestamp {
+    fn close_at(&self) -> SpringTimestamp {
         self.close_at
     }
 

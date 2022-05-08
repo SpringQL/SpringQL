@@ -4,23 +4,23 @@ use crate::{
     error::Result,
     stream_engine::{
         autonomous_executor::row::value::sql_value::nn_sql_value::NnSqlValue,
-        time::timestamp::Timestamp,
+        time::timestamp::SpringTimestamp,
     },
 };
 
 use super::{SpringValue, ToNnSqlValue};
 
-impl SpringValue for Timestamp {
+impl SpringValue for SpringTimestamp {
     fn try_from_string(s: &str) -> Result<Self> {
         s.parse()
     }
 
-    fn try_from_timestamp(v: &Timestamp) -> Result<Self> {
+    fn try_from_timestamp(v: &SpringTimestamp) -> Result<Self> {
         Ok(*v)
     }
 }
 
-impl ToNnSqlValue for Timestamp {
+impl ToNnSqlValue for SpringTimestamp {
     fn into_sql_value(self) -> NnSqlValue {
         NnSqlValue::Timestamp(self)
     }

@@ -10,7 +10,7 @@ use crate::pipeline::stream_model::StreamModel;
 use crate::stream_engine::autonomous_executor::task::source_task::source_reader::net_client::NetClientSourceReader;
 use crate::stream_engine::autonomous_executor::task::source_task::source_reader::SourceReader;
 use crate::stream_engine::autonomous_executor::task::tuple::Tuple;
-use crate::stream_engine::time::timestamp::Timestamp;
+use crate::stream_engine::time::timestamp::SpringTimestamp;
 use crate::{
     pipeline::{
         name::ColumnName, option::options_builder::OptionsBuilder,
@@ -61,7 +61,7 @@ impl NetClientSourceReader {
 
 impl StreamColumns {
     pub(in crate::stream_engine) fn factory_city_temperature(
-        timestamp: Timestamp,
+        timestamp: SpringTimestamp,
         city: &str,
         temperature: i32,
     ) -> Self {
@@ -89,7 +89,7 @@ impl StreamColumns {
     }
 
     pub(in crate::stream_engine) fn factory_trade(
-        timestamp: Timestamp,
+        timestamp: SpringTimestamp,
         ticker: &str,
         amount: i16,
     ) -> Self {
@@ -138,7 +138,7 @@ impl StreamColumns {
 
 impl Row {
     pub(in crate::stream_engine) fn factory_city_temperature(
-        timestamp: Timestamp,
+        timestamp: SpringTimestamp,
         city: &str,
         temperature: i32,
     ) -> Self {
@@ -149,7 +149,7 @@ impl Row {
         ))
     }
     pub(in crate::stream_engine) fn factory_trade(
-        timestamp: Timestamp,
+        timestamp: SpringTimestamp,
         ticker: &str,
         amount: i16,
     ) -> Self {
@@ -159,14 +159,14 @@ impl Row {
 
 impl Tuple {
     pub(in crate::stream_engine) fn factory_city_temperature(
-        timestamp: Timestamp,
+        timestamp: SpringTimestamp,
         city: &str,
         temperature: i32,
     ) -> Self {
         Self::from_row(Row::factory_city_temperature(timestamp, city, temperature))
     }
     pub(in crate::stream_engine) fn factory_trade(
-        timestamp: Timestamp,
+        timestamp: SpringTimestamp,
         ticker: &str,
         amount: i16,
     ) -> Self {

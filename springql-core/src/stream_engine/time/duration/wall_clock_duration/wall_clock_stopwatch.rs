@@ -2,7 +2,7 @@
 
 use crate::stream_engine::time::{
     duration::SpringDuration,
-    timestamp::{system_timestamp::SystemTimestamp, Timestamp},
+    timestamp::{system_timestamp::SystemTimestamp, SpringTimestamp},
 };
 
 use super::WallClockDuration;
@@ -10,7 +10,7 @@ use super::WallClockDuration;
 /// Real-time (wall-clock) stopwatch.
 #[derive(Debug)]
 pub(in crate::stream_engine) struct WallClockStopwatch {
-    start_at: Timestamp,
+    start_at: SpringTimestamp,
 }
 
 impl WallClockStopwatch {

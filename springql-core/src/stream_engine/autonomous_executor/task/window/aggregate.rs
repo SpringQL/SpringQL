@@ -119,8 +119,8 @@ mod tests {
         stream_engine::{
             autonomous_executor::task::tuple::Tuple,
             time::{
-                duration::{event_duration::EventDuration, SpringDuration},
-                timestamp::Timestamp,
+                duration::{event_duration::SpringEventDuration, SpringDuration},
+                timestamp::SpringTimestamp,
             },
         },
     };
@@ -181,9 +181,9 @@ mod tests {
 
         let mut window = AggrWindow::new(
             WindowParameter::TimedSlidingWindow {
-                length: EventDuration::from_secs(10),
-                period: EventDuration::from_secs(5),
-                allowed_delay: EventDuration::from_secs(1),
+                length: SpringEventDuration::from_secs(10),
+                period: SpringEventDuration::from_secs(5),
+                allowed_delay: SpringEventDuration::from_secs(1),
             },
             WindowOperationParameter::GroupAggregation(GroupAggregateParameter {
                 aggr_func: AggregateFunctionParameter::Avg,
@@ -197,7 +197,7 @@ mod tests {
         let (out, window_in_flow) = window.dispatch(
             &expr_resolver,
             Tuple::factory_trade(
-                Timestamp::from_str("2020-01-01 00:00:00.000000000").unwrap(),
+                SpringTimestamp::from_str("2020-01-01 00:00:00.000000000").unwrap(),
                 "GOOGL",
                 100,
             ),
@@ -212,7 +212,7 @@ mod tests {
         let (out, window_in_flow) = window.dispatch(
             &expr_resolver,
             Tuple::factory_trade(
-                Timestamp::from_str("2020-01-01 00:00:04.999999999").unwrap(),
+                SpringTimestamp::from_str("2020-01-01 00:00:04.999999999").unwrap(),
                 "ORCL",
                 100,
             ),
@@ -229,7 +229,7 @@ mod tests {
         let (mut out, window_in_flow) = window.dispatch(
             &expr_resolver,
             Tuple::factory_trade(
-                Timestamp::from_str("2020-01-01 00:00:06.000000000").unwrap(),
+                SpringTimestamp::from_str("2020-01-01 00:00:06.000000000").unwrap(),
                 "ORCL",
                 400,
             ),
@@ -255,7 +255,7 @@ mod tests {
         let (out, window_in_flow) = window.dispatch(
             &expr_resolver,
             Tuple::factory_trade(
-                Timestamp::from_str("2020-01-01 00:00:10.999999999").unwrap(),
+                SpringTimestamp::from_str("2020-01-01 00:00:10.999999999").unwrap(),
                 "ORCL",
                 100,
             ),
@@ -273,7 +273,7 @@ mod tests {
         let (out, window_in_flow) = window.dispatch(
             &expr_resolver,
             Tuple::factory_trade(
-                Timestamp::from_str("2020-01-01 00:00:09.999999998").unwrap(),
+                SpringTimestamp::from_str("2020-01-01 00:00:09.999999998").unwrap(),
                 "ORCL",
                 100,
             ),
@@ -289,7 +289,7 @@ mod tests {
         let (out, window_in_flow) = window.dispatch(
             &expr_resolver,
             Tuple::factory_trade(
-                Timestamp::from_str("2020-01-01 00:00:09.9999999999").unwrap(),
+                SpringTimestamp::from_str("2020-01-01 00:00:09.9999999999").unwrap(),
                 "ORCL",
                 100,
             ),
@@ -306,7 +306,7 @@ mod tests {
         let (mut out, window_in_flow) = window.dispatch(
             &expr_resolver,
             Tuple::factory_trade(
-                Timestamp::from_str("2020-01-01 00:00:11.000000000").unwrap(),
+                SpringTimestamp::from_str("2020-01-01 00:00:11.000000000").unwrap(),
                 "ORCL",
                 100,
             ),
@@ -334,7 +334,7 @@ mod tests {
         let (out, window_in_flow) = window.dispatch(
             &expr_resolver,
             Tuple::factory_trade(
-                Timestamp::from_str("2020-01-01 00:00:21.000000000").unwrap(),
+                SpringTimestamp::from_str("2020-01-01 00:00:21.000000000").unwrap(),
                 "ORCL",
                 100,
             ),
@@ -389,8 +389,8 @@ mod tests {
 
         let mut window = AggrWindow::new(
             WindowParameter::TimedFixedWindow {
-                length: EventDuration::from_secs(10),
-                allowed_delay: EventDuration::from_secs(1),
+                length: SpringEventDuration::from_secs(10),
+                allowed_delay: SpringEventDuration::from_secs(1),
             },
             WindowOperationParameter::GroupAggregation(GroupAggregateParameter {
                 aggr_func: AggregateFunctionParameter::Avg,
@@ -403,7 +403,7 @@ mod tests {
         let (out, window_in_flow) = window.dispatch(
             &expr_resolver,
             Tuple::factory_trade(
-                Timestamp::from_str("2020-01-01 00:00:00.000000000").unwrap(),
+                SpringTimestamp::from_str("2020-01-01 00:00:00.000000000").unwrap(),
                 "GOOGL",
                 100,
             ),
@@ -417,7 +417,7 @@ mod tests {
         let (out, window_in_flow) = window.dispatch(
             &expr_resolver,
             Tuple::factory_trade(
-                Timestamp::from_str("2020-01-01 00:00:09.000000000").unwrap(),
+                SpringTimestamp::from_str("2020-01-01 00:00:09.000000000").unwrap(),
                 "ORCL",
                 100,
             ),
@@ -431,7 +431,7 @@ mod tests {
         let (out, window_in_flow) = window.dispatch(
             &expr_resolver,
             Tuple::factory_trade(
-                Timestamp::from_str("2020-01-01 00:00:09.999999999").unwrap(),
+                SpringTimestamp::from_str("2020-01-01 00:00:09.999999999").unwrap(),
                 "ORCL",
                 400,
             ),
@@ -446,7 +446,7 @@ mod tests {
         let (out, window_in_flow) = window.dispatch(
             &expr_resolver,
             Tuple::factory_trade(
-                Timestamp::from_str("2020-01-01 00:00:10.999999999").unwrap(),
+                SpringTimestamp::from_str("2020-01-01 00:00:10.999999999").unwrap(),
                 "ORCL",
                 100,
             ),
@@ -463,7 +463,7 @@ mod tests {
         let (out, window_in_flow) = window.dispatch(
             &expr_resolver,
             Tuple::factory_trade(
-                Timestamp::from_str("2020-01-01 00:00:09.999999998").unwrap(),
+                SpringTimestamp::from_str("2020-01-01 00:00:09.999999998").unwrap(),
                 "ORCL",
                 100,
             ),
@@ -478,7 +478,7 @@ mod tests {
         let (out, window_in_flow) = window.dispatch(
             &expr_resolver,
             Tuple::factory_trade(
-                Timestamp::from_str("2020-01-01 00:00:09.9999999999").unwrap(),
+                SpringTimestamp::from_str("2020-01-01 00:00:09.9999999999").unwrap(),
                 "ORCL",
                 100,
             ),
@@ -494,7 +494,7 @@ mod tests {
         let (mut out, window_in_flow) = window.dispatch(
             &expr_resolver,
             Tuple::factory_trade(
-                Timestamp::from_str("2020-01-01 00:00:11.000000000").unwrap(),
+                SpringTimestamp::from_str("2020-01-01 00:00:11.000000000").unwrap(),
                 "ORCL",
                 100,
             ),
@@ -520,7 +520,7 @@ mod tests {
         let (out, window_in_flow) = window.dispatch(
             &expr_resolver,
             Tuple::factory_trade(
-                Timestamp::from_str("2020-01-01 00:00:21.000000000").unwrap(),
+                SpringTimestamp::from_str("2020-01-01 00:00:21.000000000").unwrap(),
                 "ORCL",
                 100,
             ),

@@ -4,19 +4,19 @@ use crate::{
     error::Result,
     stream_engine::{
         autonomous_executor::row::value::sql_value::nn_sql_value::NnSqlValue,
-        time::duration::event_duration::EventDuration,
+        time::duration::event_duration::SpringEventDuration,
     },
 };
 
 use super::{SpringValue, ToNnSqlValue};
 
-impl SpringValue for EventDuration {
-    fn try_from_duration(v: &EventDuration) -> Result<Self> {
+impl SpringValue for SpringEventDuration {
+    fn try_from_duration(v: &SpringEventDuration) -> Result<Self> {
         Ok(*v)
     }
 }
 
-impl ToNnSqlValue for EventDuration {
+impl ToNnSqlValue for SpringEventDuration {
     fn into_sql_value(self) -> NnSqlValue {
         NnSqlValue::Duration(self)
     }
