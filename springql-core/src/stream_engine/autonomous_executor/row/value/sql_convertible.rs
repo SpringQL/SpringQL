@@ -17,7 +17,7 @@ use std::any::type_name;
 use super::sql_value::nn_sql_value::NnSqlValue;
 
 /// Rust values can be unpacked from NnSqlValue back into them.
-pub(crate) trait SpringValue: Sized {
+pub trait SpringValue: Sized {
     /// # Failures
     ///
     /// - [SpringError::Sql](crate::error::SpringError::Sql) when:

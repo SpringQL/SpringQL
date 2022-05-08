@@ -3,3 +3,5 @@
 pub mod error;
 pub mod high_level_rs;
 pub mod low_level_rs;
+
+pub use crate::stream_engine::SpringValue;

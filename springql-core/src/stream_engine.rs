@@ -26,6 +26,8 @@
 //!
 //! ![Communication between entities](https://raw.githubusercontent.com/SpringQL/SpringQL.github.io/main/static/img/stream-engine-architecture-communication.svg)
 
+pub use autonomous_executor::SpringValue;
+
 pub(crate) mod command;
 pub(crate) mod time;
 
@@ -34,9 +36,8 @@ mod in_memory_queue_repository;
 mod sql_executor;
 
 pub(crate) use autonomous_executor::{
-    row::value::{
-        sql_convertible::SpringValue,
-        sql_value::{nn_sql_value::NnSqlValue, sql_compare_result::SqlCompareResult, SqlValue},
+    row::value::sql_value::{
+        nn_sql_value::NnSqlValue, sql_compare_result::SqlCompareResult, SqlValue,
     },
     task::tuple::Tuple,
     SinkRow,
