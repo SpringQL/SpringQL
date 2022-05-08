@@ -2,15 +2,11 @@
 
 use ordered_float::OrderedFloat;
 
-use super::SqlConvertible;
+use super::{SpringValue, ToNnSqlValue};
 use crate::error::Result;
 use crate::stream_engine::autonomous_executor::row::value::sql_value::nn_sql_value::NnSqlValue;
 
-impl SqlConvertible for f32 {
-    fn into_sql_value(self) -> NnSqlValue {
-        NnSqlValue::Float(OrderedFloat(self))
-    }
-
+impl SpringValue for f32 {
     fn try_from_i16(v: &i16) -> Result<Self> {
         Ok(*v as f32)
     }
@@ -23,6 +19,12 @@ impl SqlConvertible for f32 {
 
     fn try_from_f32(v: &f32) -> Result<Self> {
         Ok(*v)
+    }
+}
+
+impl ToNnSqlValue for f32 {
+    fn into_sql_value(self) -> NnSqlValue {
+        NnSqlValue::Float(OrderedFloat(self))
     }
 }
 

@@ -16,11 +16,8 @@ use std::any::type_name;
 
 use super::sql_value::nn_sql_value::NnSqlValue;
 
-/// Rust values which can have bidirectional mapping to/from SQL [NnSqlValue](crate::NnSqlValue).
-pub(crate) trait SqlConvertible: Sized {
-    /// Convert Rust type into strictly-matching SQL type.
-    fn into_sql_value(self) -> NnSqlValue;
-
+/// Rust values can be unpacked from NnSqlValue back into them.
+pub(crate) trait SpringValue: Sized {
     /// # Failures
     ///
     /// - [SpringError::Sql](crate::error::SpringError::Sql) when:
@@ -93,4 +90,10 @@ pub(crate) trait SqlConvertible: Sized {
             type_name::<Self>()
         )))
     }
+}
+
+/// Rust values which can be packed into NnSqlValue
+pub(crate) trait ToNnSqlValue: Sized {
+    /// Convert Rust type into strictly-matching SQL type.
+    fn into_sql_value(self) -> NnSqlValue;
 }
