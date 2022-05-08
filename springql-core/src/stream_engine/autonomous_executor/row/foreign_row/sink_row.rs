@@ -2,6 +2,7 @@
 
 use super::format::json::JsonObject;
 use crate::error::Result;
+use crate::pipeline::name::StreamName;
 use crate::stream_engine::autonomous_executor::row::{value::sql_value::SqlValue, Row};
 
 /// Output row into foreign systems (retrieved by SinkWriter).
@@ -35,6 +36,10 @@ impl SinkRow {
     ///   - Column index out of range
     pub(crate) fn get_by_index(&self, i_col: usize) -> Result<&SqlValue> {
         self.0.get_by_index(i_col)
+    }
+
+    pub(crate) fn stream_name(&self) -> &StreamName {
+        self.0.stream_model().name()
     }
 }
 

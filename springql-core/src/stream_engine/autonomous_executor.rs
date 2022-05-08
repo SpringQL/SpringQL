@@ -160,6 +160,7 @@ impl AutonomousExecutor {
             | SpringError::ThreadPoisoned(_) => log::error!("{:?}", e),
 
             SpringError::InvalidConfig { .. } => unreachable!("must be handled on startup"),
+            SpringError::Null { .. } => unreachable!("must be handled on startup"),
         }
     }
 }

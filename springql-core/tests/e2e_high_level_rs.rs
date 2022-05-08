@@ -247,7 +247,7 @@ fn test_e2e_pop_from_in_memory_queue() {
 
     for _ in 0..trade_times {
         let row = pipeline.pop(queue_name).unwrap();
-        assert_eq!(row.get(0).unwrap(), ts);
-        assert_eq!(row.get(1).unwrap(), amount);
+        assert_eq!(row.get_not_null_by_index(0).unwrap(), ts);
+        assert_eq!(row.get_not_null_by_index(1).unwrap(), amount);
     }
 }

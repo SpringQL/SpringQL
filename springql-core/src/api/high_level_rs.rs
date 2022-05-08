@@ -3,8 +3,9 @@
 //! High-level Rust API to execute / register SpringQL from Rust.
 
 use crate::{
-    error::Result,
-    low_level_rs::{spring_command, spring_open, SpringConfig, SpringPipeline},
+    error::{Result, SpringError},
+    low_level_rs::{spring_command, spring_open, spring_pop, SpringConfig, SpringPipeline},
+    stream_engine::{SinkRow, SqlConvertible, SqlValue},
 };
 
 /// Pipeline.
@@ -30,6 +31,45 @@ impl SpringPipelineHL {
     ///   - `OPTIONS` in `CREATE` statement includes invalid key or value.
     pub fn command<S: AsRef<str>>(&self, sql: S) -> Result<()> {
         spring_command(&self.0, sql.as_ref())
+    }
+
+    /// Pop a row from an in memory queue. This is a blocking function.
+    ///
+    /// # Failure
+    ///
+    /// - [SpringError::Unavailable](crate::error::SpringError::Unavailable) when:
+    ///   - queue named `queue` does not exist.
+    pub fn pop(&self, queue: &str) -> Result<SpringRowHL> {
+        spring_pop(&self.0, queue).map(|row| SpringRowHL(row.0))
+    }
+}
+
+/// Row object from an in memory queue.
+#[derive(Debug)]
+pub struct SpringRowHL(SinkRow);
+
+impl SpringRowHL {
+    /// Get a i-th column value from the row.
+    ///
+    /// # Failure
+    ///
+    /// - [SpringError::Sql](crate::error::SpringError::Sql) when:
+    ///   - Column index out of range
+    /// - [SpringError::Null](crate::error::SpringError::Null) when:
+    ///   - Column value is NULL
+    pub fn get_not_null_by_index<T>(&self, i_col: usize) -> Result<T>
+    where
+        T: SqlConvertible, // TODO use this function in spring_column_*()
+    {
+        let sql_value = self.0.get_by_index(i_col)?;
+
+        match sql_value {
+            SqlValue::Null => Err(SpringError::Null {
+                stream_name: self.0.stream_name().clone(),
+                i_col,
+            }),
+            SqlValue::NotNull(nn_sql_value) => nn_sql_value.unpack(),
+        }
     }
 }
 
