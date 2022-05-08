@@ -15,7 +15,7 @@ use crate::{
     error::Result,
     pipeline::name::QueueName,
     sql_processor::SqlProcessor,
-    stream_engine::{command::Command, SinkRow, SqlConvertible, SqlValue},
+    stream_engine::{command::Command, SinkRow, SpringValue, SqlValue},
 };
 
 use self::engine_mutex::EngineMutex;
@@ -119,7 +119,7 @@ pub fn spring_column_text(row: &SpringRow, i_col: usize) -> Result<String> {
     spring_column(row, i_col)
 }
 
-fn spring_column<T: SqlConvertible>(row: &SpringRow, i_col: usize) -> Result<T> {
+fn spring_column<T: SpringValue>(row: &SpringRow, i_col: usize) -> Result<T> {
     let v = row.0.get_by_index(i_col)?;
     if let SqlValue::NotNull(v) = v {
         v.unpack()

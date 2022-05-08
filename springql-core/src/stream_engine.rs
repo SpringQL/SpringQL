@@ -35,7 +35,7 @@ mod sql_executor;
 
 pub(crate) use autonomous_executor::{
     row::value::{
-        sql_convertible::SqlConvertible,
+        sql_convertible::SpringValue,
         sql_value::{nn_sql_value::NnSqlValue, sql_compare_result::SqlCompareResult, SqlValue},
     },
     task::tuple::Tuple,

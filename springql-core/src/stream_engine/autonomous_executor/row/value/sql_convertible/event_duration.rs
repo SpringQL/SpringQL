@@ -8,14 +8,16 @@ use crate::{
     },
 };
 
-use super::SqlConvertible;
+use super::{SpringValue, ToNnSqlValue};
 
-impl SqlConvertible for EventDuration {
-    fn into_sql_value(self) -> NnSqlValue {
-        NnSqlValue::Duration(self)
-    }
-
+impl SpringValue for EventDuration {
     fn try_from_duration(v: &EventDuration) -> Result<Self> {
         Ok(*v)
+    }
+}
+
+impl ToNnSqlValue for EventDuration {
+    fn into_sql_value(self) -> NnSqlValue {
+        NnSqlValue::Duration(self)
     }
 }

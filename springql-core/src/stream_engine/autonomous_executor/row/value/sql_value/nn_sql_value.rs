@@ -10,7 +10,9 @@ use crate::mem_size::MemSize;
 use crate::pipeline::relation::sql_type::{
     self, NumericComparableType, SqlType, StringComparableLoseType,
 };
-use crate::stream_engine::autonomous_executor::row::value::sql_convertible::SqlConvertible;
+use crate::stream_engine::autonomous_executor::row::value::sql_convertible::{
+    SpringValue, ToNnSqlValue,
+};
 use crate::stream_engine::time::duration::event_duration::EventDuration;
 use crate::stream_engine::time::timestamp::Timestamp;
 use anyhow::anyhow;
@@ -154,7 +156,7 @@ impl NnSqlValue {
     ///   - Any value of `T` cannot be typed as this SqlValue's SqlType (E.g. `T = i64`, `SqlType = SmallInt`).
     pub fn unpack<T>(&self) -> Result<T>
     where
-        T: SqlConvertible,
+        T: SpringValue,
     {
         match self {
             NnSqlValue::SmallInt(i16_) => T::try_from_i16(i16_),

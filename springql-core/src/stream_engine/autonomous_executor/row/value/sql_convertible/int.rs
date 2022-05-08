@@ -2,15 +2,11 @@
 
 use anyhow::Context;
 
-use super::SqlConvertible;
+use super::{SpringValue, ToNnSqlValue};
 use crate::error::{Result, SpringError};
 use crate::stream_engine::autonomous_executor::row::value::sql_value::nn_sql_value::NnSqlValue;
 
-impl SqlConvertible for i16 {
-    fn into_sql_value(self) -> NnSqlValue {
-        NnSqlValue::SmallInt(self)
-    }
-
+impl SpringValue for i16 {
     fn try_from_i16(v: &i16) -> Result<Self> {
         Ok(*v)
     }
@@ -31,12 +27,13 @@ impl SqlConvertible for i16 {
         Ok(v.ceil() as i16)
     }
 }
-
-impl SqlConvertible for i32 {
+impl ToNnSqlValue for i16 {
     fn into_sql_value(self) -> NnSqlValue {
-        NnSqlValue::Integer(self)
+        NnSqlValue::SmallInt(self)
     }
+}
 
+impl SpringValue for i32 {
     fn try_from_i16(v: &i16) -> Result<Self> {
         Ok(*v as i32)
     }
@@ -55,12 +52,13 @@ impl SqlConvertible for i32 {
         Ok(v.ceil() as i32)
     }
 }
-
-impl SqlConvertible for i64 {
+impl ToNnSqlValue for i32 {
     fn into_sql_value(self) -> NnSqlValue {
-        NnSqlValue::BigInt(self)
+        NnSqlValue::Integer(self)
     }
+}
 
+impl SpringValue for i64 {
     fn try_from_i16(v: &i16) -> Result<Self> {
         Ok(*v as i64)
     }
@@ -75,6 +73,11 @@ impl SqlConvertible for i64 {
 
     fn try_from_f32(v: &f32) -> Result<Self> {
         Ok(v.ceil() as i64)
+    }
+}
+impl ToNnSqlValue for i64 {
+    fn into_sql_value(self) -> NnSqlValue {
+        NnSqlValue::BigInt(self)
     }
 }
 
