@@ -52,7 +52,7 @@ mod tests {
         pipeline::name::ColumnName,
         stream_engine::{
             autonomous_executor::row::value::sql_value::SqlValue,
-            time::timestamp::{system_timestamp::SystemTimestamp, Timestamp},
+            time::timestamp::{system_timestamp::SystemTimestamp, SpringTimestamp},
         },
     };
 
@@ -64,7 +64,7 @@ mod tests {
         let f_row = SinkRow(row);
 
         let json = JsonObject::new(json!({
-            "ts": Timestamp::fx_ts1().to_string(),
+            "ts": SpringTimestamp::fx_ts1().to_string(),
             "city": "Tokyo",
             "temperature": 21
         }));
@@ -81,7 +81,7 @@ mod tests {
         let f_rowtime_sql_value = f_colvals.remove(&ColumnName::arrival_rowtime()).unwrap();
 
         if let SqlValue::NotNull(f_rowtime_nn_sql_value) = f_rowtime_sql_value {
-            let f_rowtime: Timestamp = f_rowtime_nn_sql_value.unpack().unwrap();
+            let f_rowtime: SpringTimestamp = f_rowtime_nn_sql_value.unpack().unwrap();
             assert!(SystemTimestamp::now() - Duration::seconds(1) < f_rowtime);
             assert!(f_rowtime < SystemTimestamp::now() + Duration::seconds(1));
         } else {

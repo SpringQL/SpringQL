@@ -34,7 +34,7 @@ use crate::sql_processor::sql_parser::syntax::{
     ColumnConstraintSyntax, OptionSyntax, SelectStreamSyntax,
 };
 use crate::stream_engine::command::insert_plan::InsertPlan;
-use crate::stream_engine::time::duration::event_duration::EventDuration;
+use crate::stream_engine::time::duration::event_duration::SpringEventDuration;
 use crate::stream_engine::time::duration::SpringDuration;
 use crate::stream_engine::{NnSqlValue, SqlValue};
 use anyhow::{anyhow, Context};
@@ -211,10 +211,10 @@ impl PestParserImpl {
 
         let event_duration = match duration_function {
             DurationFunction::Millis => {
-                Ok(EventDuration::from_millis(integer_constant.to_i64()? as u64))
+                Ok(SpringEventDuration::from_millis(integer_constant.to_i64()? as u64))
             }
             DurationFunction::Secs => {
-                Ok(EventDuration::from_secs(integer_constant.to_i64()? as u64))
+                Ok(SpringEventDuration::from_secs(integer_constant.to_i64()? as u64))
             }
         }?;
 

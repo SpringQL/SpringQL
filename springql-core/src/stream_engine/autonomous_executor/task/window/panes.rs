@@ -8,7 +8,7 @@ use crate::{
     pipeline::pump_model::{
         window_operation_parameter::WindowOperationParameter, window_parameter::WindowParameter,
     },
-    stream_engine::time::{duration::SpringDuration, timestamp::Timestamp},
+    stream_engine::time::{duration::SpringDuration, timestamp::SpringTimestamp},
 };
 
 use self::pane::Pane;
@@ -45,7 +45,7 @@ where
     /// Then, return all panes to get a tuple with the `rowtime`.
     ///
     /// Caller must assure rowtime is not smaller than watermark.
-    pub(super) fn panes_to_dispatch(&mut self, rowtime: Timestamp) -> impl Iterator<Item = &mut P> {
+    pub(super) fn panes_to_dispatch(&mut self, rowtime: SpringTimestamp) -> impl Iterator<Item = &mut P> {
         self.generate_panes_if_not_exist(rowtime);
 
         self.panes
@@ -75,7 +75,7 @@ where
         self.panes.clear()
     }
 
-    fn generate_panes_if_not_exist(&mut self, rowtime: Timestamp) {
+    fn generate_panes_if_not_exist(&mut self, rowtime: SpringTimestamp) {
         // Sort-Merge Join like algorithm
         let mut pane_idx = 0;
         for open_at in self.valid_open_at_s(rowtime) {
@@ -101,7 +101,7 @@ where
         }
     }
 
-    fn valid_open_at_s(&self, rowtime: Timestamp) -> Vec<Timestamp> {
+    fn valid_open_at_s(&self, rowtime: SpringTimestamp) -> Vec<SpringTimestamp> {
         let mut ret = vec![];
 
         let leftmost_open_at = {
@@ -126,7 +126,7 @@ where
         ret
     }
 
-    fn generate_pane(&self, open_at: Timestamp) -> P {
+    fn generate_pane(&self, open_at: SpringTimestamp) -> P {
         let close_at = open_at + self.window_param.length().to_chrono();
         P::new(open_at, close_at, self.op_param.clone())
     }
@@ -145,7 +145,7 @@ mod tests {
         sql_processor::sql_parser::syntax::SelectFieldSyntax,
         stream_engine::{
             autonomous_executor::task::window::panes::pane::aggregate_pane::AggrPane,
-            time::duration::event_duration::EventDuration,
+            time::duration::event_duration::SpringEventDuration,
         },
     };
 
@@ -176,42 +176,42 @@ mod tests {
 
     #[test]
     fn test_valid_open_at_s() {
-        fn sliding_window_panes(length: EventDuration, period: EventDuration) -> Panes<AggrPane> {
+        fn sliding_window_panes(length: SpringEventDuration, period: SpringEventDuration) -> Panes<AggrPane> {
             Panes::new(
                 WindowParameter::TimedSlidingWindow {
                     length,
                     period,
-                    allowed_delay: EventDuration::from_secs(0),
+                    allowed_delay: SpringEventDuration::from_secs(0),
                 },
                 dont_care_window_operation_parameter(),
             )
         }
 
-        let panes = sliding_window_panes(EventDuration::from_secs(10), EventDuration::from_secs(5));
+        let panes = sliding_window_panes(SpringEventDuration::from_secs(10), SpringEventDuration::from_secs(5));
         assert_eq!(
-            panes.valid_open_at_s(Timestamp::from_str("2020-01-01 00:00:05.000000000").unwrap()),
+            panes.valid_open_at_s(SpringTimestamp::from_str("2020-01-01 00:00:05.000000000").unwrap()),
             vec![
-                Timestamp::from_str("2020-01-01 00:00:00.000000000").unwrap(),
-                Timestamp::from_str("2020-01-01 00:00:05.000000000").unwrap()
+                SpringTimestamp::from_str("2020-01-01 00:00:00.000000000").unwrap(),
+                SpringTimestamp::from_str("2020-01-01 00:00:05.000000000").unwrap()
             ]
         );
         assert_eq!(
-            panes.valid_open_at_s(Timestamp::from_str("2020-01-01 00:00:09.999999999").unwrap()),
+            panes.valid_open_at_s(SpringTimestamp::from_str("2020-01-01 00:00:09.999999999").unwrap()),
             vec![
-                Timestamp::from_str("2020-01-01 00:00:00.000000000").unwrap(),
-                Timestamp::from_str("2020-01-01 00:00:05.000000000").unwrap()
+                SpringTimestamp::from_str("2020-01-01 00:00:00.000000000").unwrap(),
+                SpringTimestamp::from_str("2020-01-01 00:00:05.000000000").unwrap()
             ]
         );
 
         let panes =
-            sliding_window_panes(EventDuration::from_secs(10), EventDuration::from_secs(10));
+            sliding_window_panes(SpringEventDuration::from_secs(10), SpringEventDuration::from_secs(10));
         assert_eq!(
-            panes.valid_open_at_s(Timestamp::from_str("2020-01-01 00:00:00.000000000").unwrap()),
-            vec![Timestamp::from_str("2020-01-01 00:00:00.000000000").unwrap(),]
+            panes.valid_open_at_s(SpringTimestamp::from_str("2020-01-01 00:00:00.000000000").unwrap()),
+            vec![SpringTimestamp::from_str("2020-01-01 00:00:00.000000000").unwrap(),]
         );
         assert_eq!(
-            panes.valid_open_at_s(Timestamp::from_str("2020-01-01 00:00:09.999999999").unwrap()),
-            vec![Timestamp::from_str("2020-01-01 00:00:00.000000000").unwrap(),]
+            panes.valid_open_at_s(SpringTimestamp::from_str("2020-01-01 00:00:09.999999999").unwrap()),
+            vec![SpringTimestamp::from_str("2020-01-01 00:00:00.000000000").unwrap(),]
         );
     }
 }

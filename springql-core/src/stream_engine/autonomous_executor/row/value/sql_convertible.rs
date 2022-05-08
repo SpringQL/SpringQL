@@ -9,7 +9,7 @@ mod timestamp;
 
 use crate::{
     error::{Result, SpringError},
-    stream_engine::time::{duration::event_duration::EventDuration, timestamp::Timestamp},
+    stream_engine::time::{duration::event_duration::SpringEventDuration, timestamp::SpringTimestamp},
 };
 use anyhow::anyhow;
 use std::any::type_name;
@@ -70,7 +70,7 @@ pub trait SpringValue: Sized {
     ///
     /// - [SpringError::Sql](crate::error::SpringError::Sql) when:
     ///   - the type implementing SqlConvertible is not convertible from Timestamp
-    fn try_from_timestamp(_: &Timestamp) -> Result<Self> {
+    fn try_from_timestamp(_: &SpringTimestamp) -> Result<Self> {
         Self::default_err("Timestamp")
     }
 
@@ -78,7 +78,7 @@ pub trait SpringValue: Sized {
     ///
     /// - [SpringError::Sql](crate::error::SpringError::Sql) when:
     ///   - the type implementing SqlConvertible is not convertible from EventDuration
-    fn try_from_duration(_: &EventDuration) -> Result<Self> {
+    fn try_from_duration(_: &SpringEventDuration) -> Result<Self> {
         Self::default_err("EventDuration")
     }
 

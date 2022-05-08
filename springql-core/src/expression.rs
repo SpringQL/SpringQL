@@ -21,7 +21,7 @@ use crate::{
         pump_model::window_operation_parameter::aggregate::AggregateFunctionParameter,
     },
     stream_engine::{
-        time::duration::{event_duration::EventDuration, SpringDuration},
+        time::duration::{event_duration::SpringEventDuration, SpringDuration},
         NnSqlValue, SqlCompareResult, SqlValue, Tuple,
     },
 };
@@ -261,7 +261,7 @@ impl ValueExprPh2 {
         let duration_value = duration_millis.eval()?;
         let duration_millis = duration_value.to_i64()?;
         if duration_millis >= 0 {
-            let duration = EventDuration::from_millis(duration_millis as u64);
+            let duration = SpringEventDuration::from_millis(duration_millis as u64);
             Ok(SqlValue::NotNull(NnSqlValue::Duration(duration)))
         } else {
             Err(SpringError::Sql(anyhow!(
@@ -274,7 +274,7 @@ impl ValueExprPh2 {
         let duration_value = duration_secs.eval()?;
         let duration_secs = duration_value.to_i64()?;
         if duration_secs >= 0 {
-            let duration = EventDuration::from_secs(duration_secs as u64);
+            let duration = SpringEventDuration::from_secs(duration_secs as u64);
             Ok(SqlValue::NotNull(NnSqlValue::Duration(duration)))
         } else {
             Err(SpringError::Sql(anyhow!(

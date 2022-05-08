@@ -4,7 +4,7 @@ use crate::{
     error::{Result, SpringError},
     mem_size::MemSize,
     pipeline::field::{field_name::ColumnReference, Field},
-    stream_engine::{autonomous_executor::row::Row, time::timestamp::Timestamp, SqlValue},
+    stream_engine::{autonomous_executor::row::Row, time::timestamp::SpringTimestamp, SqlValue},
 };
 use anyhow::anyhow;
 
@@ -19,7 +19,7 @@ use anyhow::anyhow;
 pub(crate) struct Tuple {
     /// Either be an event-time or a process-time.
     /// If a row this tuple is constructed from has a ROWTIME column, `rowtime` has duplicate value with one of `fields`.
-    rowtime: Timestamp,
+    rowtime: SpringTimestamp,
 
     fields: Vec<Field>,
 }
@@ -48,7 +48,7 @@ impl Tuple {
         Self { rowtime, fields }
     }
 
-    pub(in crate::stream_engine::autonomous_executor) fn rowtime(&self) -> &Timestamp {
+    pub(in crate::stream_engine::autonomous_executor) fn rowtime(&self) -> &SpringTimestamp {
         &self.rowtime
     }
 
@@ -110,7 +110,7 @@ mod tests {
             // ColumnReference
             TestDatum::new(
                 ValueExpr::ColumnReference(ColumnReference::factory("trade", "amount")),
-                Tuple::factory_trade(Timestamp::fx_ts1(), "ORCL", 1),
+                Tuple::factory_trade(SpringTimestamp::fx_ts1(), "ORCL", 1),
                 SqlValue::factory_integer(1),
             ),
             // BooleanExpression

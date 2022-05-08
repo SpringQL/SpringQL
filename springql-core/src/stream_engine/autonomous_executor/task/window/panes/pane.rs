@@ -8,7 +8,7 @@ use crate::{
             performance_metrics::metrics_update_command::metrics_update_by_task_execution::WindowInFlowByWindowTask,
             task::window::watermark::Watermark,
         },
-        time::timestamp::Timestamp,
+        time::timestamp::SpringTimestamp,
         Tuple,
     },
 };
@@ -20,12 +20,12 @@ pub(in crate::stream_engine::autonomous_executor) trait Pane {
     type CloseOut;
     type DispatchArg: Clone;
 
-    fn new(open_at: Timestamp, close_at: Timestamp, param: WindowOperationParameter) -> Self;
+    fn new(open_at: SpringTimestamp, close_at: SpringTimestamp, param: WindowOperationParameter) -> Self;
 
-    fn open_at(&self) -> Timestamp;
-    fn close_at(&self) -> Timestamp;
+    fn open_at(&self) -> SpringTimestamp;
+    fn close_at(&self) -> SpringTimestamp;
 
-    fn is_acceptable(&self, rowtime: &Timestamp) -> bool {
+    fn is_acceptable(&self, rowtime: &SpringTimestamp) -> bool {
         &self.open_at() <= rowtime && rowtime < &self.close_at()
     }
 

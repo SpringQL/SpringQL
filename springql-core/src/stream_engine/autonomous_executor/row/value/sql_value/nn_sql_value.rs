@@ -13,8 +13,8 @@ use crate::pipeline::relation::sql_type::{
 use crate::stream_engine::autonomous_executor::row::value::sql_convertible::{
     SpringValue, ToNnSqlValue,
 };
-use crate::stream_engine::time::duration::event_duration::EventDuration;
-use crate::stream_engine::time::timestamp::Timestamp;
+use crate::stream_engine::time::duration::event_duration::SpringEventDuration;
+use crate::stream_engine::time::timestamp::SpringTimestamp;
 use anyhow::anyhow;
 use ordered_float::OrderedFloat;
 
@@ -41,10 +41,10 @@ pub(crate) enum NnSqlValue {
     Boolean(bool),
 
     /// TIMESTAMP
-    Timestamp(Timestamp),
+    Timestamp(SpringTimestamp),
 
     /// DURATION
-    Duration(EventDuration),
+    Duration(SpringEventDuration),
 }
 
 impl MemSize for NnSqlValue {
@@ -123,8 +123,8 @@ impl Hash for NnSqlValue {
                 s.hash(state);
             },
             |b: bool| { b.hash(state) },
-            |t: Timestamp| { t.hash(state) },
-            |d: EventDuration| { d.hash(state) }
+            |t: SpringTimestamp| { t.hash(state) },
+            |d: SpringEventDuration| { d.hash(state) }
         )
     }
 }
@@ -137,8 +137,8 @@ impl Display for NnSqlValue {
             |f: OrderedFloat<f32>| f.to_string(),
             |s: String| format!(r#""{}""#, s),
             |b: bool| (if b { "TRUE" } else { "FALSE" }).to_string(),
-            |t: Timestamp| t.to_string(),
-            |d: EventDuration| d.to_string()
+            |t: SpringTimestamp| t.to_string(),
+            |d: SpringEventDuration| d.to_string()
         );
         write!(f, "{}", s)
     }
@@ -220,9 +220,9 @@ impl NnSqlValue {
                 }
             },
             SqlType::BooleanComparable => self.unpack::<bool>().map(|v| v.into_sql_value()),
-            SqlType::TimestampComparable => self.unpack::<Timestamp>().map(|v| v.into_sql_value()),
+            SqlType::TimestampComparable => self.unpack::<SpringTimestamp>().map(|v| v.into_sql_value()),
             SqlType::DurationComparable => {
-                self.unpack::<EventDuration>().map(|v| v.into_sql_value())
+                self.unpack::<SpringEventDuration>().map(|v| v.into_sql_value())
             }
         }
     }
@@ -260,7 +260,7 @@ impl NnSqlValue {
                 Ok(SqlCompareResult::from(self_b.cmp(&other_b)))
             }
             (SqlType::TimestampComparable, SqlType::TimestampComparable) => {
-                let (self_t, other_t) = (self.unpack::<Timestamp>()?, other.unpack::<Timestamp>()?);
+                let (self_t, other_t) = (self.unpack::<SpringTimestamp>()?, other.unpack::<SpringTimestamp>()?);
                 Ok(SqlCompareResult::from(self_t.cmp(&other_t)))
             }
             (_, _) => Err(SpringError::Sql(anyhow!(
@@ -394,8 +394,8 @@ mod tests {
         assert!(!NnSqlValue::Boolean(false).unpack::<bool>()?);
 
         assert_eq!(
-            NnSqlValue::Timestamp(Timestamp::fx_ts1()).unpack::<Timestamp>()?,
-            Timestamp::fx_ts1()
+            NnSqlValue::Timestamp(SpringTimestamp::fx_ts1()).unpack::<SpringTimestamp>()?,
+            SpringTimestamp::fx_ts1()
         );
 
         Ok(())

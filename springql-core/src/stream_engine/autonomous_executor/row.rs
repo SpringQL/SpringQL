@@ -19,14 +19,14 @@ use crate::pipeline::name::ColumnName;
 use crate::pipeline::stream_model::StreamModel;
 use crate::stream_engine::autonomous_executor::row::value::sql_value::nn_sql_value::NnSqlValue;
 use crate::stream_engine::time::timestamp::system_timestamp::SystemTimestamp;
-use crate::stream_engine::time::timestamp::Timestamp;
+use crate::stream_engine::time::timestamp::SpringTimestamp;
 
 /// - Mandatory `rowtime()`, either from `cols` or `arrival_rowtime`.
 /// - PartialEq by all columns (NULL prevents Eq).
 /// - PartialOrd by timestamp.
 #[derive(Clone, PartialEq, Debug)]
 pub(crate) struct Row {
-    arrival_rowtime: Option<Timestamp>,
+    arrival_rowtime: Option<SpringTimestamp>,
 
     /// Columns
     cols: StreamColumns,
@@ -56,7 +56,7 @@ impl Row {
     ///
     /// - (default) Arrival time to a stream.
     /// - Promoted from a column in a stream.
-    pub(in crate::stream_engine::autonomous_executor) fn rowtime(&self) -> Timestamp {
+    pub(in crate::stream_engine::autonomous_executor) fn rowtime(&self) -> SpringTimestamp {
         self.arrival_rowtime.unwrap_or_else(|| {
             self.cols
                 .promoted_rowtime()

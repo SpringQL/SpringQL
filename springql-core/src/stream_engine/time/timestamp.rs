@@ -19,23 +19,23 @@ use crate::{
 };
 
 /// The minimum possible `Timestamp`.
-pub(crate) const MIN_TIMESTAMP: Timestamp = Timestamp(MIN_DATETIME);
+pub(crate) const MIN_TIMESTAMP: SpringTimestamp = SpringTimestamp(MIN_DATETIME);
 
 const FORMAT: &str = "%Y-%m-%d %H:%M:%S%.9f";
 
 /// Timestamp in UTC. Serializable.
 #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Serialize, Deserialize, new)]
-pub(crate) struct Timestamp(#[serde(with = "datetime_format")] NaiveDateTime);
+pub struct SpringTimestamp(#[serde(with = "datetime_format")] NaiveDateTime);
 
-impl MemSize for Timestamp {
+impl MemSize for SpringTimestamp {
     fn mem_size(&self) -> usize {
         chrono_naive_date_time_overhead_size()
     }
 }
 
-impl Timestamp {
+impl SpringTimestamp {
     /// Note: `2262-04-11T23:47:16.854775804` is the maximum possible timestamp because it uses nano-sec unixtime internally.
-    pub(crate) fn floor(&self, resolution: Duration) -> Timestamp {
+    pub(crate) fn floor(&self, resolution: Duration) -> SpringTimestamp {
         let ts_nano = self.0.timestamp_nanos();
         let resolution_nano = resolution.num_nanoseconds().expect("no overflow");
         assert!(resolution_nano > 0);
@@ -48,11 +48,11 @@ impl Timestamp {
             NaiveDateTime::from_timestamp(floor_ts_secs, floor_ts_nanos as u32)
         };
 
-        Timestamp(floor_naive_date_time)
+        SpringTimestamp(floor_naive_date_time)
     }
 
     /// Note: `2262-04-11T23:47:16.854775804` is the maximum possible timestamp because it uses nano-sec unixtime internally.
-    pub(crate) fn ceil(&self, resolution: Duration) -> Timestamp {
+    pub(crate) fn ceil(&self, resolution: Duration) -> SpringTimestamp {
         let floor = self.floor(resolution);
         if &floor == self {
             floor
@@ -68,7 +68,7 @@ impl Timestamp {
                 s: s.to_string(),
                 source: e,
             })?;
-        Ok(Timestamp(ndt))
+        Ok(SpringTimestamp(ndt))
     }
     fn try_parse_rfc3339(s: &str) -> Result<Self> {
         let dt = DateTime::parse_from_rfc3339(s)
@@ -77,11 +77,11 @@ impl Timestamp {
                 s: s.to_string(),
                 source: e,
             })?;
-        Ok(Timestamp(dt.naive_utc()))
+        Ok(SpringTimestamp(dt.naive_utc()))
     }
 }
 
-impl FromStr for Timestamp {
+impl FromStr for SpringTimestamp {
     type Err = SpringError;
 
     /// Parse as RFC-3339 or `"%Y-%m-%d %H:%M:%S%.9f"` format.
@@ -90,20 +90,20 @@ impl FromStr for Timestamp {
     }
 }
 
-impl ToString for Timestamp {
+impl ToString for SpringTimestamp {
     fn to_string(&self) -> String {
         self.0.format(FORMAT).to_string()
     }
 }
 
-impl Add<Duration> for Timestamp {
+impl Add<Duration> for SpringTimestamp {
     type Output = Self;
 
     fn add(self, rhs: Duration) -> Self::Output {
         Self(self.0 + rhs)
     }
 }
-impl Sub<Duration> for Timestamp {
+impl Sub<Duration> for SpringTimestamp {
     type Output = Self;
 
     fn sub(self, rhs: Duration) -> Self::Output {
@@ -111,10 +111,10 @@ impl Sub<Duration> for Timestamp {
     }
 }
 
-impl Sub<Timestamp> for Timestamp {
+impl Sub<SpringTimestamp> for SpringTimestamp {
     type Output = Duration;
 
-    fn sub(self, rhs: Timestamp) -> Self::Output {
+    fn sub(self, rhs: SpringTimestamp) -> Self::Output {
         self.0 - rhs.0
     }
 }
@@ -151,8 +151,8 @@ mod tests {
     #[test]
     fn test_floor() {
         fn t(ts: &str, resolution: Duration, expected: &str) {
-            let ts = Timestamp::from_str(ts).unwrap();
-            let expected = Timestamp::from_str(expected).unwrap();
+            let ts = SpringTimestamp::from_str(ts).unwrap();
+            let expected = SpringTimestamp::from_str(expected).unwrap();
 
             let actual = ts.floor(resolution);
             assert_eq!(actual, expected);
@@ -244,8 +244,8 @@ mod tests {
     #[test]
     fn test_ceil() {
         fn t(ts: &str, resolution: Duration, expected: &str) {
-            let ts = Timestamp::from_str(ts).unwrap();
-            let expected = Timestamp::from_str(expected).unwrap();
+            let ts = SpringTimestamp::from_str(ts).unwrap();
+            let expected = SpringTimestamp::from_str(expected).unwrap();
 
             let actual = ts.ceil(resolution);
             assert_eq!(actual, expected);
@@ -351,7 +351,7 @@ mod tests {
 
         for t in ts {
             let ser = serde_json::to_string(&t).unwrap();
-            let de: Timestamp = serde_json::from_str(&ser).unwrap();
+            let de: SpringTimestamp = serde_json::from_str(&ser).unwrap();
             assert_eq!(de, t);
         }
 
@@ -360,8 +360,8 @@ mod tests {
 
     #[test]
     fn test_timestamp_parse_rfc3339() -> Result<()> {
-        let ts_rfc3339: Timestamp = "2020-01-01T09:12:34.56789+09:00".parse()?;
-        let ts: Timestamp = "2020-01-01 00:12:34.567890000".parse()?;
+        let ts_rfc3339: SpringTimestamp = "2020-01-01T09:12:34.56789+09:00".parse()?;
+        let ts: SpringTimestamp = "2020-01-01 00:12:34.567890000".parse()?;
         assert_eq!(ts_rfc3339, ts);
 
         Ok(())
