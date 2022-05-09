@@ -64,22 +64,22 @@ jobs:
             rust: stable
 
           - make:
-              task: example
+              task: example-run
               install-replayman: true
             os: ubuntu-latest
             rust: nightly
           - make:
-              task: example
+              task: example-run
               install-replayman: true
             os: ubuntu-latest
             rust: stable
           - make:
-              task: example
+              task: example-run
               install-replayman: true
             os: ubuntu-latest
             rust: 1.56.0
           - make:
-              task: example
+              task: example-run
               install-replayman: true
             os: macos-latest
             rust: stable
