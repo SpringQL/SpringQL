@@ -51,7 +51,7 @@ done
 [tasks.example-run]
 dependencies = ["example-build"]
 script = ['''
-#!/usr/bin/env bash -eu
+#!/usr/bin/env bash -eux
 
 echo '-- Start in_vehicle_pipeline'
   cargo run --example in_vehicle_pipeline
