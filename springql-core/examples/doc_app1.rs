@@ -1,6 +1,17 @@
 // This file is part of https://github.com/SpringQL/SpringQL which is licensed under MIT OR Apache-2.0. See file LICENSE-MIT or LICENSE-APACHE for full license details.
 
-/// Demo application in <https://springql.github.io/get-started/write-basic-apps/#app1-simple-arithmetic-conversion-over-a-stream>.
+//! Demo application in <https://springql.github.io/get-started/write-basic-apps/#app1-simple-arithmetic-conversion-over-a-stream>.
+//!
+//! Usage:
+//! 
+//! ```bash
+//! cargo run --example doc_app1
+//! ```
+//! 
+//! ```bash
+//! echo '{"ts": "2022-01-01 13:00:00.000000000", "temperature": 5.3}' |nc localhost 54300
+//! ```
+
 use springql_core::{high_level_rs::SpringPipelineHL, low_level_rs::SpringConfig};
 
 fn main() {
