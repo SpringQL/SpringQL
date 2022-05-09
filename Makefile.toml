@@ -43,7 +43,9 @@ RUST_LOG=springql_core=info,warn RUSTFLAGS='-D warnings' cargo test --workspace 
 [tasks.example]
 script = ['''
 #!/usr/bin/env bash -eux
-cargo run --example demo_pipeline
+for example in $(git ls-files |grep -e 'examples/[^/]*\.rs$') ; do
+  cargo run --example $(basename -s .rs "$example")
+done
 ''']
 
 [tasks.doc]
@@ -80,4 +82,3 @@ cargo workspaces publish
 
 [tasks.lcov]
 alias="coverage_grcov"
-
