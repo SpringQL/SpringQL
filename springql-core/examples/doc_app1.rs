@@ -5,7 +5,7 @@ use std::{thread, time::Duration};
 
 use springql_core::{high_level_rs::SpringPipelineHL, low_level_rs::SpringConfig};
 
-fn main() -> ! {
+fn main() {
     let pipeline = SpringPipelineHL::new(&SpringConfig::default()).unwrap();
 
     pipeline
@@ -69,7 +69,5 @@ fn main() -> ! {
         .unwrap();
 
     // stop main thread and do the dataflow in worker threads
-    loop {
-        thread::sleep(Duration::from_millis(100));
-    }
+    thread::sleep(Duration::from_secs(3));
 }
