@@ -80,7 +80,7 @@ jobs:
             rust: 1.56.0
           - make:
               task: example-run
-              install-replayman: true
+              # install-replayman: true
               brew-install-netcat: true
             os: macos-latest
             rust: stable
