@@ -58,9 +58,6 @@ echo '-- Start in_vehicle_pipeline'
 echo '-- End in_vehicle_pipeline'
 echo
 
-nc -l 54301 &
-sleep 1
-
 echo '-- Start doc_app1'
   cargo run --example doc_app1 &
   sleep 1

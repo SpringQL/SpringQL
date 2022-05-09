@@ -1,8 +1,6 @@
 // This file is part of https://github.com/SpringQL/SpringQL which is licensed under MIT OR Apache-2.0. See file LICENSE-MIT or LICENSE-APACHE for full license details.
 
 /// Demo application in <https://springql.github.io/get-started/write-basic-apps/#app1-simple-arithmetic-conversion-over-a-stream>.
-use std::{thread, time::Duration};
-
 use springql_core::{high_level_rs::SpringPipelineHL, low_level_rs::SpringConfig};
 
 fn main() {
@@ -46,11 +44,9 @@ fn main() {
     pipeline
         .command(
             "
-            CREATE SINK WRITER tcp_temperature_fahrenheit FOR sink_temperature_fahrenheit
-            TYPE NET_CLIENT OPTIONS (
-                PROTOCOL 'TCP',
-                REMOTE_HOST '127.0.0.1',
-                REMOTE_PORT '54301'
+            CREATE SINK WRITER queue_temperature_fahrenheit FOR sink_temperature_fahrenheit
+            TYPE IN_MEMORY_QUEUE OPTIONS (
+                NAME 'q'
             );
             ",
         )
@@ -68,6 +64,9 @@ fn main() {
         )
         .unwrap();
 
-    // stop main thread and do the dataflow in worker threads
-    thread::sleep(Duration::from_secs(3));
+    while let Ok(row) = pipeline.pop("q") {
+        let ts: String = row.get_not_null_by_index(0).unwrap();
+        let temperature_fahrenheit: f32 = row.get_not_null_by_index(1).unwrap();
+        eprintln!("{}\t{}", ts, temperature_fahrenheit);
+    }
 }
