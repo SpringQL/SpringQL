@@ -51,7 +51,7 @@ done
 [tasks.example-run]
 dependencies = ["example-build"]
 script = ['''
-#!/usr/bin/env bash -eux
+#!/usr/bin/env bash -eu
 
 echo '-- Start in_vehicle_pipeline'
   cargo run --example in_vehicle_pipeline
@@ -59,12 +59,12 @@ echo '-- End in_vehicle_pipeline'
 echo
 
 nc -l 54301 &
+sleep 1
 
 echo '-- Start doc_app1'
   cargo run --example doc_app1 &
   sleep 1
   echo '{"ts": "2022-01-01 13:00:00.000000000", "temperature": 5.3}' | nc localhost 54300
-  sleep 1
 echo '-- End doc_app1'
 echo
 
