@@ -44,9 +44,9 @@ RUST_LOG=springql_core=info,warn RUSTFLAGS='-D warnings' cargo test --workspace 
 script = ['''
 #!/usr/bin/env bash -eux
 nc --help
-nc -l 54300 &
+nc -l -p 54300 &
 sleep 1
-echo 'hello hello' | nc 127.0.0.1 54300
+echo 'hello hello' | nc localhost 54300
 ''']
 
 
