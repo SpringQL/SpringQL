@@ -43,6 +43,8 @@ RUST_LOG=springql_core=info,warn RUSTFLAGS='-D warnings' cargo test --workspace 
 [tasks.example-build]
 script = ['''
 #!/usr/bin/env bash -eux
+nc localhost 54300 &
+sleep 1
 echo '{"ts": "2022-01-01 13:00:00.000000000", "temperature": 5.3}' | nc 127.0.0.1 54300
 
 # for example in $(git ls-files |grep -e 'examples/[^/]*\.rs$') ; do
