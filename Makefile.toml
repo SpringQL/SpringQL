@@ -40,16 +40,6 @@ script = ['''
 RUST_LOG=springql_core=info,warn RUSTFLAGS='-D warnings' cargo test --workspace --all-targets --all-features
 ''']
 
-[tasks.nc-test]
-script = ['''
-#!/usr/bin/env bash -eux
-nc --help
-nc -l -p 54300 &
-sleep 1
-echo 'hello hello' | nc localhost 54300
-''']
-
-
 [tasks.example-build]
 script = ['''
 #!/usr/bin/env bash -eux
@@ -71,10 +61,10 @@ echo '-- Start doc_app1'
 echo '-- End doc_app1'
 echo
 
-# echo '-- Start in_vehicle_pipeline'
-#   cargo run --example in_vehicle_pipeline
-# echo '-- End in_vehicle_pipeline'
-# echo
+echo '-- Start in_vehicle_pipeline'
+  cargo run --example in_vehicle_pipeline
+echo '-- End in_vehicle_pipeline'
+echo
 ''']
 
 [tasks.doc]
