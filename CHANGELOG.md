@@ -6,6 +6,16 @@ The format is based on [Keep a Changelog][Keep a Changelog] and this project adh
 
 ## [Unreleased]
 
+## [v0.7.0]
+
+### Added
+
+- Low-level APIs ([#121](https://github.com/SpringQL/SpringQL/pull/121)).
+  - `spring_column_bool`
+  - `spring_column_f32`
+  - `spring_column_i16`
+  - `spring_column_i64`
+
 ## [v0.6.0]
 
 ### Added
