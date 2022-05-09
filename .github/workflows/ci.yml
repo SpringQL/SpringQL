@@ -63,26 +63,13 @@ jobs:
             os: macos-latest
             rust: stable
 
+          # Example does not cover various envs. Should be done in test.
           - make:
-              task: example
-              install-replayman: true
-            os: ubuntu-latest
-            rust: nightly
-          - make:
-              task: example
+              task: example-run
               install-replayman: true
             os: ubuntu-latest
             rust: stable
-          - make:
-              task: example
-              install-replayman: true
-            os: ubuntu-latest
-            rust: 1.56.0
-          - make:
-              task: example
-              install-replayman: true
-            os: macos-latest
-            rust: stable
+
     env:
       RUST_BACKTRACE: full
       CACHE_RESET_KEY: 20211022-01
@@ -201,3 +188,4 @@ jobs:
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           slack_webhook_url: ${{ secrets.SLACK_WEBHOOK_URL }}
+
