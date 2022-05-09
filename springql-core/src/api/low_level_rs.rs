@@ -106,16 +106,54 @@ pub fn spring_pop(pipeline: &SpringPipeline, queue: &str) -> Result<SpringRow> {
 /// - [SpringError::Unavailable](crate::error::SpringError::Unavailable) when:
 ///   - `i_col` already fetched.
 ///   - `i_col` out of range.
+/// - [SpringError::Null](crate::error::SpringError::Null) when:
+///   - Column value is NULL
 pub fn spring_column_i32(row: &SpringRow, i_col: usize) -> Result<i32> {
     spring_column(row, i_col)
 }
 
-/// Get an text column.
+/// Get a text column.
 ///
 /// # Failure
 ///
 /// Same as [spring_column_i32()](spring_column_i32)
 pub fn spring_column_text(row: &SpringRow, i_col: usize) -> Result<String> {
+    spring_column(row, i_col)
+}
+
+/// Get a boolean column.
+///
+/// # Failure
+///
+/// Same as [spring_column_i32()](spring_column_i32)
+pub fn spring_column_bool(row: &SpringRow, i_col: usize) -> Result<bool> {
+    spring_column(row, i_col)
+}
+
+/// Get a float column.
+///
+/// # Failure
+///
+/// Same as [spring_column_i32()](spring_column_i32)
+pub fn spring_column_f32(row: &SpringRow, i_col: usize) -> Result<f32> {
+    spring_column(row, i_col)
+}
+
+/// Get a 2-byte integer column.
+///
+/// # Failure
+///
+/// Same as [spring_column_i32()](spring_column_i32)
+pub fn spring_column_i16(row: &SpringRow, i_col: usize) -> Result<i16> {
+    spring_column(row, i_col)
+}
+
+/// Get a 8-byte integer column.
+///
+/// # Failure
+///
+/// Same as [spring_column_i32()](spring_column_i32)
+pub fn spring_column_i64(row: &SpringRow, i_col: usize) -> Result<i64> {
     spring_column(row, i_col)
 }
 
