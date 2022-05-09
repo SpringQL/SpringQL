@@ -59,7 +59,7 @@ impl SpringRowHL {
     ///   - Column value is NULL
     pub fn get_not_null_by_index<T>(&self, i_col: usize) -> Result<T>
     where
-        T: SpringValue, // TODO use this function in spring_column_*()
+        T: SpringValue,
     {
         let sql_value = self.0.get_by_index(i_col)?;
 
