@@ -12,7 +12,7 @@ pub use spring_config::*;
 use std::sync::Once;
 
 use crate::{
-    error::Result,
+    error::{Result, SpringError},
     pipeline::name::QueueName,
     sql_processor::SqlProcessor,
     stream_engine::{command::Command, SinkRow, SpringValue, SqlValue},
@@ -107,7 +107,7 @@ pub fn spring_pop(pipeline: &SpringPipeline, queue: &str) -> Result<SpringRow> {
 ///   - `i_col` already fetched.
 ///   - `i_col` out of range.
 pub fn spring_column_i32(row: &SpringRow, i_col: usize) -> Result<i32> {
-    spring_column(row, i_col)
+    spring_column_not_null(row, i_col)
 }
 
 /// Get an text column.
@@ -116,14 +116,17 @@ pub fn spring_column_i32(row: &SpringRow, i_col: usize) -> Result<i32> {
 ///
 /// Same as [spring_column_i32()](spring_column_i32)
 pub fn spring_column_text(row: &SpringRow, i_col: usize) -> Result<String> {
-    spring_column(row, i_col)
+    spring_column_not_null(row, i_col)
 }
 
-fn spring_column<T: SpringValue>(row: &SpringRow, i_col: usize) -> Result<T> {
+fn spring_column_not_null<T: SpringValue>(row: &SpringRow, i_col: usize) -> Result<T> {
     let v = row.0.get_by_index(i_col)?;
     if let SqlValue::NotNull(v) = v {
         v.unpack()
     } else {
-        todo!("support nullable value")
+        Err(SpringError::Null {
+            stream_name: row.0.stream_name().clone(),
+            i_col,
+        })
     }
 }
