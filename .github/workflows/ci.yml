@@ -18,78 +18,56 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          # - make:
-          #     task: format
-          #   os: ubuntu-latest
-          #   rust: stable
-          # - make:
-          #     task: lint
-          #   os: ubuntu-latest
-          #   rust: stable
-          # - make:
-          #     task: doc
-          #   os: ubuntu-latest
-          #   rust: stable
-          # - make:
-          #     task: deadlink
-          #     install-cargo-deadlinks: true
-          #     install-mlc: true
-          #   os: ubuntu-latest
-          #   rust: stable
-          # - make:
-          #     task: lcov
-          #     install-grcov: true
-          #   os: ubuntu-latest
-          #   rust: stable
-          # - make:
-          #     task: copyright
-          #     rust-free: true
-          #   os: ubuntu-latest
-
-          # - make:
-          #     task: test
-          #   os: ubuntu-latest
-          #   rust: nightly
-          # - make:
-          #     task: test
-          #   os: ubuntu-latest
-          #   rust: stable
-          # - make:
-          #     task: test
-          #   os: ubuntu-latest
-          #   rust: 1.56.0
-          # - make:
-          #     task: test
-          #   os: macos-latest
-          #   rust: stable
-
-          # - make:
-          #     task: example-run
-          #     install-replayman: true
-          #   os: ubuntu-latest
-          #   rust: nightly
-          # - make:
-          #     task: example-run
-          #     install-replayman: true
-          #   os: ubuntu-latest
-          #   rust: stable
           - make:
-              task: example-run
-              # install-replayman: true
+              task: format
+            os: ubuntu-latest
+            rust: stable
+          - make:
+              task: lint
+            os: ubuntu-latest
+            rust: stable
+          - make:
+              task: doc
+            os: ubuntu-latest
+            rust: stable
+          - make:
+              task: deadlink
+              install-cargo-deadlinks: true
+              install-mlc: true
+            os: ubuntu-latest
+            rust: stable
+          - make:
+              task: lcov
+              install-grcov: true
+            os: ubuntu-latest
+            rust: stable
+          - make:
+              task: copyright
+              rust-free: true
+            os: ubuntu-latest
+
+          - make:
+              task: test
+            os: ubuntu-latest
+            rust: nightly
+          - make:
+              task: test
+            os: ubuntu-latest
+            rust: stable
+          - make:
+              task: test
             os: ubuntu-latest
             rust: 1.56.0
           - make:
-              task: example-run
-              # install-replayman: true
-              brew-install-netcat: true
+              task: test
             os: macos-latest
             rust: stable
 
+          # Example does not cover various envs. Should be done in test.
           - make:
-              task: nc-test
-              rust-free: true
-              # brew-install-netcat: true
-            os: macos-latest
+              task: example-run
+              install-replayman: true
+            os: ubuntu-latest
             rust: stable
 
     env:
@@ -186,11 +164,6 @@ jobs:
         run: |
           cargo install replayman
 
-      - name: brew install netcat
-        if: ${{ matrix.make.brew-install-netcat }}
-        run: |
-          brew install netcat
-
       - name: ${{ matrix.make.task }}
         run: |
           for task in ${{ matrix.make.task }} ; do
@@ -215,3 +188,4 @@ jobs:
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           slack_webhook_url: ${{ secrets.SLACK_WEBHOOK_URL }}
+
