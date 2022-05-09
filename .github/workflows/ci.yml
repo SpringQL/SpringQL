@@ -81,6 +81,7 @@ jobs:
           - make:
               task: example-run
               install-replayman: true
+              brew-install-netcat: true
             os: macos-latest
             rust: stable
     env:
@@ -176,6 +177,11 @@ jobs:
         if: ${{ matrix.make.install-replayman }}
         run: |
           cargo install replayman
+
+      - name: brew install netcat
+        if: ${{ matrix.make.brew-install-netcat }}
+        run: |
+          brew install netcat
 
       - name: ${{ matrix.make.task }}
         run: |
