@@ -251,3 +251,86 @@ fn test_e2e_pop_from_in_memory_queue() {
         assert_eq!(spring_column_i32(&row, 1).unwrap(), amount);
     }
 }
+
+#[test]
+fn test_e2e_spring_column_apis() {
+    setup_test_logger();
+
+    let queue_name = "queue_many_types";
+    let c_timestamp = "2021-11-04 23:02:52.123456789";
+    let c_integer = i32::MAX;
+    let c_text = "HELLO";
+    let c_boolean = true;
+    let c_float = f32::MAX;
+
+    let json_many_types = json!({
+        "c_timestamp": c_timestamp,
+        "c_integer": c_integer,
+        "c_text": c_text,
+        "c_boolean": c_boolean,
+        "c_float": c_float,
+    });
+
+    let test_source = ForeignSource::new().unwrap();
+
+    let ddls = vec![
+        "
+        CREATE SOURCE STREAM source_many_types (
+          c_timestamp TIMESTAMP NOT NULL ROWTIME,    
+          c_integer INTEGER NOT NULL,
+          c_text TEXT NOT NULL,
+          c_boolean BOOLEAN NOT NULL,
+          c_float FLOAT NOT NULL
+        );
+        "
+        .to_string(),
+        "
+        CREATE SINK STREAM sink_many_types (
+          c_timestamp TIMESTAMP NOT NULL ROWTIME,    
+          c_integer INTEGER NOT NULL,
+          c_text TEXT NOT NULL,
+          c_boolean BOOLEAN NOT NULL,
+          c_float FLOAT NOT NULL
+        );
+        "
+        .to_string(),
+        "
+        CREATE PUMP pu_through AS
+          INSERT INTO sink_many_types (c_timestamp, c_integer, c_text, c_boolean, c_float)
+          SELECT STREAM source_many_types.c_timestamp, source_many_types.c_integer, source_many_types.c_text, source_many_types.c_boolean, source_many_types.c_float
+            FROM source_many_types;
+        "
+        .to_string(),
+        format!(
+            "
+      CREATE SINK WRITER queue_sink_many_types FOR sink_many_types
+        TYPE IN_MEMORY_QUEUE OPTIONS (
+          NAME '{queue_name}'
+      );
+      ",
+            queue_name = queue_name,
+        ),
+        format!(
+            "
+        CREATE SOURCE READER tcp_many_types FOR source_many_types
+          TYPE NET_CLIENT OPTIONS (
+            PROTOCOL 'TCP',
+            REMOTE_HOST '{remote_host}',
+            REMOTE_PORT '{remote_port}'
+          );
+        ",
+            remote_host = test_source.host_ip(),
+            remote_port = test_source.port()
+        ),
+    ];
+
+    let pipeline = apply_ddls_low_level(&ddls, spring_config_default());
+    test_source.start(ForeignSourceInput::new_fifo_batch(vec![json_many_types]));
+
+    let row = spring_pop(&pipeline, queue_name).unwrap();
+    assert_eq!(spring_column_text(&row, 0).unwrap(), c_timestamp); // TIMESTAMP type is usually converted into string in low-level API.
+    assert_eq!(spring_column_i32(&row, 1).unwrap(), c_integer);
+    assert_eq!(spring_column_text(&row, 2).unwrap(), c_text);
+    assert_eq!(spring_column_bool(&row, 3).unwrap(), c_boolean);
+    assert_eq!(spring_column_f32(&row, 4).unwrap(), c_float);
+}
