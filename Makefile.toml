@@ -58,6 +58,7 @@ echo '-- Start doc_app1'
   sleep 1
   echo '{"ts": "2022-01-01 13:00:00.000000000", "temperature": 5.3}' | nc localhost 54300
   sleep 1
+  pkill doc_app1
 echo '-- End doc_app1'
 echo
 
