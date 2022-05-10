@@ -11,7 +11,7 @@ use crate::expr_resolver::expr_label::{AggrExprLabel, ValueExprLabel};
 ///   SLIDING WINDOW ...;
 /// ```
 #[derive(Copy, Clone, PartialEq, Debug, new)]
-pub(crate) struct GroupAggregateParameter {
+pub(crate) struct AggregateParameter {
     // TODO multiple aggr_expr
     pub(crate) aggr_func: AggregateFunctionParameter,
     pub(crate) aggr_expr: AggrExprLabel,

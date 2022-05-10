@@ -63,7 +63,7 @@ use crate::{
     pipeline::{
         pump_model::{
             window_operation_parameter::{
-                aggregate::GroupAggregateParameter, WindowOperationParameter,
+                aggregate::AggregateParameter, WindowOperationParameter,
             },
             window_parameter::WindowParameter,
         },
@@ -138,7 +138,7 @@ impl QueryPlanner {
         &self,
         expr_resolver: &mut ExprResolver,
         projection_op: &ProjectionOp,
-    ) -> Result<Option<GroupAggregateParameter>> {
+    ) -> Result<Option<AggregateParameter>> {
         let opt_grouping_elem = self.analyzer.grouping_element();
         let aggr_labels = &projection_op.aggr_expr_labels;
 
@@ -156,7 +156,7 @@ impl QueryPlanner {
                     }
                 };
 
-                Ok(Some(GroupAggregateParameter::new(
+                Ok(Some(AggregateParameter::new(
                     aggr_func,
                     *aggr_label,
                     group_by_label,

@@ -9,7 +9,7 @@ use ordered_float::OrderedFloat;
 use crate::{
     expr_resolver::ExprResolver,
     pipeline::pump_model::window_operation_parameter::{
-        aggregate::{AggregateFunctionParameter, GroupAggregateParameter},
+        aggregate::{AggregateFunctionParameter, AggregateParameter},
         WindowOperationParameter,
     },
     stream_engine::{
@@ -31,7 +31,7 @@ pub(in crate::stream_engine::autonomous_executor) struct AggrPane {
     open_at: SpringTimestamp,
     close_at: SpringTimestamp,
 
-    group_aggregation_parameter: GroupAggregateParameter,
+    group_aggregation_parameter: AggregateParameter,
 
     inner: AggrPaneInner,
 }

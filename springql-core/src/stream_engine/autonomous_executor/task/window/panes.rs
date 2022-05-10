@@ -140,7 +140,7 @@ mod tests {
         expr_resolver::ExprResolver,
         expression::{AggrExpr, ValueExpr},
         pipeline::pump_model::window_operation_parameter::aggregate::{
-            AggregateFunctionParameter, GroupAggregateParameter,
+            AggregateFunctionParameter, AggregateParameter,
         },
         sql_processor::sql_parser::syntax::SelectFieldSyntax,
         stream_engine::{
@@ -167,7 +167,7 @@ mod tests {
 
         let group_by_label = expr_resolver.register_value_expr(group_by_expr);
 
-        WindowOperationParameter::GroupAggregation(GroupAggregateParameter {
+        WindowOperationParameter::GroupAggregation(AggregateParameter {
             aggr_func: AggregateFunctionParameter::Avg,
             aggr_expr: aggr_labels_select_list[0],
             group_by: group_by_label,
