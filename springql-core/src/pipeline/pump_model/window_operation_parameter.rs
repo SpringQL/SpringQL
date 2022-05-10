@@ -8,6 +8,6 @@ use self::{aggregate::AggregateParameter, join_parameter::JoinParameter};
 /// Window operation parameters
 #[derive(Clone, PartialEq, Debug)]
 pub(crate) enum WindowOperationParameter {
-    GroupAggregation(AggregateParameter),
+    Aggregate(AggregateParameter),
     Join(JoinParameter),
 }

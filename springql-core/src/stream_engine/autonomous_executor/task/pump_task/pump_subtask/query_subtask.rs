@@ -145,14 +145,9 @@ impl QuerySubtask {
                 1,
                 "currently only 1 aggregate in select_list is supported"
             );
-            assert_eq!(
-                plan.upper_ops.projection.value_expr_labels.len(),
-                1,
-                "currently only GROUP BY expression in select_list is supported"
-            );
 
             let aggr_projection_subtask = AggrProjectionSubtask::new(
-                plan.upper_ops.projection.value_expr_labels[0],
+                plan.upper_ops.group_by_labels(),
                 plan.upper_ops.projection.aggr_expr_labels[0],
             );
 

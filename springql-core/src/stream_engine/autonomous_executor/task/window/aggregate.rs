@@ -2,9 +2,10 @@
 
 use crate::{
     error::{Result, SpringError},
-    expr_resolver::expr_label::{AggrExprLabel, ValueExprLabel},
+    expr_resolver::expr_label::AggrExprLabel,
     pipeline::pump_model::{
-        window_operation_parameter::WindowOperationParameter, window_parameter::WindowParameter,
+        window_operation_parameter::{aggregate::GroupByLabels, WindowOperationParameter},
+        window_parameter::WindowParameter,
     },
     stream_engine::SqlValue,
 };
@@ -12,23 +13,27 @@ use crate::{
 use anyhow::anyhow;
 
 use super::{
-    panes::{pane::aggregate_pane::AggrPane, Panes},
+    panes::{
+        pane::aggregate_pane::{AggrPane, GroupByValues},
+        Panes,
+    },
     watermark::Watermark,
     Window,
 };
 
+/// Cache from (aggregation label and group by labels) into (aggregation value and group by values).
 #[derive(Clone, PartialEq, Debug, new)]
 pub(in crate::stream_engine::autonomous_executor) struct GroupAggrOut {
     aggr_label: AggrExprLabel,
     aggr_result: SqlValue,
 
-    group_by_label: ValueExprLabel,
-    group_by_result: SqlValue,
+    group_by_labels: GroupByLabels,
+    group_by_values: GroupByValues,
 }
 impl GroupAggrOut {
     /// # Returns
     ///
-    /// (aggregate result, group by result)
+    /// (aggregate result, group by values)
     ///
     /// # Failures
     ///
@@ -37,20 +42,20 @@ impl GroupAggrOut {
     pub(in crate::stream_engine::autonomous_executor) fn into_results(
         self,
         aggr_label: AggrExprLabel,
-        group_by_label: ValueExprLabel,
-    ) -> Result<(SqlValue, SqlValue)> {
+        group_by_labels: GroupByLabels,
+    ) -> Result<(SqlValue, GroupByValues)> {
         if self.aggr_label != aggr_label {
             Err(SpringError::Sql(anyhow!(
                 "aggregate labeled {:?} is not calculated",
                 aggr_label
             )))
-        } else if self.group_by_label != group_by_label {
+        } else if self.group_by_labels != group_by_labels {
             Err(SpringError::Sql(anyhow!(
                 "GROUP BY expression {:?} is not calculated",
-                group_by_label
+                group_by_labels
             )))
         } else {
-            Ok((self.aggr_result, self.group_by_result))
+            Ok((self.aggr_result, self.group_by_values))
         }
     }
 }
@@ -112,7 +117,7 @@ mod tests {
         pipeline::{
             name::{AggrAlias, ColumnName, StreamName},
             pump_model::window_operation_parameter::aggregate::{
-                AggregateFunctionParameter, AggregateParameter,
+                AggregateFunctionParameter, AggregateParameter, GroupByLabels,
             },
         },
         sql_processor::sql_parser::syntax::SelectFieldSyntax,
@@ -126,17 +131,28 @@ mod tests {
     };
 
     fn t_expect(group_aggr_out: GroupAggrOut, expected_ticker: &str, expected_avg_amount: i16) {
-        let ticker = group_aggr_out.group_by_result.unwrap();
-        assert_eq!(
-            ticker.unpack::<String>().unwrap(),
-            expected_ticker.to_string()
-        );
+        let ticker = group_aggr_out_to_first_string(&group_aggr_out);
+        assert_eq!(ticker, expected_ticker.to_string());
 
         let avg_amount = group_aggr_out.aggr_result.unwrap();
         assert_eq!(
             avg_amount.unpack::<f32>().unwrap().round() as i16,
             expected_avg_amount
         );
+    }
+
+    fn group_aggr_out_to_first_string(group_aggr_out: &GroupAggrOut) -> String {
+        if let SqlValue::NotNull(ticker) = group_aggr_out
+            .group_by_values
+            .clone()
+            .into_sql_values()
+            .first()
+            .unwrap()
+        {
+            ticker.unpack::<String>().unwrap()
+        } else {
+            unreachable!()
+        }
     }
 
     #[test]
@@ -177,7 +193,8 @@ mod tests {
             StreamName::fx_trade().as_ref(),
             ColumnName::fx_ticker().as_ref(),
         );
-        let group_by_label = expr_resolver.register_value_expr(group_by_expr);
+        let group_by_labels =
+            GroupByLabels::new(vec![expr_resolver.register_value_expr(group_by_expr)]);
 
         let mut window = AggrWindow::new(
             WindowParameter::TimedSlidingWindow {
@@ -185,10 +202,10 @@ mod tests {
                 period: SpringEventDuration::from_secs(5),
                 allowed_delay: SpringEventDuration::from_secs(1),
             },
-            WindowOperationParameter::GroupAggregation(AggregateParameter {
+            WindowOperationParameter::Aggregate(AggregateParameter {
                 aggr_func: AggregateFunctionParameter::Avg,
                 aggr_expr: aggr_labels_select_list[0],
-                group_by: group_by_label,
+                group_by: group_by_labels,
             }),
         );
 
@@ -236,14 +253,7 @@ mod tests {
             (),
         );
         assert_eq!(out.len(), 2);
-        out.sort_by_key(|group_aggr_out| {
-            group_aggr_out
-                .group_by_result
-                .clone()
-                .unwrap()
-                .unpack::<String>()
-                .unwrap()
-        });
+        out.sort_by_key(group_aggr_out_to_first_string);
         t_expect(out.get(0).cloned().unwrap(), "GOOGL", 100);
         t_expect(out.get(1).cloned().unwrap(), "ORCL", 100);
         assert_eq!(window_in_flow.window_gain_bytes_states, 0);
@@ -313,14 +323,7 @@ mod tests {
             (),
         );
         assert_eq!(out.len(), 2);
-        out.sort_by_key(|group_aggr_out| {
-            group_aggr_out
-                .group_by_result
-                .clone()
-                .unwrap()
-                .unpack::<String>()
-                .unwrap()
-        });
+        out.sort_by_key(group_aggr_out_to_first_string);
         t_expect(out.get(0).cloned().unwrap(), "GOOGL", 100);
         t_expect(out.get(1).cloned().unwrap(), "ORCL", 200);
         assert_eq!(window_in_flow.window_gain_bytes_states, 0);
@@ -385,17 +388,18 @@ mod tests {
             StreamName::fx_trade().as_ref(),
             ColumnName::fx_ticker().as_ref(),
         );
-        let group_by_label = expr_resolver.register_value_expr(group_by_expr);
+        let group_by_labels =
+            GroupByLabels::new(vec![expr_resolver.register_value_expr(group_by_expr)]);
 
         let mut window = AggrWindow::new(
             WindowParameter::TimedFixedWindow {
                 length: SpringEventDuration::from_secs(10),
                 allowed_delay: SpringEventDuration::from_secs(1),
             },
-            WindowOperationParameter::GroupAggregation(AggregateParameter {
+            WindowOperationParameter::Aggregate(AggregateParameter {
                 aggr_func: AggregateFunctionParameter::Avg,
                 aggr_expr: aggr_labels_select_list[0],
-                group_by: group_by_label,
+                group_by: group_by_labels,
             }),
         );
 
@@ -501,14 +505,7 @@ mod tests {
             (),
         );
         assert_eq!(out.len(), 2);
-        out.sort_by_key(|group_aggr_out| {
-            group_aggr_out
-                .group_by_result
-                .clone()
-                .unwrap()
-                .unpack::<String>()
-                .unwrap()
-        });
+        out.sort_by_key(group_aggr_out_to_first_string);
         t_expect(out.get(0).cloned().unwrap(), "GOOGL", 100);
         t_expect(out.get(1).cloned().unwrap(), "ORCL", 200);
         assert_eq!(window_in_flow.window_gain_bytes_states, 0);
