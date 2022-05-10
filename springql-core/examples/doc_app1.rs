@@ -3,11 +3,11 @@
 //! Demo application in <https://springql.github.io/get-started/write-basic-apps/#app1-simple-arithmetic-conversion-over-a-stream>.
 //!
 //! Usage:
-//! 
+//!
 //! ```bash
 //! cargo run --example doc_app1
 //! ```
-//! 
+//!
 //! ```bash
 //! echo '{"ts": "2022-01-01 13:00:00.000000000", "temperature": 5.3}' |nc localhost 54300
 //! ```
@@ -15,6 +15,8 @@
 use springql_core::{high_level_rs::SpringPipelineHL, low_level_rs::SpringConfig};
 
 fn main() {
+    const SOURCE_PORT: u16 = 54300;
+
     let pipeline = SpringPipelineHL::new(&SpringConfig::default()).unwrap();
 
     pipeline
@@ -64,16 +66,19 @@ fn main() {
         .unwrap();
 
     pipeline
-        .command(
+        .command(format!(
             "
             CREATE SOURCE READER tcp_trade FOR source_temperature_celsius
             TYPE NET_SERVER OPTIONS (
                 PROTOCOL 'TCP',
-                PORT '54300'
+                PORT '{}'
             );
             ",
-        )
+            SOURCE_PORT
+        ))
         .unwrap();
+
+    eprintln!("waiting JSON records in tcp/{} port...", SOURCE_PORT);
 
     while let Ok(row) = pipeline.pop("q") {
         let ts: String = row.get_not_null_by_index(0).unwrap();
