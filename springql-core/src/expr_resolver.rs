@@ -10,7 +10,7 @@ use crate::stream_engine::{SqlValue, Tuple};
 use anyhow::anyhow;
 use std::collections::HashMap;
 
-use self::expr_label::{AggrExprLabel, ExprLabelGenerator, ValueExprLabel};
+use self::expr_label::{AggrExprLabel, ExprLabel, ExprLabelGenerator, ValueExprLabel};
 
 /// ExprResolver is to:
 ///
@@ -32,29 +32,24 @@ pub(crate) struct ExprResolver {
 impl ExprResolver {
     /// # Returns
     ///
-    /// `(instance, value expr labels in select_list, aggr expr labels in select_list)
-    pub(crate) fn new(
-        select_list: Vec<SelectFieldSyntax>,
-    ) -> (Self, Vec<ValueExprLabel>, Vec<AggrExprLabel>) {
+    /// `(instance, value/aggr expr labels in select_list)
+    pub(crate) fn new(select_list: Vec<SelectFieldSyntax>) -> (Self, Vec<ExprLabel>) {
         let mut label_gen = ExprLabelGenerator::default();
         let mut value_expressions = HashMap::new();
         let mut value_aliased_labels = HashMap::new();
         let mut aggr_expressions = HashMap::new();
         let mut aggr_aliased_labels = HashMap::new();
 
-        let mut value_expr_labels = Vec::new();
-        let mut aggr_expr_labels = Vec::new();
-
-        select_list
+        let expr_labels = select_list
             .into_iter()
-            .for_each(|select_field| match select_field {
+            .map(|select_field| match select_field {
                 SelectFieldSyntax::ValueExpr { value_expr, alias } => {
                     let label = label_gen.next_value();
                     value_expressions.insert(label, value_expr);
                     if let Some(alias) = alias {
                         value_aliased_labels.insert(alias, label);
                     }
-                    value_expr_labels.push(label);
+                    ExprLabel::Value(label)
                 }
                 SelectFieldSyntax::AggrExpr { aggr_expr, alias } => {
                     let label = label_gen.next_aggr();
@@ -62,9 +57,10 @@ impl ExprResolver {
                     if let Some(alias) = alias {
                         aggr_aliased_labels.insert(alias, label);
                     }
-                    aggr_expr_labels.push(label);
+                    ExprLabel::Aggr(label)
                 }
-            });
+            })
+            .collect();
 
         (
             Self {
@@ -75,8 +71,7 @@ impl ExprResolver {
                 aggr_aliased_labels,
                 aggr_expression_results: HashMap::new(),
             },
-            value_expr_labels,
-            aggr_expr_labels,
+            expr_labels,
         )
     }
 
@@ -163,6 +158,8 @@ impl ExprResolver {
     }
 
     /// label -> (internal) value expression inside aggr expr + tuple (for ColumnReference) -> SqlValue.
+    /// 
+    /// _inner_ means: AGGR_FUNC(inner_value_expr)
     ///
     /// # Panics
     ///
@@ -187,6 +184,8 @@ impl ExprResolver {
 
 #[cfg(test)]
 mod tests {
+    use std::thread::panicking;
+
     use crate::{expression::ValueExpr, stream_engine::time::timestamp::SpringTimestamp};
 
     use super::*;
@@ -210,48 +209,53 @@ mod tests {
             },
         ];
 
-        let (mut resolver, value_labels_select_list, _aggr_labels_select_list) =
-            ExprResolver::new(select_list);
+        let (mut resolver, labels_select_list) = ExprResolver::new(select_list);
 
-        assert_eq!(
-            resolver
-                .resolve_value_alias(ValueAlias::new("a1".to_string()))
-                .unwrap(),
-            value_labels_select_list[1]
-        );
-        assert!(resolver
-            .resolve_value_alias(ValueAlias::new("a404".to_string()))
-            .is_err(),);
+        if let &[ExprLabel::Value(value_label0), ExprLabel::Value(value_label1)] =
+            &labels_select_list[..]
+        {
+            assert_eq!(
+                resolver
+                    .resolve_value_alias(ValueAlias::new("a1".to_string()))
+                    .unwrap(),
+                value_label1
+            );
+            assert!(resolver
+                .resolve_value_alias(ValueAlias::new("a404".to_string()))
+                .is_err(),);
 
-        let label = resolver.register_value_expr(ValueExpr::factory_add(
-            ValueExpr::factory_integer(3),
-            ValueExpr::factory_integer(3),
-        ));
+            let label = resolver.register_value_expr(ValueExpr::factory_add(
+                ValueExpr::factory_integer(3),
+                ValueExpr::factory_integer(3),
+            ));
 
-        let empty_tuple = Tuple::new(SpringTimestamp::fx_ts1(), vec![]);
+            let empty_tuple = Tuple::new(SpringTimestamp::fx_ts1(), vec![]);
 
-        assert_eq!(
-            resolver
-                .eval_value_expr(value_labels_select_list[0], &empty_tuple)
-                .unwrap(),
-            SqlValue::factory_integer(2)
-        );
-        assert_eq!(
-            resolver
-                .eval_value_expr(value_labels_select_list[0], &empty_tuple)
-                .unwrap(),
-            SqlValue::factory_integer(2),
-            "eval twice"
-        );
-        assert_eq!(
-            resolver
-                .eval_value_expr(value_labels_select_list[1], &empty_tuple)
-                .unwrap(),
-            SqlValue::factory_integer(4)
-        );
-        assert_eq!(
-            resolver.eval_value_expr(label, &empty_tuple).unwrap(),
-            SqlValue::factory_integer(6)
-        );
+            assert_eq!(
+                resolver
+                    .eval_value_expr(value_label0, &empty_tuple)
+                    .unwrap(),
+                SqlValue::factory_integer(2)
+            );
+            assert_eq!(
+                resolver
+                    .eval_value_expr(value_label0, &empty_tuple)
+                    .unwrap(),
+                SqlValue::factory_integer(2),
+                "eval twice"
+            );
+            assert_eq!(
+                resolver
+                    .eval_value_expr(value_label1, &empty_tuple)
+                    .unwrap(),
+                SqlValue::factory_integer(4)
+            );
+            assert_eq!(
+                resolver.eval_value_expr(label, &empty_tuple).unwrap(),
+                SqlValue::factory_integer(6)
+            );
+        } else {
+            unreachable!()
+        }
     }
 }
