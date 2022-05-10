@@ -13,7 +13,7 @@ use crate::{mem_size::MemSize, stream_engine::SqlValue};
 
 use self::field_name::ColumnReference;
 
-/// Field == SqlValue + FieldName
+/// Field == SqlValue + ColumnReference
 #[derive(Clone, PartialEq, Debug, new)]
 pub(crate) struct Field {
     name: ColumnReference,
