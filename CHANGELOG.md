@@ -120,7 +120,7 @@ The format is based on [Keep a Changelog][Keep a Changelog] and this project adh
 <!-- Versions -->
 [Unreleased]: https://github.com/SpringQL/SpringQL/compare/v0.7.1...HEAD
 [Released]: https://github.com/SpringQL/SpringQL/releases
-[v0.7.0]: https://github.com/SpringQL/SpringQL/compare/v0.6.1...v0.7.1
+[v0.7.1]: https://github.com/SpringQL/SpringQL/compare/v0.7.0...v0.7.1
 [v0.7.0]: https://github.com/SpringQL/SpringQL/compare/v0.6.0...v0.7.0
 [v0.6.0]: https://github.com/SpringQL/SpringQL/compare/v0.5.0...v0.6.0
 [v0.5.0]: https://github.com/SpringQL/SpringQL/compare/v0.4.2...v0.5.0
