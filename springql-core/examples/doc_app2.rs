@@ -145,7 +145,7 @@ fn main() {
             eprintln!("[q_avg_all] {}\t{}", ts, avg_amount);
         }
 
-        // Fetching rows from q_avg_all.
+        // Fetching rows from q_avg_by_symbol
         if let Some(row) = pipeline.pop_non_blocking("q_avg_by_symbol").unwrap() {
             let ts: String = row.get_not_null_by_index(0).unwrap();
             let symbol: String = row.get_not_null_by_index(1).unwrap();
