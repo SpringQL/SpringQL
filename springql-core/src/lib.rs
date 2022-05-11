@@ -1,11 +1,6 @@
 // This file is part of https://github.com/SpringQL/SpringQL which is licensed under MIT OR Apache-2.0. See file LICENSE-MIT or LICENSE-APACHE for full license details.
 
-//! SpringQL-core implementation.
-//!
-//! # High-level architecture diagram
-//!
-//! ![High-level architecture diagram](https://raw.githubusercontent.com/SpringQL/SpringQL.github.io/main/static/img/springql-architecture.svg)
-
+#![doc = include_str!("lib.md")]
 #![deny(missing_debug_implementations, missing_docs)]
 
 #[macro_use]
