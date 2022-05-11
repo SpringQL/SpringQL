@@ -123,7 +123,7 @@ mod tests {
         pipeline::{
             name::{AggrAlias, ColumnName, StreamName},
             pump_model::window_operation_parameter::aggregate::{
-                AggregateFunctionParameter, GroupAggregateParameter,
+                AggregateFunctionParameter, AggregateParameter, GroupByLabels,
             },
         },
         sql_processor::sql_parser::syntax::SelectFieldSyntax,
@@ -218,10 +218,10 @@ mod tests {
                         period: SpringEventDuration::from_secs(5),
                         allowed_delay: SpringEventDuration::from_secs(1),
                     },
-                    WindowOperationParameter::GroupAggregation(GroupAggregateParameter {
+                    WindowOperationParameter::Aggregate(AggregateParameter {
                         aggr_func: AggregateFunctionParameter::Avg,
                         aggr_expr: aggr_label,
-                        group_by: group_by_label,
+                        group_by: GroupByLabels::new(vec![group_by_label]),
                     }),
                 );
 
@@ -449,10 +449,10 @@ mod tests {
                         length: SpringEventDuration::from_secs(10),
                         allowed_delay: SpringEventDuration::from_secs(1),
                     },
-                    WindowOperationParameter::GroupAggregation(GroupAggregateParameter {
+                    WindowOperationParameter::Aggregate(AggregateParameter {
                         aggr_func: AggregateFunctionParameter::Avg,
                         aggr_expr: aggr_label,
-                        group_by: group_by_label,
+                        group_by: GroupByLabels::new(vec![group_by_label]),
                     }),
                 );
 

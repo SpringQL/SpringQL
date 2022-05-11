@@ -143,7 +143,7 @@ mod tests {
         expr_resolver::{expr_label::ExprLabel, ExprResolver},
         expression::{AggrExpr, ValueExpr},
         pipeline::pump_model::window_operation_parameter::aggregate::{
-            AggregateFunctionParameter, GroupAggregateParameter,
+            AggregateFunctionParameter, AggregateParameter, GroupByLabels,
         },
         sql_processor::sql_parser::syntax::SelectFieldSyntax,
         stream_engine::{
@@ -168,16 +168,17 @@ mod tests {
         }];
         let (mut expr_resolver, labels) = ExprResolver::new(select_list);
 
-        let group_by_label = expr_resolver.register_value_expr(group_by_expr);
+        let group_by_labels =
+            GroupByLabels::new(vec![expr_resolver.register_value_expr(group_by_expr)]);
 
-        WindowOperationParameter::GroupAggregation(GroupAggregateParameter {
+        WindowOperationParameter::Aggregate(AggregateParameter {
             aggr_func: AggregateFunctionParameter::Avg,
             aggr_expr: if let ExprLabel::Aggr(l) = labels[0] {
                 l
             } else {
                 unreachable!()
             },
-            group_by: group_by_label,
+            group_by: group_by_labels,
         })
     }
 

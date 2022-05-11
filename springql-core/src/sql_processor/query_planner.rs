@@ -63,7 +63,8 @@ use crate::{
     pipeline::{
         pump_model::{
             window_operation_parameter::{
-                aggregate::GroupAggregateParameter, WindowOperationParameter,
+                aggregate::{AggregateParameter, GroupByLabels},
+                WindowOperationParameter,
             },
             window_parameter::WindowParameter,
         },
@@ -123,7 +124,7 @@ impl QueryPlanner {
         match (window_param, group_aggr_param) {
             (Some(window_param), Some(group_aggr_param)) => Ok(Some(GroupAggregateWindowOp {
                 window_param,
-                op_param: WindowOperationParameter::GroupAggregation(group_aggr_param),
+                op_param: WindowOperationParameter::Aggregate(group_aggr_param),
             })),
             _ => Ok(None),
         }
@@ -137,8 +138,8 @@ impl QueryPlanner {
         &self,
         expr_resolver: &mut ExprResolver,
         projection_op: &ProjectionOp,
-    ) -> Result<Option<GroupAggregateParameter>> {
-        let opt_grouping_elem = self.analyzer.grouping_element();
+    ) -> Result<Option<AggregateParameter>> {
+        let grouping_elements = self.analyzer.grouping_elements();
         let aggr_labels = projection_op
             .expr_labels
             .iter()
@@ -151,28 +152,31 @@ impl QueryPlanner {
             })
             .collect::<Vec<_>>();
 
-        match (opt_grouping_elem, aggr_labels.len()) {
-            (Some(grouping_elem), 1) => {
+        match aggr_labels.len() {
+            1 => {
                 let aggr_label = aggr_labels.get(0).expect("len checked");
                 let aggr_func = expr_resolver.resolve_aggr_expr(*aggr_label).func;
 
-                let group_by_label = match grouping_elem {
-                    GroupingElementSyntax::ValueExpr(expr) => {
-                        expr_resolver.register_value_expr(expr)
-                    }
-                    GroupingElementSyntax::ValueAlias(alias) => {
-                        expr_resolver.resolve_value_alias(alias)?
-                    }
-                };
+                let group_by_labels = grouping_elements
+                    .iter()
+                    .map(|grouping_elem| match grouping_elem {
+                        GroupingElementSyntax::ValueExpr(expr) => {
+                            Ok(expr_resolver.register_value_expr(expr.clone()))
+                        }
+                        GroupingElementSyntax::ValueAlias(alias) => {
+                            expr_resolver.resolve_value_alias(alias.clone())
+                        }
+                    })
+                    .collect::<Result<Vec<_>>>()?;
 
-                Ok(Some(GroupAggregateParameter::new(
+                Ok(Some(AggregateParameter::new(
                     aggr_func,
                     *aggr_label,
-                    group_by_label,
+                    GroupByLabels::new(group_by_labels),
                 )))
             }
-            (None, 0) => Ok(None),
-            _ => unimplemented!(),
+            0 => Ok(None),
+            _ => unimplemented!("2 or more aggregate expressions"),
         }
     }
 
