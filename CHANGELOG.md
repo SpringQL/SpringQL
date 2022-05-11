@@ -6,6 +6,15 @@ The format is based on [Keep a Changelog][Keep a Changelog] and this project adh
 
 ## [Unreleased]
 
+## [v0.9.0]
+
+### Added
+
+- Non-blocking pop feature from in-memory queues both in high-level and low-level APIs ([#134](https://github.com/SpringQL/SpringQL/pull/134)).
+  - High-level: `SpringPipelineHL::pop_non_blocking()`
+  - Low-level: `spring_pop_non_blocking()`
+- Warning doc comments to `SpringPipelineHL::pop()` and `spring_pop()` to prevent being used with threads ([#134](https://github.com/SpringQL/SpringQL/pull/134)).
+
 ## [v0.8.0]
 
 ### Added
@@ -124,8 +133,9 @@ The format is based on [Keep a Changelog][Keep a Changelog] and this project adh
 [Semantic Versioning]: https://semver.org/
 
 <!-- Versions -->
-[Unreleased]: https://github.com/SpringQL/SpringQL/compare/v0.8.0...HEAD
+[Unreleased]: https://github.com/SpringQL/SpringQL/compare/v0.9.0...HEAD
 [Released]: https://github.com/SpringQL/SpringQL/releases
+[v0.9.0]: https://github.com/SpringQL/SpringQL/compare/v0.8.0...v0.9.0
 [v0.8.0]: https://github.com/SpringQL/SpringQL/compare/v0.7.1...v0.8.0
 [v0.7.1]: https://github.com/SpringQL/SpringQL/compare/v0.7.0...v0.7.1
 [v0.7.0]: https://github.com/SpringQL/SpringQL/compare/v0.6.0...v0.7.0
