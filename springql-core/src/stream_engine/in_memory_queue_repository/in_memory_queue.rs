@@ -3,13 +3,9 @@
 use std::{
     collections::VecDeque,
     sync::{Mutex, MutexGuard},
-    thread,
-    time::Duration,
 };
 
 use crate::stream_engine::autonomous_executor::row::foreign_row::sink_row::SinkRow;
-
-const SLEEP_MSECS: u64 = 10;
 
 #[derive(Debug, Default)]
 pub(in crate::stream_engine) struct InMemoryQueue(
@@ -17,16 +13,12 @@ pub(in crate::stream_engine) struct InMemoryQueue(
 );
 
 impl InMemoryQueue {
-    /// Blocking call    
-    pub(in crate::stream_engine) fn pop(&self) -> SinkRow {
-        loop {
-            let r = self.lock().pop_front();
-            if let Some(r) = r {
-                return r;
-            } else {
-                thread::sleep(Duration::from_millis(SLEEP_MSECS));
-            }
-        }
+    /// # Returns
+    ///
+    /// - `Ok(Some)` when at least a row is in the queue.
+    /// - `None` when no row is in the queue.
+    pub(in crate::stream_engine) fn pop_non_blocking(&self) -> Option<SinkRow> {
+        self.lock().pop_front()
     }
 
     pub(in crate::stream_engine) fn push(&self, row: SinkRow) {

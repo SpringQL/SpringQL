@@ -4,7 +4,10 @@
 
 use crate::{
     error::{Result, SpringError},
-    low_level_rs::{spring_command, spring_open, spring_pop, SpringConfig, SpringPipeline},
+    low_level_rs::{
+        spring_command, spring_open, spring_pop, spring_pop_non_blocking, SpringConfig,
+        SpringPipeline,
+    },
     stream_engine::{SinkRow, SpringValue, SqlValue},
 };
 
@@ -35,12 +38,31 @@ impl SpringPipelineHL {
 
     /// Pop a row from an in memory queue. This is a blocking function.
     ///
+    /// **Do not call this function from threads.**
+    /// If you need to pop from multiple in-memory queues using threads, use `spring_pop_non_blocking()`.
+    /// See: <https://github.com/SpringQL/SpringQL/issues/125>
+    ///
     /// # Failure
     ///
     /// - [SpringError::Unavailable](crate::error::SpringError::Unavailable) when:
     ///   - queue named `queue` does not exist.
     pub fn pop(&self, queue: &str) -> Result<SpringRowHL> {
         spring_pop(&self.0, queue).map(|row| SpringRowHL(row.0))
+    }
+
+    /// Pop a row from an in memory queue. This is a non-blocking function.
+    ///
+    /// # Returns
+    ///
+    /// - `Ok(Some)` when at least a row is in the queue.
+    /// - `None` when no row is in the queue.
+    ///
+    /// # Failure
+    ///
+    /// - [SpringError::Unavailable](crate::error::SpringError::Unavailable) when:
+    ///   - queue named `queue` does not exist.
+    pub fn pop_non_blocking(&self, queue: &str) -> Result<Option<SpringRowHL>> {
+        spring_pop_non_blocking(&self.0, queue).map(|opt_row| opt_row.map(|row| SpringRowHL(row.0)))
     }
 }
 
