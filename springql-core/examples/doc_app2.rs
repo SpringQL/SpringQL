@@ -72,9 +72,10 @@ fn main() {
             CREATE PUMP avg_all AS
                 INSERT INTO sink_avg_all (ts, avg_amount)
                 SELECT STREAM
-                    FLOOR_TIME(source_trade.ts, DURATION_SECS(10)) AS aggr_ts,
+                    FLOOR_TIME(source_trade.ts, DURATION_SECS(10)) AS min_ts,
                     AVG(source_trade.amount) AS avg_amount
                 FROM source_trade
+                GROUP BY min_ts
                 FIXED WINDOW DURATION_SECS(10), DURATION_SECS(0);
             ",
         )
@@ -89,11 +90,11 @@ fn main() {
             CREATE PUMP avg_by_symbol AS
                 INSERT INTO sink_avg_by_symbol (ts, symbol, avg_amount)
                 SELECT STREAM
-                    FLOOR_TIME(source_trade.ts, DURATION_SECS(10)) AS aggr_ts,
-                    source_trade.symbol,
+                    FLOOR_TIME(source_trade.ts, DURATION_SECS(10)) AS min_ts,
+                    source_trade.symbol AS symbol,
                     AVG(source_trade.amount) AS avg_amount
                 FROM source_trade
-                GROUP BY source_trade.symbol
+                GROUP BY min_ts, symbol
                 FIXED WINDOW DURATION_SECS(2), DURATION_SECS(0);
             ",
         )
@@ -104,7 +105,7 @@ fn main() {
             "
             CREATE SINK WRITER queue_avg_all FOR sink_avg_all
             TYPE IN_MEMORY_QUEUE OPTIONS (
-                NAME 'q_avg_all',
+                NAME 'q_avg_all'
             );
             ",
         )
@@ -115,7 +116,7 @@ fn main() {
             "
             CREATE SINK WRITER queue_avg_by_symbol FOR sink_avg_by_symbol
             TYPE IN_MEMORY_QUEUE OPTIONS (
-                NAME 'q_avg_by_symbol',
+                NAME 'q_avg_by_symbol'
             );
             ",
         )
