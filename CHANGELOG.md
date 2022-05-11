@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog][Keep a Changelog] and this project adh
 
 ## [Unreleased]
 
+## [v0.8.0]
+
+### Added
+
+- Create multiple pumps from a source stream (splitting pipeline from a source stream) ([#133](https://github.com/SpringQL/SpringQL/pull/133)).
+
 ## [v0.7.1]
 
 ### Fixed
@@ -118,8 +124,9 @@ The format is based on [Keep a Changelog][Keep a Changelog] and this project adh
 [Semantic Versioning]: https://semver.org/
 
 <!-- Versions -->
-[Unreleased]: https://github.com/SpringQL/SpringQL/compare/v0.7.1...HEAD
+[Unreleased]: https://github.com/SpringQL/SpringQL/compare/v0.8.0...HEAD
 [Released]: https://github.com/SpringQL/SpringQL/releases
+[v0.8.0]: https://github.com/SpringQL/SpringQL/compare/v0.7.1...v0.8.0
 [v0.7.1]: https://github.com/SpringQL/SpringQL/compare/v0.7.0...v0.7.1
 [v0.7.0]: https://github.com/SpringQL/SpringQL/compare/v0.6.0...v0.7.0
 [v0.6.0]: https://github.com/SpringQL/SpringQL/compare/v0.5.0...v0.6.0
