@@ -140,7 +140,7 @@ mod tests {
     use std::str::FromStr;
 
     use crate::{
-        expr_resolver::ExprResolver,
+        expr_resolver::{expr_label::ExprLabel, ExprResolver},
         expression::{AggrExpr, ValueExpr},
         pipeline::pump_model::window_operation_parameter::aggregate::{
             AggregateFunctionParameter, AggregateParameter, GroupByLabels,
@@ -166,14 +166,18 @@ mod tests {
             aggr_expr,
             alias: None,
         }];
-        let (mut expr_resolver, _, aggr_labels_select_list) = ExprResolver::new(select_list);
+        let (mut expr_resolver, labels) = ExprResolver::new(select_list);
 
         let group_by_labels =
             GroupByLabels::new(vec![expr_resolver.register_value_expr(group_by_expr)]);
 
         WindowOperationParameter::Aggregate(AggregateParameter {
             aggr_func: AggregateFunctionParameter::Avg,
-            aggr_expr: aggr_labels_select_list[0],
+            aggr_expr: if let ExprLabel::Aggr(l) = labels[0] {
+                l
+            } else {
+                unreachable!()
+            },
             group_by: group_by_labels,
         })
     }

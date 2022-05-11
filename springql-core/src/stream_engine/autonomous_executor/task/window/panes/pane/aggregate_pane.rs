@@ -16,7 +16,7 @@ use crate::{
     stream_engine::{
         autonomous_executor::{
             performance_metrics::metrics_update_command::metrics_update_by_task_execution::WindowInFlowByWindowTask,
-            task::{tuple::Tuple, window::aggregate::GroupAggrOut},
+            task::{tuple::Tuple, window::aggregate::AggregatedAndGroupingValues},
         },
         time::timestamp::SpringTimestamp,
         NnSqlValue, SqlValue,
@@ -38,7 +38,7 @@ pub(in crate::stream_engine::autonomous_executor) struct AggrPane {
 }
 
 impl Pane for AggrPane {
-    type CloseOut = GroupAggrOut;
+    type CloseOut = AggregatedAndGroupingValues;
     type DispatchArg = ();
 
     /// # Panics
@@ -123,21 +123,27 @@ impl Pane for AggrPane {
 
         match self.inner {
             AggrPaneInner::Avg { states } => {
-                let group_aggr_out_seq = states
+                let aggregated_and_grouping_values_seq = states
                     .into_iter()
                     .map(|(group_by_values, state)| {
                         let aggr_value =
                             SqlValue::NotNull(NnSqlValue::Float(OrderedFloat(state.finalize())));
-                        GroupAggrOut::new(
-                            aggr_label,
-                            aggr_value,
-                            group_by_labels.clone(),
-                            group_by_values,
-                        )
+
+                        let group_bys = group_by_labels
+                            .as_labels()
+                            .iter()
+                            .cloned()
+                            .zip(group_by_values.into_sql_values())
+                            .collect();
+
+                        AggregatedAndGroupingValues::new(vec![(aggr_label, aggr_value)], group_bys)
                     })
                     .collect();
 
-                (group_aggr_out_seq, WindowInFlowByWindowTask::zero())
+                (
+                    aggregated_and_grouping_values_seq,
+                    WindowInFlowByWindowTask::zero(),
+                )
             }
         }
     }
@@ -157,6 +163,7 @@ pub(in crate::stream_engine::autonomous_executor) struct GroupByValues(
 );
 
 impl GroupByValues {
+    /// Order of elements in GROUP BY clause is preserved.
     fn from_group_by_labels(
         group_by_labels: GroupByLabels,
         expr_resolver: &ExprResolver,
@@ -166,8 +173,7 @@ impl GroupByValues {
             .as_labels()
             .iter()
             .map(|group_by_label| {
-                let group_by_value =
-                    expr_resolver.eval_value_expr(*group_by_label, tuple)?;
+                let group_by_value = expr_resolver.eval_value_expr(*group_by_label, tuple)?;
 
                 if let SqlValue::NotNull(v) = group_by_value {
                     Ok(v)

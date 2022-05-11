@@ -1,10 +1,9 @@
 // This file is part of https://github.com/SpringQL/SpringQL which is licensed under MIT OR Apache-2.0. See file LICENSE-MIT or LICENSE-APACHE for full license details.
 
-pub(super) mod aggr_projection_subtask;
 pub(super) mod collect_subtask;
 pub(super) mod group_aggregate_window_subtask;
 pub(super) mod join_subtask;
-pub(super) mod value_projection_subtask;
+pub(super) mod projection_subtask;
 
 use std::sync::{Arc, Mutex, MutexGuard};
 
@@ -36,16 +35,14 @@ use crate::{
                 InQueueMetricsUpdateByTask, WindowInFlowByWindowTask,
             },
             row::{column::stream_column::StreamColumns, column_values::ColumnValues, Row},
-            task::window::aggregate::GroupAggrOut,
         },
         command::query_plan::query_plan_operation::JoinOp,
     },
 };
 
 use self::{
-    aggr_projection_subtask::AggrProjectionSubtask, collect_subtask::CollectSubtask,
-    group_aggregate_window_subtask::GroupAggregateWindowSubtask, join_subtask::JoinSubtask,
-    value_projection_subtask::ValueProjectionSubtask,
+    collect_subtask::CollectSubtask, group_aggregate_window_subtask::GroupAggregateWindowSubtask,
+    join_subtask::JoinSubtask, projection_subtask::ProjectionSubtask,
 };
 
 /// Process input row 1-by-1.
@@ -53,9 +50,8 @@ use self::{
 pub(in crate::stream_engine::autonomous_executor) struct QuerySubtask {
     expr_resolver: ExprResolver,
 
-    value_projection_subtask: Option<ValueProjectionSubtask>,
+    projection_subtask: ProjectionSubtask,
 
-    aggr_projection_subtask: Option<AggrProjectionSubtask>,
     group_aggr_window_subtask: Option<GroupAggregateWindowSubtask>,
 
     // TODO recursive JOIN
@@ -126,47 +122,20 @@ impl QuerySubtask {
 
         let (left_collect_subtask, join) = Self::subtasks_from_lower_ops(plan.lower_ops);
 
-        if plan.upper_ops.projection.aggr_expr_labels.is_empty() {
-            let value_projection_subtask =
-                ValueProjectionSubtask::new(plan.upper_ops.projection.value_expr_labels);
+        let group_aggr_window_subtask = plan
+            .upper_ops
+            .group_aggr_window
+            .map(|op| GroupAggregateWindowSubtask::new(op.window_param, op.op_param));
 
-            Self {
-                expr_resolver: plan.expr_resolver,
-                value_projection_subtask: Some(value_projection_subtask),
-                aggr_projection_subtask: None,
-                group_aggr_window_subtask: None,
-                left_collect_subtask,
-                join,
-                rng,
-            }
-        } else {
-            assert_eq!(
-                plan.upper_ops.projection.aggr_expr_labels.len(),
-                1,
-                "currently only 1 aggregate in select_list is supported"
-            );
+        let projection_subtask = ProjectionSubtask::new(plan.upper_ops.projection.expr_labels);
 
-            let aggr_projection_subtask = AggrProjectionSubtask::new(
-                plan.upper_ops.group_by_labels(),
-                plan.upper_ops.projection.aggr_expr_labels[0],
-            );
-
-            let op = plan
-                .upper_ops
-                .group_aggr_window
-                .expect("select_list includes aggregate ");
-            let group_aggr_window_subtask =
-                GroupAggregateWindowSubtask::new(op.window_param, op.op_param);
-
-            Self {
-                expr_resolver: plan.expr_resolver,
-                value_projection_subtask: None,
-                aggr_projection_subtask: Some(aggr_projection_subtask),
-                group_aggr_window_subtask: Some(group_aggr_window_subtask),
-                left_collect_subtask,
-                join,
-                rng,
-            }
+        Self {
+            expr_resolver: plan.expr_resolver,
+            projection_subtask,
+            group_aggr_window_subtask,
+            left_collect_subtask,
+            join,
+            rng,
         }
     }
     /// (left collect subtask, Option<(join subtask, right collect subtask)>)
@@ -243,38 +212,24 @@ impl QuerySubtask {
         tuple: Tuple,
     ) -> Result<(Vec<SqlValues>, WindowInFlowByWindowTask)> {
         if let Some(group_aggr_window_subtask) = &self.group_aggr_window_subtask {
-            let (group_aggr_out_seq, window_in_flow) =
+            let (aggregated_and_grouping_values_seq, window_in_flow) =
                 group_aggr_window_subtask.run(&self.expr_resolver, tuple);
 
-            let values = self.run_aggr_projection_op(group_aggr_out_seq)?;
+            let values_seq = aggregated_and_grouping_values_seq
+                .into_iter()
+                .map(|aggregated_and_grouping_values| {
+                    self.projection_subtask
+                        .run_with_aggr(aggregated_and_grouping_values)
+                })
+                .collect::<Result<Vec<_>>>()?;
 
-            Ok((values, window_in_flow))
+            Ok((values_seq, window_in_flow))
         } else {
-            let values = self.run_projection_op(&tuple)?;
+            let values = self
+                .projection_subtask
+                .run_without_aggr(&self.expr_resolver, &tuple)?;
             Ok((vec![values], WindowInFlowByWindowTask::zero()))
         }
-    }
-
-    fn run_projection_op(&self, tuple: &Tuple) -> Result<SqlValues> {
-        self.value_projection_subtask
-            .as_ref()
-            .unwrap()
-            .run(&self.expr_resolver, tuple)
-    }
-
-    fn run_aggr_projection_op(
-        &self,
-        group_aggr_out_seq: Vec<GroupAggrOut>,
-    ) -> Result<Vec<SqlValues>> {
-        group_aggr_out_seq
-            .into_iter()
-            .map(|group_agg_out| {
-                self.aggr_projection_subtask
-                    .as_ref()
-                    .unwrap()
-                    .run(group_agg_out)
-            })
-            .collect()
     }
 
     /// # Returns

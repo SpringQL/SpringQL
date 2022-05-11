@@ -1,13 +1,11 @@
 // This file is part of https://github.com/SpringQL/SpringQL which is licensed under MIT OR Apache-2.0. See file LICENSE-MIT or LICENSE-APACHE for full license details.
 
 use crate::{
-    expr_resolver::expr_label::{AggrExprLabel, ValueExprLabel},
+    expr_resolver::expr_label::ExprLabel,
     pipeline::{
         name::StreamName,
         pump_model::{
-            window_operation_parameter::{
-                aggregate::GroupByLabels, join_parameter::JoinParameter, WindowOperationParameter,
-            },
+            window_operation_parameter::{join_parameter::JoinParameter, WindowOperationParameter},
             window_parameter::WindowParameter,
         },
     },
@@ -21,21 +19,6 @@ pub(crate) struct UpperOps {
 impl UpperOps {
     pub(crate) fn has_window(&self) -> bool {
         self.group_aggr_window.is_some()
-    }
-
-    pub(crate) fn group_by_labels(&self) -> GroupByLabels {
-        self.group_aggr_window
-            .as_ref()
-            .and_then(|group_aggr_window_op| {
-                if let WindowOperationParameter::Aggregate(aggregate_parameter) =
-                    &group_aggr_window_op.op_param
-                {
-                    Some(aggregate_parameter.group_by.clone())
-                } else {
-                    None
-                }
-            })
-            .unwrap_or_default()
     }
 }
 
@@ -51,8 +34,7 @@ impl LowerOps {
 
 #[derive(Clone, PartialEq, Debug)]
 pub(crate) struct ProjectionOp {
-    pub(crate) value_expr_labels: Vec<ValueExprLabel>,
-    pub(crate) aggr_expr_labels: Vec<AggrExprLabel>,
+    pub(crate) expr_labels: Vec<ExprLabel>,
 }
 
 #[derive(Clone, PartialEq, Debug)]

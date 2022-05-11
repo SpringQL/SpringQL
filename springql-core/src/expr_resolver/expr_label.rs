@@ -25,3 +25,10 @@ pub(crate) struct ValueExprLabel(u16);
 
 #[derive(Copy, Clone, Eq, PartialEq, Hash, Debug)]
 pub(crate) struct AggrExprLabel(u16);
+
+/// Either ValueExprLabel or AggrExprLabel.
+#[derive(Copy, Clone, Eq, PartialEq, Hash, Debug)]
+pub(crate) enum ExprLabel {
+    Value(ValueExprLabel),
+    Aggr(AggrExprLabel),
+}
