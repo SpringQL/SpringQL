@@ -96,9 +96,9 @@ fn test_select_list_order_with_aggr() {
     test_source.start(ForeignSourceInput::new_fifo_batch(source_input));
 
     let row = pipeline.pop(QUEUE_NAME).unwrap();
-    assert_eq!(row.get_not_null_by_index::<i32>(0).unwrap(), 20);
     assert_eq!(
-        row.get_not_null_by_index::<String>(1).unwrap(),
+        row.get_not_null_by_index::<String>(0).unwrap(),
         "2020-01-01 00:00:00.000000000"
     );
+    assert_eq!(row.get_not_null_by_index::<i32>(1).unwrap(), 20);
 }
