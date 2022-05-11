@@ -83,15 +83,21 @@ impl StreamEngine {
         self.autonomous_executor.notify_pipeline_update(pipeline)
     }
 
-    /// Blocking call
+    /// # Returns
+    ///
+    /// - `Ok(Some)` when at least a row is in the queue.
+    /// - `None` when no row is in the queue.
     ///
     /// # Failure
     ///
     /// - [SpringError::Unavailable](crate::error::SpringError::Unavailable) when:
     ///   - queue named `queue_name` does not exist.
-    pub(crate) fn pop_in_memory_queue(&mut self, queue_name: QueueName) -> Result<SinkRow> {
+    pub(crate) fn pop_in_memory_queue_non_blocking(
+        &mut self,
+        queue_name: QueueName,
+    ) -> Result<Option<SinkRow>> {
         let q = InMemoryQueueRepository::instance().get(&queue_name)?;
-        let row = q.pop();
+        let row = q.pop_non_blocking();
         Ok(row)
     }
 }
