@@ -60,7 +60,7 @@ fn test_select_list_order_with_aggr() {
         .to_string(),
         "
         CREATE PUMP pu_passthrough AS
-          INSERT INTO sink_sampled_trade_amount (ts, amount)
+          INSERT INTO sink_sampled_trade_amount (amount, ts)
           SELECT STREAM
             AVG(source_trade.amount) AS avg_amount,
             FLOOR_TIME(source_trade.ts, DURATION_SECS(10)) AS sampled_ts
