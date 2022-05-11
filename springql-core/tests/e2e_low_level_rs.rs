@@ -256,7 +256,7 @@ fn test_e2e_pop_from_in_memory_queue() {
 fn test_e2e_pop_non_blocking_from_in_memory_queue() {
     setup_test_logger();
 
-    let queue_name = "queue_trade";
+    let queue_name = "queue_trade_nb"; // FIXME using the same name as in test_e2e_pop_from_in_memory_queue causes panic
     let ts = "2021-11-04 23:02:52.123456789";
     let ticker = "ORCL";
     let amount = 20;
