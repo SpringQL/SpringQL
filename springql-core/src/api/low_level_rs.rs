@@ -9,7 +9,7 @@ mod spring_config;
 
 pub use spring_config::*;
 
-use std::sync::Once;
+use std::{sync::Once, thread, time::Duration};
 
 use crate::{
     error::{Result, SpringError},
@@ -89,14 +89,48 @@ pub fn spring_command(pipeline: &SpringPipeline, sql: &str) -> Result<()> {
 
 /// Pop a row from an in memory queue. This is a blocking function.
 ///
+/// **Do not call this function from threads.**
+/// If you need to pop from multiple in-memory queues using threads, use `spring_pop_non_blocking()`.
+/// See: <https://github.com/SpringQL/SpringQL/issues/125>
+///
 /// # Failure
 ///
 /// - [SpringError::Unavailable](crate::error::SpringError::Unavailable) when:
 ///   - queue named `queue` does not exist.
 pub fn spring_pop(pipeline: &SpringPipeline, queue: &str) -> Result<SpringRow> {
+    const SLEEP_MSECS: u64 = 10;
+
     let mut engine = pipeline.engine.get()?;
-    let sink_row = engine.pop_in_memory_queue(QueueName::new(queue.to_string()))?;
-    Ok(SpringRow::from(sink_row))
+
+    loop {
+        if let Some(sink_row) =
+            engine.pop_in_memory_queue_non_blocking(QueueName::new(queue.to_string()))?
+        {
+            return Ok(SpringRow::from(sink_row));
+        } else {
+            thread::sleep(Duration::from_millis(SLEEP_MSECS));
+        }
+    }
+}
+
+/// Pop a row from an in memory queue. This is a non-blocking function.
+///
+/// # Returns
+///
+/// - `Ok(Some)` when at least a row is in the queue.
+/// - `None` when no row is in the queue.
+///
+/// # Failure
+///
+/// - [SpringError::Unavailable](crate::error::SpringError::Unavailable) when:
+///   - queue named `queue` does not exist.
+pub fn spring_pop_non_blocking(
+    pipeline: &SpringPipeline,
+    queue: &str,
+) -> Result<Option<SpringRow>> {
+    let mut engine = pipeline.engine.get()?;
+    let sink_row = engine.pop_in_memory_queue_non_blocking(QueueName::new(queue.to_string()))?;
+    Ok(sink_row.map(SpringRow::from))
 }
 
 /// Get an integer column.
