@@ -71,6 +71,9 @@ impl SourceTask {
         ))
     }
 
+    /// # Returns
+    ///
+    /// None if no row is collected from the foreign source.
     fn put_row_into(
         &self,
         queue_id: QueueId,
