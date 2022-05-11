@@ -15,7 +15,7 @@ use crate::{
     stream_engine::{
         autonomous_executor::{
             performance_metrics::metrics_update_command::metrics_update_by_task_execution::WindowInFlowByWindowTask,
-            task::{tuple::Tuple, window::aggregate::GroupAggrOut},
+            task::{tuple::Tuple, window::aggregate::AggregatedAndGroupingValues},
         },
         time::timestamp::SpringTimestamp,
         NnSqlValue, SqlValue,
@@ -37,13 +37,17 @@ pub(in crate::stream_engine::autonomous_executor) struct AggrPane {
 }
 
 impl Pane for AggrPane {
-    type CloseOut = GroupAggrOut;
+    type CloseOut = AggregatedAndGroupingValues;
     type DispatchArg = ();
 
     /// # Panics
     ///
     /// if `op_param` is not `GroupAggregateParameter`
-    fn new(open_at: SpringTimestamp, close_at: SpringTimestamp, op_param: WindowOperationParameter) -> Self {
+    fn new(
+        open_at: SpringTimestamp,
+        close_at: SpringTimestamp,
+        op_param: WindowOperationParameter,
+    ) -> Self {
         if let WindowOperationParameter::GroupAggregation(group_aggregation_parameter) = op_param {
             let inner = match group_aggregation_parameter.aggr_func {
                 AggregateFunctionParameter::Avg => AggrPaneInner::Avg {
@@ -120,21 +124,22 @@ impl Pane for AggrPane {
 
         match self.inner {
             AggrPaneInner::Avg { states } => {
-                let group_aggr_out_seq = states
+                let aggregated_and_grouping_values_seq = states
                     .into_iter()
                     .map(|(group_by, state)| {
                         let aggr_value =
                             SqlValue::NotNull(NnSqlValue::Float(OrderedFloat(state.finalize())));
-                        GroupAggrOut::new(
-                            aggr_label,
-                            aggr_value,
-                            group_by_label,
-                            SqlValue::NotNull(group_by),
+                        AggregatedAndGroupingValues::new(
+                            vec![(aggr_label, aggr_value)],
+                            vec![(group_by_label, SqlValue::NotNull(group_by))],
                         )
                     })
                     .collect();
 
-                (group_aggr_out_seq, WindowInFlowByWindowTask::zero())
+                (
+                    aggregated_and_grouping_values_seq,
+                    WindowInFlowByWindowTask::zero(),
+                )
             }
         }
     }

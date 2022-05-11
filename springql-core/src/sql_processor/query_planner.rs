@@ -59,7 +59,7 @@ mod select_syntax_analyzer;
 
 use crate::{
     error::Result,
-    expr_resolver::ExprResolver,
+    expr_resolver::{expr_label::ExprLabel, ExprResolver},
     pipeline::{
         pump_model::{
             window_operation_parameter::{
@@ -92,11 +92,10 @@ impl QueryPlanner {
     }
 
     pub(crate) fn plan(self, pipeline: &Pipeline) -> Result<QueryPlan> {
-        let (mut expr_resolver, value_labels_select_list, aggr_labels_select_list) =
+        let (mut expr_resolver, labels_select_list) =
             ExprResolver::new(self.analyzer.select_list().to_vec());
         let projection = ProjectionOp {
-            value_expr_labels: value_labels_select_list,
-            aggr_expr_labels: aggr_labels_select_list,
+            expr_labels: labels_select_list,
         };
 
         let group_aggr_window =
@@ -140,11 +139,21 @@ impl QueryPlanner {
         projection_op: &ProjectionOp,
     ) -> Result<Option<GroupAggregateParameter>> {
         let opt_grouping_elem = self.analyzer.grouping_element();
-        let aggr_labels = &projection_op.aggr_expr_labels;
+        let aggr_labels = projection_op
+            .expr_labels
+            .iter()
+            .filter_map(|label| {
+                if let ExprLabel::Aggr(aggr_label) = label {
+                    Some(*aggr_label)
+                } else {
+                    None
+                }
+            })
+            .collect::<Vec<_>>();
 
         match (opt_grouping_elem, aggr_labels.len()) {
             (Some(grouping_elem), 1) => {
-                let aggr_label = aggr_labels.iter().next().expect("len checked");
+                let aggr_label = aggr_labels.get(0).expect("len checked");
                 let aggr_func = expr_resolver.resolve_aggr_expr(*aggr_label).func;
 
                 let group_by_label = match grouping_elem {

@@ -158,7 +158,7 @@ impl ExprResolver {
     }
 
     /// label -> (internal) value expression inside aggr expr + tuple (for ColumnReference) -> SqlValue.
-    /// 
+    ///
     /// _inner_ means: AGGR_FUNC(inner_value_expr)
     ///
     /// # Panics
@@ -184,8 +184,6 @@ impl ExprResolver {
 
 #[cfg(test)]
 mod tests {
-    use std::thread::panicking;
-
     use crate::{expression::ValueExpr, stream_engine::time::timestamp::SpringTimestamp};
 
     use super::*;
