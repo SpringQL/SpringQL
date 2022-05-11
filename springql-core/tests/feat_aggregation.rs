@@ -46,12 +46,7 @@ fn run_and_drain(
 ) -> Vec<serde_json::Value> {
     let _pipeline = apply_ddls(ddls, spring_config_default());
     test_source.start(source_input);
-    let mut sink_received = drain_from_sink(test_sink);
-    sink_received.sort_by_key(|r| {
-        let ts = &r["ts"];
-        ts.as_str().unwrap().to_string()
-    });
-    sink_received
+    drain_from_sink(test_sink)
 }
 
 /// See: <https://github.com/SpringQL/SpringQL/issues/126>
@@ -75,16 +70,14 @@ fn test_feat_aggregation_without_group_by() -> Result<()> {
         .to_string(),
         "
         CREATE SINK STREAM sink_avg_all (
-          ts TIMESTAMP NOT NULL ROWTIME,    
-          amount FLOAT NOT NULL
+          avg_amount FLOAT NOT NULL
         );
         "
         .to_string(),
         "
         CREATE PUMP avg_all AS
-        INSERT INTO sink_avg_all (ts, avg_amount)
+        INSERT INTO sink_avg_all (avg_amount)
         SELECT STREAM
-            FLOOR_TIME(source_trade.ts, DURATION_SECS(10)) AS aggr_ts,
             AVG(source_trade.amount) AS avg_amount
         FROM source_trade
         FIXED WINDOW DURATION_SECS(10), DURATION_SECS(0);
@@ -126,20 +119,12 @@ fn test_feat_aggregation_without_group_by() -> Result<()> {
     assert_eq!(sink_received.len(), 2);
 
     assert_eq!(
-        sink_received[0]["ts"].as_str().unwrap(),
-        "2020-01-01 00:00:00.000000000"
-    );
-    assert_eq!(
-        sink_received[0]["amount"].as_f64().unwrap().round() as i32,
+        sink_received[0]["avg_amount"].as_f64().unwrap().round() as i32,
         20,
     );
 
     assert_eq!(
-        sink_received[1]["ts"].as_str().unwrap(),
-        "2020-01-01 00:00:10.000000000"
-    );
-    assert_eq!(
-        sink_received[1]["amount"].as_f64().unwrap().round() as i32,
+        sink_received[1]["avg_amount"].as_f64().unwrap().round() as i32,
         50,
     );
 
