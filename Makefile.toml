@@ -62,6 +62,8 @@ echo '-- Start doc_app1'
 echo '-- End doc_app1'
 echo
 
+sleep 3
+
 echo '-- Start doc_app2'
   cargo run --example doc_app2 &
   sleep 1
