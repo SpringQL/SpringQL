@@ -17,7 +17,7 @@
 //! echo '{"ts": "2022-01-01 13:00:10.000000000", "symbol": "APPL", "amount": 100}' |nc localhost 54300
 //! ```
 
-use std::{sync::Arc, thread};
+use std::{sync::Arc, thread, time::Duration};
 
 use springql_core::{high_level_rs::SpringPipelineHL, low_level_rs::SpringConfig};
 
@@ -137,24 +137,23 @@ fn main() {
 
     eprintln!("waiting JSON records in tcp/{} port...", SOURCE_PORT);
 
-    // Fetching rows from q_avg_all.
-    // Here spawning a thread to fetch rows from 2 in-memory queues (`poop()` is a blocking call).
-    {
-        let pipeline = pipeline.clone();
-        thread::spawn(move || {
-            while let Ok(row) = pipeline.pop("q_avg_all") {
-                let ts: String = row.get_not_null_by_index(0).unwrap();
-                let avg_amount: f32 = row.get_not_null_by_index(1).unwrap();
-                eprintln!("[q_avg_all] {}\t{}", ts, avg_amount);
-            }
-        });
-    }
+    loop {
+        // Fetching rows from q_avg_all.
+        if let Some(row) = pipeline.pop_non_blocking("q_avg_all").unwrap() {
+            let ts: String = row.get_not_null_by_index(0).unwrap();
+            let avg_amount: f32 = row.get_not_null_by_index(1).unwrap();
+            eprintln!("[q_avg_all] {}\t{}", ts, avg_amount);
+        }
 
-    // Fetching rows from q_avg_by_symbol.
-    while let Ok(row) = pipeline.pop("q_avg_by_symbol") {
-        let ts: String = row.get_not_null_by_index(0).unwrap();
-        let symbol: String = row.get_not_null_by_index(1).unwrap();
-        let avg_amount: f32 = row.get_not_null_by_index(2).unwrap();
-        eprintln!("[q_avg_by_symbol] {}\t{}\t{}", ts, symbol, avg_amount);
+        // Fetching rows from q_avg_all.
+        if let Some(row) = pipeline.pop_non_blocking("q_avg_by_symbol").unwrap() {
+            let ts: String = row.get_not_null_by_index(0).unwrap();
+            let symbol: String = row.get_not_null_by_index(1).unwrap();
+            let avg_amount: f32 = row.get_not_null_by_index(2).unwrap();
+            eprintln!("[q_avg_by_symbol] {}\t{}\t{}", ts, symbol, avg_amount);
+        }
+
+        // Avoid busy loop
+        thread::sleep(Duration::from_millis(10))
     }
 }
