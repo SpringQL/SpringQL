@@ -44,69 +44,18 @@ SpringQL is an open-source stream processor working with low and hard-limited wo
 
   SpringQL helps you reduce data size by filtering, aggregation, and projection.
 
-## Getting started
+## How to use SpringQL?
 
-You can use SpringQL in 3 ways:
+You can use SpringQL currently in 2 ways:
 
 1. **Embedded mode**: Link `libspringql` from your application binary and call API functions using a client library for each programming language.
 2. **Embedded mode (Rust)**: Almost the same as normal embedded mode but you statically link to `springql-core` crate from your Rust application.
-3. **(TODO) IPC mode**: IPC (Iter-Process Communication) with `springqld` from your applications. Multiple applications can share the same pipeline (stream processing definition) in this mode.
 
-Here introduces Rust embedded mode.
+**IPC mode** will be also planned. Multiple applications communicate with `springqld` daemon process so that they can share the same pipeline (stream processing definition).
 
-### Pipeline to create
+## Documentation
 
-We define the following data flow (called pipeline in SpringQL) in this demo.
-
-![Demo pipeline](https://raw.githubusercontent.com/SpringQL/SpringQL.github.io/main/static/img/demo-pipeline.svg)
-
-### Requirements
-
-- [Rust toolchain](https://rustup.rs/)
-- [replayman](https://github.com/SpringQL/replayman), a log agent to replay time-stamped logs.
-
-    ```bash
-    cargo install replayman
-    ```
-
-- [springql-foreign-service](https://crates.io/crates/springql-foreign-service) lib crate, providing a simple sink implementation.
-
-springql-foreign-service
-
-### Running demo
-
-```bash
-cargo new --bin springql-demo
-cd springql-demo
-
-curl https://raw.githubusercontent.com/SpringQL/SpringQL/main/springql-core/examples/demo_pipeline.rs -o src/main.rs
-
-cat >> Cargo.toml <<EOF
-springql-core = "*"
-springql-foreign-service = "*"
-
-tempfile = "3.3"
-env_logger = "0.9"
-log = "0.4"
-reqwest = {version = "0.11", features = ["json", "blocking"]}
-EOF
-
-cargo run
-```
-
-Then you get the following output from the stdout.
-
-```text
-sink_vehicle_speed      Object({"speed": Number(46.20000076293945), "ts": String("2020-10-21 01:37:56.000000000")})
-sink_vehicle_speed      Object({"speed": Number(46.20000076293945), "ts": String("2020-10-21 01:37:56.100000000")})
-sink_engine_wheel_speed {"rpm":1742.0,"speed":154.0,"ts":"2020-10-21 01:37:56.000000000"}
-...
-```
-
-## Learn more
-
-- [C library for embedded mode](https://github.com/SpringQL/SpringQL-client-c)
-- TODO paper after accepted
+Read <https://SpringQL.github.io/> for installation guide, tutorials, and references.
 
 ## License
 
