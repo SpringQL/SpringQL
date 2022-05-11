@@ -9,7 +9,7 @@ edition = "2021"
 
 categories = ["embedded"]
 description = "SpringQL: Open-source stream processor for IoT devices and in-vehicle computers"
-documentation = "https://docs.rs/springql-core"
+documentation = "https://springql.github.io/"
 keywords = ["springql", "stream-processing"] # up to 5 keywords, each keyword should have <= 20 chars
 readme = "../README.md"
 repository = "https://github.com/SpringQL/SpringQL"
