@@ -90,7 +90,7 @@ fn main() {
             CREATE PUMP avg_by_symbol AS
                 INSERT INTO sink_avg_by_symbol (ts, symbol, avg_amount)
                 SELECT STREAM
-                    FLOOR_TIME(source_trade.ts, DURATION_SECS(10)) AS min_ts,
+                    FLOOR_TIME(source_trade.ts, DURATION_SECS(2)) AS min_ts,
                     source_trade.symbol AS symbol,
                     AVG(source_trade.amount) AS avg_amount
                 FROM source_trade
