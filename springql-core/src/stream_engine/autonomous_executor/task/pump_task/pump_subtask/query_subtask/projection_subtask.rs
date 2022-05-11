@@ -45,15 +45,15 @@ impl ProjectionSubtask {
             .exprs
             .iter()
             .map(|label| {
-                match label {
+                let value = match label {
                     ExprLabel::Value(group_by_value_label) => {
                         aggregated_and_grouping_values.get_group_by_value(group_by_value_label)
                     }
                     ExprLabel::Aggr(aggr_label) => {
                         aggregated_and_grouping_values.get_aggregated_value(aggr_label)
                     }
-                }
-                .cloned()
+                }?;
+                Ok(value.clone())
             })
             .collect::<Result<Vec<_>>>()?;
 
