@@ -45,7 +45,10 @@ where
     /// Then, return all panes to get a tuple with the `rowtime`.
     ///
     /// Caller must assure rowtime is not smaller than watermark.
-    pub(super) fn panes_to_dispatch(&mut self, rowtime: SpringTimestamp) -> impl Iterator<Item = &mut P> {
+    pub(super) fn panes_to_dispatch(
+        &mut self,
+        rowtime: SpringTimestamp,
+    ) -> impl Iterator<Item = &mut P> {
         self.generate_panes_if_not_exist(rowtime);
 
         self.panes
@@ -137,10 +140,10 @@ mod tests {
     use std::str::FromStr;
 
     use crate::{
-        expr_resolver::ExprResolver,
+        expr_resolver::{expr_label::ExprLabel, ExprResolver},
         expression::{AggrExpr, ValueExpr},
         pipeline::pump_model::window_operation_parameter::aggregate::{
-            AggregateFunctionParameter, GroupAggregateParameter,
+            AggregateFunctionParameter, AggregateParameter, GroupByLabels,
         },
         sql_processor::sql_parser::syntax::SelectFieldSyntax,
         stream_engine::{
@@ -163,20 +166,28 @@ mod tests {
             aggr_expr,
             alias: None,
         }];
-        let (mut expr_resolver, _, aggr_labels_select_list) = ExprResolver::new(select_list);
+        let (mut expr_resolver, labels) = ExprResolver::new(select_list);
 
-        let group_by_label = expr_resolver.register_value_expr(group_by_expr);
+        let group_by_labels =
+            GroupByLabels::new(vec![expr_resolver.register_value_expr(group_by_expr)]);
 
-        WindowOperationParameter::GroupAggregation(GroupAggregateParameter {
+        WindowOperationParameter::Aggregate(AggregateParameter {
             aggr_func: AggregateFunctionParameter::Avg,
-            aggr_expr: aggr_labels_select_list[0],
-            group_by: group_by_label,
+            aggr_expr: if let ExprLabel::Aggr(l) = labels[0] {
+                l
+            } else {
+                unreachable!()
+            },
+            group_by: group_by_labels,
         })
     }
 
     #[test]
     fn test_valid_open_at_s() {
-        fn sliding_window_panes(length: SpringEventDuration, period: SpringEventDuration) -> Panes<AggrPane> {
+        fn sliding_window_panes(
+            length: SpringEventDuration,
+            period: SpringEventDuration,
+        ) -> Panes<AggrPane> {
             Panes::new(
                 WindowParameter::TimedSlidingWindow {
                     length,
@@ -187,30 +198,43 @@ mod tests {
             )
         }
 
-        let panes = sliding_window_panes(SpringEventDuration::from_secs(10), SpringEventDuration::from_secs(5));
+        let panes = sliding_window_panes(
+            SpringEventDuration::from_secs(10),
+            SpringEventDuration::from_secs(5),
+        );
         assert_eq!(
-            panes.valid_open_at_s(SpringTimestamp::from_str("2020-01-01 00:00:05.000000000").unwrap()),
+            panes.valid_open_at_s(
+                SpringTimestamp::from_str("2020-01-01 00:00:05.000000000").unwrap()
+            ),
             vec![
                 SpringTimestamp::from_str("2020-01-01 00:00:00.000000000").unwrap(),
                 SpringTimestamp::from_str("2020-01-01 00:00:05.000000000").unwrap()
             ]
         );
         assert_eq!(
-            panes.valid_open_at_s(SpringTimestamp::from_str("2020-01-01 00:00:09.999999999").unwrap()),
+            panes.valid_open_at_s(
+                SpringTimestamp::from_str("2020-01-01 00:00:09.999999999").unwrap()
+            ),
             vec![
                 SpringTimestamp::from_str("2020-01-01 00:00:00.000000000").unwrap(),
                 SpringTimestamp::from_str("2020-01-01 00:00:05.000000000").unwrap()
             ]
         );
 
-        let panes =
-            sliding_window_panes(SpringEventDuration::from_secs(10), SpringEventDuration::from_secs(10));
+        let panes = sliding_window_panes(
+            SpringEventDuration::from_secs(10),
+            SpringEventDuration::from_secs(10),
+        );
         assert_eq!(
-            panes.valid_open_at_s(SpringTimestamp::from_str("2020-01-01 00:00:00.000000000").unwrap()),
+            panes.valid_open_at_s(
+                SpringTimestamp::from_str("2020-01-01 00:00:00.000000000").unwrap()
+            ),
             vec![SpringTimestamp::from_str("2020-01-01 00:00:00.000000000").unwrap(),]
         );
         assert_eq!(
-            panes.valid_open_at_s(SpringTimestamp::from_str("2020-01-01 00:00:09.999999999").unwrap()),
+            panes.valid_open_at_s(
+                SpringTimestamp::from_str("2020-01-01 00:00:09.999999999").unwrap()
+            ),
             vec![SpringTimestamp::from_str("2020-01-01 00:00:00.000000000").unwrap(),]
         );
     }

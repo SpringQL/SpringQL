@@ -8,7 +8,7 @@ use crate::pipeline::pump_model::window_parameter::WindowParameter;
 use crate::stream_engine::autonomous_executor::performance_metrics::metrics_update_command::metrics_update_by_task_execution::WindowInFlowByWindowTask;
 use crate::stream_engine::autonomous_executor::task::tuple::Tuple;
 use crate::stream_engine::autonomous_executor::task::window::Window;
-use crate::stream_engine::autonomous_executor::task::window::aggregate::{GroupAggrOut, AggrWindow};
+use crate::stream_engine::autonomous_executor::task::window::aggregate::{AggregatedAndGroupingValues, AggrWindow};
 
 #[derive(Debug)]
 pub(in crate::stream_engine::autonomous_executor) struct GroupAggregateWindowSubtask(
@@ -28,7 +28,7 @@ impl GroupAggregateWindowSubtask {
         &self,
         expr_resolver: &ExprResolver,
         tuple: Tuple,
-    ) -> (Vec<GroupAggrOut>, WindowInFlowByWindowTask) {
+    ) -> (Vec<AggregatedAndGroupingValues>, WindowInFlowByWindowTask) {
         self.0
             .lock()
             .expect("another thread accessing to window gets poisoned")

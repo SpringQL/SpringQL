@@ -59,11 +59,12 @@ mod select_syntax_analyzer;
 
 use crate::{
     error::Result,
-    expr_resolver::ExprResolver,
+    expr_resolver::{expr_label::ExprLabel, ExprResolver},
     pipeline::{
         pump_model::{
             window_operation_parameter::{
-                aggregate::GroupAggregateParameter, WindowOperationParameter,
+                aggregate::{AggregateParameter, GroupByLabels},
+                WindowOperationParameter,
             },
             window_parameter::WindowParameter,
         },
@@ -92,11 +93,10 @@ impl QueryPlanner {
     }
 
     pub(crate) fn plan(self, pipeline: &Pipeline) -> Result<QueryPlan> {
-        let (mut expr_resolver, value_labels_select_list, aggr_labels_select_list) =
+        let (mut expr_resolver, labels_select_list) =
             ExprResolver::new(self.analyzer.select_list().to_vec());
         let projection = ProjectionOp {
-            value_expr_labels: value_labels_select_list,
-            aggr_expr_labels: aggr_labels_select_list,
+            expr_labels: labels_select_list,
         };
 
         let group_aggr_window =
@@ -124,7 +124,7 @@ impl QueryPlanner {
         match (window_param, group_aggr_param) {
             (Some(window_param), Some(group_aggr_param)) => Ok(Some(GroupAggregateWindowOp {
                 window_param,
-                op_param: WindowOperationParameter::GroupAggregation(group_aggr_param),
+                op_param: WindowOperationParameter::Aggregate(group_aggr_param),
             })),
             _ => Ok(None),
         }
@@ -138,32 +138,45 @@ impl QueryPlanner {
         &self,
         expr_resolver: &mut ExprResolver,
         projection_op: &ProjectionOp,
-    ) -> Result<Option<GroupAggregateParameter>> {
-        let opt_grouping_elem = self.analyzer.grouping_element();
-        let aggr_labels = &projection_op.aggr_expr_labels;
+    ) -> Result<Option<AggregateParameter>> {
+        let grouping_elements = self.analyzer.grouping_elements();
+        let aggr_labels = projection_op
+            .expr_labels
+            .iter()
+            .filter_map(|label| {
+                if let ExprLabel::Aggr(aggr_label) = label {
+                    Some(*aggr_label)
+                } else {
+                    None
+                }
+            })
+            .collect::<Vec<_>>();
 
-        match (opt_grouping_elem, aggr_labels.len()) {
-            (Some(grouping_elem), 1) => {
-                let aggr_label = aggr_labels.iter().next().expect("len checked");
+        match aggr_labels.len() {
+            1 => {
+                let aggr_label = aggr_labels.get(0).expect("len checked");
                 let aggr_func = expr_resolver.resolve_aggr_expr(*aggr_label).func;
 
-                let group_by_label = match grouping_elem {
-                    GroupingElementSyntax::ValueExpr(expr) => {
-                        expr_resolver.register_value_expr(expr)
-                    }
-                    GroupingElementSyntax::ValueAlias(alias) => {
-                        expr_resolver.resolve_value_alias(alias)?
-                    }
-                };
+                let group_by_labels = grouping_elements
+                    .iter()
+                    .map(|grouping_elem| match grouping_elem {
+                        GroupingElementSyntax::ValueExpr(expr) => {
+                            Ok(expr_resolver.register_value_expr(expr.clone()))
+                        }
+                        GroupingElementSyntax::ValueAlias(alias) => {
+                            expr_resolver.resolve_value_alias(alias.clone())
+                        }
+                    })
+                    .collect::<Result<Vec<_>>>()?;
 
-                Ok(Some(GroupAggregateParameter::new(
+                Ok(Some(AggregateParameter::new(
                     aggr_func,
                     *aggr_label,
-                    group_by_label,
+                    GroupByLabels::new(group_by_labels),
                 )))
             }
-            (None, 0) => Ok(None),
-            _ => unimplemented!(),
+            0 => Ok(None),
+            _ => unimplemented!("2 or more aggregate expressions"),
         }
     }
 

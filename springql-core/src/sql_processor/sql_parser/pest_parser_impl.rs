@@ -210,12 +210,12 @@ impl PestParserImpl {
         )?;
 
         let event_duration = match duration_function {
-            DurationFunction::Millis => {
-                Ok(SpringEventDuration::from_millis(integer_constant.to_i64()? as u64))
-            }
-            DurationFunction::Secs => {
-                Ok(SpringEventDuration::from_secs(integer_constant.to_i64()? as u64))
-            }
+            DurationFunction::Millis => Ok(SpringEventDuration::from_millis(
+                integer_constant.to_i64()? as u64,
+            )),
+            DurationFunction::Secs => Ok(SpringEventDuration::from_secs(
+                integer_constant.to_i64()? as u64,
+            )),
         }?;
 
         Ok(SqlValue::NotNull(NnSqlValue::Duration(event_duration)))
@@ -549,10 +549,10 @@ impl PestParserImpl {
             Self::parse_from_item,
             identity,
         )?;
-        let grouping_element = try_parse_child(
+        let grouping_elements = try_parse_child(
             &mut params,
-            Rule::grouping_element,
-            Self::parse_grouping_element,
+            Rule::group_by_clause,
+            Self::parse_group_by_clause,
             identity,
         )?;
         let window_clause = try_parse_child(
@@ -565,7 +565,7 @@ impl PestParserImpl {
         Ok(SelectStreamSyntax {
             fields,
             from_item,
-            grouping_element,
+            grouping_elements: grouping_elements.unwrap_or_default(),
             window_clause,
         })
     }
@@ -678,6 +678,15 @@ impl PestParserImpl {
                 s.to_lowercase()
             ))),
         }
+    }
+
+    fn parse_group_by_clause(mut params: FnParseParams) -> Result<Vec<GroupingElementSyntax>> {
+        parse_child_seq(
+            &mut params,
+            Rule::grouping_element,
+            &Self::parse_grouping_element,
+            &identity,
+        )
     }
 
     fn parse_grouping_element(mut params: FnParseParams) -> Result<GroupingElementSyntax> {

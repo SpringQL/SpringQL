@@ -158,7 +158,7 @@ mod tests {
             },
         ];
 
-        let (mut expr_resolver, _, _) = ExprResolver::new(select_list);
+        let (mut expr_resolver, _) = ExprResolver::new(select_list);
 
         let on_expr_label = expr_resolver.register_value_expr(on_expr);
 

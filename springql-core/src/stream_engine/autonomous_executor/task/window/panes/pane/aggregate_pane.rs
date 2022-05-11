@@ -7,15 +7,16 @@ use std::collections::HashMap;
 use ordered_float::OrderedFloat;
 
 use crate::{
+    error::Result,
     expr_resolver::ExprResolver,
     pipeline::pump_model::window_operation_parameter::{
-        aggregate::{AggregateFunctionParameter, GroupAggregateParameter},
+        aggregate::{AggregateFunctionParameter, AggregateParameter, GroupByLabels},
         WindowOperationParameter,
     },
     stream_engine::{
         autonomous_executor::{
             performance_metrics::metrics_update_command::metrics_update_by_task_execution::WindowInFlowByWindowTask,
-            task::{tuple::Tuple, window::aggregate::GroupAggrOut},
+            task::{tuple::Tuple, window::aggregate::AggregatedAndGroupingValues},
         },
         time::timestamp::SpringTimestamp,
         NnSqlValue, SqlValue,
@@ -31,21 +32,25 @@ pub(in crate::stream_engine::autonomous_executor) struct AggrPane {
     open_at: SpringTimestamp,
     close_at: SpringTimestamp,
 
-    group_aggregation_parameter: GroupAggregateParameter,
+    aggregate_parameter: AggregateParameter,
 
     inner: AggrPaneInner,
 }
 
 impl Pane for AggrPane {
-    type CloseOut = GroupAggrOut;
+    type CloseOut = AggregatedAndGroupingValues;
     type DispatchArg = ();
 
     /// # Panics
     ///
     /// if `op_param` is not `GroupAggregateParameter`
-    fn new(open_at: SpringTimestamp, close_at: SpringTimestamp, op_param: WindowOperationParameter) -> Self {
-        if let WindowOperationParameter::GroupAggregation(group_aggregation_parameter) = op_param {
-            let inner = match group_aggregation_parameter.aggr_func {
+    fn new(
+        open_at: SpringTimestamp,
+        close_at: SpringTimestamp,
+        op_param: WindowOperationParameter,
+    ) -> Self {
+        if let WindowOperationParameter::Aggregate(aggregate_parameter) = op_param {
+            let inner = match aggregate_parameter.aggr_func {
                 AggregateFunctionParameter::Avg => AggrPaneInner::Avg {
                     states: HashMap::new(),
                 },
@@ -54,7 +59,7 @@ impl Pane for AggrPane {
             Self {
                 open_at,
                 close_at,
-                group_aggregation_parameter,
+                aggregate_parameter,
                 inner,
             }
         } else {
@@ -76,17 +81,15 @@ impl Pane for AggrPane {
         tuple: &Tuple,
         _arg: (),
     ) -> WindowInFlowByWindowTask {
-        let group_by_value = expr_resolver
-            .eval_value_expr(self.group_aggregation_parameter.group_by, tuple)
-            .expect("TODO Result");
-        let group_by_value = if let SqlValue::NotNull(v) = group_by_value {
-            v
-        } else {
-            unimplemented!("group by NULL is not supported ")
-        };
+        let group_by_values = GroupByValues::from_group_by_labels(
+            self.aggregate_parameter.group_by.clone(),
+            expr_resolver,
+            tuple,
+        )
+        .expect("TODO handle Result");
 
         let aggregated_value = expr_resolver
-            .eval_aggr_expr_inner(self.group_aggregation_parameter.aggr_expr, tuple)
+            .eval_aggr_expr_inner(self.aggregate_parameter.aggr_expr, tuple)
             .expect("TODO Result");
         let aggregated_value = if let SqlValue::NotNull(v) = aggregated_value {
             v
@@ -97,7 +100,7 @@ impl Pane for AggrPane {
         match &mut self.inner {
             AggrPaneInner::Avg { states } => {
                 let state = states
-                    .entry(group_by_value)
+                    .entry(group_by_values)
                     .or_insert_with(AvgState::default);
 
                 state.next(
@@ -115,26 +118,32 @@ impl Pane for AggrPane {
         self,
         _expr_resolver: &ExprResolver,
     ) -> (Vec<Self::CloseOut>, WindowInFlowByWindowTask) {
-        let aggr_label = self.group_aggregation_parameter.aggr_expr;
-        let group_by_label = self.group_aggregation_parameter.group_by;
+        let aggr_label = self.aggregate_parameter.aggr_expr;
+        let group_by_labels = self.aggregate_parameter.group_by;
 
         match self.inner {
             AggrPaneInner::Avg { states } => {
-                let group_aggr_out_seq = states
+                let aggregated_and_grouping_values_seq = states
                     .into_iter()
-                    .map(|(group_by, state)| {
+                    .map(|(group_by_values, state)| {
                         let aggr_value =
                             SqlValue::NotNull(NnSqlValue::Float(OrderedFloat(state.finalize())));
-                        GroupAggrOut::new(
-                            aggr_label,
-                            aggr_value,
-                            group_by_label,
-                            SqlValue::NotNull(group_by),
-                        )
+
+                        let group_bys = group_by_labels
+                            .as_labels()
+                            .iter()
+                            .cloned()
+                            .zip(group_by_values.into_sql_values())
+                            .collect();
+
+                        AggregatedAndGroupingValues::new(vec![(aggr_label, aggr_value)], group_bys)
                     })
                     .collect();
 
-                (group_aggr_out_seq, WindowInFlowByWindowTask::zero())
+                (
+                    aggregated_and_grouping_values_seq,
+                    WindowInFlowByWindowTask::zero(),
+                )
             }
         }
     }
@@ -143,6 +152,41 @@ impl Pane for AggrPane {
 #[derive(Debug)]
 pub(in crate::stream_engine::autonomous_executor) enum AggrPaneInner {
     Avg {
-        states: HashMap<NnSqlValue, AvgState>,
+        states: HashMap<GroupByValues, AvgState>,
     },
+}
+
+#[derive(Clone, PartialEq, Eq, Hash, Debug)]
+pub(in crate::stream_engine::autonomous_executor) struct GroupByValues(
+    /// TODO support NULL in GROUP BY elements
+    Vec<NnSqlValue>,
+);
+
+impl GroupByValues {
+    /// Order of elements in GROUP BY clause is preserved.
+    fn from_group_by_labels(
+        group_by_labels: GroupByLabels,
+        expr_resolver: &ExprResolver,
+        tuple: &Tuple,
+    ) -> Result<Self> {
+        let values = group_by_labels
+            .as_labels()
+            .iter()
+            .map(|group_by_label| {
+                let group_by_value = expr_resolver.eval_value_expr(*group_by_label, tuple)?;
+
+                if let SqlValue::NotNull(v) = group_by_value {
+                    Ok(v)
+                } else {
+                    unimplemented!("group by NULL is not supported ")
+                }
+            })
+            .collect::<Result<Vec<_>>>()?;
+
+        Ok(Self(values))
+    }
+
+    pub(in crate::stream_engine::autonomous_executor) fn into_sql_values(self) -> Vec<SqlValue> {
+        self.0.into_iter().map(SqlValue::NotNull).collect()
+    }
 }

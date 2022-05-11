@@ -479,7 +479,7 @@ select_stream_command = {
     ^"SELECT" ~ "STREAM"
     ~ select_field ~ ("," ~ select_field)*
     ~ (^"FROM" ~ from_item)
-    ~ (^"GROUP" ~ "BY" ~ grouping_element)? // TODO multiple grouping elements
+    ~ group_by_clause?
     ~ window_clause?
 }
 
@@ -498,6 +498,10 @@ sub_from_item = {
 
 join_type = {
     ^"LEFT" ~ ^"OUTER" ~ ^"JOIN"
+}
+
+group_by_clause = {
+    ^"GROUP" ~ "BY" ~ grouping_element ~ ("," ~ grouping_element)*
 }
 
 grouping_element = {

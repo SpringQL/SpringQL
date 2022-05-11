@@ -1,7 +1,7 @@
 // This file is part of https://github.com/SpringQL/SpringQL which is licensed under MIT OR Apache-2.0. See file LICENSE-MIT or LICENSE-APACHE for full license details.
 
 use crate::{
-    expr_resolver::expr_label::{AggrExprLabel, ValueExprLabel},
+    expr_resolver::expr_label::ExprLabel,
     pipeline::{
         name::StreamName,
         pump_model::{
@@ -34,8 +34,7 @@ impl LowerOps {
 
 #[derive(Clone, PartialEq, Debug)]
 pub(crate) struct ProjectionOp {
-    pub(crate) value_expr_labels: Vec<ValueExprLabel>,
-    pub(crate) aggr_expr_labels: Vec<AggrExprLabel>,
+    pub(crate) expr_labels: Vec<ExprLabel>,
 }
 
 #[derive(Clone, PartialEq, Debug)]

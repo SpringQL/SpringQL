@@ -6,6 +6,14 @@ The format is based on [Keep a Changelog][Keep a Changelog] and this project adh
 
 ## [Unreleased]
 
+## [v0.7.1]
+
+### Fixed
+
+- Aggregation without GROUP BY clause ([#129](https://github.com/SpringQL/SpringQL/pull/129)).
+- Panic on multiple GROUP BY elements ([#129](https://github.com/SpringQL/SpringQL/pull/129)).
+- Fields order in SELECT was ignored in aggregation query ([#128](https://github.com/SpringQL/SpringQL/pull/128)).
+
 ## [v0.7.0]
 
 ### Added
@@ -110,8 +118,9 @@ The format is based on [Keep a Changelog][Keep a Changelog] and this project adh
 [Semantic Versioning]: https://semver.org/
 
 <!-- Versions -->
-[Unreleased]: https://github.com/SpringQL/SpringQL/compare/v0.7.0...HEAD
+[Unreleased]: https://github.com/SpringQL/SpringQL/compare/v0.7.1...HEAD
 [Released]: https://github.com/SpringQL/SpringQL/releases
+[v0.7.1]: https://github.com/SpringQL/SpringQL/compare/v0.7.0...v0.7.1
 [v0.7.0]: https://github.com/SpringQL/SpringQL/compare/v0.6.0...v0.7.0
 [v0.6.0]: https://github.com/SpringQL/SpringQL/compare/v0.5.0...v0.6.0
 [v0.5.0]: https://github.com/SpringQL/SpringQL/compare/v0.4.2...v0.5.0

@@ -12,7 +12,7 @@ use anyhow::anyhow;
 ///
 /// 1. Task gets a row from input queue.
 /// 2. Task converts the row into tuple.
-/// 3. Task puts a row converted from the final tuple.
+/// 3. Task puts a row converted from the final tuple (for column values) and ExprResolver (for expressions).
 ///
 /// Unlike rows, tuples may have not only stream's columns but also fields derived from expressions.
 #[derive(Clone, PartialEq, Debug, new)]
