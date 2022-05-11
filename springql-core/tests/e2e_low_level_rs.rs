@@ -253,6 +253,91 @@ fn test_e2e_pop_from_in_memory_queue() {
 }
 
 #[test]
+fn test_e2e_pop_non_blocking_from_in_memory_queue() {
+    setup_test_logger();
+
+    let queue_name = "queue_trade_nb"; // FIXME using the same name as in test_e2e_pop_from_in_memory_queue causes panic
+    let ts = "2021-11-04 23:02:52.123456789";
+    let ticker = "ORCL";
+    let amount = 20;
+
+    let json_oracle = json!({
+        "ts": ts,
+        "ticker": ticker,
+        "amount": amount,
+    });
+    let trade_times = 5;
+
+    let test_source = ForeignSource::new().unwrap();
+
+    let ddls = vec![
+        "
+        CREATE SOURCE STREAM source_trade (
+          ts TIMESTAMP NOT NULL ROWTIME,    
+          ticker TEXT NOT NULL,
+          amount INTEGER NOT NULL
+        );
+        "
+        .to_string(),
+        "
+        CREATE SINK STREAM sink_trade (
+          ts TIMESTAMP NOT NULL,    
+          amount INTEGER NOT NULL
+        );
+        "
+        .to_string(),
+        "
+        CREATE PUMP pu_projection AS
+          INSERT INTO sink_trade (ts, amount)
+          SELECT STREAM source_trade.ts, source_trade.amount FROM source_trade;
+        "
+        .to_string(),
+        format!(
+            "
+      CREATE SINK WRITER queue_sink_trade FOR sink_trade
+        TYPE IN_MEMORY_QUEUE OPTIONS (
+          NAME '{queue_name}'
+      );
+      ",
+            queue_name = queue_name,
+        ),
+        format!(
+            "
+        CREATE SOURCE READER tcp_trade FOR source_trade
+          TYPE NET_CLIENT OPTIONS (
+            PROTOCOL 'TCP',
+            REMOTE_HOST '{remote_host}',
+            REMOTE_PORT '{remote_port}'
+          );
+        ",
+            remote_host = test_source.host_ip(),
+            remote_port = test_source.port()
+        ),
+    ];
+
+    let pipeline = apply_ddls_low_level(&ddls, spring_config_default());
+    test_source.start(ForeignSourceInput::new_fifo_batch(
+        (0..trade_times)
+            .into_iter()
+            .map(|_| json_oracle.clone())
+            .collect(),
+    ));
+
+    for _ in 0..trade_times {
+        loop {
+            match spring_pop_non_blocking(&pipeline, queue_name).unwrap() {
+                Some(row) => {
+                    assert_eq!(spring_column_text(&row, 0).unwrap(), ts);
+                    assert_eq!(spring_column_i32(&row, 1).unwrap(), amount);
+                    break;
+                }
+                None => {}
+            }
+        }
+    }
+}
+
+#[test]
 fn test_e2e_spring_column_apis() {
     setup_test_logger();
 
