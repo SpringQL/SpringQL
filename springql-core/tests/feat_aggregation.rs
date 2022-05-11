@@ -162,10 +162,10 @@ fn test_feat_aggregation_with_2_group_bys() -> Result<()> {
         INSERT INTO sink_avg_by_ticker (ts, ticker, avg_amount)
         SELECT STREAM
             FLOOR_TIME(source_trade.ts, DURATION_SECS(10)) AS min_ts,
-            source_trade.ticker,
+            source_trade.ticker AS ticker,
             AVG(source_trade.amount) AS avg_amount
         FROM source_trade
-        GROUP BY min_ts, source_trade.ticker
+        GROUP BY min_ts, ticker
         FIXED WINDOW DURATION_SECS(10), DURATION_SECS(0);
         "
         .to_string(),
@@ -195,12 +195,18 @@ fn test_feat_aggregation_with_2_group_bys() -> Result<()> {
         ),
     ];
 
-    let sink_received = run_and_drain(
+    let mut sink_received = run_and_drain(
         &ddls,
         ForeignSourceInput::new_fifo_batch(source_input),
         test_source,
         &test_sink,
     );
+    sink_received.sort_by_key(|r| {
+        (
+            r["ts"].as_str().unwrap().to_string(),
+            r["ticker"].as_str().unwrap().to_string(),
+        )
+    });
 
     assert_eq!(sink_received.len(), 3);
 
@@ -208,20 +214,20 @@ fn test_feat_aggregation_with_2_group_bys() -> Result<()> {
         sink_received[0]["ts"].as_str().unwrap(),
         "2020-01-01 00:00:00.000000000",
     );
-    assert_eq!(sink_received[0]["ticker"].as_str().unwrap(), "ORCL",);
+    assert_eq!(sink_received[0]["ticker"].as_str().unwrap(), "GOOGL",);
     assert_eq!(
         sink_received[0]["avg_amount"].as_f64().unwrap().round() as i32,
-        10,
+        30,
     );
 
     assert_eq!(
         sink_received[1]["ts"].as_str().unwrap(),
         "2020-01-01 00:00:00.000000000",
     );
-    assert_eq!(sink_received[1]["ticker"].as_str().unwrap(), "GOOGL",);
+    assert_eq!(sink_received[1]["ticker"].as_str().unwrap(), "ORCL",);
     assert_eq!(
         sink_received[1]["avg_amount"].as_f64().unwrap().round() as i32,
-        30,
+        10,
     );
 
     assert_eq!(
