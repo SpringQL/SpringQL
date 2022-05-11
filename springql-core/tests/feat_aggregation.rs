@@ -130,3 +130,109 @@ fn test_feat_aggregation_without_group_by() -> Result<()> {
 
     Ok(())
 }
+
+#[test]
+fn test_feat_aggregation_with_2_group_bys() -> Result<()> {
+    setup_test_logger();
+
+    let source_input = gen_source_input();
+
+    let test_source = ForeignSource::new().unwrap();
+    let test_sink = ForeignSink::start().unwrap();
+
+    let ddls = vec![
+        "
+        CREATE SOURCE STREAM source_trade (
+          ts TIMESTAMP NOT NULL ROWTIME,    
+          ticker TEXT NOT NULL,
+          amount INTEGER NOT NULL
+        );
+        "
+        .to_string(),
+        "
+        CREATE SINK STREAM sink_avg_by_ticker (
+            ts TIMESTAMP NOT NULL ROWTIME,    
+            ticker TEXT NOT NULL,
+            avg_amount FLOAT NOT NULL
+        );
+        "
+        .to_string(),
+        "
+        CREATE PUMP avg_by_ticker AS
+        INSERT INTO sink_avg_by_ticker (ts, ticker, avg_amount)
+        SELECT STREAM
+            FLOOR_TIME(source_trade.ts, DURATION_SECS(10)) AS min_ts,
+            source_trade.ticker,
+            AVG(source_trade.amount) AS avg_amount
+        FROM source_trade
+        GROUP BY min_ts, source_trade.ticker
+        FIXED WINDOW DURATION_SECS(10), DURATION_SECS(0);
+        "
+        .to_string(),
+        format!(
+            "
+        CREATE SINK WRITER tcp_sink_trade FOR sink_avg_by_ticker
+          TYPE NET_CLIENT OPTIONS (
+            PROTOCOL 'TCP',
+            REMOTE_HOST '{remote_host}',
+            REMOTE_PORT '{remote_port}'
+        );
+        ",
+            remote_host = test_sink.host_ip(),
+            remote_port = test_sink.port()
+        ),
+        format!(
+            "
+        CREATE SOURCE READER tcp_trade FOR source_trade
+          TYPE NET_CLIENT OPTIONS (
+            PROTOCOL 'TCP',
+            REMOTE_HOST '{remote_host}',
+            REMOTE_PORT '{remote_port}'
+          );
+        ",
+            remote_host = test_source.host_ip(),
+            remote_port = test_source.port()
+        ),
+    ];
+
+    let sink_received = run_and_drain(
+        &ddls,
+        ForeignSourceInput::new_fifo_batch(source_input),
+        test_source,
+        &test_sink,
+    );
+
+    assert_eq!(sink_received.len(), 3);
+
+    assert_eq!(
+        sink_received[0]["ts"].as_str().unwrap(),
+        "2020-01-01 00:00:00.000000000",
+    );
+    assert_eq!(sink_received[0]["ticker"].as_str().unwrap(), "ORCL",);
+    assert_eq!(
+        sink_received[0]["avg_amount"].as_f64().unwrap().round() as i32,
+        10,
+    );
+
+    assert_eq!(
+        sink_received[1]["ts"].as_str().unwrap(),
+        "2020-01-01 00:00:00.000000000",
+    );
+    assert_eq!(sink_received[1]["ticker"].as_str().unwrap(), "GOOGL",);
+    assert_eq!(
+        sink_received[1]["avg_amount"].as_f64().unwrap().round() as i32,
+        30,
+    );
+
+    assert_eq!(
+        sink_received[2]["ts"].as_str().unwrap(),
+        "2020-01-01 00:00:10.000000000",
+    );
+    assert_eq!(sink_received[2]["ticker"].as_str().unwrap(), "IBM",);
+    assert_eq!(
+        sink_received[2]["avg_amount"].as_f64().unwrap().round() as i32,
+        50,
+    );
+
+    Ok(())
+}
