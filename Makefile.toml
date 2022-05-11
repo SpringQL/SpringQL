@@ -62,6 +62,20 @@ echo '-- Start doc_app1'
 echo '-- End doc_app1'
 echo
 
+echo '-- Start doc_app2'
+  cargo run --example doc_app2 &
+  sleep 1
+  echo '{"ts": "2022-01-01 13:00:00.000000000", "symbol": "ORCL", "amount": 10}' |nc localhost 54300
+  echo '{"ts": "2022-01-01 13:00:01.000000000", "symbol": "ORCL", "amount": 30}' |nc localhost 54300
+  echo '{"ts": "2022-01-01 13:00:01.000000000", "symbol": "GOOGL", "amount": 50}' |nc localhost 54300
+  echo '{"ts": "2022-01-01 13:00:02.000000000", "symbol": "ORCL", "amount": 40}' |nc localhost 54300
+  echo '{"ts": "2022-01-01 13:00:05.000000000", "symbol": "GOOGL", "amount": 60}' |nc localhost 54300
+  echo '{"ts": "2022-01-01 13:00:10.000000000", "symbol": "APPL", "amount": 100}' |nc localhost 54300
+  sleep 1
+  pkill doc_app2
+echo '-- End doc_app2'
+echo
+
 echo '-- Start in_vehicle_pipeline'
   cargo run --example in_vehicle_pipeline
 echo '-- End in_vehicle_pipeline'
