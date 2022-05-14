@@ -23,6 +23,10 @@ jobs:
             os: ubuntu-latest
             rust: stable
           - make:
+              task: check-dependencies
+            os: ubuntu-latest
+            rust: stable
+          - make:
               task: lint
             os: ubuntu-latest
             rust: stable
