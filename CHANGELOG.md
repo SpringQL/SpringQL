@@ -4,7 +4,12 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog][Keep a Changelog] and this project adheres to [Semantic Versioning][Semantic Versioning].
 
+<!-- markdownlint-disable MD024 -->
 ## [Unreleased]
+
+### Changed
+
+- Refactor : crate/module document move to pure Markdown ([#136](https://github.com/SpringQL/SpringQL/pull/136))
 
 ## [v0.9.0]
 
