@@ -1,5 +1,4 @@
-# crate springql-core
-
+<!-- markdownlint-disable MD041 -->
  SpringQL-core implementation.
 
 ## High-level architecture diagram

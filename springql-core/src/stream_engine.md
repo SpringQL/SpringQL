@@ -1,4 +1,4 @@
-# Module stream_engine
+<!-- markdownlint-disable MD041 -->
 
 Stream Engine component.
 
