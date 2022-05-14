@@ -117,7 +117,7 @@ jobs:
           key: ${{env.CACHE_RESET_KEY}}-${{ runner.os }}-${{ matrix.rust }}-cargo-deny-${{ steps.dep-versions.outputs.cargo-deny_version }}
 
       - name: Install cargo-deny
-        if:  ${{ steps.cache-cargo-deny.outputs.cache-hit == false }}
+        if:  ${{ steps.cache-cargo-deny.outputs.cache-hit == false && matrix.rust == 'stable' }}
         run: |
           cargo install cargo-deny
 
