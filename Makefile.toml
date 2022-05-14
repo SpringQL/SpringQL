@@ -28,11 +28,19 @@ script = ['''
 RUSTFLAGS='-D warnings' cargo clippy --workspace --all-targets --all-features
 ''']
 
+[tasks.check-dependencies]
+condition = { rust_version = { min = "1.56.1" } } # cargo-deny 0.11.4 : supports rust 1.56.1 later
+script = ['''
+#!/usr/bin/env bash -eux
+cargo deny check
+''']
+
 [tasks.build]
 script = ['''
 #!/usr/bin/env bash -eux
 RUSTFLAGS='-D warnings' cargo build --workspace --all-targets --all-features
 ''']
+dependencies=["check-dependencies"]
 
 [tasks.test]
 script = ['''
