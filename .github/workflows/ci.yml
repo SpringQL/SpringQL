@@ -76,6 +76,15 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
+      - name: Check versions on crates.io
+        id: dep-versions
+        run: |
+          # load helper script
+          source .github/workflows/scripts/crates.io-script.bash
+          # get latest version from crates.io
+          echo "::set-output name=cargo-deny_version::$(get_crate_version cargo-deny)"
+          # add other dependencies versions here
+
       - name: Install Rust ${{ matrix.rust }}
         if: ${{ ! matrix.make.rust-free }}
         uses: actions-rs/toolchain@v1
@@ -97,6 +106,20 @@ jobs:
           restore-keys: |
             ${{ env.CACHE_RESET_KEY }}-${{ runner.os }}-${{ matrix.rust }}-cargo-${{ matrix.make.task }}-
             ${{ env.CACHE_RESET_KEY }}-${{ runner.os }}-${{ matrix.rust }}-cargo-
+
+      - name: Cache install cargo-deny
+        id: cache-cargo-deny
+        uses: actions/cache@v2
+        continue-on-error: false
+        with:
+          path: |
+            ~/.cargo/bin/cargo-deny
+          key: ${{env.CACHE_RESET_KEY}}-${{ runner.os }}-${{ matrix.rust }}-cargo-deny-${{ steps.dep-versions.outputs.cargo-deny_version }}
+
+      - name: Install cargo-deny
+        if:  ${{ steps.cache-cargo-deny.outputs.cache-hit == false }}
+        run: |
+          cargo install cargo-deny
 
       - name: Install cargo-make
         env:
