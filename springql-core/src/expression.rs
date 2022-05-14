@@ -1,12 +1,6 @@
 // This file is part of https://github.com/SpringQL/SpringQL which is licensed under MIT OR Apache-2.0. See file LICENSE-MIT or LICENSE-APACHE for full license details.
 
-//! Expression has two forms:
-//!
-//! 1. Value expression, which is evaluated into an SqlValue from a row.
-//! 2. Aggregate expression, which is evaluated into an SqlValue from set of rows.
-//!
-//! Since SQL parser cannot distinguish column reference and value expression,
-//! `ValueExprOrAlias` is used for value expressions excluding select_list.
+#![doc = include_str!("expression.md")]
 
 pub(crate) mod boolean_expression;
 pub(crate) mod function_call;
