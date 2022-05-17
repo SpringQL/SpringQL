@@ -86,7 +86,7 @@ jobs:
           # load helper script
           source .github/workflows/scripts/crates.io-script.bash
           # get latest version from crates.io
-          echo "::set-output name=cargo-deny_version::$(get_crate_version cargo-deny)"
+          echo "::set-output name=cargo-deny_version::$(get_crate_latest_version cargo-deny)"
           # add other dependencies versions here
 
       - name: Install Rust ${{ matrix.rust }}
@@ -121,7 +121,7 @@ jobs:
           key: ${{env.CACHE_RESET_KEY}}-${{ runner.os }}-${{ matrix.rust }}-cargo-deny-${{ steps.dep-versions.outputs.cargo-deny_version }}
 
       - name: Install cargo-deny
-        if:  ${{ steps.cache-cargo-deny.outputs.cache-hit == false && matrix.rust == 'stable' }}
+        if:  ${{ steps.cache-cargo-deny.outputs.cache-hit == false && matrix.rust == 'stable'}}
         run: |
           cargo install cargo-deny
 
