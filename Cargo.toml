@@ -5,4 +5,5 @@ members = [
   "foreign-service",
   "test-logger",
   "test-web-console-mock",
+  "springql-build",
 ]

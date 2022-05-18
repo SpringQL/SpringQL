@@ -59,3 +59,6 @@ regex = "1.5"
 float-cmp = "0.9"
 
 tempfile = "3.3"
+
+[build-dependencies]
+springql-build = {path = "../springql-build"}

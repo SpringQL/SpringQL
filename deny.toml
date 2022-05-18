@@ -106,6 +106,9 @@ exceptions = [
     # Each entry is the crate and version constraint, and its specific allow
     # list
     #{ allow = ["Zlib"], name = "adler32", version = "*" },
+
+    # used on build-dependencies, no code to include in this repo
+    {allow=["CC0-1.0"] , name="dunce"}
 ]
 
 # Some crates don't have (easily) machine readable licensing information,
