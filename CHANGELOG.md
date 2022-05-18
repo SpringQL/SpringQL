@@ -11,6 +11,10 @@ The format is based on [Keep a Changelog][Keep a Changelog] and this project adh
 
 - Refactor : crate/module document move to pure Markdown ([#136](https://github.com/SpringQL/SpringQL/pull/136))
 
+### Added
+
+- add `cargo-make` task for runs [actionlint](https://github.com/rhysd/actionlint)
+
 ## [v0.9.0]
 
 ### Added
