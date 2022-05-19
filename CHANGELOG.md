@@ -4,6 +4,9 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog][Keep a Changelog] and this project adheres to [Semantic Versioning][Semantic Versioning].
 
+We originally added `### For developers` sections in order to separate changes for end-users and developers.
+All other sections are for end-users.
+
 <!-- markdownlint-disable MD024 -->
 ## [Unreleased]
 
