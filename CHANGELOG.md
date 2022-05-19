@@ -14,6 +14,10 @@ All other sections are for end-users.
 
 - Refactor : crate/module document move to pure Markdown ([#136](https://github.com/SpringQL/SpringQL/pull/136))
 
+### For Developers
+
+- add `cargo-make` task for runs [actionlint](https://github.com/rhysd/actionlint)
+
 ## [v0.9.0]
 
 ### Added

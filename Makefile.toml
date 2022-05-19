@@ -124,5 +124,14 @@ cargo workspaces publish
 ''',
 ]
 
+[tasks.actionlint]
+description="lint github actions with actionlint"
+script = [
+  '''
+#!/usr/bin/env bash -eux
+docker run --rm -v $(pwd):/repo --workdir /repo rhysd/actionlint:latest -color
+'''
+]
+
 [tasks.lcov]
 alias="coverage_grcov"
