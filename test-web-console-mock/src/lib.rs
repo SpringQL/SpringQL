@@ -79,7 +79,7 @@ impl WebConsoleMock {
                             break;
                         }
                         Err(e) => {
-                            panic!("healthcheck endpoint responsed with error status: {:?}", e)
+                            panic!("healthcheck endpoint responded with error status: {:?}", e)
                         }
                     }
                 }
