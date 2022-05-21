@@ -39,7 +39,7 @@ impl SqlType {
         SqlType::NumericComparable(NumericComparableType::I64Loose(I64LooseType::BigInt))
     }
 
-    /// Constructor of Flaot
+    /// Constructor of Float
     pub fn float() -> SqlType {
         SqlType::NumericComparable(NumericComparableType::F32Loose(F32LooseType::Float))
     }
