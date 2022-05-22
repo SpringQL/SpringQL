@@ -15,10 +15,11 @@ use crate::{
     error::{Result, SpringError},
     pipeline::name::QueueName,
     sql_processor::SqlProcessor,
-    stream_engine::{command::Command, SinkRow, SpringValue, SqlValue},
+    stream_engine::{command::Command, SpringValue, SqlValue},
 };
 
 use self::engine_mutex::EngineMutex;
+use crate::pipeline::SpringRow;
 
 fn setup_logger() {
     static INIT: Once = Once::new();
@@ -40,16 +41,6 @@ fn setup_logger() {
 pub struct SpringPipeline {
     engine: EngineMutex,
     sql_processor: SqlProcessor,
-}
-
-/// Row object from an in memory queue.
-#[derive(Debug)]
-pub struct SpringRow(pub(in crate::api) SinkRow);
-
-impl From<SinkRow> for SpringRow {
-    fn from(sink_row: SinkRow) -> Self {
-        Self(sink_row)
-    }
 }
 
 /// Creates and open an in-process stream pipeline.

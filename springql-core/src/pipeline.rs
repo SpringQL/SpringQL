@@ -20,6 +20,7 @@ use anyhow::anyhow;
 use std::{collections::HashSet, sync::Arc};
 
 use crate::error::{Result, SpringError};
+use crate::stream_engine::SinkRow;
 
 use self::{
     name::StreamName, pipeline_graph::PipelineGraph, pipeline_version::PipelineVersion,
@@ -30,8 +31,18 @@ use self::{
 pub use crate::api::low_level_rs::{
     spring_column_bool, spring_column_f32, spring_column_i16, spring_column_i32, spring_column_i64,
     spring_column_text, spring_command, spring_open, spring_pop, spring_pop_non_blocking,
-    SpringPipeline, SpringRow,
+    SpringPipeline,
 };
+
+/// Row object from an in memory queue.
+#[derive(Debug)]
+pub struct SpringRow(SinkRow);
+
+impl From<SinkRow> for SpringRow {
+    fn from(sink_row: SinkRow) -> Self {
+        Self(sink_row)
+    }
+}
 
 #[derive(Clone, Debug)]
 pub(crate) struct Pipeline {
