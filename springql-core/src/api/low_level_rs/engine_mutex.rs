@@ -9,10 +9,10 @@ use anyhow::anyhow;
 use super::spring_config::SpringConfig;
 
 #[derive(Clone, Debug)]
-pub(super) struct EngineMutex(Arc<Mutex<StreamEngine>>);
+pub(crate) struct EngineMutex(Arc<Mutex<StreamEngine>>);
 
 impl EngineMutex {
-    pub(super) fn new(config: &SpringConfig) -> Self {
+    pub(crate) fn new(config: &SpringConfig) -> Self {
         let engine = StreamEngine::new(config);
         Self(Arc::new(Mutex::new(engine)))
     }
@@ -20,7 +20,7 @@ impl EngineMutex {
     /// # Failure
     ///
     /// - [SpringError::ThreadPoisoned](crate::error::SpringError::ThreadPoisoned)
-    pub(super) fn get(&self) -> Result<MutexGuard<'_, StreamEngine>> {
+    pub(crate) fn get(&self) -> Result<MutexGuard<'_, StreamEngine>> {
         self.0
             .lock()
             .map_err(|e| {
