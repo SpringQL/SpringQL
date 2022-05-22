@@ -27,6 +27,12 @@ use self::{
     source_reader_model::SourceReaderModel, stream_model::StreamModel,
 };
 
+pub use crate::api::low_level_rs::{
+    spring_column_bool, spring_column_f32, spring_column_i16, spring_column_i32, spring_column_i64,
+    spring_column_text, spring_command, spring_open, spring_pop, spring_pop_non_blocking,
+    SpringPipeline, SpringRow,
+};
+
 #[derive(Clone, Debug)]
 pub(crate) struct Pipeline {
     version: PipelineVersion,

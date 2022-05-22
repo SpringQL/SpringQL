@@ -7,7 +7,7 @@ use std::{
     time::Duration,
 };
 
-use springql_core::{high_level_rs::SpringPipelineHL, low_level_rs::SpringConfig};
+use springql_core::{config::SpringConfig, SpringPipeline};
 use springql_foreign_service::sink::ForeignSink;
 
 use tempfile::NamedTempFile;
@@ -78,7 +78,7 @@ fn main() {
     let sink_engine_wheel_speed = ForeignSink::start().unwrap();
     let sink_vehicle_speed = ForeignSink::start().unwrap();
 
-    let pipeline = SpringPipelineHL::new(&SpringConfig::default()).unwrap();
+    let pipeline = SpringPipeline::new(&SpringConfig::default()).unwrap();
     pipeline
         .command(
             "

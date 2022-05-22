@@ -19,13 +19,13 @@
 
 use std::{sync::Arc, thread, time::Duration};
 
-use springql_core::{high_level_rs::SpringPipelineHL, low_level_rs::SpringConfig};
+use springql_core::{config::SpringConfig, SpringPipeline};
 
 fn main() {
     const SOURCE_PORT: u16 = 54300;
 
     // Using Arc to share the reference between threads feeding sink rows.
-    let pipeline = Arc::new(SpringPipelineHL::new(&SpringConfig::default()).unwrap());
+    let pipeline = Arc::new(SpringPipeline::new(&SpringConfig::default()).unwrap());
 
     pipeline
         .command(
