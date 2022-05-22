@@ -24,11 +24,4 @@ pub use api::high_level_rs::SpringRowHL as SpringRow;
 // re-export for low level api
 
 /// configrations
-pub mod config {
-    pub use crate::api::low_level_rs::SpringConfig;
-    pub use crate::api::low_level_rs::SpringMemoryConfig;
-    pub use crate::api::low_level_rs::SpringSinkWriterConfig;
-    pub use crate::api::low_level_rs::SpringSourceReaderConfig;
-    pub use crate::api::low_level_rs::SpringWebConsoleConfig;
-    pub use crate::api::low_level_rs::SpringWorkerConfig;
-}
+pub mod config;
