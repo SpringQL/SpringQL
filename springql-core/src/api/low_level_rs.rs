@@ -12,10 +12,8 @@ pub use spring_config::*;
 use std::{sync::Once, thread, time::Duration};
 
 use crate::{
-    error::{Result, SpringError},
-    pipeline::name::QueueName,
-    sql_processor::SqlProcessor,
-    stream_engine::{command::Command, SpringValue, SqlValue},
+    error::Result, pipeline::name::QueueName, sql_processor::SqlProcessor,
+    stream_engine::command::Command,
 };
 
 use self::engine_mutex::EngineMutex;
@@ -124,72 +122,9 @@ pub fn spring_pop_non_blocking(
     Ok(sink_row.map(SpringRow::from))
 }
 
-/// Get an integer column.
-///
-/// # Failure
-///
-/// - [SpringError::Unavailable](crate::error::SpringError::Unavailable) when:
-///   - `i_col` already fetched.
-///   - `i_col` out of range.
-/// - [SpringError::Null](crate::error::SpringError::Null) when:
-///   - Column value is NULL
-pub fn spring_column_i32(row: &SpringRow, i_col: usize) -> Result<i32> {
-    spring_column_not_null(row, i_col)
-}
-
-/// Get a text column.
-///
-/// # Failure
-///
-/// Same as [spring_column_i32()](spring_column_i32)
-pub fn spring_column_text(row: &SpringRow, i_col: usize) -> Result<String> {
-    spring_column_not_null(row, i_col)
-}
-
-/// Get a boolean column.
-///
-/// # Failure
-///
-/// Same as [spring_column_i32()](spring_column_i32)
-pub fn spring_column_bool(row: &SpringRow, i_col: usize) -> Result<bool> {
-    spring_column_not_null(row, i_col)
-}
-
-/// Get a float column.
-///
-/// # Failure
-///
-/// Same as [spring_column_i32()](spring_column_i32)
-pub fn spring_column_f32(row: &SpringRow, i_col: usize) -> Result<f32> {
-    spring_column_not_null(row, i_col)
-}
-
-/// Get a 2-byte integer column.
-///
-/// # Failure
-///
-/// Same as [spring_column_i32()](spring_column_i32)
-pub fn spring_column_i16(row: &SpringRow, i_col: usize) -> Result<i16> {
-    spring_column_not_null(row, i_col)
-}
-
-/// Get a 8-byte integer column.
-///
-/// # Failure
-///
-/// Same as [spring_column_i32()](spring_column_i32)
-pub fn spring_column_i64(row: &SpringRow, i_col: usize) -> Result<i64> {
-    spring_column_not_null(row, i_col)
-}
-
-fn spring_column_not_null<T: SpringValue>(row: &SpringRow, i_col: usize) -> Result<T> {
-    let v = row.0.get_by_index(i_col)?;
-    if let SqlValue::NotNull(v) = v {
-        v.unpack()
-    } else {
-        Err(SpringError::Null {
-            stream_name: row.0.stream_name().clone(),
-            i_col,
-        })
-    }
-}
+pub use crate::pipeline::spring_column_bool;
+pub use crate::pipeline::spring_column_f32;
+pub use crate::pipeline::spring_column_i16;
+pub use crate::pipeline::spring_column_i32;
+pub use crate::pipeline::spring_column_i64;
+pub use crate::pipeline::spring_column_text;
