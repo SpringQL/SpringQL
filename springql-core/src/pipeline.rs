@@ -17,23 +17,27 @@ pub(crate) mod stream_model;
 pub(crate) mod test_support;
 
 use anyhow::anyhow;
-use std::sync::Once;
-use std::thread;
-use std::time::Duration;
-use std::{collections::HashSet, sync::Arc};
+use std::{
+    collections::HashSet,
+    sync::{Arc, Once},
+    thread,
+    time::Duration,
+};
 
-use crate::pipeline::name::QueueName;
 use crate::{
-    api::low_level_rs::EngineMutex,
     error::{Result, SpringError},
     low_level_rs::SpringConfig,
     pipeline::{
-        name::StreamName, pipeline_graph::PipelineGraph, pipeline_version::PipelineVersion,
-        pump_model::PumpModel, sink_writer_model::SinkWriterModel,
-        source_reader_model::SourceReaderModel, stream_model::StreamModel,
+        name::{QueueName, StreamName},
+        pipeline_graph::PipelineGraph,
+        pipeline_version::PipelineVersion,
+        pump_model::PumpModel,
+        sink_writer_model::SinkWriterModel,
+        source_reader_model::SourceReaderModel,
+        stream_model::StreamModel,
     },
     sql_processor::SqlProcessor,
-    stream_engine::{command::Command, SinkRow, SqlValue},
+    stream_engine::{command::Command, EngineMutex, SinkRow, SqlValue},
     SpringValue,
 };
 
