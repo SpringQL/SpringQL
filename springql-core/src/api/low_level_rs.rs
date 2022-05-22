@@ -4,8 +4,17 @@
 //!
 //! C API and high-level Rust API are provided separately.
 
-pub(crate) mod engine_mutex;
-mod spring_config;
+pub(crate) mod engine_mutex {
+    pub(crate) use crate::stream_engine::EngineMutex;
+}
+mod spring_config {
+
+    pub use crate::config::{
+        spring_config_default, spring_config_toml, SpringConfig, SpringMemoryConfig,
+        SpringSinkWriterConfig, SpringSourceReaderConfig, SpringWebConsoleConfig,
+        SpringWorkerConfig,
+    };
+}
 
 pub use spring_config::*;
 
