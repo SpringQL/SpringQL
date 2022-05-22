@@ -11,6 +11,9 @@ mod autonomous_executor;
 mod in_memory_queue_repository;
 mod sql_executor;
 
+use anyhow::anyhow;
+use std::sync::{Arc, Mutex, MutexGuard};
+
 pub(crate) use autonomous_executor::{
     row::value::sql_value::{
         nn_sql_value::NnSqlValue, sql_compare_result::SqlCompareResult, SqlValue,
@@ -20,7 +23,7 @@ pub(crate) use autonomous_executor::{
 };
 
 use crate::{
-    error::Result,
+    error::{Result, SpringError},
     low_level_rs::SpringConfig,
     pipeline::{name::QueueName, Pipeline},
 };
@@ -29,6 +32,31 @@ use self::{
     autonomous_executor::AutonomousExecutor, command::alter_pipeline_command::AlterPipelineCommand,
     in_memory_queue_repository::InMemoryQueueRepository, sql_executor::SqlExecutor,
 };
+
+#[derive(Clone, Debug)]
+pub(crate) struct EngineMutex(Arc<Mutex<StreamEngine>>);
+
+impl EngineMutex {
+    pub(crate) fn new(config: &SpringConfig) -> Self {
+        let engine = StreamEngine::new(config);
+        Self(Arc::new(Mutex::new(engine)))
+    }
+
+    /// # Failure
+    ///
+    /// - [SpringError::ThreadPoisoned](crate::error::SpringError::ThreadPoisoned)
+    pub(crate) fn get(&self) -> Result<MutexGuard<'_, StreamEngine>> {
+        self.0
+            .lock()
+            .map_err(|e| {
+                anyhow!(
+                    "another thread sharing the same stream-engine got panic: {:?}",
+                    e
+                )
+            })
+            .map_err(SpringError::SpringQlCoreIo)
+    }
+}
 
 /// Stream engine has SQL executor and autonomous executor inside.
 ///
