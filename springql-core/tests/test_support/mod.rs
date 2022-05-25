@@ -3,14 +3,15 @@
 use std::time::Duration;
 
 use springql_core::{
-    high_level_rs::SpringPipelineHL,
-    low_level_rs::{spring_command, spring_open, SpringConfig, SpringPipeline},
+    high_level_rs::SpringPipelineApi,
+    low_level_rs::{spring_command, spring_open, SpringConfig},
+    SpringPipeline,
 };
 use springql_foreign_service::sink::ForeignSink;
 
 #[allow(dead_code)]
-pub(crate) fn apply_ddls(ddls: &[String], config: SpringConfig) -> SpringPipelineHL {
-    let pipeline = SpringPipelineHL::new(&config).unwrap();
+pub(crate) fn apply_ddls(ddls: &[String], config: SpringConfig) -> SpringPipeline {
+    let pipeline = SpringPipeline::new(&config).unwrap();
     for ddl in ddls {
         pipeline.command(ddl).unwrap();
     }

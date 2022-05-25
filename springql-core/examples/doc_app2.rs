@@ -19,7 +19,9 @@
 
 use std::{sync::Arc, thread, time::Duration};
 
-use springql_core::{config::SpringConfig, SpringPipeline};
+use springql_core::{
+    config::SpringConfig, high_level_rs::SpringPipelineApi, SpringPipeline, SpringRow,
+};
 
 fn main() {
     const SOURCE_PORT: u16 = 54300;

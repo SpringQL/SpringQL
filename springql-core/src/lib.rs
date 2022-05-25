@@ -18,8 +18,10 @@ mod api;
 pub use api::*;
 
 // re-export for high level api
-pub use api::high_level_rs::SpringPipelineHL as SpringPipeline;
-pub use api::high_level_rs::SpringRowHL as SpringRow;
+
+/// Pipeline
+pub type SpringPipeline = pipeline::SpringPipeline;
+pub use api::high_level_rs::SpringRow;
 
 // re-export for low level api
 

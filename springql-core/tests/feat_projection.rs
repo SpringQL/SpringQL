@@ -4,7 +4,7 @@ mod test_support;
 
 use pretty_assertions::assert_eq;
 use serde_json::json;
-use springql_core::low_level_rs::*;
+use springql_core::{high_level_rs::SpringPipelineApi, low_level_rs::*, SpringRow};
 use springql_foreign_service::source::source_input::ForeignSourceInput;
 use springql_foreign_service::source::ForeignSource;
 use springql_test_logger::setup_test_logger;

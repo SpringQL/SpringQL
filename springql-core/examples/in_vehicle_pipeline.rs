@@ -7,7 +7,7 @@ use std::{
     time::Duration,
 };
 
-use springql_core::{config::SpringConfig, SpringPipeline};
+use springql_core::{config::SpringConfig, high_level_rs::SpringPipelineApi, SpringPipeline};
 use springql_foreign_service::sink::ForeignSink;
 
 use tempfile::NamedTempFile;
