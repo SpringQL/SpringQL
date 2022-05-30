@@ -17,6 +17,7 @@ All other sections are for end-users.
 ### For Developers
 
 - add `cargo-make` task for runs [actionlint](https://github.com/rhysd/actionlint)
+- docs: add code example to crate document([#156](https://github.com/SpringQL/SpringQL/pull/156))
 
 ## [v0.9.0]
 
