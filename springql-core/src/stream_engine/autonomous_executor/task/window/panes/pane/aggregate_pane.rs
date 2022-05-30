@@ -7,7 +7,7 @@ use std::collections::HashMap;
 use ordered_float::OrderedFloat;
 
 use crate::{
-    error::Result,
+    api::error::Result,
     expr_resolver::ExprResolver,
     pipeline::pump_model::window_operation_parameter::{
         aggregate::{AggregateFunctionParameter, AggregateParameter, GroupByLabels},

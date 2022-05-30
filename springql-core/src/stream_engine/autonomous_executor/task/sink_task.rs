@@ -5,7 +5,7 @@ pub(in crate::stream_engine::autonomous_executor) mod sink_writer;
 use std::sync::Arc;
 
 use super::task_context::TaskContext;
-use crate::error::Result;
+use crate::api::error::Result;
 use crate::mem_size::MemSize;
 use crate::pipeline::name::{SinkWriterName, StreamName};
 use crate::pipeline::sink_writer_model::SinkWriterModel;

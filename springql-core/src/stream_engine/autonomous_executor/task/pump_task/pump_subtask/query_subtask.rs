@@ -13,7 +13,7 @@ use rand::{
 };
 
 use crate::{
-    error::Result,
+    api::error::Result,
     expr_resolver::ExprResolver,
     pipeline::{name::ColumnName, stream_model::StreamModel},
     stream_engine::{

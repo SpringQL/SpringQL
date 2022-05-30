@@ -3,7 +3,7 @@
 use anyhow::{anyhow, Context};
 
 use crate::{
-    error::{Result, SpringError},
+    api::error::{Result, SpringError},
     pipeline::relation::sql_type::SqlType,
     pipeline::{name::ColumnName, relation::column::column_constraint::ColumnConstraint},
 };

@@ -1,7 +1,7 @@
 // This file is part of https://github.com/SpringQL/SpringQL which is licensed under MIT OR Apache-2.0. See file LICENSE-MIT or LICENSE-APACHE for full license details.
 
-use crate::error::Result;
-use crate::low_level_rs::SpringSinkWriterConfig;
+use crate::api::error::Result;
+use crate::api::low_level_rs::SpringSinkWriterConfig;
 use crate::pipeline::option::Options;
 use crate::pipeline::sink_writer_model::sink_writer_type::SinkWriterType;
 

@@ -2,7 +2,7 @@
 
 use super::SelectSyntaxAnalyzer;
 use crate::{
-    error::Result,
+    api::error::Result,
     expr_resolver::ExprResolver,
     pipeline::{pump_model::window_operation_parameter::join_parameter::JoinParameter, Pipeline},
     sql_processor::sql_parser::syntax::{FromItemSyntax, SubFromItemSyntax},

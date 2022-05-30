@@ -9,7 +9,7 @@ use self::{
     sql_parser::{parse_success::CreatePump, syntax::SelectStreamSyntax, SqlParser},
 };
 use crate::{
-    error::Result,
+    api::error::Result,
     pipeline::{
         pump_model::PumpModel, sink_writer_model::SinkWriterModel,
         source_reader_model::SourceReaderModel, stream_model::StreamModel, Pipeline,

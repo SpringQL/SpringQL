@@ -3,7 +3,7 @@
 use anyhow::{anyhow, Context};
 
 use crate::{
-    error::{Result, SpringError},
+    api::error::{Result, SpringError},
     mem_size::{arc_overhead_size, MemSize},
     pipeline::name::ColumnName,
     pipeline::{relation::column::column_definition::ColumnDefinition, stream_model::StreamModel},

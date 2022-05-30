@@ -14,6 +14,5 @@ pub(crate) mod sql_processor;
 pub(crate) mod stream_engine;
 pub(crate) mod time;
 
-mod api;
-
-pub use api::*;
+/// public API for SpringQL
+pub mod api;

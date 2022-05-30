@@ -6,7 +6,7 @@ pub(in crate::sql_processor) mod parse_success;
 
 mod pest_parser_impl;
 
-use crate::error::Result;
+use crate::api::error::Result;
 
 use self::parse_success::ParseSuccess;
 use self::pest_parser_impl::PestParserImpl;

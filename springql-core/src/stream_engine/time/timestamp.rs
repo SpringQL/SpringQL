@@ -14,7 +14,7 @@ use std::{
 };
 
 use crate::{
-    error::{Result, SpringError},
+    api::error::{Result, SpringError},
     mem_size::{chrono_naive_date_time_overhead_size, MemSize},
 };
 
@@ -120,7 +120,7 @@ impl Sub<SpringTimestamp> for SpringTimestamp {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::error::Result;
+    use crate::api::error::Result;
     use pretty_assertions::assert_eq;
 
     #[test]

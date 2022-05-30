@@ -12,7 +12,7 @@
 //! echo '{"ts": "2022-01-01 13:00:00.000000000", "temperature": 5.3}' |nc localhost 54300
 //! ```
 
-use springql_core::{high_level_rs::SpringPipelineHL, low_level_rs::SpringConfig};
+use springql_core::api::{high_level_rs::SpringPipelineHL, low_level_rs::SpringConfig};
 
 fn main() {
     const SOURCE_PORT: u16 = 54300;

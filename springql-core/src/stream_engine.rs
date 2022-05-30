@@ -20,8 +20,8 @@ pub(crate) use autonomous_executor::{
 };
 
 use crate::{
-    error::Result,
-    low_level_rs::SpringConfig,
+    api::error::Result,
+    api::low_level_rs::SpringConfig,
     pipeline::{name::QueueName, Pipeline},
 };
 

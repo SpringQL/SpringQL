@@ -6,7 +6,7 @@ pub(in crate::stream_engine::autonomous_executor) mod sql_value_hash_key;
 
 use self::{nn_sql_value::NnSqlValue, sql_compare_result::SqlCompareResult};
 use crate::{
-    error::{Result, SpringError},
+    api::error::{Result, SpringError},
     mem_size::MemSize,
     stream_engine::time::duration::event_duration::SpringEventDuration,
 };

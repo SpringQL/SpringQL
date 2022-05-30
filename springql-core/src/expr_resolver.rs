@@ -2,7 +2,7 @@
 
 pub(crate) mod expr_label;
 
-use crate::error::{Result, SpringError};
+use crate::api::error::{Result, SpringError};
 use crate::expression::{AggrExpr, ValueExpr};
 use crate::pipeline::name::{AggrAlias, ValueAlias};
 use crate::sql_processor::sql_parser::syntax::SelectFieldSyntax;

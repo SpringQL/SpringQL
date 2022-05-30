@@ -3,8 +3,8 @@
 use std::time::Duration;
 
 use springql_core::{
-    high_level_rs::SpringPipelineHL,
-    low_level_rs::{spring_command, spring_open, SpringConfig, SpringPipeline},
+    api::high_level_rs::SpringPipelineHL,
+    api::low_level_rs::{spring_command, spring_open, SpringConfig, SpringPipeline},
 };
 use springql_foreign_service::sink::ForeignSink;
 

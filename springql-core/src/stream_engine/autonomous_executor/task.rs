@@ -9,7 +9,7 @@ pub(super) mod task_context;
 pub(super) mod window;
 
 use crate::{
-    error::Result,
+    api::error::Result,
     pipeline::pipeline_graph::{edge::Edge, PipelineGraph},
 };
 

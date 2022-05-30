@@ -5,7 +5,7 @@ mod in_memory_queue;
 use anyhow::anyhow;
 use once_cell::sync::Lazy;
 
-use crate::error::{Result, SpringError};
+use crate::api::error::{Result, SpringError};
 use crate::pipeline::name::QueueName;
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex, MutexGuard};

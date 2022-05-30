@@ -3,7 +3,7 @@
 mod generated_parser;
 mod helper;
 
-use crate::error::{Result, SpringError};
+use crate::api::error::{Result, SpringError};
 use crate::expression::boolean_expression::comparison_function::ComparisonFunction;
 use crate::expression::boolean_expression::logical_function::LogicalFunction;
 use crate::expression::boolean_expression::numerical_function::NumericalFunction;

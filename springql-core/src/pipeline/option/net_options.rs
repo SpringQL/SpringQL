@@ -4,7 +4,7 @@ use std::net::IpAddr;
 
 use anyhow::Context;
 
-use crate::error::{Result, SpringError};
+use crate::api::error::{Result, SpringError};
 
 use super::Options;
 

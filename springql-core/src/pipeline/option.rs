@@ -5,7 +5,7 @@ pub(crate) mod options_builder;
 pub(crate) mod in_memory_queue_options;
 pub(crate) mod net_options;
 
-use crate::error::{Result, SpringError};
+use crate::api::error::{Result, SpringError};
 use anyhow::Context;
 
 use std::collections::HashMap;

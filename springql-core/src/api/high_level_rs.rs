@@ -3,10 +3,12 @@
 //! High-level Rust API to execute / register SpringQL from Rust.
 
 use crate::{
-    error::{Result, SpringError},
-    low_level_rs::{
-        spring_command, spring_open, spring_pop, spring_pop_non_blocking, SpringConfig,
-        SpringPipeline,
+    api::{
+        error::{Result, SpringError},
+        low_level_rs::{
+            spring_command, spring_open, spring_pop, spring_pop_non_blocking, SpringConfig,
+            SpringPipeline,
+        },
     },
     stream_engine::{SinkRow, SpringValue, SqlValue},
 };
@@ -26,11 +28,11 @@ impl SpringPipelineHL {
     ///
     /// # Failure
     ///
-    /// - [SpringError::Sql](crate::error::SpringError::Sql) when:
+    /// - [SpringError::Sql](crate::api::error::SpringError::Sql) when:
     ///   - Invalid SQL syntax.
     ///   - Refers to undefined objects (streams, pumps, etc)
     ///   - Other semantic errors.
-    /// - [SpringError::InvalidOption](crate::error::SpringError::Sql) when:
+    /// - [SpringError::InvalidOption](crate::api::error::SpringError::Sql) when:
     ///   - `OPTIONS` in `CREATE` statement includes invalid key or value.
     pub fn command<S: AsRef<str>>(&self, sql: S) -> Result<()> {
         spring_command(&self.0, sql.as_ref())
@@ -44,7 +46,7 @@ impl SpringPipelineHL {
     ///
     /// # Failure
     ///
-    /// - [SpringError::Unavailable](crate::error::SpringError::Unavailable) when:
+    /// - [SpringError::Unavailable](crate::api::error::SpringError::Unavailable) when:
     ///   - queue named `queue` does not exist.
     pub fn pop(&self, queue: &str) -> Result<SpringRowHL> {
         spring_pop(&self.0, queue).map(|row| SpringRowHL(row.0))
@@ -59,7 +61,7 @@ impl SpringPipelineHL {
     ///
     /// # Failure
     ///
-    /// - [SpringError::Unavailable](crate::error::SpringError::Unavailable) when:
+    /// - [SpringError::Unavailable](crate::api::error::SpringError::Unavailable) when:
     ///   - queue named `queue` does not exist.
     pub fn pop_non_blocking(&self, queue: &str) -> Result<Option<SpringRowHL>> {
         spring_pop_non_blocking(&self.0, queue).map(|opt_row| opt_row.map(|row| SpringRowHL(row.0)))
@@ -75,9 +77,9 @@ impl SpringRowHL {
     ///
     /// # Failure
     ///
-    /// - [SpringError::Sql](crate::error::SpringError::Sql) when:
+    /// - [SpringError::Sql](crate::api::error::SpringError::Sql) when:
     ///   - Column index out of range
-    /// - [SpringError::Null](crate::error::SpringError::Null) when:
+    /// - [SpringError::Null](crate::api::error::SpringError::Null) when:
     ///   - Column value is NULL
     pub fn get_not_null_by_index<T>(&self, i_col: usize) -> Result<T>
     where
@@ -104,9 +106,9 @@ impl SpringConfig {
     ///
     /// # Failures
     ///
-    /// - [SpringError::InvalidConfig](crate::error::SpringError::InvalidConfig) when:
+    /// - [SpringError::InvalidConfig](crate::api::error::SpringError::InvalidConfig) when:
     ///   - `overwrite_config_toml` includes invalid key and/or value.
-    /// - [SpringError::InvalidFormat](crate::error::SpringError::InvalidFormat) when:
+    /// - [SpringError::InvalidFormat](crate::api::error::SpringError::InvalidFormat) when:
     ///   - `overwrite_config_toml` is not valid as TOML.
     pub fn from_toml(overwrite_config_toml: &str) -> Result<SpringConfig> {
         SpringConfig::new(overwrite_config_toml)

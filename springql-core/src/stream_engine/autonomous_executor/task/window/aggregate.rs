@@ -3,7 +3,7 @@
 use std::collections::HashMap;
 
 use crate::{
-    error::{Result, SpringError},
+    api::error::{Result, SpringError},
     expr_resolver::expr_label::{AggrExprLabel, ValueExprLabel},
     pipeline::pump_model::{
         window_operation_parameter::WindowOperationParameter, window_parameter::WindowParameter,

@@ -9,7 +9,7 @@ pub(crate) mod operator;
 use anyhow::anyhow;
 
 use crate::{
-    error::{Result, SpringError},
+    api::error::{Result, SpringError},
     pipeline::{
         field::field_name::ColumnReference,
         pump_model::window_operation_parameter::aggregate::AggregateFunctionParameter,

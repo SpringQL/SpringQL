@@ -9,8 +9,8 @@ use std::{
 use anyhow::Context;
 
 use crate::{
-    error::{foreign_info::ForeignInfo, Result, SpringError},
-    low_level_rs::SpringSourceReaderConfig,
+    api::error::{foreign_info::ForeignInfo, Result, SpringError},
+    api::low_level_rs::SpringSourceReaderConfig,
     pipeline::option::{net_options::NetClientOptions, Options},
     stream_engine::autonomous_executor::row::foreign_row::{
         format::json::JsonObject, source_row::SourceRow,
@@ -118,7 +118,7 @@ mod tests {
     use crate::stream_engine::autonomous_executor::row::foreign_row::format::json::JsonObject;
 
     #[test]
-    fn test_source_tcp() -> crate::error::Result<()> {
+    fn test_source_tcp() -> crate::api::error::Result<()> {
         let j1 = JsonObject::fx_city_temperature_tokyo();
         let j2 = JsonObject::fx_city_temperature_osaka();
         let j3 = JsonObject::fx_city_temperature_london();

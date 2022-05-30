@@ -9,7 +9,7 @@ use std::time::Duration;
 use super::task_context::TaskContext;
 use super::window::aggregate::AggrWindow;
 use super::window::join_window::JoinWindow;
-use crate::error::Result;
+use crate::api::error::Result;
 use crate::pipeline::pipeline_graph::PipelineGraph;
 use crate::pipeline::pump_model::PumpModel;
 use crate::stream_engine::autonomous_executor::performance_metrics::metrics_update_command::metrics_update_by_task_execution::{MetricsUpdateByTaskExecution, TaskMetricsUpdateByTask, OutQueueMetricsUpdateByTask, InQueueMetricsUpdateByTask};

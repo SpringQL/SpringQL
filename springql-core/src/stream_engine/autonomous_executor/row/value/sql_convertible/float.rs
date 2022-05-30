@@ -3,7 +3,7 @@
 use ordered_float::OrderedFloat;
 
 use super::{SpringValue, ToNnSqlValue};
-use crate::error::Result;
+use crate::api::error::Result;
 use crate::stream_engine::autonomous_executor::row::value::sql_value::nn_sql_value::NnSqlValue;
 
 impl SpringValue for f32 {
@@ -34,7 +34,7 @@ mod tests_f32 {
 
     use super::*;
     use crate::{
-        error::Result,
+        api::error::Result,
         stream_engine::autonomous_executor::row::value::sql_value::nn_sql_value::NnSqlValue,
     };
 

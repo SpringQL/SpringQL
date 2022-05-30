@@ -19,7 +19,7 @@ pub(crate) mod test_support;
 use anyhow::anyhow;
 use std::{collections::HashSet, sync::Arc};
 
-use crate::error::{Result, SpringError};
+use crate::api::error::{Result, SpringError};
 
 use self::{
     name::StreamName, pipeline_graph::PipelineGraph, pipeline_version::PipelineVersion,

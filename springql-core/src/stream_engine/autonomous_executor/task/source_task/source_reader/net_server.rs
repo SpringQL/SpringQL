@@ -9,8 +9,8 @@ use std::{
 };
 
 use crate::{
-    error::{foreign_info::ForeignInfo, Result, SpringError},
-    low_level_rs::SpringSourceReaderConfig,
+    api::error::{foreign_info::ForeignInfo, Result, SpringError},
+    api::low_level_rs::SpringSourceReaderConfig,
     pipeline::option::{
         net_options::{NetProtocol, NetServerOptions},
         Options,
@@ -133,7 +133,7 @@ impl NetServerSourceReader {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::low_level_rs::SpringSinkWriterConfig;
+    use crate::api::low_level_rs::SpringSinkWriterConfig;
     use crate::pipeline::option::options_builder::OptionsBuilder;
     use crate::stream_engine::autonomous_executor::task::sink_task::sink_writer::net::NetSinkWriter;
     use crate::stream_engine::autonomous_executor::task::sink_task::sink_writer::SinkWriter;
@@ -154,7 +154,7 @@ mod tests {
     }
 
     #[test]
-    fn test_source_tcp() -> crate::error::Result<()> {
+    fn test_source_tcp() -> crate::api::error::Result<()> {
         let port = ephemeral_port();
         let options = OptionsBuilder::default()
             .add("PROTOCOL", "TCP")

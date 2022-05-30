@@ -9,12 +9,12 @@
 
 ### Simple pipeline example
 
-- create pipeline instance: [SpringPipelineHL::new](crate::high_level_rs::SpringPipelineHL::new)
-- execute DDLs: [SpringPipelineHL::command](crate::high_level_rs::SpringPipelineHL::command)
-- fetch row from pipeline: [SpringPipelineHL::pop](crate::high_level_rs::SpringPipelineHL::pop)
+- create pipeline instance: [SpringPipelineHL::new](crate::api::high_level_rs::SpringPipelineHL::new)
+- execute DDLs: [SpringPipelineHL::command](crate::api::high_level_rs::SpringPipelineHL::command)
+- fetch row from pipeline: [SpringPipelineHL::pop](crate::api::high_level_rs::SpringPipelineHL::pop)
 
 ```rust
-use springql_core::{high_level_rs::SpringPipelineHL, low_level_rs::SpringConfig};
+use springql_core::api::{high_level_rs::SpringPipelineHL, low_level_rs::SpringConfig};
 
 fn main() {
     const SOURCE_PORT: u16 = 54300;
@@ -84,7 +84,7 @@ echo '{"ts": "2022-01-01 13:00:00.000000000", "temperature": 5.3}' | nc localhos
 ### Using Window and share pipeline for many threads
 
 - To share pipeline for threads, use [std::sync::Arc](std::sync::Arc)
-- non blocking fetch rom for sink [pop_non_blocking](high_level_rs::SpringPipelineHL::pop_non_blocking)
+- non blocking fetch rom for sink [pop_non_blocking](api::high_level_rs::SpringPipelineHL::pop_non_blocking)
 
 ```rust
 use std::{sync::Arc, thread, time::Duration};

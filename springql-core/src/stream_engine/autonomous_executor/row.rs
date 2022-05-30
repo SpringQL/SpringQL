@@ -13,7 +13,7 @@ pub(crate) use foreign_row::SinkRow;
 use std::vec;
 
 use self::{column::stream_column::StreamColumns, value::sql_value::SqlValue};
-use crate::error::Result;
+use crate::api::error::Result;
 use crate::mem_size::MemSize;
 use crate::pipeline::name::ColumnName;
 use crate::pipeline::stream_model::StreamModel;

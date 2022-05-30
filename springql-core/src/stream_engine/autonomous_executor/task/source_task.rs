@@ -5,7 +5,7 @@ pub(in crate::stream_engine::autonomous_executor) mod source_reader;
 use std::fmt::Debug;
 use std::sync::Arc;
 
-use crate::error::Result;
+use crate::api::error::Result;
 use crate::mem_size::MemSize;
 use crate::pipeline::name::{SourceReaderName, StreamName};
 use crate::pipeline::source_reader_model::SourceReaderModel;

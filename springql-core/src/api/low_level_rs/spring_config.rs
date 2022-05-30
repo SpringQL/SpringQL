@@ -2,7 +2,7 @@
 
 use serde::Deserialize;
 
-use crate::error::{Result, SpringError};
+use crate::api::error::{Result, SpringError};
 
 /// Default configuration.
 ///
@@ -75,9 +75,9 @@ pub fn spring_config_default() -> SpringConfig {
 ///
 /// # Failures
 ///
-/// - [SpringError::InvalidConfig](crate::error::SpringError::InvalidConfig) when:
+/// - [SpringError::InvalidConfig](crate::api::error::SpringError::InvalidConfig) when:
 ///   - `overwrite_config_toml` includes invalid key and/or value.
-/// - [SpringError::InvalidFormat](crate::error::SpringError::InvalidFormat) when:
+/// - [SpringError::InvalidFormat](crate::api::error::SpringError::InvalidFormat) when:
 ///   - `overwrite_config_toml` is not valid as TOML.
 pub fn spring_config_toml(overwrite_config_toml: &str) -> Result<SpringConfig> {
     SpringConfig::new(overwrite_config_toml)

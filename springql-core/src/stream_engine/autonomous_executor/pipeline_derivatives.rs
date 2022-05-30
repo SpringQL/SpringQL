@@ -6,7 +6,7 @@ use std::sync::Arc;
 
 use self::task_repository::TaskRepository;
 use crate::pipeline::Pipeline;
-use crate::{error::Result, pipeline::pipeline_version::PipelineVersion};
+use crate::{api::error::Result, pipeline::pipeline_version::PipelineVersion};
 
 use super::{
     task::Task,

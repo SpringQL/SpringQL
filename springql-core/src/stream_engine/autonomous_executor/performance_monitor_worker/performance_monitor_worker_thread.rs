@@ -3,7 +3,7 @@
 use std::{sync::Arc, thread, time::Duration};
 
 use crate::{
-    low_level_rs::SpringConfig,
+    api::low_level_rs::SpringConfig,
     stream_engine::{
         autonomous_executor::{
             event_queue::{

@@ -2,8 +2,9 @@
 
 use std::sync::{Arc, Mutex, MutexGuard};
 
-use crate::error::Result;
-use crate::{error::SpringError, stream_engine::StreamEngine};
+use crate::api::error::Result;
+use crate::api::error::SpringError;
+use crate::stream_engine::StreamEngine;
 use anyhow::anyhow;
 
 use super::spring_config::SpringConfig;

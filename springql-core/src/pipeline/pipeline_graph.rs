@@ -24,7 +24,7 @@ use super::{
     name::StreamName, pump_model::PumpModel, sink_writer_model::SinkWriterModel,
     source_reader_model::SourceReaderModel, stream_model::StreamModel,
 };
-use crate::error::{Result, SpringError};
+use crate::api::error::{Result, SpringError};
 use anyhow::anyhow;
 
 #[derive(Clone, Debug)]

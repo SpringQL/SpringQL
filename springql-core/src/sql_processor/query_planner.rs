@@ -58,7 +58,7 @@
 mod select_syntax_analyzer;
 
 use crate::{
-    error::Result,
+    api::error::Result,
     expr_resolver::{expr_label::ExprLabel, ExprResolver},
     pipeline::{
         pump_model::{

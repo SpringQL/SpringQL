@@ -6,7 +6,7 @@ mod web_console_reporter;
 
 use std::sync::Arc;
 
-use crate::low_level_rs::SpringConfig;
+use crate::api::low_level_rs::SpringConfig;
 
 use self::performance_monitor_worker_thread::{
     PerformanceMonitorWorkerThread, PerformanceMonitorWorkerThreadArg,

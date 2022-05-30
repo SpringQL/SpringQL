@@ -14,7 +14,7 @@ pub(in crate::stream_engine::autonomous_executor) mod memory_state_machine_worke
 
 use std::sync::Arc;
 
-use crate::low_level_rs::SpringMemoryConfig;
+use crate::api::low_level_rs::SpringMemoryConfig;
 
 use self::memory_state_machine_worker_thread::{
     MemoryStateMachineWorkerThread, MemoryStateMachineWorkerThreadArg,

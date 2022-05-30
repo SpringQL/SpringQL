@@ -7,7 +7,7 @@ mod generic_worker_pool;
 mod scheduler;
 mod source_worker_pool;
 
-use crate::{error::Result, low_level_rs::SpringConfig};
+use crate::{api::error::Result, api::low_level_rs::SpringConfig};
 use std::sync::Arc;
 
 use self::{generic_worker_pool::GenericWorkerPool, source_worker_pool::SourceWorkerPool};

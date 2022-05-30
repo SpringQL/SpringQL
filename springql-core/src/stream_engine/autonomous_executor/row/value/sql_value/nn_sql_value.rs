@@ -5,7 +5,7 @@ use std::ops::{Add, Mul};
 use std::{fmt::Display, hash::Hash};
 
 use super::sql_compare_result::SqlCompareResult;
-use crate::error::{Result, SpringError};
+use crate::api::error::{Result, SpringError};
 use crate::mem_size::MemSize;
 use crate::pipeline::relation::sql_type::{
     self, NumericComparableType, SqlType, StringComparableLoseType,
@@ -220,10 +220,12 @@ impl NnSqlValue {
                 }
             },
             SqlType::BooleanComparable => self.unpack::<bool>().map(|v| v.into_sql_value()),
-            SqlType::TimestampComparable => self.unpack::<SpringTimestamp>().map(|v| v.into_sql_value()),
-            SqlType::DurationComparable => {
-                self.unpack::<SpringEventDuration>().map(|v| v.into_sql_value())
+            SqlType::TimestampComparable => {
+                self.unpack::<SpringTimestamp>().map(|v| v.into_sql_value())
             }
+            SqlType::DurationComparable => self
+                .unpack::<SpringEventDuration>()
+                .map(|v| v.into_sql_value()),
         }
     }
 
@@ -260,7 +262,10 @@ impl NnSqlValue {
                 Ok(SqlCompareResult::from(self_b.cmp(&other_b)))
             }
             (SqlType::TimestampComparable, SqlType::TimestampComparable) => {
-                let (self_t, other_t) = (self.unpack::<SpringTimestamp>()?, other.unpack::<SpringTimestamp>()?);
+                let (self_t, other_t) = (
+                    self.unpack::<SpringTimestamp>()?,
+                    other.unpack::<SpringTimestamp>()?,
+                );
                 Ok(SqlCompareResult::from(self_t.cmp(&other_t)))
             }
             (_, _) => Err(SpringError::Sql(anyhow!(

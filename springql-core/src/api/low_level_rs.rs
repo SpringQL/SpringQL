@@ -12,7 +12,7 @@ pub use spring_config::*;
 use std::{sync::Once, thread, time::Duration};
 
 use crate::{
-    error::{Result, SpringError},
+    api::error::{Result, SpringError},
     pipeline::name::QueueName,
     sql_processor::SqlProcessor,
     stream_engine::{command::Command, SinkRow, SpringValue, SqlValue},
@@ -69,11 +69,11 @@ pub fn spring_open(config: &SpringConfig) -> Result<SpringPipeline> {
 ///
 /// # Failure
 ///
-/// - [SpringError::Sql](crate::error::SpringError::Sql) when:
+/// - [SpringError::Sql](crate::api::error::SpringError::Sql) when:
 ///   - Invalid SQL syntax.
 ///   - Refers to undefined objects (streams, pumps, etc)
 ///   - Other semantic errors.
-/// - [SpringError::InvalidOption](crate::error::SpringError::Sql) when:
+/// - [SpringError::InvalidOption](crate::api::error::SpringError::Sql) when:
 ///   - `OPTIONS` in `CREATE` statement includes invalid key or value.
 pub fn spring_command(pipeline: &SpringPipeline, sql: &str) -> Result<()> {
     let mut engine = pipeline.engine.get()?;
@@ -95,7 +95,7 @@ pub fn spring_command(pipeline: &SpringPipeline, sql: &str) -> Result<()> {
 ///
 /// # Failure
 ///
-/// - [SpringError::Unavailable](crate::error::SpringError::Unavailable) when:
+/// - [SpringError::Unavailable](crate::api::error::SpringError::Unavailable) when:
 ///   - queue named `queue` does not exist.
 pub fn spring_pop(pipeline: &SpringPipeline, queue: &str) -> Result<SpringRow> {
     const SLEEP_MSECS: u64 = 10;
@@ -122,7 +122,7 @@ pub fn spring_pop(pipeline: &SpringPipeline, queue: &str) -> Result<SpringRow> {
 ///
 /// # Failure
 ///
-/// - [SpringError::Unavailable](crate::error::SpringError::Unavailable) when:
+/// - [SpringError::Unavailable](crate::api::error::SpringError::Unavailable) when:
 ///   - queue named `queue` does not exist.
 pub fn spring_pop_non_blocking(
     pipeline: &SpringPipeline,
@@ -137,10 +137,10 @@ pub fn spring_pop_non_blocking(
 ///
 /// # Failure
 ///
-/// - [SpringError::Unavailable](crate::error::SpringError::Unavailable) when:
+/// - [SpringError::Unavailable](crate::api::error::SpringError::Unavailable) when:
 ///   - `i_col` already fetched.
 ///   - `i_col` out of range.
-/// - [SpringError::Null](crate::error::SpringError::Null) when:
+/// - [SpringError::Null](crate::api::error::SpringError::Null) when:
 ///   - Column value is NULL
 pub fn spring_column_i32(row: &SpringRow, i_col: usize) -> Result<i32> {
     spring_column_not_null(row, i_col)

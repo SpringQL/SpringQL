@@ -8,8 +8,8 @@ use std::{
 use parking_lot::RwLock;
 
 use crate::{
-    error::Result,
-    low_level_rs::SpringSourceReaderConfig,
+    api::error::Result,
+    api::low_level_rs::SpringSourceReaderConfig,
     pipeline::{name::SourceReaderName, source_reader_model::SourceReaderModel},
     stream_engine::autonomous_executor::task::source_task::source_reader::source_reader_factory::SourceReaderFactory,
 };

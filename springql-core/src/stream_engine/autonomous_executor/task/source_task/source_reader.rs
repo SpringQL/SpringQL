@@ -1,7 +1,7 @@
 // This file is part of https://github.com/SpringQL/SpringQL which is licensed under MIT OR Apache-2.0. See file LICENSE-MIT or LICENSE-APACHE for full license details.
 
 use crate::{
-    error::Result, low_level_rs::SpringSourceReaderConfig, pipeline::option::Options,
+    api::error::Result, api::low_level_rs::SpringSourceReaderConfig, pipeline::option::Options,
     stream_engine::autonomous_executor::row::foreign_row::source_row::SourceRow,
 };
 use std::fmt::Debug;

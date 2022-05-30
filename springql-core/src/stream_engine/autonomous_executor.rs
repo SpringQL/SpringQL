@@ -22,8 +22,8 @@ mod repositories;
 mod task_executor;
 mod task_graph;
 
-use crate::error::{Result, SpringError};
-use crate::low_level_rs::SpringConfig;
+use crate::api::error::{Result, SpringError};
+use crate::api::low_level_rs::SpringConfig;
 use crate::pipeline::Pipeline;
 use crate::stream_engine::autonomous_executor::args::{Coordinators, EventQueues, Locks};
 use crate::stream_engine::autonomous_executor::main_job_lock::MainJobLock;
