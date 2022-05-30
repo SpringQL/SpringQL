@@ -10,14 +10,16 @@ All other sections are for end-users.
 <!-- markdownlint-disable MD024 -->
 ## [Unreleased]
 
-### Changed
+## [v0.10.0]
 
-- Refactor : crate/module document move to pure Markdown ([#136](https://github.com/SpringQL/SpringQL/pull/136))
+### Added
+
+- docs: add code example to crate document([#156](https://github.com/SpringQL/SpringQL/pull/156))
 
 ### For Developers
 
+- Refactor : crate/module document move to pure Markdown ([#136](https://github.com/SpringQL/SpringQL/pull/136))
 - add `cargo-make` task for runs [actionlint](https://github.com/rhysd/actionlint)
-- docs: add code example to crate document([#156](https://github.com/SpringQL/SpringQL/pull/156))
 
 ## [v0.9.0]
 
@@ -146,8 +148,9 @@ All other sections are for end-users.
 [Semantic Versioning]: https://semver.org/
 
 <!-- Versions -->
-[Unreleased]: https://github.com/SpringQL/SpringQL/compare/v0.9.0...HEAD
+[Unreleased]: https://github.com/SpringQL/SpringQL/compare/v0.10.0...HEAD
 [Released]: https://github.com/SpringQL/SpringQL/releases
+[v0.9.0]: https://github.com/SpringQL/SpringQL/compare/v0.9.0...v0.10.0
 [v0.9.0]: https://github.com/SpringQL/SpringQL/compare/v0.8.0...v0.9.0
 [v0.8.0]: https://github.com/SpringQL/SpringQL/compare/v0.7.1...v0.8.0
 [v0.7.1]: https://github.com/SpringQL/SpringQL/compare/v0.7.0...v0.7.1
