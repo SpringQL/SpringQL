@@ -15,4 +15,4 @@ pub(crate) mod stream_engine;
 
 mod api;
 
-pub use api::*;
+pub use api::{error, low_level_rs, high_level_rs};
