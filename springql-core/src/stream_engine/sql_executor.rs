@@ -2,7 +2,6 @@
 
 use std::sync::Arc;
 
-use super::command::alter_pipeline_command::AlterPipelineCommand;
 use crate::{
     api::error::Result,
     pipeline::{
@@ -10,6 +9,7 @@ use crate::{
         sink_writer_model::SinkWriterModel, source_reader_model::SourceReaderModel,
         stream_model::StreamModel, Pipeline,
     },
+    stream_engine::command::alter_pipeline_command::AlterPipelineCommand,
 };
 
 /// Executor of SQL.

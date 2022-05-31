@@ -8,18 +8,22 @@ pub(in crate::stream_engine::autonomous_executor) mod column;
 pub(in crate::stream_engine::autonomous_executor) mod column_values;
 pub(in crate::stream_engine) mod foreign_row;
 
-pub(crate) use foreign_row::SinkRow;
-
 use std::vec;
 
-use self::{column::stream_column::StreamColumns, value::sql_value::SqlValue};
-use crate::api::error::Result;
-use crate::mem_size::MemSize;
-use crate::pipeline::name::ColumnName;
-use crate::pipeline::stream_model::StreamModel;
-use crate::stream_engine::autonomous_executor::row::value::sql_value::nn_sql_value::NnSqlValue;
-use crate::stream_engine::time::timestamp::system_timestamp::SystemTimestamp;
-use crate::stream_engine::time::timestamp::SpringTimestamp;
+pub(crate) use self::foreign_row::SinkRow;
+
+use crate::{
+    api::error::Result,
+    mem_size::MemSize,
+    pipeline::{name::ColumnName, stream_model::StreamModel},
+    stream_engine::{
+        autonomous_executor::row::{
+            column::stream_column::StreamColumns,
+            value::sql_value::{nn_sql_value::NnSqlValue, SqlValue},
+        },
+        time::timestamp::{system_timestamp::SystemTimestamp, SpringTimestamp},
+    },
+};
 
 /// - Mandatory `rowtime()`, either from `cols` or `arrival_rowtime`.
 /// - PartialEq by all columns (NULL prevents Eq).

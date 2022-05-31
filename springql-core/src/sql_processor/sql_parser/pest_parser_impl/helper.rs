@@ -1,10 +1,14 @@
 // This file is part of https://github.com/SpringQL/SpringQL which is licensed under MIT OR Apache-2.0. See file LICENSE-MIT or LICENSE-APACHE for full license details.
 
-use super::generated_parser::Rule;
-use crate::api::error::{Result, SpringError};
+use std::collections::VecDeque;
+
 use anyhow::Context;
 use pest::iterators::{Pair, Pairs};
-use std::collections::VecDeque;
+
+use crate::{
+    api::error::{Result, SpringError},
+    sql_processor::sql_parser::pest_parser_impl::generated_parser::Rule,
+};
 
 #[derive(Clone, Eq, PartialEq, Hash, Debug)]
 pub(super) struct FnParseParams<'a> {

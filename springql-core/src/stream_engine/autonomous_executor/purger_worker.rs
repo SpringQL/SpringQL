@@ -4,13 +4,11 @@ pub(in crate::stream_engine::autonomous_executor) mod purger_worker_thread;
 
 use std::sync::Arc;
 
-use crate::stream_engine::autonomous_executor::worker::worker_handle::WorkerHandle;
-
-use self::purger_worker_thread::{PurgerWorkerThread, PurgerWorkerThreadArg};
-
-use super::{
+use crate::stream_engine::autonomous_executor::{
     args::{Coordinators, EventQueues},
     main_job_lock::MainJobLock,
+    purger_worker::purger_worker_thread::{PurgerWorkerThread, PurgerWorkerThreadArg},
+    worker::worker_handle::WorkerHandle,
 };
 
 /// Worker to execute pump and sink tasks.

@@ -7,11 +7,12 @@ use std::sync::Arc;
 use crate::stream_engine::autonomous_executor::{
     args::{Coordinators, EventQueues},
     main_job_lock::MainJobLock,
-    task_executor::task_worker_thread_handler::TaskWorkerThreadArg,
+    task_executor::{
+        source_worker_pool::source_worker::source_worker_thread::SourceWorkerThread,
+        task_worker_thread_handler::TaskWorkerThreadArg,
+    },
     worker::worker_handle::WorkerHandle,
 };
-
-use self::source_worker_thread::SourceWorkerThread;
 
 /// Worker to execute pump and sink tasks.
 #[derive(Debug)]

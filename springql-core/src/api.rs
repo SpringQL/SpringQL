@@ -4,9 +4,13 @@ pub mod error;
 pub mod high_level_rs;
 pub mod low_level_rs;
 
-pub use crate::stream_engine::time::duration::event_duration::SpringEventDuration;
-pub use crate::stream_engine::time::timestamp::SpringTimestamp;
-pub use crate::stream_engine::SpringValue;
-
-pub use high_level_rs::{SpringPipelineHL, SpringRowHL};
-pub use low_level_rs::{SpringConfig, SpringPipeline, SpringRow};
+pub use crate::{
+    api::{
+        high_level_rs::{SpringPipelineHL, SpringRowHL},
+        low_level_rs::{SpringConfig, SpringPipeline, SpringRow},
+    },
+    stream_engine::{
+        time::{duration::event_duration::SpringEventDuration, timestamp::SpringTimestamp},
+        SpringValue,
+    },
+};

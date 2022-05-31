@@ -13,10 +13,9 @@ use crate::{
     stream_engine::autonomous_executor::{
         args::{Coordinators, EventQueues},
         main_job_lock::MainJobLock,
+        worker::worker_thread::WorkerThread,
     },
 };
-
-use super::worker_thread::WorkerThread;
 
 /// Handler to run worker thread.
 #[derive(Debug)]

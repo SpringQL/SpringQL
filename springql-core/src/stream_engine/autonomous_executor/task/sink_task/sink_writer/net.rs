@@ -8,13 +8,13 @@ use std::{
 
 use anyhow::Context;
 
-use super::SinkWriter;
 use crate::{
     api::error::{foreign_info::ForeignInfo, Result, SpringError},
     api::low_level_rs::SpringSinkWriterConfig,
     pipeline::option::{net_options::NetClientOptions, Options},
-    stream_engine::autonomous_executor::row::foreign_row::{
-        format::json::JsonObject, sink_row::SinkRow,
+    stream_engine::autonomous_executor::{
+        row::foreign_row::{format::json::JsonObject, sink_row::SinkRow},
+        task::sink_task::sink_writer::SinkWriter,
     },
 };
 

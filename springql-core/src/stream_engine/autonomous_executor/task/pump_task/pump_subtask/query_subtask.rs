@@ -17,32 +17,30 @@ use crate::{
     expr_resolver::ExprResolver,
     pipeline::{name::ColumnName, stream_model::StreamModel},
     stream_engine::{
-        autonomous_executor::task::window::{
-            aggregate::AggrWindow, join_window::JoinWindow, panes::pane::join_pane::JoinDir,
-        },
-        command::query_plan::{query_plan_operation::LowerOps, QueryPlan},
-    },
-    stream_engine::{
         autonomous_executor::{
-            performance_metrics::metrics_update_command::metrics_update_by_task_execution::InQueueMetricsUpdateByCollect,
-            task::{task_context::TaskContext, tuple::Tuple},
+            performance_metrics::metrics_update_command::metrics_update_by_task_execution::{
+                InQueueMetricsUpdateByCollect, InQueueMetricsUpdateByTask, WindowInFlowByWindowTask,
+            },
+            row::{column::stream_column::StreamColumns, column_values::ColumnValues, Row},
+            task::{
+                pump_task::pump_subtask::query_subtask::{
+                    collect_subtask::CollectSubtask,
+                    group_aggregate_window_subtask::GroupAggregateWindowSubtask,
+                    join_subtask::JoinSubtask, projection_subtask::ProjectionSubtask,
+                },
+                task_context::TaskContext,
+                tuple::Tuple,
+                window::{
+                    aggregate::AggrWindow, join_window::JoinWindow, panes::pane::join_pane::JoinDir,
+                },
+            },
+        },
+        command::query_plan::{
+            query_plan_operation::{JoinOp, LowerOps},
+            QueryPlan,
         },
         SqlValue,
     },
-    stream_engine::{
-        autonomous_executor::{
-            performance_metrics::metrics_update_command::metrics_update_by_task_execution::{
-                InQueueMetricsUpdateByTask, WindowInFlowByWindowTask,
-            },
-            row::{column::stream_column::StreamColumns, column_values::ColumnValues, Row},
-        },
-        command::query_plan::query_plan_operation::JoinOp,
-    },
-};
-
-use self::{
-    collect_subtask::CollectSubtask, group_aggregate_window_subtask::GroupAggregateWindowSubtask,
-    join_subtask::JoinSubtask, projection_subtask::ProjectionSubtask,
 };
 
 /// Process input row 1-by-1.

@@ -22,27 +22,30 @@ mod repositories;
 mod task_executor;
 mod task_graph;
 
-use crate::api::error::{Result, SpringError};
-use crate::api::low_level_rs::SpringConfig;
-use crate::pipeline::Pipeline;
-use crate::stream_engine::autonomous_executor::args::{Coordinators, EventQueues, Locks};
-use crate::stream_engine::autonomous_executor::main_job_lock::MainJobLock;
-use crate::stream_engine::autonomous_executor::worker::worker_handle::WorkerSetupCoordinator;
+pub(crate) use self::row::SinkRow;
 use std::sync::Arc;
 
-pub(crate) use row::SinkRow;
-
-use self::event_queue::blocking_event_queue::BlockingEventQueue;
-use self::event_queue::non_blocking_event_queue::NonBlockingEventQueue;
-use self::memory_state_machine_worker::MemoryStateMachineWorker;
-use self::purger_worker::purger_worker_thread::PurgerWorkerThreadArg;
-use self::purger_worker::PurgerWorker;
-use self::repositories::Repositories;
-use self::task_executor::task_executor_lock::TaskExecutorLock;
-use self::worker::worker_handle::WorkerStopCoordinator;
-use self::{
-    event_queue::event::Event, performance_monitor_worker::PerformanceMonitorWorker,
-    pipeline_derivatives::PipelineDerivatives, task_executor::TaskExecutor,
+use crate::{
+    api::{
+        error::{Result, SpringError},
+        low_level_rs::SpringConfig,
+    },
+    pipeline::Pipeline,
+    stream_engine::autonomous_executor::{
+        args::{Coordinators, EventQueues, Locks},
+        event_queue::{
+            blocking_event_queue::BlockingEventQueue, event::Event,
+            non_blocking_event_queue::NonBlockingEventQueue,
+        },
+        main_job_lock::MainJobLock,
+        memory_state_machine_worker::MemoryStateMachineWorker,
+        performance_monitor_worker::PerformanceMonitorWorker,
+        pipeline_derivatives::PipelineDerivatives,
+        purger_worker::{purger_worker_thread::PurgerWorkerThreadArg, PurgerWorker},
+        repositories::Repositories,
+        task_executor::{task_executor_lock::TaskExecutorLock, TaskExecutor},
+        worker::worker_handle::{WorkerSetupCoordinator, WorkerStopCoordinator},
+    },
 };
 
 #[cfg(test)]

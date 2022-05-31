@@ -1,14 +1,15 @@
 // This file is part of https://github.com/SpringQL/SpringQL which is licensed under MIT OR Apache-2.0. See file LICENSE-MIT or LICENSE-APACHE for full license details.
 
-use crate::pipeline::pump_model::{
-    window_operation_parameter::{join_parameter::JoinParameter, WindowOperationParameter},
-    window_parameter::WindowParameter,
-};
-
-use super::{
-    panes::{pane::join_pane::JoinPane, Panes},
-    watermark::Watermark,
-    Window,
+use crate::{
+    pipeline::pump_model::{
+        window_operation_parameter::{join_parameter::JoinParameter, WindowOperationParameter},
+        window_parameter::WindowParameter,
+    },
+    stream_engine::autonomous_executor::task::window::{
+        panes::{pane::join_pane::JoinPane, Panes},
+        watermark::Watermark,
+        Window,
+    },
 };
 
 #[derive(Debug)]
@@ -91,7 +92,10 @@ mod tests {
             .get_value(&ColumnReference::fx_trade_timestamp())
             .unwrap()
             .unwrap();
-        assert_eq!(timestamp.unpack::<SpringTimestamp>().unwrap(), expected_timestamp);
+        assert_eq!(
+            timestamp.unpack::<SpringTimestamp>().unwrap(),
+            expected_timestamp
+        );
 
         let amount = tuple
             .get_value(&ColumnReference::fx_trade_amount())

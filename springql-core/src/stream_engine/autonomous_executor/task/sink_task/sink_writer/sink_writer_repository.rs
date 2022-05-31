@@ -7,13 +7,13 @@ use std::{
 
 use parking_lot::RwLock;
 
-use crate::{api::error::Result, pipeline::name::SinkWriterName};
 use crate::{
-    api::low_level_rs::SpringSinkWriterConfig, pipeline::sink_writer_model::SinkWriterModel,
-    stream_engine::autonomous_executor::task::sink_task::sink_writer::sink_writer_factory::SinkWriterFactory,
+    api::{error::Result, low_level_rs::SpringSinkWriterConfig},
+    pipeline::{name::SinkWriterName, sink_writer_model::SinkWriterModel},
+    stream_engine::autonomous_executor::task::sink_task::sink_writer::{
+        sink_writer_factory::SinkWriterFactory, SinkWriter,
+    },
 };
-
-use super::SinkWriter;
 
 #[allow(clippy::type_complexity)]
 #[derive(Debug)]

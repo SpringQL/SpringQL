@@ -12,12 +12,11 @@ use crate::{
     api::error::{foreign_info::ForeignInfo, Result, SpringError},
     api::low_level_rs::SpringSourceReaderConfig,
     pipeline::option::{net_options::NetClientOptions, Options},
-    stream_engine::autonomous_executor::row::foreign_row::{
-        format::json::JsonObject, source_row::SourceRow,
+    stream_engine::autonomous_executor::{
+        row::foreign_row::{format::json::JsonObject, source_row::SourceRow},
+        task::source_task::source_reader::SourceReader,
     },
 };
-
-use super::SourceReader;
 
 #[derive(Debug)]
 pub(in crate::stream_engine) struct NetClientSourceReader {

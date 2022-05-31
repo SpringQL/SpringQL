@@ -2,8 +2,6 @@
 
 #![doc = include_str!("stream_engine.md")]
 
-pub use autonomous_executor::SpringValue;
-
 pub(crate) mod command;
 pub(crate) mod time;
 
@@ -11,6 +9,7 @@ mod autonomous_executor;
 mod in_memory_queue_repository;
 mod sql_executor;
 
+pub use crate::stream_engine::autonomous_executor::SpringValue;
 pub(crate) use autonomous_executor::{
     row::value::sql_value::{
         nn_sql_value::NnSqlValue, sql_compare_result::SqlCompareResult, SqlValue,
@@ -20,14 +19,13 @@ pub(crate) use autonomous_executor::{
 };
 
 use crate::{
-    api::error::Result,
-    api::low_level_rs::SpringConfig,
+    api::{error::Result, low_level_rs::SpringConfig},
     pipeline::{name::QueueName, Pipeline},
-};
-
-use self::{
-    autonomous_executor::AutonomousExecutor, command::alter_pipeline_command::AlterPipelineCommand,
-    in_memory_queue_repository::InMemoryQueueRepository, sql_executor::SqlExecutor,
+    stream_engine::{
+        autonomous_executor::AutonomousExecutor,
+        command::alter_pipeline_command::AlterPipelineCommand,
+        in_memory_queue_repository::InMemoryQueueRepository, sql_executor::SqlExecutor,
+    },
 };
 
 /// Stream engine has SQL executor and autonomous executor inside.

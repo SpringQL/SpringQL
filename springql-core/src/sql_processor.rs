@@ -4,17 +4,20 @@ pub(crate) mod sql_parser;
 
 mod query_planner;
 
-use self::{
-    query_planner::QueryPlanner,
-    sql_parser::{parse_success::CreatePump, syntax::SelectStreamSyntax, SqlParser},
-};
 use crate::{
     api::error::Result,
     pipeline::{
         pump_model::PumpModel, sink_writer_model::SinkWriterModel,
         source_reader_model::SourceReaderModel, stream_model::StreamModel, Pipeline,
     },
-    sql_processor::sql_parser::parse_success::ParseSuccess,
+    sql_processor::{
+        query_planner::QueryPlanner,
+        sql_parser::{
+            parse_success::{CreatePump, ParseSuccess},
+            syntax::SelectStreamSyntax,
+            SqlParser,
+        },
+    },
     stream_engine::command::{
         alter_pipeline_command::AlterPipelineCommand, query_plan::QueryPlan, Command,
     },

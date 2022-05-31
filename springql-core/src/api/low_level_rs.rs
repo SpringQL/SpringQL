@@ -7,18 +7,18 @@
 mod engine_mutex;
 mod spring_config;
 
-pub use spring_config::*;
-
 use std::{sync::Once, thread, time::Duration};
 
+pub use crate::api::low_level_rs::spring_config::*;
 use crate::{
-    api::error::{Result, SpringError},
+    api::{
+        error::{Result, SpringError},
+        low_level_rs::engine_mutex::EngineMutex,
+    },
     pipeline::name::QueueName,
     sql_processor::SqlProcessor,
     stream_engine::{command::Command, SinkRow, SpringValue, SqlValue},
 };
-
-use self::engine_mutex::EngineMutex;
 
 fn setup_logger() {
     static INIT: Once = Once::new();

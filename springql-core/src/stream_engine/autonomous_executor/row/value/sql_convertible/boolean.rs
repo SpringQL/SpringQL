@@ -2,10 +2,11 @@
 
 use crate::{
     api::error::Result,
-    stream_engine::autonomous_executor::row::value::sql_value::nn_sql_value::NnSqlValue,
+    stream_engine::autonomous_executor::row::value::{
+        sql_convertible::{SpringValue, ToNnSqlValue},
+        sql_value::nn_sql_value::NnSqlValue,
+    },
 };
-
-use super::{SpringValue, ToNnSqlValue};
 
 impl SpringValue for bool {
     fn try_from_bool(v: &bool) -> Result<Self> {

@@ -3,12 +3,12 @@
 use crate::{
     api::error::Result,
     stream_engine::{
-        autonomous_executor::row::value::sql_value::nn_sql_value::NnSqlValue,
+        autonomous_executor::row::value::{
+            sql_convertible::ToNnSqlValue, sql_value::nn_sql_value::NnSqlValue, SpringValue,
+        },
         time::duration::event_duration::SpringEventDuration,
     },
 };
-
-use super::{SpringValue, ToNnSqlValue};
 
 impl SpringValue for SpringEventDuration {
     fn try_from_duration(v: &SpringEventDuration) -> Result<Self> {

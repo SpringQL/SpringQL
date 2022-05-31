@@ -9,7 +9,7 @@ use std::collections::HashMap;
 
 use anyhow::{anyhow, Context};
 
-use super::value::sql_value::SqlValue;
+use crate::stream_engine::autonomous_executor::row::value::sql_value::SqlValue;
 
 #[derive(Clone, Debug, Default)]
 pub(in crate::stream_engine::autonomous_executor) struct ColumnValues(

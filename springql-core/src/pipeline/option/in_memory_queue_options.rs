@@ -2,10 +2,8 @@
 
 use crate::{
     api::error::{Result, SpringError},
-    pipeline::name::QueueName,
+    pipeline::{name::QueueName, option::Options},
 };
-
-use super::Options;
 
 #[derive(Clone, Eq, PartialEq, Debug)]
 pub(crate) struct InMemoryQueueOptions {

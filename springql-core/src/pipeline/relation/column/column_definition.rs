@@ -2,7 +2,9 @@
 
 use crate::pipeline::name::ColumnName;
 
-use super::{column_constraint::ColumnConstraint, column_data_type::ColumnDataType};
+use crate::pipeline::relation::column::{
+    column_constraint::ColumnConstraint, column_data_type::ColumnDataType,
+};
 
 /// Column definition used in DDL.
 #[derive(Clone, Eq, PartialEq, Debug, new)]

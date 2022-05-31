@@ -2,15 +2,18 @@
 
 pub(crate) mod expr_label;
 
-use crate::api::error::{Result, SpringError};
-use crate::expression::{AggrExpr, ValueExpr};
-use crate::pipeline::name::{AggrAlias, ValueAlias};
-use crate::sql_processor::sql_parser::syntax::SelectFieldSyntax;
-use crate::stream_engine::{SqlValue, Tuple};
-use anyhow::anyhow;
 use std::collections::HashMap;
 
-use self::expr_label::{AggrExprLabel, ExprLabel, ExprLabelGenerator, ValueExprLabel};
+use anyhow::anyhow;
+
+use crate::{
+    api::error::{Result, SpringError},
+    expr_resolver::expr_label::{AggrExprLabel, ExprLabel, ExprLabelGenerator, ValueExprLabel},
+    expression::{AggrExpr, ValueExpr},
+    pipeline::name::{AggrAlias, ValueAlias},
+    sql_processor::sql_parser::syntax::SelectFieldSyntax,
+    stream_engine::{SqlValue, Tuple},
+};
 
 /// ExprResolver is to:
 ///

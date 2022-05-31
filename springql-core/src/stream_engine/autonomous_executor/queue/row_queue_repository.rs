@@ -7,9 +7,9 @@ use std::{
 
 use parking_lot::RwLock;
 
-use crate::stream_engine::autonomous_executor::task_graph::queue_id::row_queue_id::RowQueueId;
-
-use super::row_queue::RowQueue;
+use crate::stream_engine::autonomous_executor::{
+    queue::row_queue::RowQueue, task_graph::queue_id::row_queue_id::RowQueueId,
+};
 
 #[derive(Debug, Default)]
 pub(in crate::stream_engine::autonomous_executor) struct RowQueueRepository {

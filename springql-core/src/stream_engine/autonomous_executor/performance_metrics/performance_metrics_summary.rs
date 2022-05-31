@@ -2,7 +2,7 @@
 
 use std::fmt::Display;
 
-use super::PerformanceMetrics;
+use crate::stream_engine::autonomous_executor::performance_metrics::PerformanceMetrics;
 
 /// Summary of [PerformanceMetrics](super::PerformanceMetrics).
 ///

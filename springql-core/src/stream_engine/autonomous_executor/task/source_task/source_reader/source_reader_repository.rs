@@ -11,10 +11,10 @@ use crate::{
     api::error::Result,
     api::low_level_rs::SpringSourceReaderConfig,
     pipeline::{name::SourceReaderName, source_reader_model::SourceReaderModel},
-    stream_engine::autonomous_executor::task::source_task::source_reader::source_reader_factory::SourceReaderFactory,
+    stream_engine::autonomous_executor::task::source_task::source_reader::{
+        source_reader_factory::SourceReaderFactory, SourceReader,
+    },
 };
-
-use super::SourceReader;
 
 #[allow(clippy::type_complexity)]
 #[derive(Debug)]

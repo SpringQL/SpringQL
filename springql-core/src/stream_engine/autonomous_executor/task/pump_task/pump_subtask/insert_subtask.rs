@@ -2,17 +2,19 @@
 
 use std::sync::Arc;
 
-use crate::mem_size::MemSize;
-use crate::pipeline::name::ColumnName;
-use crate::pipeline::pipeline_graph::PipelineGraph;
-use crate::pipeline::stream_model::StreamModel;
-use crate::stream_engine::autonomous_executor::performance_metrics::metrics_update_command::metrics_update_by_task_execution::OutQueueMetricsUpdateByTask;
-use crate::stream_engine::autonomous_executor::row::Row;
-use crate::stream_engine::autonomous_executor::task::task_context::TaskContext;
-use crate::stream_engine::autonomous_executor::task_graph::queue_id::QueueId;
-use crate::stream_engine::command::insert_plan::InsertPlan;
-
-use super::query_subtask::SqlValues;
+use crate::{
+    mem_size::MemSize,
+    pipeline::{name::ColumnName, pipeline_graph::PipelineGraph, stream_model::StreamModel},
+    stream_engine::{
+        autonomous_executor::{
+            performance_metrics::metrics_update_command::metrics_update_by_task_execution::OutQueueMetricsUpdateByTask,
+            row::Row,
+            task::{pump_task::pump_subtask::query_subtask::SqlValues, task_context::TaskContext},
+            task_graph::queue_id::QueueId,
+        },
+        command::insert_plan::InsertPlan,
+    },
+};
 
 #[derive(Debug)]
 pub(in crate::stream_engine::autonomous_executor) struct InsertSubtask {

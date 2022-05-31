@@ -1,13 +1,15 @@
 // This file is part of https://github.com/SpringQL/SpringQL which is licensed under MIT OR Apache-2.0. See file LICENSE-MIT or LICENSE-APACHE for full license details.
 
+use anyhow::anyhow;
 use std::sync::{Arc, Mutex, MutexGuard};
 
-use crate::api::error::Result;
-use crate::api::error::SpringError;
-use crate::stream_engine::StreamEngine;
-use anyhow::anyhow;
-
-use super::spring_config::SpringConfig;
+use crate::{
+    api::{
+        error::{Result, SpringError},
+        low_level_rs::spring_config::SpringConfig,
+    },
+    stream_engine::StreamEngine,
+};
 
 #[derive(Clone, Debug)]
 pub(super) struct EngineMutex(Arc<Mutex<StreamEngine>>);

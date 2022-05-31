@@ -13,19 +13,23 @@ pub(crate) mod stream_node;
 
 use std::{collections::HashMap, sync::Arc};
 
+use anyhow::anyhow;
 use petgraph::{
     graph::{DiGraph, EdgeReference, NodeIndex},
     visit::EdgeRef,
 };
 
-use self::{edge::Edge, stream_node::StreamNode};
-
-use super::{
-    name::StreamName, pump_model::PumpModel, sink_writer_model::SinkWriterModel,
-    source_reader_model::SourceReaderModel, stream_model::StreamModel,
+use crate::{
+    api::error::{Result, SpringError},
+    pipeline::{
+        name::StreamName,
+        pipeline_graph::{edge::Edge, stream_node::StreamNode},
+        pump_model::PumpModel,
+        sink_writer_model::SinkWriterModel,
+        source_reader_model::SourceReaderModel,
+        stream_model::StreamModel,
+    },
 };
-use crate::api::error::{Result, SpringError};
-use anyhow::anyhow;
 
 #[derive(Clone, Debug)]
 pub(crate) struct PipelineGraph {

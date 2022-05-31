@@ -15,6 +15,7 @@ use crate::{
                 metrics_update_command::metrics_update_by_task_execution::MetricsUpdateByTaskExecutionOrPurge,
                 performance_metrics_summary::PerformanceMetricsSummary, PerformanceMetrics,
             },
+            performance_monitor_worker::web_console_reporter::WebConsoleReporter,
             pipeline_derivatives::PipelineDerivatives,
             worker::{
                 worker_handle::WorkerSetupCoordinator,
@@ -24,8 +25,6 @@ use crate::{
         time::duration::{wall_clock_duration::WallClockDuration, SpringDuration},
     },
 };
-
-use super::web_console_reporter::WebConsoleReporter;
 
 const CLOCK_MSEC: u64 = 10;
 

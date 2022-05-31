@@ -1,16 +1,18 @@
 // This file is part of https://github.com/SpringQL/SpringQL which is licensed under MIT OR Apache-2.0. See file LICENSE-MIT or LICENSE-APACHE for full license details.
 
-use crate::api::error::Result;
-use crate::api::low_level_rs::SpringSinkWriterConfig;
-use crate::pipeline::name::QueueName;
-use crate::pipeline::option::in_memory_queue_options::InMemoryQueueOptions;
-use crate::stream_engine::in_memory_queue_repository::InMemoryQueueRepository;
 use crate::{
-    pipeline::option::Options,
-    stream_engine::autonomous_executor::row::foreign_row::sink_row::SinkRow,
+    api::{error::Result, low_level_rs::SpringSinkWriterConfig},
+    pipeline::{
+        name::QueueName,
+        option::{in_memory_queue_options::InMemoryQueueOptions, Options},
+    },
+    stream_engine::{
+        autonomous_executor::{
+            row::foreign_row::sink_row::SinkRow, task::sink_task::sink_writer::SinkWriter,
+        },
+        in_memory_queue_repository::InMemoryQueueRepository,
+    },
 };
-
-use super::SinkWriter;
 
 #[derive(Debug)]
 pub(in crate::stream_engine) struct InMemoryQueueSinkWriter(QueueName);

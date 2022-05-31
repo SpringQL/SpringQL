@@ -3,11 +3,13 @@
 mod web_console_request;
 
 use crate::stream_engine::{
-    autonomous_executor::{performance_metrics::PerformanceMetrics, task_graph::TaskGraph},
+    autonomous_executor::{
+        performance_metrics::PerformanceMetrics,
+        performance_monitor_worker::web_console_reporter::web_console_request::WebConsoleRequest,
+        task_graph::TaskGraph,
+    },
     time::duration::{wall_clock_duration::WallClockDuration, SpringDuration},
 };
-
-use self::web_console_request::WebConsoleRequest;
 
 /// Reports performance summary to [web-console API](https://github.com/SpringQL/web-console/blob/main/doc/api.md).
 #[derive(Debug)]

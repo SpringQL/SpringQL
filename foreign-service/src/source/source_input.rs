@@ -2,9 +2,11 @@
 
 pub mod timed_stream;
 
-use self::timed_stream::TimedStream;
-use anyhow::Result;
 use std::collections::VecDeque;
+
+use anyhow::Result;
+
+use crate::source::source_input::timed_stream::TimedStream;
 
 #[derive(Debug)]
 pub enum ForeignSourceInput {

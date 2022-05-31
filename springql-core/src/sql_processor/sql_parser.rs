@@ -1,15 +1,13 @@
 // This file is part of https://github.com/SpringQL/SpringQL which is licensed under MIT OR Apache-2.0. See file LICENSE-MIT or LICENSE-APACHE for full license details.
 
+pub(in crate::sql_processor) mod parse_success;
+mod pest_parser_impl;
 pub(crate) mod syntax;
 
-pub(in crate::sql_processor) mod parse_success;
-
-mod pest_parser_impl;
-
-use crate::api::error::Result;
-
-use self::parse_success::ParseSuccess;
-use self::pest_parser_impl::PestParserImpl;
+use crate::{
+    api::error::Result,
+    sql_processor::sql_parser::{parse_success::ParseSuccess, pest_parser_impl::PestParserImpl},
+};
 
 #[derive(Debug, Default)]
 pub(in crate::sql_processor) struct SqlParser(PestParserImpl);

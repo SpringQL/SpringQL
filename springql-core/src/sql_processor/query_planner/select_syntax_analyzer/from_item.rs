@@ -1,11 +1,13 @@
 // This file is part of https://github.com/SpringQL/SpringQL which is licensed under MIT OR Apache-2.0. See file LICENSE-MIT or LICENSE-APACHE for full license details.
 
-use super::SelectSyntaxAnalyzer;
 use crate::{
     api::error::Result,
     expr_resolver::ExprResolver,
     pipeline::{pump_model::window_operation_parameter::join_parameter::JoinParameter, Pipeline},
-    sql_processor::sql_parser::syntax::{FromItemSyntax, SubFromItemSyntax},
+    sql_processor::{
+        query_planner::SelectSyntaxAnalyzer,
+        sql_parser::syntax::{FromItemSyntax, SubFromItemSyntax},
+    },
     stream_engine::command::query_plan::query_plan_operation::{CollectOp, JoinOp, JoinWindowOp},
 };
 

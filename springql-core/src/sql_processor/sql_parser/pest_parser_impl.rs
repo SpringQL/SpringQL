@@ -3,50 +3,63 @@
 mod generated_parser;
 mod helper;
 
-use crate::api::error::{Result, SpringError};
-use crate::expression::boolean_expression::comparison_function::ComparisonFunction;
-use crate::expression::boolean_expression::logical_function::LogicalFunction;
-use crate::expression::boolean_expression::numerical_function::NumericalFunction;
-use crate::expression::boolean_expression::BinaryExpr;
-use crate::expression::function_call::FunctionCall;
-use crate::expression::operator::{BinaryOperator, UnaryOperator};
-use crate::expression::{AggrExpr, ValueExpr};
-use crate::pipeline::field::field_name::ColumnReference;
-use crate::pipeline::name::{
-    AggrAlias, ColumnName, CorrelationAlias, PumpName, SinkWriterName, SourceReaderName,
-    StreamName, ValueAlias,
-};
-use crate::pipeline::option::options_builder::OptionsBuilder;
-use crate::pipeline::pump_model::window_operation_parameter::aggregate::AggregateFunctionParameter;
-use crate::pipeline::pump_model::window_operation_parameter::join_parameter::JoinType;
-use crate::pipeline::pump_model::window_parameter::WindowParameter;
-use crate::pipeline::relation::column::column_constraint::ColumnConstraint;
-use crate::pipeline::relation::column::column_data_type::ColumnDataType;
-use crate::pipeline::relation::column::column_definition::ColumnDefinition;
-use crate::pipeline::relation::sql_type::SqlType;
-use crate::pipeline::sink_writer_model::sink_writer_type::SinkWriterType;
-use crate::pipeline::sink_writer_model::SinkWriterModel;
-use crate::pipeline::source_reader_model::source_reader_type::SourceReaderType;
-use crate::pipeline::source_reader_model::SourceReaderModel;
-use crate::pipeline::stream_model::stream_shape::StreamShape;
-use crate::pipeline::stream_model::StreamModel;
-use crate::sql_processor::sql_parser::syntax::{
-    ColumnConstraintSyntax, OptionSyntax, SelectStreamSyntax,
-};
-use crate::stream_engine::command::insert_plan::InsertPlan;
-use crate::stream_engine::time::duration::event_duration::SpringEventDuration;
-use crate::stream_engine::time::duration::SpringDuration;
-use crate::stream_engine::{NnSqlValue, SqlValue};
-use anyhow::{anyhow, Context};
-use generated_parser::{GeneratedParser, Rule};
-use helper::{parse_child, parse_child_seq, self_as_str, try_parse_child, FnParseParams};
-use ordered_float::OrderedFloat;
-use pest::{iterators::Pairs, Parser};
 use std::convert::identity;
 
-use super::parse_success::{CreatePump, ParseSuccess};
-use super::syntax::{
-    DurationFunction, FromItemSyntax, GroupingElementSyntax, SelectFieldSyntax, SubFromItemSyntax,
+use anyhow::{anyhow, Context};
+use ordered_float::OrderedFloat;
+use pest::{iterators::Pairs, Parser};
+
+use crate::{
+    api::error::{Result, SpringError},
+    expression::{
+        boolean_expression::{
+            comparison_function::ComparisonFunction, logical_function::LogicalFunction,
+            numerical_function::NumericalFunction, BinaryExpr,
+        },
+        function_call::FunctionCall,
+        operator::{BinaryOperator, UnaryOperator},
+        AggrExpr, ValueExpr,
+    },
+    pipeline::{
+        field::field_name::ColumnReference,
+        name::{
+            AggrAlias, ColumnName, CorrelationAlias, PumpName, SinkWriterName, SourceReaderName,
+            StreamName, ValueAlias,
+        },
+        option::options_builder::OptionsBuilder,
+        pump_model::{
+            window_operation_parameter::{
+                aggregate::AggregateFunctionParameter, join_parameter::JoinType,
+            },
+            window_parameter::WindowParameter,
+        },
+        relation::{
+            column::{
+                column_constraint::ColumnConstraint, column_data_type::ColumnDataType,
+                column_definition::ColumnDefinition,
+            },
+            sql_type::SqlType,
+        },
+        sink_writer_model::{sink_writer_type::SinkWriterType, SinkWriterModel},
+        source_reader_model::{source_reader_type::SourceReaderType, SourceReaderModel},
+        stream_model::{stream_shape::StreamShape, StreamModel},
+    },
+    sql_processor::sql_parser::{
+        parse_success::{CreatePump, ParseSuccess},
+        pest_parser_impl::{
+            generated_parser::{GeneratedParser, Rule},
+            helper::{parse_child, parse_child_seq, self_as_str, try_parse_child, FnParseParams},
+        },
+        syntax::{
+            ColumnConstraintSyntax, DurationFunction, FromItemSyntax, GroupingElementSyntax,
+            OptionSyntax, SelectFieldSyntax, SelectStreamSyntax, SubFromItemSyntax,
+        },
+    },
+    stream_engine::{
+        command::insert_plan::InsertPlan,
+        time::duration::{event_duration::SpringEventDuration, SpringDuration},
+        NnSqlValue, SqlValue,
+    },
 };
 
 #[derive(Debug, Default)]

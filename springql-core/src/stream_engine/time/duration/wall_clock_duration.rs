@@ -7,7 +7,7 @@ use std::{
     time::Duration,
 };
 
-use super::SpringDuration;
+use crate::stream_engine::time::duration::SpringDuration;
 
 /// Real-time (wall-clock) duration.
 #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Debug)]

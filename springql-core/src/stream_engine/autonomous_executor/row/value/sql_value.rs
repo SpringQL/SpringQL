@@ -4,18 +4,24 @@ pub(crate) mod nn_sql_value;
 pub(crate) mod sql_compare_result;
 pub(in crate::stream_engine::autonomous_executor) mod sql_value_hash_key;
 
-use self::{nn_sql_value::NnSqlValue, sql_compare_result::SqlCompareResult};
-use crate::{
-    api::error::{Result, SpringError},
-    mem_size::MemSize,
-    stream_engine::time::duration::event_duration::SpringEventDuration,
-};
-use anyhow::anyhow;
-use ordered_float::OrderedFloat;
 use std::{
     fmt::Display,
     hash::Hash,
     ops::{Add, Mul},
+};
+
+use anyhow::anyhow;
+use ordered_float::OrderedFloat;
+
+use crate::{
+    api::error::{Result, SpringError},
+    mem_size::MemSize,
+    stream_engine::{
+        autonomous_executor::row::value::sql_value::{
+            nn_sql_value::NnSqlValue, sql_compare_result::SqlCompareResult,
+        },
+        time::duration::event_duration::SpringEventDuration,
+    },
 };
 
 /// SQL-typed value that is efficiently compressed.

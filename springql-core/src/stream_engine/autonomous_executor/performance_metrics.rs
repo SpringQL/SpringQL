@@ -13,17 +13,22 @@ use std::collections::HashMap;
 
 use parking_lot::{RwLock, RwLockReadGuard, RwLockWriteGuard};
 
-use crate::pipeline::pipeline_version::PipelineVersion;
-
-use self::{
-    metrics_update_command::metrics_update_by_task_execution::MetricsUpdateByTaskExecution,
-    queue_metrics::{row_queue_metrics::RowQueueMetrics, window_queue_metrics::WindowQueueMetrics},
-    task_metrics::TaskMetrics,
-};
-use super::task_graph::{
-    queue_id::{row_queue_id::RowQueueId, window_queue_id::WindowQueueId, QueueId},
-    task_id::TaskId,
-    TaskGraph,
+use crate::{
+    pipeline::pipeline_version::PipelineVersion,
+    stream_engine::autonomous_executor::{
+        performance_metrics::{
+            metrics_update_command::metrics_update_by_task_execution::MetricsUpdateByTaskExecution,
+            queue_metrics::{
+                row_queue_metrics::RowQueueMetrics, window_queue_metrics::WindowQueueMetrics,
+            },
+            task_metrics::TaskMetrics,
+        },
+        task_graph::{
+            queue_id::{row_queue_id::RowQueueId, window_queue_id::WindowQueueId, QueueId},
+            task_id::TaskId,
+            TaskGraph,
+        },
+    },
 };
 
 /// Performance metrics of task execution. It has the same lifetime as a TaskGraph (i.e. a Pipeline).

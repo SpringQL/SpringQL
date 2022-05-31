@@ -9,9 +9,9 @@
 
 pub(crate) mod field_name;
 
-use crate::{mem_size::MemSize, stream_engine::SqlValue};
-
-use self::field_name::ColumnReference;
+use crate::{
+    mem_size::MemSize, pipeline::field::field_name::ColumnReference, stream_engine::SqlValue,
+};
 
 /// Field == SqlValue + ColumnReference
 #[derive(Clone, PartialEq, Debug, new)]

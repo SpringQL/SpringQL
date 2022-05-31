@@ -10,13 +10,14 @@ use pretty_assertions::assert_eq;
 use rand::prelude::{IteratorRandom, SliceRandom};
 use serde_json::json;
 use springql_core::api::low_level_rs::*;
-use springql_foreign_service::sink::ForeignSink;
-use springql_foreign_service::source::source_input::ForeignSourceInput;
-use springql_foreign_service::source::ForeignSource;
+use springql_foreign_service::{
+    sink::ForeignSink,
+    source::{source_input::ForeignSourceInput, ForeignSource},
+};
 use springql_test_logger::setup_test_logger;
-use springql_test_web_console_mock::builder::WebConsoleMockBuilder;
-use springql_test_web_console_mock::request_body::PostTaskGraphBody;
-use springql_test_web_console_mock::WebConsoleMock;
+use springql_test_web_console_mock::{
+    builder::WebConsoleMockBuilder, request_body::PostTaskGraphBody, WebConsoleMock,
+};
 use test_support::drain_from_sink;
 
 use crate::test_support::apply_ddls;
