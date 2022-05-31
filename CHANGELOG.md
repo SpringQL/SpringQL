@@ -10,6 +10,10 @@ All other sections are for end-users.
 <!-- markdownlint-disable MD024 -->
 ## [Unreleased]
 
+### Changed
+
+- move `crate::{SpringEventDuration, SpringTimestamp, SpringValue}` into `crate::api::{...}` ([#167](https://github.com/SpringQL/SpringQL/pull/167))
+
 ## [v0.10.0]
 
 ### Added
