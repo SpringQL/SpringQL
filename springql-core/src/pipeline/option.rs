@@ -2,6 +2,7 @@
 
 pub(crate) mod options_builder;
 
+pub(crate) mod can_options;
 pub(crate) mod in_memory_queue_options;
 pub(crate) mod net_options;
 

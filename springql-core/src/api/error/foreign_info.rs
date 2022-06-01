@@ -11,12 +11,16 @@ use std::{
 pub enum ForeignInfo {
     /// Generic TCP connection.
     GenericTcp(SocketAddr),
+
+    /// Socket CAN interface
+    SocketCAN(String),
 }
 
 impl Display for ForeignInfo {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let detail = match self {
             ForeignInfo::GenericTcp(addr) => format!("TCP connection to {:?}", addr),
+            ForeignInfo::SocketCAN(interface) => format!("Socket CAN interface {}", interface),
         };
 
         write!(f, "[foreign info.] {}", detail)

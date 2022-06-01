@@ -87,6 +87,16 @@ impl StreamShape {
     pub(crate) fn fx_no_promoted_rowtime() -> Self {
         Self::new(vec![ColumnDefinition::fx_amount()]).unwrap()
     }
+
+    pub(crate) fn fx_can_source() -> Self {
+        Self::new(vec![
+            ColumnDefinition::fx_processing_time(),
+            ColumnDefinition::fx_can_id(),
+            ColumnDefinition::fx_can_data_len(),
+            ColumnDefinition::fx_can_data_big_endian(),
+        ])
+        .unwrap()
+    }
 }
 
 impl StreamModel {
@@ -177,6 +187,10 @@ impl ColumnDefinition {
 
     pub(crate) fn fx_amount() -> Self {
         Self::new(ColumnDataType::fx_amount(), vec![])
+    }
+
+    pub(crate) fn fx_can_id() -> Self {
+        Self::new(ColumnDataType::fx_can_id(), vec![])
     }
 }
 

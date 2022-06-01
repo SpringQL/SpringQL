@@ -4,6 +4,7 @@ use crate::error::Result;
 use crate::low_level_rs::SpringSourceReaderConfig;
 use crate::pipeline::option::Options;
 use crate::pipeline::source_reader_model::source_reader_type::SourceReaderType;
+use crate::stream_engine::autonomous_executor::task::source_task::source_reader::can::CANSourceReader;
 use crate::stream_engine::autonomous_executor::task::source_task::source_reader::SourceReader;
 
 use super::net_client::NetClientSourceReader;
@@ -24,6 +25,7 @@ impl SourceReaderFactory {
             SourceReaderType::NetServer => {
                 Ok(Box::new(NetServerSourceReader::start(options, config)?))
             }
+            SourceReaderType::CAN => Ok(Box::new(CANSourceReader::start(options, config)?)),
         }
     }
 }
