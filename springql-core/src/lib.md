@@ -9,12 +9,12 @@
 
 ### Simple pipeline example
 
-- create pipeline instance: [SpringPipelineHL::new](crate::api::high_level_rs::SpringPipelineHL::new)
-- execute DDLs: [SpringPipelineHL::command](crate::api::high_level_rs::SpringPipelineHL::command)
-- fetch row from pipeline: [SpringPipelineHL::pop](crate::api::high_level_rs::SpringPipelineHL::pop)
+- create pipeline instance: [SpringPipelineHL::new](crate::api::SpringPipelineHL::new)
+- execute DDLs: [SpringPipelineHL::command](crate::api::SpringPipelineHL::command)
+- fetch row from pipeline: [SpringPipelineHL::pop](crate::api::SpringPipelineHL::pop)
 
 ```rust
-use springql_core::api::{high_level_rs::SpringPipelineHL, low_level_rs::SpringConfig};
+use springql_core::api::{SpringPipelineHL, low_level_rs::SpringConfig};
 
 fn main() {
     const SOURCE_PORT: u16 = 54300;
@@ -54,6 +54,7 @@ fn main() {
             NAME 'q'
         );", ).unwrap();
 
+#   return ();
     // create source reader, input come from net_server
     pipeline.command(format!(
         "CREATE SOURCE READER tcp_temperature_celsius FOR source_temperature_celsius
@@ -63,7 +64,6 @@ fn main() {
         );", SOURCE_PORT)).unwrap();
 
     eprintln!("waiting JSON records in tcp/{} port...", SOURCE_PORT);
-#   return ();
     // fetch row from "q" , "q" is a sink writer defined above.
     while let Ok(row) = pipeline.pop("q") {
         // get field value from row by field index
@@ -84,11 +84,11 @@ echo '{"ts": "2022-01-01 13:00:00.000000000", "temperature": 5.3}' | nc localhos
 ### Using Window and share pipeline for many threads
 
 - To share pipeline for threads, use [std::sync::Arc](std::sync::Arc)
-- non blocking fetch rom for sink [pop_non_blocking](api::high_level_rs::SpringPipelineHL::pop_non_blocking)
+- non blocking fetch rom for sink [pop_non_blocking](api::SpringPipelineHL::pop_non_blocking)
 
 ```rust
 use std::{sync::Arc, thread, time::Duration};
-use springql_core::{high_level_rs::SpringPipelineHL, low_level_rs::SpringConfig};
+use springql_core::api::{SpringPipelineHL, low_level_rs::SpringConfig};
 
 fn main() {
     const SOURCE_PORT: u16 = 54300;
@@ -160,6 +160,7 @@ fn main() {
                 NAME 'q_avg_by_symbol'
             );", ).unwrap();
 
+#   return ();
     pipeline.command(format!(
         "CREATE SOURCE READER tcp_trade FOR source_trade
         TYPE NET_SERVER OPTIONS (
@@ -168,7 +169,6 @@ fn main() {
         );", SOURCE_PORT)).unwrap();
 
     eprintln!("waiting JSON records in tcp/{} port...", SOURCE_PORT);
-#   return ();
     loop {
         // Fetching rows from q_avg_all.
         if let Some(row) = pipeline.pop_non_blocking("q_avg_all").unwrap() {
