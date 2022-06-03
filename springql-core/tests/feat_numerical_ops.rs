@@ -5,7 +5,7 @@ mod test_support;
 use float_cmp::approx_eq;
 use pretty_assertions::assert_eq;
 use serde_json::json;
-use springql_core::api::low_level_rs::*;
+use springql_core::api::*;
 use springql_foreign_service::{
     sink::ForeignSink,
     source::{source_input::ForeignSourceInput, ForeignSource},

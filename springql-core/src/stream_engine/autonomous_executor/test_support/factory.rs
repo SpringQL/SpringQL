@@ -5,7 +5,7 @@ use std::sync::Arc;
 use springql_foreign_service::source::{source_input::ForeignSourceInput, ForeignSource};
 
 use crate::{
-    api::low_level_rs::SpringSourceReaderConfig,
+    api::SpringSourceReaderConfig,
     pipeline::{
         name::{ColumnName, StreamName},
         option::options_builder::OptionsBuilder,

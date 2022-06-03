@@ -3,7 +3,7 @@
 use std::{net::IpAddr, sync::Arc};
 
 use crate::{
-    api::low_level_rs::{SpringConfig, SpringSinkWriterConfig, SpringSourceReaderConfig},
+    api::{SpringConfig, SpringSinkWriterConfig, SpringSourceReaderConfig},
     pipeline::{
         field::field_name::ColumnReference,
         name::{ColumnName, SinkWriterName, SourceReaderName, StreamName},

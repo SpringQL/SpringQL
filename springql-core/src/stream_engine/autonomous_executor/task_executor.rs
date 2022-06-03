@@ -10,7 +10,7 @@ mod source_worker_pool;
 use std::sync::Arc;
 
 use crate::{
-    api::{error::Result, low_level_rs::SpringConfig},
+    api::{error::Result, SpringConfig},
     stream_engine::autonomous_executor::{
         args::{Coordinators, EventQueues, Locks},
         main_job_lock::MainJobBarrierGuard,

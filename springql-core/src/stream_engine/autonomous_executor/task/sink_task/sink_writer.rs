@@ -8,7 +8,7 @@ pub(in crate::stream_engine::autonomous_executor) mod sink_writer_repository;
 use std::fmt::Debug;
 
 use crate::{
-    api::{error::Result, low_level_rs::SpringSinkWriterConfig},
+    api::{error::Result, SpringSinkWriterConfig},
     pipeline::option::Options,
     stream_engine::autonomous_executor::row::foreign_row::sink_row::SinkRow,
 };

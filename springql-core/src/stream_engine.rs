@@ -19,7 +19,7 @@ pub(crate) use autonomous_executor::{
 };
 
 use crate::{
-    api::{error::Result, low_level_rs::SpringConfig},
+    api::{error::Result, SpringConfig},
     pipeline::{name::QueueName, Pipeline},
     stream_engine::{
         autonomous_executor::AutonomousExecutor,

@@ -10,7 +10,7 @@ use anyhow::Context;
 
 use crate::{
     api::error::{foreign_info::ForeignInfo, Result, SpringError},
-    api::low_level_rs::SpringSinkWriterConfig,
+    api::SpringSinkWriterConfig,
     pipeline::option::{net_options::NetClientOptions, Options},
     stream_engine::autonomous_executor::{
         row::foreign_row::{format::json::JsonObject, sink_row::SinkRow},

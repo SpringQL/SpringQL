@@ -15,7 +15,7 @@ pub(in crate::stream_engine::autonomous_executor) mod memory_state_machine_worke
 use std::sync::Arc;
 
 use crate::{
-    api::low_level_rs::SpringMemoryConfig,
+    api::SpringMemoryConfig,
     stream_engine::autonomous_executor::{
         args::{Coordinators, EventQueues},
         main_job_lock::MainJobLock,

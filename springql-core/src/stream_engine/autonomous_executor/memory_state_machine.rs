@@ -2,7 +2,7 @@
 
 //! ![Memory state machine](https://raw.githubusercontent.com/SpringQL/SpringQL.github.io/main/static/img/memory-state-machine-and-effect.svg)
 
-use crate::api::low_level_rs::SpringMemoryConfig;
+use crate::api::SpringMemoryConfig;
 
 #[derive(Debug)]
 pub(in crate::stream_engine::autonomous_executor) struct MemoryStateMachine {

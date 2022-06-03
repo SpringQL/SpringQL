@@ -1,7 +1,7 @@
 // This file is part of https://github.com/SpringQL/SpringQL which is licensed under MIT OR Apache-2.0. See file LICENSE-MIT or LICENSE-APACHE for full license details.
 
 use crate::{
-    api::low_level_rs::SpringConfig,
+    api::SpringConfig,
     stream_engine::autonomous_executor::{
         queue::{
             row_queue_repository::RowQueueRepository,

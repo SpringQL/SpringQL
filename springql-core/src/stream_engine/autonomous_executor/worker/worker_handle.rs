@@ -9,7 +9,7 @@ use std::{
 use parking_lot::{Mutex, MutexGuard};
 
 use crate::{
-    api::low_level_rs::SpringConfig,
+    api::SpringConfig,
     stream_engine::autonomous_executor::{
         args::{Coordinators, EventQueues},
         main_job_lock::MainJobLock,

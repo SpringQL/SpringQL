@@ -28,7 +28,7 @@ use std::sync::Arc;
 use crate::{
     api::{
         error::{Result, SpringError},
-        low_level_rs::SpringConfig,
+        SpringConfig,
     },
     pipeline::Pipeline,
     stream_engine::autonomous_executor::{

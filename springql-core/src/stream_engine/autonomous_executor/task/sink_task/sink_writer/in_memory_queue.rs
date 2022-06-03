@@ -1,7 +1,7 @@
 // This file is part of https://github.com/SpringQL/SpringQL which is licensed under MIT OR Apache-2.0. See file LICENSE-MIT or LICENSE-APACHE for full license details.
 
 use crate::{
-    api::{error::Result, low_level_rs::SpringSinkWriterConfig},
+    api::{error::Result, SpringSinkWriterConfig},
     pipeline::{
         name::QueueName,
         option::{in_memory_queue_options::InMemoryQueueOptions, Options},

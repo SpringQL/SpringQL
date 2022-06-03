@@ -2,13 +2,12 @@
 
 pub mod error;
 mod high_level_rs;
-pub mod low_level_rs;
-
+mod low_level_rs;
 pub use crate::{
     api::{
         error::{Result, SpringError},
         high_level_rs::{SpringPipelineHL, SpringRowHL},
-        low_level_rs::{SpringConfig, SpringPipeline, SpringRow},
+        low_level_rs::{spring_config::*, SpringConfig},
     },
     stream_engine::{
         time::{duration::event_duration::SpringEventDuration, timestamp::SpringTimestamp},

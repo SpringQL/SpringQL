@@ -14,7 +14,7 @@
 - fetch row from pipeline: [SpringPipelineHL::pop](crate::api::SpringPipelineHL::pop)
 
 ```rust
-use springql_core::api::{SpringPipelineHL, low_level_rs::SpringConfig};
+use springql_core::api::{SpringPipelineHL, SpringConfig};
 
 fn main() {
     const SOURCE_PORT: u16 = 54300;
@@ -88,7 +88,7 @@ echo '{"ts": "2022-01-01 13:00:00.000000000", "temperature": 5.3}' | nc localhos
 
 ```rust
 use std::{sync::Arc, thread, time::Duration};
-use springql_core::api::{SpringPipelineHL, low_level_rs::SpringConfig};
+use springql_core::api::{SpringPipelineHL, SpringConfig};
 
 fn main() {
     const SOURCE_PORT: u16 = 54300;

@@ -10,7 +10,7 @@ use std::{
 
 use crate::{
     api::error::{foreign_info::ForeignInfo, Result, SpringError},
-    api::low_level_rs::SpringSourceReaderConfig,
+    api::SpringSourceReaderConfig,
     pipeline::option::{
         net_options::{NetProtocol, NetServerOptions},
         Options,
@@ -133,7 +133,7 @@ impl NetServerSourceReader {
 mod tests {
     use super::*;
     use crate::{
-        api::low_level_rs::SpringSinkWriterConfig,
+        api::SpringSinkWriterConfig,
         pipeline::option::options_builder::OptionsBuilder,
         stream_engine::{
             autonomous_executor::task::sink_task::sink_writer::{net::NetSinkWriter, SinkWriter},

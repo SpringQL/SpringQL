@@ -1,7 +1,7 @@
 // This file is part of https://github.com/SpringQL/SpringQL which is licensed under MIT OR Apache-2.0. See file LICENSE-MIT or LICENSE-APACHE for full license details.
 
 use crate::{
-    api::{error::Result, low_level_rs::SpringSourceReaderConfig},
+    api::{error::Result, SpringSourceReaderConfig},
     pipeline::{option::Options, source_reader_model::source_reader_type::SourceReaderType},
     stream_engine::autonomous_executor::task::source_task::source_reader::{
         net_client::NetClientSourceReader, net_server::NetServerSourceReader, SourceReader,
