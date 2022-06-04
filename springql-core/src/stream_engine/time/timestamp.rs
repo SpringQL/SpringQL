@@ -90,7 +90,7 @@ impl FromStr for SpringTimestamp {
 
 impl ToString for SpringTimestamp {
     fn to_string(&self) -> String {
-        self.0.format().to_string()
+        self.0.format()
     }
 }
 

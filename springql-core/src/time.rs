@@ -1,3 +1,5 @@
+// This file is part of https://github.com/SpringQL/SpringQL which is licensed under MIT OR Apache-2.0. See file LICENSE-MIT or LICENSE-APACHE for full license details.
+
 use std::ops::{Add, Sub};
 
 use chrono::{FixedOffset, Utc};
@@ -50,11 +52,10 @@ impl Duration {
         ))
     }
 
-    pub fn to_std(&self) -> Result<std::time::Duration, TimeError> {
-        Ok(self
-            .0
+    pub fn to_std(self) -> Result<std::time::Duration, TimeError> {
+        self.0
             .to_std()
-            .map_err(|e| TimeError::OutOfRange(e.to_string()))?)
+            .map_err(|e| TimeError::OutOfRange(e.to_string()))
     }
 
     pub fn num_nanoseconds(&self) -> Option<i64> {
