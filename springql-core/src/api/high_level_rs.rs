@@ -5,19 +5,17 @@
 use crate::{
     api::{
         error::{Result, SpringError},
-        low_level_rs::{
-            spring_command, spring_open, spring_pop, spring_pop_non_blocking, SpringConfig,
-            SpringPipeline,
-        },
+        low_level_rs::SpringConfig,
     },
+    pipeline::{spring_command, spring_open, spring_pop, spring_pop_non_blocking},
     stream_engine::{SinkRow, SpringValue, SqlValue},
 };
 
 /// Pipeline.
 #[derive(Debug)]
-pub struct SpringPipelineHL(SpringPipeline);
+pub struct SpringPipeline(crate::pipeline::SpringPipeline);
 
-impl SpringPipelineHL {
+impl SpringPipeline {
     /// Creates and open an in-process stream pipeline.
     pub fn new(config: &SpringConfig) -> Result<Self> {
         let low_level = spring_open(config)?;
@@ -48,8 +46,8 @@ impl SpringPipelineHL {
     ///
     /// - [SpringError::Unavailable](crate::api::error::SpringError::Unavailable) when:
     ///   - queue named `queue` does not exist.
-    pub fn pop(&self, queue: &str) -> Result<SpringRowHL> {
-        spring_pop(&self.0, queue).map(|row| SpringRowHL(row.0))
+    pub fn pop(&self, queue: &str) -> Result<SpringRow> {
+        spring_pop(&self.0, queue).map(|row| SpringRow(row.0))
     }
 
     /// Pop a row from an in memory queue. This is a non-blocking function.
@@ -63,16 +61,16 @@ impl SpringPipelineHL {
     ///
     /// - [SpringError::Unavailable](crate::api::error::SpringError::Unavailable) when:
     ///   - queue named `queue` does not exist.
-    pub fn pop_non_blocking(&self, queue: &str) -> Result<Option<SpringRowHL>> {
-        spring_pop_non_blocking(&self.0, queue).map(|opt_row| opt_row.map(|row| SpringRowHL(row.0)))
+    pub fn pop_non_blocking(&self, queue: &str) -> Result<Option<SpringRow>> {
+        spring_pop_non_blocking(&self.0, queue).map(|opt_row| opt_row.map(|row| SpringRow(row.0)))
     }
 }
 
 /// Row object from an in memory queue.
 #[derive(Debug)]
-pub struct SpringRowHL(SinkRow);
+pub struct SpringRow(SinkRow);
 
-impl SpringRowHL {
+impl SpringRow {
     /// Get a i-th column value from the row.
     ///
     /// # Failure
