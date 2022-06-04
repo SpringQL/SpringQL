@@ -10,6 +10,10 @@ All other sections are for end-users.
 <!-- markdownlint-disable MD024 -->
 ## [Unreleased]
 
+### For developers
+
+- Temporaly turn off the security advisory RUSTSEC-2020-0071
+
 ## [v0.10.0]
 
 ### Added
