@@ -8,7 +8,7 @@ pub(crate) struct SystemTimestamp;
 
 impl SystemTimestamp {
     pub(crate) fn now() -> SpringTimestamp {
-        let t = chrono::offset::Utc::now().naive_utc();
+        let t = crate::time::NaiveDateTime::utc_now();
         SpringTimestamp::new(t)
     }
 }
