@@ -10,9 +10,10 @@ All other sections are for end-users.
 <!-- markdownlint-disable MD024 -->
 ## [Unreleased]
 
-### For Developers
+### For developers
 
-- Refactor : introduce wrapping to `chrono` types ([[#172](https://github.com/SpringQL/SpringQL/pull/172)])
+- Temporaly turn off the security advisory RUSTSEC-2020-0071 ([#174](https://github.com/SpringQL/SpringQL/pull/174))
+- Refactor : introduce wrapping to `chrono` types ([[#172](https://github.com/SpringQL/SpringQL/pull/172))
 
 ## [v0.10.0]
 
