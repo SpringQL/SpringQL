@@ -10,6 +10,10 @@ All other sections are for end-users.
 <!-- markdownlint-disable MD024 -->
 ## [Unreleased]
 
+### For Developers
+
+- Refactor : introduce wrapping to `chrono` types ([[#172](https://github.com/SpringQL/SpringQL/pull/172)])
+
 ## [v0.10.0]
 
 ### Added

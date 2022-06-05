@@ -19,18 +19,23 @@ pub(in crate::stream_engine::autonomous_executor) struct Watermark {
 }
 
 impl Watermark {
-    pub(in crate::stream_engine::autonomous_executor) fn new(allowed_delay: SpringEventDuration) -> Self {
+    pub(in crate::stream_engine::autonomous_executor) fn new(
+        allowed_delay: SpringEventDuration,
+    ) -> Self {
         Self {
-            max_rowtime: MIN_TIMESTAMP + allowed_delay.to_chrono(), // to avoid overflow
+            max_rowtime: MIN_TIMESTAMP + allowed_delay.to_duration(), // to avoid overflow
             allowed_delay,
         }
     }
 
     pub(in crate::stream_engine::autonomous_executor) fn as_timestamp(&self) -> SpringTimestamp {
-        self.max_rowtime - self.allowed_delay.to_chrono()
+        self.max_rowtime - self.allowed_delay.to_duration()
     }
 
-    pub(in crate::stream_engine::autonomous_executor) fn update(&mut self, rowtime: SpringTimestamp) {
+    pub(in crate::stream_engine::autonomous_executor) fn update(
+        &mut self,
+        rowtime: SpringTimestamp,
+    ) {
         self.max_rowtime = max(rowtime, self.max_rowtime);
     }
 }
