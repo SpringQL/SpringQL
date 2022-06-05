@@ -103,6 +103,7 @@ cargo d
 script = ['''
 #!/usr/bin/env bash -eux
 
+mkdir -p target
 set +e
 cargo deadlinks --check-http --ignore-fragments > target/cargo-deadlinks.out
 set -e
