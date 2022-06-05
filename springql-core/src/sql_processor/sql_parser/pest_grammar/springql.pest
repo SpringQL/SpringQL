@@ -25,6 +25,7 @@ keyword = {
     | ^"AND"
     | ^"AVG"
     | ^"BIGINT"
+    | ^"BLOB"
     | ^"BOOLEAN"
     | ^"BY"
     | ^"CREATE"
@@ -303,6 +304,7 @@ data_type = {
     | float_type
     | boolean_type
     | character_type
+    | binary_type
     | timestamp_type
 }
 
@@ -348,6 +350,17 @@ boolean_type = {
 
 character_type = {
     ^"TEXT"
+}
+
+/*
+ * ----------------------------------------------------------------------------
+ * Byte types
+ * (https://www.postgresql.org/docs/current/datatype-binary.html)
+ * ----------------------------------------------------------------------------
+ */
+
+binary_type = {
+    ^"BLOB"
 }
 
 /*

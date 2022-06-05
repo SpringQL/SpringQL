@@ -1077,6 +1077,12 @@ impl PestParserImpl {
         )?)
         .or(try_parse_child(
             &mut params,
+            Rule::binary_type,
+            Self::parse_binary_type,
+            identity,
+        )?)
+        .or(try_parse_child(
+            &mut params,
             Rule::timestamp_type,
             Self::parse_timestamp_type,
             identity,
@@ -1132,6 +1138,17 @@ impl PestParserImpl {
         let s = self_as_str(&mut params);
         match s.to_ascii_uppercase().as_str() {
             "TEXT" => Ok(SqlType::text()),
+            x => {
+                eprintln!("Unexpected data type parsed: {}", x);
+                unreachable!();
+            }
+        }
+    }
+
+    fn parse_binary_type(mut params: FnParseParams) -> Result<SqlType> {
+        let s = self_as_str(&mut params);
+        match s.to_ascii_uppercase().as_str() {
+            "BLOB" => Ok(SqlType::blob()),
             x => {
                 eprintln!("Unexpected data type parsed: {}", x);
                 unreachable!();
