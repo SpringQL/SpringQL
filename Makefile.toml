@@ -102,8 +102,16 @@ cargo d
 [tasks.deadlink]
 script = ['''
 #!/usr/bin/env bash -eux
-cargo deadlinks --check-http --ignore-fragments
+
+set +e
+cargo deadlinks --check-http --ignore-fragments > target/cargo-deadlinks.out
+set -e
+cat target/cargo-deadlinks.out | sort | uniq > target/cargo-deadlinks.sort
+cat deadlinks.expected | sort | uniq > target/cargo-deadlinks.expected.sort
+diff -u target/cargo-deadlinks.expected.sort target/cargo-deadlinks.sort
+
 mlc --ignore-path target
+
 ''']
 
 [tasks.copyright]
