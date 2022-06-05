@@ -240,7 +240,7 @@ impl ValueExprPh2 {
                 SqlValue::NotNull(NnSqlValue::Timestamp(ts)),
                 SqlValue::NotNull(NnSqlValue::Duration(resolution)),
             ) => {
-                let ts_floor = ts.floor(resolution.to_chrono());
+                let ts_floor = ts.floor(resolution.to_duration());
                 Ok(SqlValue::NotNull(NnSqlValue::Timestamp(ts_floor)))
             }
             _ => Err(SpringError::Sql(anyhow!(

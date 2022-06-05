@@ -108,29 +108,29 @@ where
         let mut ret = vec![];
 
         let leftmost_open_at = {
-            let l = (rowtime - self.window_param.length().to_chrono())
-                .ceil(self.window_param.period().to_chrono());
+            let l = (rowtime - self.window_param.length().to_duration())
+                .ceil(self.window_param.period().to_duration());
 
             // edge case
-            if l == rowtime - self.window_param.length().to_chrono() {
-                l + self.window_param.period().to_chrono()
+            if l == rowtime - self.window_param.length().to_duration() {
+                l + self.window_param.period().to_duration()
             } else {
                 l
             }
         };
-        let rightmost_open_at = rowtime.floor(self.window_param.period().to_chrono());
+        let rightmost_open_at = rowtime.floor(self.window_param.period().to_duration());
 
         let mut open_at = leftmost_open_at;
         while open_at <= rightmost_open_at {
             ret.push(open_at);
-            open_at = open_at + self.window_param.period().to_chrono();
+            open_at = open_at + self.window_param.period().to_duration();
         }
 
         ret
     }
 
     fn generate_pane(&self, open_at: SpringTimestamp) -> P {
-        let close_at = open_at + self.window_param.length().to_chrono();
+        let close_at = open_at + self.window_param.length().to_duration();
         P::new(open_at, close_at, self.op_param.clone())
     }
 }

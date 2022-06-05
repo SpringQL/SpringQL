@@ -3,18 +3,20 @@
 pub(crate) mod event_duration;
 pub(crate) mod wall_clock_duration;
 
-use std::time::Duration;
+use std::time::Duration as StdDuration;
+
+use crate::time::Duration;
 
 /// Duration based on event-time or process-time.
 pub(crate) trait SpringDuration {
-    fn as_std(&self) -> &Duration;
-    fn from_std(duration: Duration) -> Self;
+    fn as_std(&self) -> &StdDuration;
+    fn from_std(duration: StdDuration) -> Self;
 
     fn from_secs(secs: u64) -> Self
     where
         Self: Sized,
     {
-        let d = Duration::from_secs(secs);
+        let d = StdDuration::from_secs(secs);
         Self::from_std(d)
     }
 
@@ -22,7 +24,7 @@ pub(crate) trait SpringDuration {
     where
         Self: Sized,
     {
-        let d = Duration::from_millis(millis);
+        let d = StdDuration::from_millis(millis);
         Self::from_std(d)
     }
 
@@ -30,7 +32,7 @@ pub(crate) trait SpringDuration {
     where
         Self: Sized,
     {
-        let d = Duration::from_micros(micros);
+        let d = StdDuration::from_micros(micros);
         Self::from_std(d)
     }
 
@@ -41,7 +43,7 @@ pub(crate) trait SpringDuration {
         self.as_std().as_secs_f32()
     }
 
-    fn to_chrono(&self) -> chrono::Duration {
-        chrono::Duration::from_std(*self.as_std()).expect("too large duration for chrono")
+    fn to_duration(&self) -> Duration {
+        Duration::from_std(*self.as_std()).expect("too large duration for chrono")
     }
 }
