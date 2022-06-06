@@ -10,6 +10,10 @@ All other sections are for end-users.
 <!-- markdownlint-disable MD024 -->
 ## [Unreleased]
 
+### For Developers
+
+- CI : add ignore for known deadlink ([#175](https://github.com/SpringQL/SpringQL/pull/157))
+
 ## [v0.10.0]
 
 ### Added
