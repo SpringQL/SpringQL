@@ -45,7 +45,7 @@ impl SinkRow {
 
 #[cfg(test)]
 mod tests {
-    use chrono::Duration;
+    use crate::time::Duration;
     use serde_json::json;
 
     use crate::{
