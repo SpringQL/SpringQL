@@ -105,7 +105,7 @@ script = ['''
 
 mkdir -p target
 set +e
-cargo deadlinks --check-http --ignore-fragments > target/cargo-deadlinks.out
+cargo deadlinks --check-http --ignore-fragments | tee target/cargo-deadlinks.out
 set -e
 cat target/cargo-deadlinks.out | sort | uniq > target/cargo-deadlinks.sort
 cat deadlinks.expected | sort | uniq > target/cargo-deadlinks.expected.sort
