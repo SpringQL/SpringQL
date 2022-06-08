@@ -10,6 +10,8 @@ All other sections are for end-users.
 <!-- markdownlint-disable MD024 -->
 ## [Unreleased]
 
+## [v0.11.0]
+
 ### Changed
 
 - re orgnize public API ([#169](https://github.com/SpringQL/SpringQL/pull/169))
@@ -163,8 +165,9 @@ All other sections are for end-users.
 [Semantic Versioning]: https://semver.org/
 
 <!-- Versions -->
-[Unreleased]: https://github.com/SpringQL/SpringQL/compare/v0.10.0...HEAD
+[Unreleased]: https://github.com/SpringQL/SpringQL/compare/v0.11.0...HEAD
 [Released]: https://github.com/SpringQL/SpringQL/releases
+[v0.11.0]: https://github.com/SpringQL/SpringQL/compare/v0.10.0...v0.11.0
 [v0.10.0]: https://github.com/SpringQL/SpringQL/compare/v0.9.0...v0.10.0
 [v0.9.0]: https://github.com/SpringQL/SpringQL/compare/v0.8.0...v0.9.0
 [v0.8.0]: https://github.com/SpringQL/SpringQL/compare/v0.7.1...v0.8.0
