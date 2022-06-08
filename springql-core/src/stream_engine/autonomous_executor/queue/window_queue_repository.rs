@@ -7,9 +7,9 @@ use std::{
 
 use parking_lot::RwLock;
 
-use crate::stream_engine::autonomous_executor::task_graph::queue_id::window_queue_id::WindowQueueId;
-
-use super::window_queue::WindowQueue;
+use crate::stream_engine::autonomous_executor::{
+    queue::window_queue::WindowQueue, task_graph::queue_id::window_queue_id::WindowQueueId,
+};
 
 #[derive(Debug, Default)]
 pub(in crate::stream_engine::autonomous_executor) struct WindowQueueRepository {

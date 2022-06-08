@@ -4,18 +4,18 @@
 
 pub(crate) mod system_timestamp;
 
-use crate::time::{DateTime, Duration, NaiveDateTime, MIN_DATETIME};
-use anyhow::Context;
-use serde::{Deserialize, Serialize};
-
 use std::{
     ops::{Add, Sub},
     str::FromStr,
 };
 
+use anyhow::Context;
+use serde::{Deserialize, Serialize};
+
 use crate::{
-    error::{Result, SpringError},
+    api::error::{Result, SpringError},
     mem_size::{chrono_naive_date_time_overhead_size, MemSize},
+    time::{DateTime, Duration, NaiveDateTime, MIN_DATETIME},
 };
 
 /// The minimum possible `Timestamp`.
@@ -120,7 +120,7 @@ impl Sub<SpringTimestamp> for SpringTimestamp {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::error::Result;
+    use crate::api::error::Result;
     use pretty_assertions::assert_eq;
 
     #[test]

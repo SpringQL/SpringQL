@@ -6,16 +6,16 @@ mod web_console_reporter;
 
 use std::sync::Arc;
 
-use crate::low_level_rs::SpringConfig;
-
-use self::performance_monitor_worker_thread::{
-    PerformanceMonitorWorkerThread, PerformanceMonitorWorkerThreadArg,
-};
-
-use super::{
-    args::{Coordinators, EventQueues},
-    main_job_lock::MainJobLock,
-    worker::worker_handle::WorkerHandle,
+use crate::{
+    api::SpringConfig,
+    stream_engine::autonomous_executor::{
+        args::{Coordinators, EventQueues},
+        main_job_lock::MainJobLock,
+        performance_monitor_worker::performance_monitor_worker_thread::{
+            PerformanceMonitorWorkerThread, PerformanceMonitorWorkerThreadArg,
+        },
+        worker::worker_handle::WorkerHandle,
+    },
 };
 
 /// Dedicated thread to:

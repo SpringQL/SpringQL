@@ -10,6 +10,15 @@ All other sections are for end-users.
 <!-- markdownlint-disable MD024 -->
 ## [Unreleased]
 
+### Changed
+
+- re orgnize public API ([#169](https://github.com/SpringQL/SpringQL/pull/169))
+  - public mod `api` and hide `high_level_rs`
+    - high level APIs are exported from `springql_core::api`
+  - remove low level API
+  - rename `SpringPipelineHL` to `SpringPipeline`
+  - rename `SpringRowHL` to `SpringRow`
+
 ### For Developers
 
 - CI : add ignore for known deadlink ([#175](https://github.com/SpringQL/SpringQL/pull/157))

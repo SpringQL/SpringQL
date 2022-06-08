@@ -4,11 +4,13 @@ pub(crate) mod pump_input_type;
 pub(crate) mod window_operation_parameter;
 pub(crate) mod window_parameter;
 
-use crate::stream_engine::command::{insert_plan::InsertPlan, query_plan::QueryPlan};
-
-use self::pump_input_type::PumpInputType;
-
-use super::name::{PumpName, StreamName};
+use crate::{
+    pipeline::{
+        name::{PumpName, StreamName},
+        pump_model::pump_input_type::PumpInputType,
+    },
+    stream_engine::command::{insert_plan::InsertPlan, query_plan::QueryPlan},
+};
 
 #[derive(Clone, PartialEq, Debug, new)]
 pub(crate) struct PumpModel {

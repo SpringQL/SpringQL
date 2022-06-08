@@ -7,7 +7,7 @@ use std::collections::HashMap;
 use ordered_float::OrderedFloat;
 
 use crate::{
-    error::Result,
+    api::error::Result,
     expr_resolver::ExprResolver,
     pipeline::pump_model::window_operation_parameter::{
         aggregate::{AggregateFunctionParameter, AggregateParameter, GroupByLabels},
@@ -16,16 +16,18 @@ use crate::{
     stream_engine::{
         autonomous_executor::{
             performance_metrics::metrics_update_command::metrics_update_by_task_execution::WindowInFlowByWindowTask,
-            task::{tuple::Tuple, window::aggregate::AggregatedAndGroupingValues},
+            task::{
+                tuple::Tuple,
+                window::{
+                    aggregate::AggregatedAndGroupingValues,
+                    panes::pane::{aggregate_pane::aggregate_state::AvgState, Pane},
+                },
+            },
         },
         time::timestamp::SpringTimestamp,
         NnSqlValue, SqlValue,
     },
 };
-
-use self::aggregate_state::AvgState;
-
-use super::Pane;
 
 #[derive(Debug)]
 pub(in crate::stream_engine::autonomous_executor) struct AggrPane {

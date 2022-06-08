@@ -1,22 +1,29 @@
 // This file is part of https://github.com/SpringQL/SpringQL which is licensed under MIT OR Apache-2.0. See file LICENSE-MIT or LICENSE-APACHE for full license details.
 
-use std::mem::size_of;
-use std::ops::{Add, Mul};
-use std::{fmt::Display, hash::Hash};
+use std::{
+    fmt::Display,
+    hash::Hash,
+    mem::size_of,
+    ops::{Add, Mul},
+};
 
-use super::sql_compare_result::SqlCompareResult;
-use crate::error::{Result, SpringError};
-use crate::mem_size::MemSize;
-use crate::pipeline::relation::sql_type::{
-    self, NumericComparableType, SqlType, StringComparableLoseType,
-};
-use crate::stream_engine::autonomous_executor::row::value::sql_convertible::{
-    SpringValue, ToNnSqlValue,
-};
-use crate::stream_engine::time::duration::event_duration::SpringEventDuration;
-use crate::stream_engine::time::timestamp::SpringTimestamp;
 use anyhow::anyhow;
 use ordered_float::OrderedFloat;
+
+use crate::{
+    api::error::{Result, SpringError},
+    mem_size::MemSize,
+    pipeline::relation::sql_type::{
+        self, NumericComparableType, SqlType, StringComparableLoseType,
+    },
+    stream_engine::{
+        autonomous_executor::row::value::{
+            sql_convertible::{SpringValue, ToNnSqlValue},
+            sql_value::sql_compare_result::SqlCompareResult,
+        },
+        time::{duration::event_duration::SpringEventDuration, timestamp::SpringTimestamp},
+    },
+};
 
 /// NOT NULL value.
 #[derive(Clone, Debug)]
@@ -220,10 +227,12 @@ impl NnSqlValue {
                 }
             },
             SqlType::BooleanComparable => self.unpack::<bool>().map(|v| v.into_sql_value()),
-            SqlType::TimestampComparable => self.unpack::<SpringTimestamp>().map(|v| v.into_sql_value()),
-            SqlType::DurationComparable => {
-                self.unpack::<SpringEventDuration>().map(|v| v.into_sql_value())
+            SqlType::TimestampComparable => {
+                self.unpack::<SpringTimestamp>().map(|v| v.into_sql_value())
             }
+            SqlType::DurationComparable => self
+                .unpack::<SpringEventDuration>()
+                .map(|v| v.into_sql_value()),
         }
     }
 
@@ -260,7 +269,10 @@ impl NnSqlValue {
                 Ok(SqlCompareResult::from(self_b.cmp(&other_b)))
             }
             (SqlType::TimestampComparable, SqlType::TimestampComparable) => {
-                let (self_t, other_t) = (self.unpack::<SpringTimestamp>()?, other.unpack::<SpringTimestamp>()?);
+                let (self_t, other_t) = (
+                    self.unpack::<SpringTimestamp>()?,
+                    other.unpack::<SpringTimestamp>()?,
+                );
                 Ok(SqlCompareResult::from(self_t.cmp(&other_t)))
             }
             (_, _) => Err(SpringError::Sql(anyhow!(

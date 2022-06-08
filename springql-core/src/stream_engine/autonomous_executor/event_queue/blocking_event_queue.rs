@@ -5,7 +5,7 @@ use std::{
     sync::{mpsc, Mutex, MutexGuard},
 };
 
-use super::{
+use crate::stream_engine::autonomous_executor::event_queue::{
     event::{Event, EventTag},
     EventPoll,
 };

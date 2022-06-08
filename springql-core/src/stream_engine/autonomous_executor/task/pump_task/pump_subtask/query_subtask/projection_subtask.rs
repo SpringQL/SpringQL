@@ -1,12 +1,13 @@
 // This file is part of https://github.com/SpringQL/SpringQL which is licensed under MIT OR Apache-2.0. See file LICENSE-MIT or LICENSE-APACHE for full license details.
 
-use crate::error::Result;
-use crate::expr_resolver::expr_label::ExprLabel;
-use crate::expr_resolver::ExprResolver;
-use crate::stream_engine::autonomous_executor::task::tuple::Tuple;
-use crate::stream_engine::autonomous_executor::task::window::aggregate::AggregatedAndGroupingValues;
-
-use super::SqlValues;
+use crate::{
+    api::error::Result,
+    expr_resolver::{expr_label::ExprLabel, ExprResolver},
+    stream_engine::autonomous_executor::task::{
+        pump_task::pump_subtask::query_subtask::SqlValues, tuple::Tuple,
+        window::aggregate::AggregatedAndGroupingValues,
+    },
+};
 
 #[derive(Debug, new)]
 pub(in crate::stream_engine::autonomous_executor) struct ProjectionSubtask {

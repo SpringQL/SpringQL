@@ -7,16 +7,20 @@ mod generic_worker_pool;
 mod scheduler;
 mod source_worker_pool;
 
-use crate::{error::Result, low_level_rs::SpringConfig};
 use std::sync::Arc;
 
-use self::{generic_worker_pool::GenericWorkerPool, source_worker_pool::SourceWorkerPool};
-use super::{
-    args::{Coordinators, EventQueues, Locks},
-    main_job_lock::MainJobBarrierGuard,
-    pipeline_derivatives::PipelineDerivatives,
-    repositories::Repositories,
-    task_graph::TaskGraph,
+use crate::{
+    api::{error::Result, SpringConfig},
+    stream_engine::autonomous_executor::{
+        args::{Coordinators, EventQueues, Locks},
+        main_job_lock::MainJobBarrierGuard,
+        pipeline_derivatives::PipelineDerivatives,
+        repositories::Repositories,
+        task_executor::{
+            generic_worker_pool::GenericWorkerPool, source_worker_pool::SourceWorkerPool,
+        },
+        task_graph::TaskGraph,
+    },
 };
 
 /// Task executor executes task graph's dataflow by internal worker threads.

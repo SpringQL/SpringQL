@@ -14,17 +14,17 @@ pub(in crate::stream_engine::autonomous_executor) mod memory_state_machine_worke
 
 use std::sync::Arc;
 
-use crate::low_level_rs::SpringMemoryConfig;
-
-use self::memory_state_machine_worker_thread::{
-    MemoryStateMachineWorkerThread, MemoryStateMachineWorkerThreadArg,
-};
-
-use super::{
-    args::{Coordinators, EventQueues},
-    main_job_lock::MainJobLock,
-    memory_state_machine::MemoryStateMachineThreshold,
-    worker::worker_handle::WorkerHandle,
+use crate::{
+    api::SpringMemoryConfig,
+    stream_engine::autonomous_executor::{
+        args::{Coordinators, EventQueues},
+        main_job_lock::MainJobLock,
+        memory_state_machine::MemoryStateMachineThreshold,
+        memory_state_machine_worker::memory_state_machine_worker_thread::{
+            MemoryStateMachineWorkerThread, MemoryStateMachineWorkerThreadArg,
+        },
+        worker::worker_handle::WorkerHandle,
+    },
 };
 
 #[derive(Debug)]

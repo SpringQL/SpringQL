@@ -5,10 +5,10 @@ pub(crate) mod query_plan_operation;
 use crate::{
     expr_resolver::ExprResolver,
     pipeline::{name::StreamName, pump_model::pump_input_type::PumpInputType},
-    stream_engine::command::query_plan::query_plan_operation::JoinOp,
+    stream_engine::command::query_plan::query_plan_operation::{
+        JoinOp, JoinWindowOp, LowerOps, UpperOps,
+    },
 };
-
-use self::query_plan_operation::{JoinWindowOp, LowerOps, UpperOps};
 
 /// Query plan from which an executor can do its work deterministically.
 #[derive(Clone, PartialEq, Debug, new)]

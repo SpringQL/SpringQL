@@ -2,15 +2,19 @@
 
 mod in_memory_queue;
 
+use std::{
+    collections::HashMap,
+    sync::{Arc, Mutex, MutexGuard},
+};
+
 use anyhow::anyhow;
 use once_cell::sync::Lazy;
 
-use crate::error::{Result, SpringError};
-use crate::pipeline::name::QueueName;
-use std::collections::HashMap;
-use std::sync::{Arc, Mutex, MutexGuard};
-
-use self::in_memory_queue::InMemoryQueue;
+use crate::{
+    api::error::{Result, SpringError},
+    pipeline::name::QueueName,
+    stream_engine::in_memory_queue_repository::in_memory_queue::InMemoryQueue,
+};
 
 static INSTANCE: Lazy<Arc<InMemoryQueueRepository>> =
     Lazy::new(|| Arc::new(InMemoryQueueRepository::empty()));

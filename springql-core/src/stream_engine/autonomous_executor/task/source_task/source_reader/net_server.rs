@@ -9,18 +9,17 @@ use std::{
 };
 
 use crate::{
-    error::{foreign_info::ForeignInfo, Result, SpringError},
-    low_level_rs::SpringSourceReaderConfig,
+    api::error::{foreign_info::ForeignInfo, Result, SpringError},
+    api::SpringSourceReaderConfig,
     pipeline::option::{
         net_options::{NetProtocol, NetServerOptions},
         Options,
     },
-    stream_engine::autonomous_executor::row::foreign_row::{
-        format::json::JsonObject, source_row::SourceRow,
+    stream_engine::autonomous_executor::{
+        row::foreign_row::{format::json::JsonObject, source_row::SourceRow},
+        task::source_task::source_reader::SourceReader,
     },
 };
-
-use super::SourceReader;
 
 #[derive(Debug)]
 pub(in crate::stream_engine) struct NetServerSourceReader {
@@ -133,11 +132,14 @@ impl NetServerSourceReader {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::low_level_rs::SpringSinkWriterConfig;
-    use crate::pipeline::option::options_builder::OptionsBuilder;
-    use crate::stream_engine::autonomous_executor::task::sink_task::sink_writer::net::NetSinkWriter;
-    use crate::stream_engine::autonomous_executor::task::sink_task::sink_writer::SinkWriter;
-    use crate::stream_engine::SinkRow;
+    use crate::{
+        api::SpringSinkWriterConfig,
+        pipeline::option::options_builder::OptionsBuilder,
+        stream_engine::{
+            autonomous_executor::task::sink_task::sink_writer::{net::NetSinkWriter, SinkWriter},
+            SinkRow,
+        },
+    };
 
     fn ephemeral_port() -> u16 {
         let addr = TcpListener::bind("127.0.0.1:0").unwrap();
@@ -154,7 +156,7 @@ mod tests {
     }
 
     #[test]
-    fn test_source_tcp() -> crate::error::Result<()> {
+    fn test_source_tcp() -> crate::api::error::Result<()> {
         let port = ephemeral_port();
         let options = OptionsBuilder::default()
             .add("PROTOCOL", "TCP")

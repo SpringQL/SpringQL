@@ -3,12 +3,10 @@
 use anyhow::{anyhow, Context};
 
 use crate::{
-    error::{Result, SpringError},
-    pipeline::relation::sql_type::SqlType,
+    api::error::{Result, SpringError},
+    pipeline::relation::{column::column_definition::ColumnDefinition, sql_type::SqlType},
     pipeline::{name::ColumnName, relation::column::column_constraint::ColumnConstraint},
 };
-
-use crate::pipeline::relation::column::column_definition::ColumnDefinition;
 
 #[derive(Clone, Eq, PartialEq, Debug)]
 pub(crate) struct StreamShape {

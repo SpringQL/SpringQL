@@ -3,12 +3,12 @@
 use std::sync::Arc;
 
 use crate::{
-    error::Result,
+    api::error::Result,
     pipeline::stream_model::StreamModel,
-    stream_engine::autonomous_executor::row::{column::stream_column::StreamColumns, Row},
+    stream_engine::autonomous_executor::row::{
+        column::stream_column::StreamColumns, foreign_row::format::json::JsonObject, Row,
+    },
 };
-
-use super::format::json::JsonObject;
 
 /// Input row from foreign sources (retrieved from SourceReader).
 ///

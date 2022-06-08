@@ -1,9 +1,12 @@
 // This file is part of https://github.com/SpringQL/SpringQL which is licensed under MIT OR Apache-2.0. See file LICENSE-MIT or LICENSE-APACHE for full license details.
 
-use super::format::json::JsonObject;
-use crate::error::Result;
-use crate::pipeline::name::StreamName;
-use crate::stream_engine::autonomous_executor::row::{value::sql_value::SqlValue, Row};
+use crate::{
+    api::error::Result,
+    pipeline::name::StreamName,
+    stream_engine::autonomous_executor::row::{
+        foreign_row::format::json::JsonObject, value::sql_value::SqlValue, Row,
+    },
+};
 
 /// Output row into foreign systems (retrieved by SinkWriter).
 ///

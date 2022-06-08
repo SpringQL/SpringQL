@@ -3,7 +3,7 @@
 use anyhow::Result;
 use std::{fs::File, path::Path};
 
-use super::file_type::FileType;
+use crate::source::source_input::timed_stream::file_type::FileType;
 
 #[derive(Debug)]
 pub(super) enum FileParser {

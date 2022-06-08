@@ -1,5 +1,8 @@
 // This file is part of https://github.com/SpringQL/SpringQL which is licensed under MIT OR Apache-2.0. See file LICENSE-MIT or LICENSE-APACHE for full license details.
 
+pub(in crate::stream_engine::autonomous_executor) mod aggregate_pane;
+pub(in crate::stream_engine::autonomous_executor) mod join_pane;
+
 use crate::{
     expr_resolver::ExprResolver,
     pipeline::pump_model::window_operation_parameter::WindowOperationParameter,
@@ -13,14 +16,15 @@ use crate::{
     },
 };
 
-pub(in crate::stream_engine::autonomous_executor) mod aggregate_pane;
-pub(in crate::stream_engine::autonomous_executor) mod join_pane;
-
 pub(in crate::stream_engine::autonomous_executor) trait Pane {
     type CloseOut;
     type DispatchArg: Clone;
 
-    fn new(open_at: SpringTimestamp, close_at: SpringTimestamp, param: WindowOperationParameter) -> Self;
+    fn new(
+        open_at: SpringTimestamp,
+        close_at: SpringTimestamp,
+        param: WindowOperationParameter,
+    ) -> Self;
 
     fn open_at(&self) -> SpringTimestamp;
     fn close_at(&self) -> SpringTimestamp;

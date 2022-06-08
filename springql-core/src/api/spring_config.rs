@@ -2,7 +2,7 @@
 
 use serde::Deserialize;
 
-use crate::error::{Result, SpringError};
+use crate::api::error::{Result, SpringError};
 
 /// Default configuration.
 ///
@@ -64,25 +64,6 @@ pub fn spring_config_default() -> SpringConfig {
     SpringConfig::new("").expect("default configuration must be valid")
 }
 
-/// Configuration by TOML format string.
-///
-/// This function is intended to be called from FFI.
-/// Rust clients can use `SpringConfig::from_toml()` instead.
-///
-/// # Parameters
-///
-/// - `overwrite_config_toml`: TOML format configuration to overwrite default. See `SPRING_CONFIG_DEFAULT` in [spring_config.rs](https://github.com/SpringQL/SpringQL/tree/main/springql-core/src/api/low_level_rs/spring_config.rs) for full-set default configuration.
-///
-/// # Failures
-///
-/// - [SpringError::InvalidConfig](crate::error::SpringError::InvalidConfig) when:
-///   - `overwrite_config_toml` includes invalid key and/or value.
-/// - [SpringError::InvalidFormat](crate::error::SpringError::InvalidFormat) when:
-///   - `overwrite_config_toml` is not valid as TOML.
-pub fn spring_config_toml(overwrite_config_toml: &str) -> Result<SpringConfig> {
-    SpringConfig::new(overwrite_config_toml)
-}
-
 /// Top-level config.
 #[allow(missing_docs)]
 #[derive(Clone, Eq, PartialEq, Debug, Deserialize)]
@@ -107,7 +88,7 @@ impl SpringConfig {
     ///   - `overwrite_config_toml` includes invalid key and/or value.
     /// - [SpringError::InvalidFormat](crate::error::SpringError::InvalidFormat) when:
     ///   - `overwrite_config_toml` is not valid as TOML.
-    pub(crate) fn new(overwrite_config_toml: &str) -> Result<Self> {
+    pub fn new(overwrite_config_toml: &str) -> Result<Self> {
         let default_conf = config::Config::builder()
             .add_source(config::File::from_str(
                 SPRING_CONFIG_DEFAULT,

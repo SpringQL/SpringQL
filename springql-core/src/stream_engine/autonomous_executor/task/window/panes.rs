@@ -8,12 +8,11 @@ use crate::{
     pipeline::pump_model::{
         window_operation_parameter::WindowOperationParameter, window_parameter::WindowParameter,
     },
-    stream_engine::time::{duration::SpringDuration, timestamp::SpringTimestamp},
+    stream_engine::{
+        autonomous_executor::task::window::{panes::pane::Pane, watermark::Watermark},
+        time::{duration::SpringDuration, timestamp::SpringTimestamp},
+    },
 };
-
-use self::pane::Pane;
-
-use super::watermark::Watermark;
 
 #[derive(Debug)]
 pub(in crate::stream_engine::autonomous_executor) struct Panes<P>

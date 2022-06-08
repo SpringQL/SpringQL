@@ -5,21 +5,30 @@ pub(in crate::stream_engine::autonomous_executor) mod source_reader;
 use std::fmt::Debug;
 use std::sync::Arc;
 
-use crate::error::Result;
-use crate::mem_size::MemSize;
-use crate::pipeline::name::{SourceReaderName, StreamName};
-use crate::pipeline::source_reader_model::SourceReaderModel;
-use crate::stream_engine::autonomous_executor::AutonomousExecutor;
-use crate::stream_engine::autonomous_executor::performance_metrics::metrics_update_command::metrics_update_by_task_execution::{MetricsUpdateByTaskExecution, OutQueueMetricsUpdateByTask, TaskMetricsUpdateByTask};
-use crate::stream_engine::autonomous_executor::repositories::Repositories;
-use crate::stream_engine::autonomous_executor::row::Row;
-use crate::stream_engine::autonomous_executor::task_graph::queue_id::QueueId;
-use crate::stream_engine::autonomous_executor::task_graph::queue_id::row_queue_id::RowQueueId;
-use crate::stream_engine::autonomous_executor::task_graph::queue_id::window_queue_id::WindowQueueId;
-use crate::stream_engine::autonomous_executor::task_graph::task_id::TaskId;
-use crate::stream_engine::time::duration::wall_clock_duration::wall_clock_stopwatch::WallClockStopwatch;
-
-use super::task_context::TaskContext;
+use crate::{
+    api::error::Result,
+    mem_size::MemSize,
+    pipeline::{
+        name::{SourceReaderName, StreamName},
+        source_reader_model::SourceReaderModel,
+    },
+    stream_engine::{
+        autonomous_executor::{
+            performance_metrics::metrics_update_command::metrics_update_by_task_execution::{
+                MetricsUpdateByTaskExecution, OutQueueMetricsUpdateByTask, TaskMetricsUpdateByTask,
+            },
+            repositories::Repositories,
+            row::Row,
+            task::task_context::TaskContext,
+            task_graph::{
+                queue_id::{row_queue_id::RowQueueId, window_queue_id::WindowQueueId, QueueId},
+                task_id::TaskId,
+            },
+            AutonomousExecutor,
+        },
+        time::duration::wall_clock_duration::wall_clock_stopwatch::WallClockStopwatch,
+    },
+};
 
 #[derive(Debug)]
 pub(crate) struct SourceTask {

@@ -1,9 +1,10 @@
 // This file is part of https://github.com/SpringQL/SpringQL which is licensed under MIT OR Apache-2.0. See file LICENSE-MIT or LICENSE-APACHE for full license details.
+use std::{sync::Arc, vec};
 
 use anyhow::{anyhow, Context};
 
 use crate::{
-    error::{Result, SpringError},
+    api::error::{Result, SpringError},
     mem_size::{arc_overhead_size, MemSize},
     pipeline::name::ColumnName,
     pipeline::{relation::column::column_definition::ColumnDefinition, stream_model::StreamModel},
@@ -12,7 +13,6 @@ use crate::{
         time::timestamp::SpringTimestamp,
     },
 };
-use std::{sync::Arc, vec};
 
 /// Column values in a stream.
 ///

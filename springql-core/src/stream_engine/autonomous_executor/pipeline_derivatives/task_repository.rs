@@ -5,7 +5,7 @@ use std::{borrow::BorrowMut, collections::HashMap, sync::Arc};
 use anyhow::anyhow;
 
 use crate::{
-    error::{Result, SpringError},
+    api::error::{Result, SpringError},
     pipeline::pipeline_graph::PipelineGraph,
     stream_engine::autonomous_executor::{
         task::{window::Window, Task},

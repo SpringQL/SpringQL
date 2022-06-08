@@ -4,13 +4,13 @@
 //!
 //! To add/del events, modify `self::event` module.
 
-use std::sync::mpsc;
-
-use self::event::Event;
-
 pub(in crate::stream_engine::autonomous_executor) mod blocking_event_queue;
 pub(in crate::stream_engine::autonomous_executor) mod event;
 pub(in crate::stream_engine::autonomous_executor) mod non_blocking_event_queue;
+
+use std::sync::mpsc;
+
+use crate::stream_engine::autonomous_executor::event_queue::event::Event;
 
 #[derive(Debug, new)]
 pub(in crate::stream_engine::autonomous_executor) struct EventPoll {

@@ -4,18 +4,27 @@ pub(in crate::stream_engine::autonomous_executor) mod sink_writer;
 
 use std::sync::Arc;
 
-use super::task_context::TaskContext;
-use crate::error::Result;
-use crate::mem_size::MemSize;
-use crate::pipeline::name::{SinkWriterName, StreamName};
-use crate::pipeline::sink_writer_model::SinkWriterModel;
-use crate::stream_engine::autonomous_executor::performance_metrics::metrics_update_command::metrics_update_by_task_execution::{MetricsUpdateByTaskExecution, TaskMetricsUpdateByTask, InQueueMetricsUpdateByTask, InQueueMetricsUpdateByCollect};
-use crate::stream_engine::autonomous_executor::repositories::Repositories;
-use crate::stream_engine::autonomous_executor::row::foreign_row::sink_row::SinkRow;
-use crate::stream_engine::autonomous_executor::row::Row;
-use crate::stream_engine::autonomous_executor::task_graph::queue_id::QueueId;
-use crate::stream_engine::autonomous_executor::task_graph::task_id::TaskId;
-use crate::stream_engine::time::duration::wall_clock_duration::wall_clock_stopwatch::WallClockStopwatch;
+use crate::{
+    api::error::Result,
+    mem_size::MemSize,
+    pipeline::{
+        name::{SinkWriterName, StreamName},
+        sink_writer_model::SinkWriterModel,
+    },
+    stream_engine::{
+        autonomous_executor::{
+            performance_metrics::metrics_update_command::metrics_update_by_task_execution::{
+                InQueueMetricsUpdateByCollect, InQueueMetricsUpdateByTask,
+                MetricsUpdateByTaskExecution, TaskMetricsUpdateByTask,
+            },
+            repositories::Repositories,
+            row::{foreign_row::sink_row::SinkRow, Row},
+            task::task_context::TaskContext,
+            task_graph::{queue_id::QueueId, task_id::TaskId},
+        },
+        time::duration::wall_clock_duration::wall_clock_stopwatch::WallClockStopwatch,
+    },
+};
 
 #[derive(Debug)]
 pub(crate) struct SinkTask {

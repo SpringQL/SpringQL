@@ -2,9 +2,9 @@
 
 pub(crate) mod stream_shape;
 
-use self::stream_shape::StreamShape;
-
-use super::{field::field_name::ColumnReference, name::StreamName};
+use crate::pipeline::{
+    field::field_name::ColumnReference, name::StreamName, stream_model::stream_shape::StreamShape,
+};
 
 #[derive(Clone, Eq, PartialEq, Debug, new)]
 pub(crate) struct StreamModel {

@@ -1,13 +1,12 @@
 // This file is part of https://github.com/SpringQL/SpringQL which is licensed under MIT OR Apache-2.0. See file LICENSE-MIT or LICENSE-APACHE for full license details.
 
-use crate::error::Result;
-use crate::low_level_rs::SpringSinkWriterConfig;
-use crate::pipeline::option::Options;
-use crate::pipeline::sink_writer_model::sink_writer_type::SinkWriterType;
-
-use super::in_memory_queue::InMemoryQueueSinkWriter;
-use super::net::NetSinkWriter;
-use super::SinkWriter;
+use crate::{
+    api::{error::Result, SpringSinkWriterConfig},
+    pipeline::{option::Options, sink_writer_model::sink_writer_type::SinkWriterType},
+    stream_engine::autonomous_executor::task::sink_task::sink_writer::{
+        in_memory_queue::InMemoryQueueSinkWriter, net::NetSinkWriter, SinkWriter,
+    },
+};
 
 pub(in crate::stream_engine) struct SinkWriterFactory;
 

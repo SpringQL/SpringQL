@@ -15,14 +15,12 @@ use crate::{
     stream_engine::{
         autonomous_executor::{
             performance_metrics::metrics_update_command::metrics_update_by_task_execution::WindowInFlowByWindowTask,
-            task::tuple::Tuple,
+            task::{tuple::Tuple, window::panes::pane::Pane},
         },
         time::timestamp::SpringTimestamp,
         SqlValue,
     },
 };
-
-use super::Pane;
 
 #[derive(Copy, Clone, Eq, PartialEq, Hash, Debug)]
 pub(in crate::stream_engine::autonomous_executor) enum JoinDir {
@@ -48,7 +46,11 @@ impl Pane for JoinPane {
     /// # Panics
     ///
     /// if `op_param` is not `JoinParameter`
-    fn new(open_at: SpringTimestamp, close_at: SpringTimestamp, op_param: WindowOperationParameter) -> Self {
+    fn new(
+        open_at: SpringTimestamp,
+        close_at: SpringTimestamp,
+        op_param: WindowOperationParameter,
+    ) -> Self {
         let join_parameter = if let WindowOperationParameter::Join(p) = op_param {
             p
         } else {

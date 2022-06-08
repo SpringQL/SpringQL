@@ -2,21 +2,22 @@
 
 use std::collections::HashMap;
 
+use anyhow::anyhow;
+
 use crate::{
-    error::{Result, SpringError},
+    api::error::{Result, SpringError},
     expr_resolver::expr_label::{AggrExprLabel, ValueExprLabel},
     pipeline::pump_model::{
         window_operation_parameter::WindowOperationParameter, window_parameter::WindowParameter,
     },
-    stream_engine::SqlValue,
-};
-
-use anyhow::anyhow;
-
-use super::{
-    panes::{pane::aggregate_pane::AggrPane, Panes},
-    watermark::Watermark,
-    Window,
+    stream_engine::{
+        autonomous_executor::task::window::{
+            panes::{pane::aggregate_pane::AggrPane, Panes},
+            watermark::Watermark,
+            Window,
+        },
+        SqlValue,
+    },
 };
 
 /// for aggregate expressions: AggrExprLabel -> SqlValue,

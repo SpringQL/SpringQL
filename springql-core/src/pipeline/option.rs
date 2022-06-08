@@ -5,12 +5,14 @@ pub(crate) mod options_builder;
 pub(crate) mod in_memory_queue_options;
 pub(crate) mod net_options;
 
-use crate::error::{Result, SpringError};
-use anyhow::Context;
-
 use std::collections::HashMap;
 
-use self::options_builder::OptionsBuilder;
+use anyhow::Context;
+
+use crate::{
+    api::error::{Result, SpringError},
+    pipeline::option::options_builder::OptionsBuilder,
+};
 
 /// Options in CREATE statement.
 #[derive(Clone, Eq, PartialEq, Debug)]

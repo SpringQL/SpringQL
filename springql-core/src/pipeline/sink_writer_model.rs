@@ -2,11 +2,10 @@
 
 pub(crate) mod sink_writer_type;
 
-use self::sink_writer_type::SinkWriterType;
-
-use super::{
+use crate::pipeline::{
     name::{SinkWriterName, StreamName},
     option::Options,
+    sink_writer_model::sink_writer_type::SinkWriterType,
 };
 
 #[derive(Clone, PartialEq, Eq, Debug, new)]
