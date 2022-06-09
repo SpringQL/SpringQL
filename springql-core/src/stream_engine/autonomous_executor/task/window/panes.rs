@@ -5,9 +5,7 @@ pub(in crate::stream_engine::autonomous_executor) mod pane;
 use std::cmp::Ordering;
 
 use crate::{
-    pipeline::pump_model::{
-        window_operation_parameter::WindowOperationParameter, window_parameter::WindowParameter,
-    },
+    pipeline::pump_model::{WindowOperationParameter, WindowParameter},
     stream_engine::{
         autonomous_executor::task::window::{panes::pane::Pane, watermark::Watermark},
         time::{duration::SpringDuration, timestamp::SpringTimestamp},
@@ -141,9 +139,7 @@ mod tests {
     use crate::{
         expr_resolver::{expr_label::ExprLabel, ExprResolver},
         expression::{AggrExpr, ValueExpr},
-        pipeline::pump_model::window_operation_parameter::{
-            AggregateFunctionParameter, AggregateParameter, GroupByLabels,
-        },
+        pipeline::pump_model::{AggregateFunctionParameter, AggregateParameter, GroupByLabels},
         sql_processor::sql_parser::syntax::SelectFieldSyntax,
         stream_engine::{
             autonomous_executor::task::window::panes::pane::aggregate_pane::AggrPane,

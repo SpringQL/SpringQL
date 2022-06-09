@@ -62,10 +62,7 @@ use crate::{
     expr_resolver::{expr_label::ExprLabel, ExprResolver},
     pipeline::{
         pump_model::{
-            window_operation_parameter::{
-                AggregateParameter, GroupByLabels, WindowOperationParameter,
-            },
-            window_parameter::WindowParameter,
+            AggregateParameter, GroupByLabels, WindowOperationParameter, WindowParameter,
         },
         Pipeline,
     },

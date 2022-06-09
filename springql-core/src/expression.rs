@@ -18,9 +18,7 @@ use crate::{
         function_call::FunctionCall,
         operator::UnaryOperator,
     },
-    pipeline::{
-        field::ColumnReference, pump_model::window_operation_parameter::AggregateFunctionParameter,
-    },
+    pipeline::{field::ColumnReference, pump_model::AggregateFunctionParameter},
     stream_engine::{
         time::duration::{event_duration::SpringEventDuration, SpringDuration},
         NnSqlValue, SqlCompareResult, SqlValue, Tuple,

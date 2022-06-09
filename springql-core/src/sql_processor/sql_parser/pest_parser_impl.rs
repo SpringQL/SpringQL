@@ -27,10 +27,7 @@ use crate::{
             StreamName, ValueAlias,
         },
         option::OptionsBuilder,
-        pump_model::{
-            window_operation_parameter::{AggregateFunctionParameter, JoinType},
-            window_parameter::WindowParameter,
-        },
+        pump_model::{AggregateFunctionParameter, JoinType, WindowParameter},
         relation::{
             column::{ColumnConstraint, ColumnDataType, ColumnDefinition},
             sql_type::SqlType,

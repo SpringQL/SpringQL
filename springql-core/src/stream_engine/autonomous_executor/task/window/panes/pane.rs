@@ -5,7 +5,7 @@ pub(in crate::stream_engine::autonomous_executor) mod join_pane;
 
 use crate::{
     expr_resolver::ExprResolver,
-    pipeline::pump_model::window_operation_parameter::WindowOperationParameter,
+    pipeline::pump_model::WindowOperationParameter,
     stream_engine::{
         autonomous_executor::{
             performance_metrics::metrics_update_command::metrics_update_by_task_execution::WindowInFlowByWindowTask,

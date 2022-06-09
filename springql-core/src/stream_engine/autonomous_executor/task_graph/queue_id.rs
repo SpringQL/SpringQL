@@ -6,7 +6,7 @@ pub(in crate::stream_engine::autonomous_executor) mod window_queue_id;
 use crate::{
     pipeline::{
         name::StreamName,
-        pump_model::{pump_input_type::PumpInputType, PumpModel},
+        pump_model::{PumpInputType, PumpModel},
         sink_writer_model::SinkWriterModel,
     },
     stream_engine::autonomous_executor::task_graph::queue_id::{

@@ -4,7 +4,7 @@ pub(crate) mod query_plan_operation;
 
 use crate::{
     expr_resolver::ExprResolver,
-    pipeline::{name::StreamName, pump_model::pump_input_type::PumpInputType},
+    pipeline::{name::StreamName, pump_model::PumpInputType},
     stream_engine::command::query_plan::query_plan_operation::{
         JoinOp, JoinWindowOp, LowerOps, UpperOps,
     },

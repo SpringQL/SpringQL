@@ -1,14 +1,18 @@
 // This file is part of https://github.com/SpringQL/SpringQL which is licensed under MIT OR Apache-2.0. See file LICENSE-MIT or LICENSE-APACHE for full license details.
 
-pub(crate) mod pump_input_type;
-pub(crate) mod window_operation_parameter;
-pub(crate) mod window_parameter;
+mod pump_input_type;
+mod window_operation_parameter;
+mod window_parameter;
+
+pub(crate) use pump_input_type::PumpInputType;
+pub(crate) use window_operation_parameter::{
+    AggregateFunctionParameter, AggregateParameter, GroupByLabels, JoinParameter, JoinType,
+    WindowOperationParameter,
+};
+pub(crate) use window_parameter::WindowParameter;
 
 use crate::{
-    pipeline::{
-        name::{PumpName, StreamName},
-        pump_model::pump_input_type::PumpInputType,
-    },
+    pipeline::name::{PumpName, StreamName},
     stream_engine::command::{insert_plan::InsertPlan, query_plan::QueryPlan},
 };
 

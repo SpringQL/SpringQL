@@ -9,7 +9,7 @@ use ordered_float::OrderedFloat;
 use crate::{
     api::error::Result,
     expr_resolver::ExprResolver,
-    pipeline::pump_model::window_operation_parameter::{
+    pipeline::pump_model::{
         AggregateFunctionParameter, AggregateParameter, GroupByLabels, WindowOperationParameter,
     },
     stream_engine::{

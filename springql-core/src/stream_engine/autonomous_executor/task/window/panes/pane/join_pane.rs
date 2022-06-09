@@ -7,9 +7,7 @@ use crate::{
     mem_size::MemSize,
     pipeline::{
         field::Field,
-        pump_model::window_operation_parameter::{
-            JoinParameter, JoinType, WindowOperationParameter,
-        },
+        pump_model::{JoinParameter, JoinType, WindowOperationParameter},
     },
     stream_engine::{
         autonomous_executor::{

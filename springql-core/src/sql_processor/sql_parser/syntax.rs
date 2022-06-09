@@ -4,7 +4,7 @@ use crate::{
     expression::{AggrExpr, ValueExpr},
     pipeline::{
         name::{AggrAlias, CorrelationAlias, StreamName, ValueAlias},
-        pump_model::{window_operation_parameter::JoinType, window_parameter::WindowParameter},
+        pump_model::{JoinType, WindowParameter},
     },
 };
 

@@ -2,8 +2,7 @@
 
 use crate::{
     pipeline::pump_model::{
-        window_operation_parameter::{JoinParameter, WindowOperationParameter},
-        window_parameter::WindowParameter,
+        WindowParameter, {JoinParameter, WindowOperationParameter},
     },
     stream_engine::autonomous_executor::task::window::{
         panes::{pane::join_pane::JoinPane, Panes},
@@ -67,7 +66,7 @@ mod tests {
         pipeline::{
             field::ColumnReference,
             name::{ColumnName, StreamName},
-            pump_model::window_operation_parameter::{JoinParameter, JoinType},
+            pump_model::{JoinParameter, JoinType},
         },
         sql_processor::sql_parser::syntax::SelectFieldSyntax,
         stream_engine::{
