@@ -28,8 +28,8 @@ pub struct SpringPipeline(crate::pipeline::SpringPipeline);
 impl SpringPipeline {
     /// Creates and open an in-process stream pipeline.
     pub fn new(config: &SpringConfig) -> Result<Self> {
-        let low_level = spring_open(config)?;
-        Ok(Self(low_level))
+        let underlying = spring_open(config)?;
+        Ok(Self(underlying))
     }
 
     /// Execute commands (DDL).
