@@ -19,8 +19,7 @@ use crate::{
         operator::UnaryOperator,
     },
     pipeline::{
-        field::ColumnReference,
-        pump_model::window_operation_parameter::aggregate::AggregateFunctionParameter,
+        field::ColumnReference, pump_model::window_operation_parameter::AggregateFunctionParameter,
     },
     stream_engine::{
         time::duration::{event_duration::SpringEventDuration, SpringDuration},

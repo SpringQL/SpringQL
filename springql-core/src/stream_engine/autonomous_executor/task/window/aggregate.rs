@@ -123,7 +123,7 @@ mod tests {
         expression::{AggrExpr, ValueExpr},
         pipeline::{
             name::{AggrAlias, ColumnName, StreamName},
-            pump_model::window_operation_parameter::aggregate::{
+            pump_model::window_operation_parameter::{
                 AggregateFunctionParameter, AggregateParameter, GroupByLabels,
             },
         },

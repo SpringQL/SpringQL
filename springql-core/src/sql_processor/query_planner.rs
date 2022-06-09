@@ -63,8 +63,7 @@ use crate::{
     pipeline::{
         pump_model::{
             window_operation_parameter::{
-                aggregate::{AggregateParameter, GroupByLabels},
-                WindowOperationParameter,
+                AggregateParameter, GroupByLabels, WindowOperationParameter,
             },
             window_parameter::WindowParameter,
         },

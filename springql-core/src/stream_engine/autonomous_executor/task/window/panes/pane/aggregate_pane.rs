@@ -10,8 +10,7 @@ use crate::{
     api::error::Result,
     expr_resolver::ExprResolver,
     pipeline::pump_model::window_operation_parameter::{
-        aggregate::{AggregateFunctionParameter, AggregateParameter, GroupByLabels},
-        WindowOperationParameter,
+        AggregateFunctionParameter, AggregateParameter, GroupByLabels, WindowOperationParameter,
     },
     stream_engine::{
         autonomous_executor::{

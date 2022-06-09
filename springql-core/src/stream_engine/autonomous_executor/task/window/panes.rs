@@ -141,7 +141,7 @@ mod tests {
     use crate::{
         expr_resolver::{expr_label::ExprLabel, ExprResolver},
         expression::{AggrExpr, ValueExpr},
-        pipeline::pump_model::window_operation_parameter::aggregate::{
+        pipeline::pump_model::window_operation_parameter::{
             AggregateFunctionParameter, AggregateParameter, GroupByLabels,
         },
         sql_processor::sql_parser::syntax::SelectFieldSyntax,
