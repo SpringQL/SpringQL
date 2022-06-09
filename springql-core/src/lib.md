@@ -3,7 +3,7 @@
 
 ## High-level architecture diagram
 
-![High-level architecture diagram](https://raw.githubusercontent.com/SpringQL/SpringQL.github.io/main/static/img/springql-architecture.svg)
+![High-level architecture diagram](https://raw.githubusercontent.com/SpringQL/SpringQL/main/springql-core/doc/img/springql-architecture.drawio.svg)
 
 ## Examples
 

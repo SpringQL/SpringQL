@@ -2,7 +2,7 @@
 
 //! A task graph is a DAG where nodes are `TaskId`s and edges are `QueueId`s.
 //!
-//! ![Task graph concept diagram](https://raw.githubusercontent.com/SpringQL/SpringQL.github.io/main/static/img/pipeline-and-task-graph.svg)
+//! ![Task graph concept diagram](https://raw.githubusercontent.com/SpringQL/SpringQL/main/springql-core/doc/img/pipeline-and-task-graph.drawio.svg)
 //!
 //! A scheduler generates series of TaskId which a GenericWorker executes at a time.
 

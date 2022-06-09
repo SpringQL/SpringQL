@@ -2,7 +2,7 @@
 
 //! # Events diagram
 //!
-//! ![Communication between entities](https://raw.githubusercontent.com/SpringQL/SpringQL.github.io/main/static/img/stream-engine-architecture-communication.svg)
+//! ![Communication between entities](https://raw.githubusercontent.com/SpringQL/SpringQL/main/springql-core/doc/img/stream-engine-architecture-communication.drawio.svg)
 
 use std::sync::Arc;
 

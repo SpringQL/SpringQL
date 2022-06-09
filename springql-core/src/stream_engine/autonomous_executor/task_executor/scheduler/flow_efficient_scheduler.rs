@@ -20,7 +20,7 @@
 //!
 //! - **Rule2: a collector to stoppers**
 //!
-//!   ![Generators, collectors, and stoppers in Flow-Efficient Scheduler](https://raw.githubusercontent.com/SpringQL/SpringQL.github.io/main/static/img/flow-efficient-scheduler.svg)
+//!   ![Generators, collectors, and stoppers in Flow-Efficient Scheduler](https://raw.githubusercontent.com/SpringQL/SpringQL/main/springql-core/doc/img/flow-efficient-scheduler.drawio.svg)
 //!
 //!   Flow-Efficient Scheduler produces series of tasks from collector (downstream task of a generator) to reachable flow stoppers.
 //!   If path from a collector to flow stoppers have split, tasks are traversed in DFS order.
