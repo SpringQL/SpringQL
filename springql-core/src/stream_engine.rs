@@ -43,7 +43,7 @@ impl EngineMutex {
 
     /// # Failure
     ///
-    /// - [SpringError::ThreadPoisoned](crate::error::SpringError::ThreadPoisoned)
+    /// - `SpringError::ThreadPoisoned`
     pub(crate) fn get(&self) -> Result<MutexGuard<'_, StreamEngine>> {
         self.0
             .lock()
@@ -93,7 +93,7 @@ impl StreamEngine {
     ///
     /// # Failure
     ///
-    /// - [SpringError::Unavailable](crate::error::SpringError::Unavailable) when:
+    /// - `SpringError::Unavailable` when:
     ///   - queue named `queue_name` does not exist.
     pub(crate) fn pop_in_memory_queue_non_blocking(
         &mut self,

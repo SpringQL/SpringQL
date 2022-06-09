@@ -34,8 +34,8 @@ pub(in crate::stream_engine) struct NetServerSourceReader {
 impl SourceReader for NetServerSourceReader {
     /// # Failure
     ///
-    /// - [SpringError::ForeignIo](crate::error::SpringError::ForeignIo)
-    /// - [SpringError::InvalidOption](crate::error::SpringError::InvalidOption)
+    /// - `SpringError::ForeignIo`
+    /// - `SpringError::InvalidOption`
     fn start(options: &Options, config: &SpringSourceReaderConfig) -> Result<Self> {
         let options = NetServerOptions::try_from(options)?;
         assert!(

@@ -159,7 +159,7 @@ impl NnSqlValue {
     ///
     /// # Failures
     ///
-    /// - [SpringError::Sql](crate::error::SpringError::Sql) when:
+    /// - `SpringError::Sql` when:
     ///   - Any value of `T` cannot be typed as this SqlValue's SqlType (E.g. `T = i64`, `SqlType = SmallInt`).
     pub fn unpack<T>(&self) -> Result<T>
     where
@@ -199,7 +199,7 @@ impl NnSqlValue {
     ///
     /// # Failures
     ///
-    /// - [SpringError::Sql](crate::error::SpringError::Sql) when:
+    /// - `SpringError::Sql` when:
     ///   - Value cannot be converted to `typ`.
     pub(crate) fn try_convert(&self, typ: &SqlType) -> Result<NnSqlValue> {
         match typ {

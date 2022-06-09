@@ -34,7 +34,7 @@ pub(super) struct FnParseParams<'a> {
 ///
 /// # Failures
 ///
-/// - [SpringError::Sql](crate::error::SpringError::Sql) when:
+/// - `SpringError::Sql` when:
 ///   - When no child term left.
 ///   - When the next child term does not match $child_term.
 ///   - Raises Err from `child_parser` as-is.

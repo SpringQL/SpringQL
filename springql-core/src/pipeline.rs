@@ -92,11 +92,11 @@ pub fn spring_open(config: &SpringConfig) -> Result<SpringPipeline> {
 ///
 /// # Failure
 ///
-/// - [SpringError::Sql](crate::api::error::SpringError::Sql) when:
+/// - `SpringError::Sql` when:
 ///   - Invalid SQL syntax.
 ///   - Refers to undefined objects (streams, pumps, etc)
 ///   - Other semantic errors.
-/// - [SpringError::InvalidOption](crate::api::error::SpringError::Sql) when:
+/// - `SpringError::InvalidOption` when:
 ///   - `OPTIONS` in `CREATE` statement includes invalid key or value.
 pub fn spring_command(pipeline: &SpringPipeline, sql: &str) -> Result<()> {
     let mut engine = pipeline.engine.get()?;
@@ -118,7 +118,7 @@ pub fn spring_command(pipeline: &SpringPipeline, sql: &str) -> Result<()> {
 ///
 /// # Failure
 ///
-/// - [SpringError::Unavailable](crate::api::error::SpringError::Unavailable) when:
+/// - `SpringError::Unavailable` when:
 ///   - queue named `queue` does not exist.
 pub fn spring_pop(pipeline: &SpringPipeline, queue: &str) -> Result<SpringRow> {
     const SLEEP_MSECS: u64 = 10;
@@ -145,7 +145,7 @@ pub fn spring_pop(pipeline: &SpringPipeline, queue: &str) -> Result<SpringRow> {
 ///
 /// # Failure
 ///
-/// - [SpringError::Unavailable](crate::api::error::SpringError::Unavailable) when:
+/// - `SpringError::Unavailable` when:
 ///   - queue named `queue` does not exist.
 pub fn spring_pop_non_blocking(
     pipeline: &SpringPipeline,
@@ -182,7 +182,7 @@ impl Pipeline {
 
     /// # Failure
     ///
-    /// - [SpringError::Sql](crate::error::SpringError::Sql) when:
+    /// - `SpringError::Sql` when:
     ///   - Stream is not registered in pipeline
     pub(super) fn get_stream(&self, stream: &StreamName) -> Result<Arc<StreamModel>> {
         self.graph.get_stream(stream)
@@ -190,7 +190,7 @@ impl Pipeline {
 
     /// # Failure
     ///
-    /// - [SpringError::Sql](crate::error::SpringError::Sql) when:
+    /// - `SpringError::Sql` when:
     ///   - Name of pump is already used in the same pipeline
     ///   - Name of upstream stream is not found in pipeline
     ///   - Name of downstream stream is not found in pipeline
@@ -202,7 +202,7 @@ impl Pipeline {
 
     /// # Failure
     ///
-    /// - [SpringError::Sql](crate::error::SpringError::Sql) when:
+    /// - `SpringError::Sql` when:
     ///   - Name of stream is already used in the same pipeline
     pub(super) fn add_stream(&mut self, stream: Arc<StreamModel>) -> Result<()> {
         self.update_version();
@@ -234,7 +234,7 @@ impl Pipeline {
 
     /// # Failure
     ///
-    /// - [SpringError::Sql](crate::error::SpringError::Sql) when:
+    /// - `SpringError::Sql` when:
     ///   - Name is already used in the same pipeline
     fn register_name(&mut self, name: &str) -> Result<()> {
         if !self.object_names.insert(name.to_string()) {

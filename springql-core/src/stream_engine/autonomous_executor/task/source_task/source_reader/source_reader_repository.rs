@@ -38,7 +38,7 @@ impl SourceReaderRepository {
     ///
     /// # Failures
     ///
-    /// - [SpringError::ForeignIo](crate::error::SpringError::ForeignIo) when:
+    /// - `SpringError::ForeignIo` when:
     ///   - failed to start subtask.
     pub(in crate::stream_engine::autonomous_executor) fn register(
         &self,

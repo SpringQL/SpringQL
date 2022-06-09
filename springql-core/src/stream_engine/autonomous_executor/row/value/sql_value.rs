@@ -34,8 +34,8 @@ use crate::{
 /// # Comparing SqlValues
 ///
 /// An SqlValue implements is NULL or NOT NULL.
-/// NOT NULL value has its SQL type in [SqlType](crate::SqlType).
-/// SqlType forms hierarchical structure and if its comparable top-level variant (e.g. [SqlType::NumericComparable](crate::SqlType::NumericComparable)) are the same among two values,
+/// NOT NULL value has its SQL type in `SqlType`.
+/// SqlType forms hierarchical structure and if its comparable top-level variant (e.g. `SqlType::NumericComparable`) are the same among two values,
 /// these two are **comparable**, meaning equality comparison to them is valid.
 /// Also, ordered comparison is valid for values within some top-level variant of Constant.
 /// Such variants and values within one are called **ordered**.
@@ -43,7 +43,7 @@ use crate::{
 ///
 /// ## Failures on comparison
 ///
-/// Comparing non-**comparable** values and ordered comparison to non-**ordered** values cause [SqlState::DataExceptionIllegalComparison](crate::SqlState::DataExceptionIllegalComparison).
+/// Comparing non-**comparable** values and ordered comparison to non-**ordered** values cause `SqlState::DataExceptionIllegalComparison`.
 ///
 /// ## Comparison with NULL
 ///
@@ -57,11 +57,11 @@ use crate::{
 /// Hashed values are sometimes used in query execution (e.g. hash-join, hash-aggregation).
 /// SqlValue implements `Hash` but does not `Eq` so SqlValue cannot be used as hash key of `HashMap` and `HashSet`.
 ///
-/// Use [SqlValueHashKey](self::sql_value_hash_key::SqlValueHashKey) for that purpose.
+/// Use `SqlValueHashKey` for that purpose.
 ///
 /// # Examples
 ///
-/// See: [test_sql_value_example()](self::tests::test_sql_value_example).
+/// See: `test_sql_value_example()`.
 #[derive(Clone, Debug)]
 pub(crate) enum SqlValue {
     /// NULL value.
@@ -113,12 +113,12 @@ impl SqlValue {
     ///
     /// # Failures
     ///
-    /// - [SpringError::Sql](crate::error::SpringError::Sql) when:
-    ///   - `self` and `other` have different top-level variant of [SqlType](crate::SqlType).
+    /// - `SpringError::Sql` when:
+    ///   - `self` and `other` have different top-level variant of `SqlType`.
     ///
     /// # Examples
     ///
-    /// See: [test_sql_compare_example()](self::tests::test_sql_compare_example).
+    /// See: `test_sql_compare_example()`.
     pub fn sql_compare(&self, other: &Self) -> Result<SqlCompareResult> {
         match (self, other) {
             (SqlValue::Null, _) | (_, SqlValue::Null) => Ok(SqlCompareResult::Null),

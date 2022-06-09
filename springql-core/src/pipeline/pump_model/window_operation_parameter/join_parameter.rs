@@ -4,7 +4,7 @@ use crate::{
     expr_resolver::expr_label::ValueExprLabel, pipeline::field::field_name::ColumnReference,
 };
 
-/// TODO [support complex expression with aggregations](https://gh01.base.toyota-tokyo.tech/SpringQL-internal/SpringQL/issues/152)
+/// TODO `support complex expression with aggregations`
 ///
 /// ```sql
 /// SELECT s.c1, t.c2

@@ -33,8 +33,8 @@ use crate::{
 
 /// Performance metrics of task execution. It has the same lifetime as a TaskGraph (i.e. a Pipeline).
 ///
-/// It is monitored by [PerformanceMonitorWorker](crate::stream_processor::autonomous_executor::worker::performance_monitor_worker::PerformanceMonitoRworker),
-/// and it is updated by [TaskExecutor](crate::stream_processor::autonomous_executor::task_executor::TaskExecutor).
+/// It is monitored by `PerformanceMonitorWorker`,
+/// and it is updated by `TaskExecutor`.
 ///
 /// `PerformanceMonitorWorker` does not frequently read from `RwLock<*Metrics>`, and schedulers in `TaskExecutor` are not expected to
 /// execute consequent tasks (sharing the same queue as input or output) by different workers at the same time.

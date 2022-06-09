@@ -29,7 +29,7 @@ pub(crate) struct SqlProcessor(SqlParser);
 impl SqlProcessor {
     /// # Failures
     ///
-    /// - [SpringError::Sql](crate::error::SpringError::Sql) on syntax and semantics error.
+    /// - `SpringError::Sql` on syntax and semantics error.
     pub(crate) fn compile<S: Into<String>>(&self, sql: S, pipeline: &Pipeline) -> Result<Command> {
         let command = match self.0.parse(sql)? {
             ParseSuccess::CreateSourceStream(source_stream_model) => {

@@ -70,7 +70,7 @@ impl Row {
 
     /// # Failure
     ///
-    /// - [SpringError::Sql](crate::error::SpringError::Sql) when:
+    /// - `SpringError::Sql` when:
     ///   - Column index out of range
     pub(in crate::stream_engine::autonomous_executor) fn get_by_index(
         &self,

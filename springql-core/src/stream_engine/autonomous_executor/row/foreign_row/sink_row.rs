@@ -35,7 +35,7 @@ impl From<Row> for SinkRow {
 impl SinkRow {
     /// # Failure
     ///
-    /// - [SpringError::Sql](crate::error::SpringError::Sql) when:
+    /// - `SpringError::Sql` when:
     ///   - Column index out of range
     pub(crate) fn get_by_index(&self, i_col: usize) -> Result<&SqlValue> {
         self.0.get_by_index(i_col)

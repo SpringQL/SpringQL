@@ -27,8 +27,8 @@ pub(in crate::stream_engine) struct NetClientSourceReader {
 impl SourceReader for NetClientSourceReader {
     /// # Failure
     ///
-    /// - [SpringError::ForeignIo](crate::error::SpringError::ForeignIo)
-    /// - [SpringError::InvalidOption](crate::error::SpringError::InvalidOption)
+    /// - `SpringError::ForeignIo`
+    /// - `SpringError::InvalidOption`
     fn start(options: &Options, config: &SpringSourceReaderConfig) -> Result<Self> {
         let options = NetClientOptions::try_from(options)?;
         let sock_addr = SocketAddr::new(options.remote_host, options.remote_port);

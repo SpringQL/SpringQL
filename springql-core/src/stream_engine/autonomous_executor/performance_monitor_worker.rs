@@ -20,8 +20,8 @@ use crate::{
 
 /// Dedicated thread to:
 ///
-/// 1. Monitor performance of task graphs via [PerformanceMetrics](crate::stream_engine::autonomous_executor::performance_monitor::PerformanceMetrics).
-/// 2. Report the performance to [AutonomousExecutor](crate::stream_processor::autonomous_executor::AutonomousExecutor) and web-console.
+/// 1. Monitor performance of task graphs via `PerformanceMetrics`.
+/// 2. Report the performance to `AutonomousExecutor` and web-console.
 #[derive(Debug)]
 pub(in crate::stream_engine::autonomous_executor) struct PerformanceMonitorWorker {
     _handle: WorkerHandle,
