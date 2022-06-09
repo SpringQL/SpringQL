@@ -1,11 +1,11 @@
 // This file is part of https://github.com/SpringQL/SpringQL which is licensed under MIT OR Apache-2.0. See file LICENSE-MIT or LICENSE-APACHE for full license details.
 
-pub(crate) mod source_reader_type;
+mod source_reader_type;
+pub(crate) use source_reader_type::SourceReaderType;
 
 use crate::pipeline::{
     name::{SourceReaderName, StreamName},
     option::Options,
-    source_reader_model::source_reader_type::SourceReaderType,
 };
 
 #[derive(Clone, PartialEq, Eq, Debug, new)]

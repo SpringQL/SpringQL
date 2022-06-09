@@ -136,8 +136,8 @@ mod tests {
             option::OptionsBuilder,
             pipeline_version::PipelineVersion,
             sink_writer_model::{SinkWriterModel, SinkWriterType},
-            source_reader_model::{source_reader_type::SourceReaderType, SourceReaderModel},
-            stream_model::{stream_shape::StreamShape, StreamModel},
+            source_reader_model::{SourceReaderModel, SourceReaderType},
+            stream_model::{StreamModel, StreamShape},
         },
         stream_engine::command::alter_pipeline_command::AlterPipelineCommand,
     };

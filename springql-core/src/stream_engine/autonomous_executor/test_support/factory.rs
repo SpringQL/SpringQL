@@ -9,7 +9,7 @@ use crate::{
     pipeline::{
         name::{ColumnName, StreamName},
         option::OptionsBuilder,
-        stream_model::{stream_shape::StreamShape, StreamModel},
+        stream_model::{StreamModel, StreamShape},
     },
     stream_engine::{
         autonomous_executor::{

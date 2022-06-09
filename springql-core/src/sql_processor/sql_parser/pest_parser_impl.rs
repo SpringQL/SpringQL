@@ -30,8 +30,8 @@ use crate::{
         pump_model::{AggregateFunctionParameter, JoinType, WindowParameter},
         relation::{ColumnConstraint, ColumnDataType, ColumnDefinition, SqlType},
         sink_writer_model::{SinkWriterModel, SinkWriterType},
-        source_reader_model::{source_reader_type::SourceReaderType, SourceReaderModel},
-        stream_model::{stream_shape::StreamShape, StreamModel},
+        source_reader_model::{SourceReaderModel, SourceReaderType},
+        stream_model::{StreamModel, StreamShape},
     },
     sql_processor::sql_parser::{
         parse_success::{CreatePump, ParseSuccess},
