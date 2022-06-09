@@ -14,7 +14,7 @@ All other sections are for end-users.
 
 ### Changed
 
-- re orgnize public API ([#169](https://github.com/SpringQL/SpringQL/pull/169))
+- re organize public API ([#169](https://github.com/SpringQL/SpringQL/pull/169))
   - public mod `api` and hide `high_level_rs`
     - high level APIs are exported from `springql_core::api`
   - remove low level API
@@ -24,7 +24,7 @@ All other sections are for end-users.
 ### For Developers
 
 - CI : add ignore for known deadlink ([#175](https://github.com/SpringQL/SpringQL/pull/157))
-- Temporaly turn off the security advisory RUSTSEC-2020-0071 ([#174](https://github.com/SpringQL/SpringQL/pull/174))
+- Temporally turn off the security advisory RUSTSEC-2020-0071 ([#174](https://github.com/SpringQL/SpringQL/pull/174))
 - Refactor : introduce wrapping to `chrono` types ([[#172](https://github.com/SpringQL/SpringQL/pull/172))
 
 ## [v0.10.0]
