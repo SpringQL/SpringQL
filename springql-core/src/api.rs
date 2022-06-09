@@ -49,7 +49,7 @@ impl SpringPipeline {
     /// Pop a row from an in memory queue. This is a blocking function.
     ///
     /// **Do not call this function from threads.**
-    /// If you need to pop from multiple in-memory queues using threads, use `spring_pop_non_blocking()`.
+    /// If you need to pop from multiple in-memory queues using threads, use `pop_non_blocking()`.
     /// See: <https://github.com/SpringQL/SpringQL/issues/125>
     ///
     /// # Failure
