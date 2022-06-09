@@ -11,10 +11,7 @@ use anyhow::anyhow;
 use crate::{
     api::error::{Result, SpringError},
     expression::{
-        boolean_expression::{
-            comparison_function::ComparisonFunction, logical_function::LogicalFunction,
-            numerical_function::NumericalFunction, BinaryExpr,
-        },
+        boolean_expression::{BinaryExpr, ComparisonFunction, LogicalFunction, NumericalFunction},
         function_call::FunctionCall,
         operator::UnaryOperator,
     },
