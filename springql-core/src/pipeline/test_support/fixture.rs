@@ -9,10 +9,7 @@ use crate::{
         name::{ColumnName, SinkWriterName, SourceReaderName, StreamName},
         option::{Options, OptionsBuilder},
         pipeline_version::PipelineVersion,
-        relation::{
-            column::{ColumnConstraint, ColumnDataType, ColumnDefinition},
-            sql_type::SqlType,
-        },
+        relation::{ColumnConstraint, ColumnDataType, ColumnDefinition, SqlType},
         sink_writer_model::{sink_writer_type::SinkWriterType, SinkWriterModel},
         source_reader_model::{source_reader_type::SourceReaderType, SourceReaderModel},
         stream_model::{stream_shape::StreamShape, StreamModel},

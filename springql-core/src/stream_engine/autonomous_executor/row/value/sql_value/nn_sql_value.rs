@@ -13,8 +13,8 @@ use ordered_float::OrderedFloat;
 use crate::{
     api::error::{Result, SpringError},
     mem_size::MemSize,
-    pipeline::relation::sql_type::{
-        self, NumericComparableType, SqlType, StringComparableLoseType,
+    pipeline::relation::{
+        F32LooseType, I64LooseType, NumericComparableType, SqlType, StringComparableLoseType,
     },
     stream_engine::{
         autonomous_executor::row::value::{
@@ -205,20 +205,12 @@ impl NnSqlValue {
         match typ {
             SqlType::NumericComparable(n) => match n {
                 NumericComparableType::I64Loose(i) => match i {
-                    sql_type::I64LooseType::SmallInt => {
-                        self.unpack::<i16>().map(|v| v.into_sql_value())
-                    }
-                    sql_type::I64LooseType::Integer => {
-                        self.unpack::<i32>().map(|v| v.into_sql_value())
-                    }
-                    sql_type::I64LooseType::BigInt => {
-                        self.unpack::<i64>().map(|v| v.into_sql_value())
-                    }
+                    I64LooseType::SmallInt => self.unpack::<i16>().map(|v| v.into_sql_value()),
+                    I64LooseType::Integer => self.unpack::<i32>().map(|v| v.into_sql_value()),
+                    I64LooseType::BigInt => self.unpack::<i64>().map(|v| v.into_sql_value()),
                 },
                 NumericComparableType::F32Loose(f) => match f {
-                    sql_type::F32LooseType::Float => {
-                        self.unpack::<f32>().map(|v| v.into_sql_value())
-                    }
+                    F32LooseType::Float => self.unpack::<f32>().map(|v| v.into_sql_value()),
                 },
             },
             SqlType::StringComparableLoose(s) => match s {
