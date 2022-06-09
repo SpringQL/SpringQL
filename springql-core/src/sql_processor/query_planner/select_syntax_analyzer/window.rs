@@ -5,7 +5,7 @@ use crate::{
 };
 
 impl SelectSyntaxAnalyzer {
-    pub(in super::super) fn window_parameter(&self) -> Option<WindowParameter> {
+    pub fn window_parameter(&self) -> Option<WindowParameter> {
         self.select_syntax.window_clause.clone()
     }
 }

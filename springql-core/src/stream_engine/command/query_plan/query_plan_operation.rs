@@ -43,19 +43,19 @@ pub(crate) struct GroupAggregateWindowOp {
 }
 
 #[derive(Clone, PartialEq, Debug)]
-pub(crate) struct CollectOp {
+pub struct CollectOp {
     pub(crate) stream: StreamName,
 }
 
 /// TODO recursive join
 #[derive(Clone, PartialEq, Debug)]
-pub(crate) enum JoinOp {
+pub enum JoinOp {
     Collect(CollectOp),
     JoinWindow(JoinWindowOp),
 }
 
 #[derive(Clone, PartialEq, Debug)]
-pub(crate) struct JoinWindowOp {
+pub struct JoinWindowOp {
     pub(crate) left: CollectOp,
     pub(crate) right: CollectOp,
 

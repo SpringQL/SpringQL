@@ -12,11 +12,7 @@ use crate::{
 };
 
 impl SelectSyntaxAnalyzer {
-    pub(in super::super) fn join_op(
-        &self,
-        expr_resolver: &mut ExprResolver,
-        pipeline: &Pipeline,
-    ) -> Result<JoinOp> {
+    pub fn join_op(&self, expr_resolver: &mut ExprResolver, pipeline: &Pipeline) -> Result<JoinOp> {
         match self.select_syntax.from_item.clone() {
             FromItemSyntax::StreamVariant(sub_from_item) => {
                 let collect_op = Self::sub_from_item_to_collect_op(sub_from_item);

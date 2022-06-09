@@ -15,7 +15,7 @@ use crate::expression::{
 /// Boolean expression.
 #[allow(clippy::enum_variant_names)]
 #[derive(Clone, PartialEq, Hash, Debug)]
-pub(crate) enum BinaryExpr<E>
+pub enum BinaryExpr<E>
 where
     E: ValueExprType,
 {

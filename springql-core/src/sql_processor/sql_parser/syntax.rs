@@ -21,7 +21,7 @@ pub(in crate::sql_processor) struct OptionSyntax {
 }
 
 #[derive(Clone, PartialEq, Debug)]
-pub(in crate::sql_processor) struct SelectStreamSyntax {
+pub struct SelectStreamSyntax {
     pub(in crate::sql_processor) fields: Vec<SelectFieldSyntax>,
     pub(in crate::sql_processor) from_item: FromItemSyntax,
 
@@ -32,7 +32,7 @@ pub(in crate::sql_processor) struct SelectStreamSyntax {
 }
 
 #[derive(Clone, PartialEq, Debug)]
-pub(crate) enum SelectFieldSyntax {
+pub enum SelectFieldSyntax {
     ValueExpr {
         value_expr: ValueExpr,
         alias: Option<ValueAlias>,
@@ -63,7 +63,7 @@ pub(in crate::sql_processor) struct SubFromItemSyntax {
 }
 
 #[derive(Clone, PartialEq, Debug)]
-pub(in crate::sql_processor) enum GroupingElementSyntax {
+pub enum GroupingElementSyntax {
     ValueExpr(ValueExpr),
     ValueAlias(ValueAlias),
 }

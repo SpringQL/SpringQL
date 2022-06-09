@@ -4,7 +4,7 @@ use crate::stream_engine::time::duration::event_duration::SpringEventDuration;
 
 /// Window parameters
 #[derive(Clone, Eq, PartialEq, Debug)]
-pub(crate) enum WindowParameter {
+pub enum WindowParameter {
     /// Time-based sliding window
     ///
     /// ```text

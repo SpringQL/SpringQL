@@ -17,7 +17,7 @@ pub struct SourceReaderName(String);
 pub struct SinkWriterName(String);
 
 #[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, new)]
-pub(crate) struct ColumnName(String);
+pub struct ColumnName(String);
 
 #[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, new)]
 pub(crate) struct QueueName(String);
@@ -30,11 +30,11 @@ pub(crate) struct AttributeName(String);
 
 /// Alias to an value expression.
 #[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, new)]
-pub(crate) struct ValueAlias(String);
+pub struct ValueAlias(String);
 
 /// Alias to an aggregate expression.
 #[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, new)]
-pub(crate) struct AggrAlias(String);
+pub struct AggrAlias(String);
 
 impl Display for StreamName {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {

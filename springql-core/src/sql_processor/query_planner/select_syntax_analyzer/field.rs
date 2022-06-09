@@ -6,7 +6,7 @@ use crate::sql_processor::{
 };
 
 impl SelectSyntaxAnalyzer {
-    pub(in super::super) fn select_list(&self) -> &[SelectFieldSyntax] {
+    pub fn select_list(&self) -> &[SelectFieldSyntax] {
         &self.select_syntax.fields
     }
 }

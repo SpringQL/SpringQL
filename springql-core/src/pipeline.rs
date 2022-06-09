@@ -30,7 +30,7 @@ use crate::{
 };
 
 #[derive(Clone, Debug)]
-pub(crate) struct Pipeline {
+pub struct Pipeline {
     version: PipelineVersion,
     object_names: HashSet<String>,
     graph: PipelineGraph,

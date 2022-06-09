@@ -4,7 +4,7 @@ use crate::expression::ValueExprType;
 
 /// AND, OR, NOT
 #[derive(Clone, PartialEq, Hash, Debug)]
-pub(crate) enum LogicalFunction<E>
+pub enum LogicalFunction<E>
 where
     E: ValueExprType,
 {

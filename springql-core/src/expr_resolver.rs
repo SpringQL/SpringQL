@@ -21,7 +21,7 @@ use crate::{
 /// 2. resolve alias in ValueExprOrAlias / AggrExprAlias and get existing ExprLabel.
 /// 3. evaluate expression into SqlValue from ExprLabel.
 #[derive(Clone, PartialEq, Debug)]
-pub(crate) struct ExprResolver {
+pub struct ExprResolver {
     label_gen: ExprLabelGenerator,
 
     value_expressions: HashMap<ValueExprLabel, ValueExpr>,

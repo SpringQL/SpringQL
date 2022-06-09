@@ -63,7 +63,7 @@ use crate::{
 ///
 /// See: `test_sql_value_example()`.
 #[derive(Clone, Debug)]
-pub(crate) enum SqlValue {
+pub enum SqlValue {
     /// NULL value.
     Null,
     /// NOT NULL value.

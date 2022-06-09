@@ -27,7 +27,7 @@ use crate::{
 
 /// NOT NULL value.
 #[derive(Clone, Debug)]
-pub(crate) enum NnSqlValue {
+pub enum NnSqlValue {
     /// SMALLINT
     SmallInt(i16),
     /// INTEGER

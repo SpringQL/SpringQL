@@ -5,7 +5,7 @@ use crate::sql_processor::{
 };
 
 impl SelectSyntaxAnalyzer {
-    pub(in super::super) fn grouping_elements(&self) -> Vec<GroupingElementSyntax> {
+    pub fn grouping_elements(&self) -> Vec<GroupingElementSyntax> {
         self.select_syntax.grouping_elements.clone()
     }
 }

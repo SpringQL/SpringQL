@@ -8,6 +8,6 @@ mod window;
 use crate::sql_processor::sql_parser::syntax::SelectStreamSyntax;
 
 #[derive(Clone, Debug, new)]
-pub(in crate::sql_processor) struct SelectSyntaxAnalyzer {
+pub struct SelectSyntaxAnalyzer {
     select_syntax: SelectStreamSyntax,
 }

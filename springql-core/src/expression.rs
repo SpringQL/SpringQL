@@ -25,14 +25,14 @@ use crate::{
     },
 };
 
-pub(crate) trait ValueExprType {}
+pub trait ValueExprType {}
 
 /// Value Expression.
 ///
 /// A value expression can be evaluated into SqlValue with a tuple (to resolve column reference).
 /// ValueExpr may contain column references to resolve from a row.
 #[derive(Clone, PartialEq, Hash, Debug)]
-pub(crate) enum ValueExpr {
+pub enum ValueExpr {
     Constant(SqlValue),
     UnaryOperator(UnaryOperator, Box<Self>),
     BinaryExpr(BinaryExpr<Self>),
@@ -277,7 +277,7 @@ impl ValueExprPh2 {
 
 /// Aggregate expression.
 #[derive(Clone, PartialEq, Debug)]
-pub(crate) struct AggrExpr {
+pub struct AggrExpr {
     pub(crate) func: AggregateFunctionParameter,
     pub(crate) aggregated: ValueExpr,
 }
