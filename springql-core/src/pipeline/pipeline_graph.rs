@@ -8,8 +8,11 @@
 //! A PipelineGraph has a "virtual root stream", who has outgoing edges to all source streams, to keep source readers.
 //! It also has "virtual leaf streams", who has an incoming edge from each sink stream, to keep sink writers.
 
-pub(crate) mod edge;
-pub(crate) mod stream_node;
+mod edge;
+mod stream_node;
+
+pub(crate) use edge::Edge;
+pub(crate) use stream_node::StreamNode;
 
 use std::{collections::HashMap, sync::Arc};
 
@@ -22,12 +25,8 @@ use petgraph::{
 use crate::{
     api::error::{Result, SpringError},
     pipeline::{
-        name::StreamName,
-        pipeline_graph::{edge::Edge, stream_node::StreamNode},
-        pump_model::PumpModel,
-        sink_writer_model::SinkWriterModel,
-        source_reader_model::SourceReaderModel,
-        stream_model::StreamModel,
+        name::StreamName, pump_model::PumpModel, sink_writer_model::SinkWriterModel,
+        source_reader_model::SourceReaderModel, stream_model::StreamModel,
     },
 };
 

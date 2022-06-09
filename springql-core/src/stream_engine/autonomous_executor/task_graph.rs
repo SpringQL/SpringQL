@@ -20,7 +20,7 @@ use petgraph::graph::{DiGraph, NodeIndex};
 
 use crate::{
     pipeline::{
-        name::StreamName, pipeline_graph::edge::Edge, pipeline_version::PipelineVersion, Pipeline,
+        name::StreamName, pipeline_graph::Edge, pipeline_version::PipelineVersion, Pipeline,
     },
     stream_engine::autonomous_executor::task_graph::{
         edge_ref::MyEdgeRef,
