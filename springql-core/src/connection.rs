@@ -76,7 +76,7 @@ pub fn spring_command(pipeline: &Connection, sql: &str) -> Result<()> {
 ///
 /// - `SpringError::Unavailable` when:
 ///   - queue named `queue` does not exist.
-pub(crate) fn spring_pop(pipeline: &Connection, queue: &str) -> Result<SinkRow> {
+pub fn spring_pop(pipeline: &Connection, queue: &str) -> Result<SinkRow> {
     const SLEEP_MSECS: u64 = 10;
 
     let mut engine = pipeline.engine.get()?;
@@ -103,7 +103,7 @@ pub(crate) fn spring_pop(pipeline: &Connection, queue: &str) -> Result<SinkRow> 
 ///
 /// - `SpringError::Unavailable` when:
 ///   - queue named `queue` does not exist.
-pub(crate) fn spring_pop_non_blocking(pipeline: &Connection, queue: &str) -> Result<Option<SinkRow>> {
+pub fn spring_pop_non_blocking(pipeline: &Connection, queue: &str) -> Result<Option<SinkRow>> {
     let mut engine = pipeline.engine.get()?;
     let sink_row = engine.pop_in_memory_queue_non_blocking(QueueName::new(queue.to_string()))?;
     Ok(sink_row)
