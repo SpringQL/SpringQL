@@ -5,8 +5,7 @@ use std::sync::{Mutex, MutexGuard};
 use crate::{
     expr_resolver::ExprResolver,
     pipeline::pump_model::{
-        window_operation_parameter::join_parameter::JoinParameter,
-        window_parameter::WindowParameter,
+        window_operation_parameter::JoinParameter, window_parameter::WindowParameter,
     },
     stream_engine::autonomous_executor::{
         performance_metrics::metrics_update_command::metrics_update_by_task_execution::WindowInFlowByWindowTask,

@@ -5,7 +5,7 @@ use crate::{
     pipeline::{
         name::StreamName,
         pump_model::{
-            window_operation_parameter::{join_parameter::JoinParameter, WindowOperationParameter},
+            window_operation_parameter::{JoinParameter, WindowOperationParameter},
             window_parameter::WindowParameter,
         },
     },

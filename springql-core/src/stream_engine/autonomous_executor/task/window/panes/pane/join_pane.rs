@@ -8,8 +8,7 @@ use crate::{
     pipeline::{
         field::Field,
         pump_model::window_operation_parameter::{
-            join_parameter::{JoinParameter, JoinType},
-            WindowOperationParameter,
+            JoinParameter, JoinType, WindowOperationParameter,
         },
     },
     stream_engine::{

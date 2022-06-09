@@ -28,7 +28,7 @@ use crate::{
         },
         option::options_builder::OptionsBuilder,
         pump_model::{
-            window_operation_parameter::{join_parameter::JoinType, AggregateFunctionParameter},
+            window_operation_parameter::{AggregateFunctionParameter, JoinType},
             window_parameter::WindowParameter,
         },
         relation::{
