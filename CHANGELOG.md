@@ -10,6 +10,10 @@ All other sections are for end-users.
 <!-- markdownlint-disable MD024 -->
 ## [Unreleased]
 
+### Fixed
+
+- Fixed some broken links in rustdoc ([#183](https://github.com/SpringQL/SpringQL/pull/183))
+
 ## [v0.11.0]
 
 ### Changed
