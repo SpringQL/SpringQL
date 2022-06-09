@@ -69,21 +69,11 @@ impl Connection {
             }
         }
     }
-}
 
-/// Pop a row from an in memory queue. This is a non-blocking function.
-///
-/// # Returns
-///
-/// - `Ok(Some)` when at least a row is in the queue.
-/// - `None` when no row is in the queue.
-///
-/// # Failure
-///
-/// - `SpringError::Unavailable` when:
-///   - queue named `queue` does not exist.
-pub fn spring_pop_non_blocking(pipeline: &Connection, queue: &str) -> Result<Option<SinkRow>> {
-    let mut engine = pipeline.engine.get()?;
-    let sink_row = engine.pop_in_memory_queue_non_blocking(QueueName::new(queue.to_string()))?;
-    Ok(sink_row)
+    pub fn pop_non_blocking(&self, queue: &str) -> Result<Option<SinkRow>> {
+        let mut engine = self.engine.get()?;
+        let sink_row =
+            engine.pop_in_memory_queue_non_blocking(QueueName::new(queue.to_string()))?;
+        Ok(sink_row)
+    }
 }
