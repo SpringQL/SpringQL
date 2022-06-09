@@ -10,6 +10,11 @@ All other sections are for end-users.
 <!-- markdownlint-disable MD024 -->
 ## [Unreleased]
 
+### Changed
+
+- Remove `spring_config_default()` ([#182](https://github.com/SpringQL/SpringQL/pull/182))
+  - You may use `SpringConfig::default()` instead
+
 ## [v0.11.0]
 
 ### Changed

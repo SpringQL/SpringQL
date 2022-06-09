@@ -59,11 +59,6 @@ net_connect_timeout_msec = 1_000
 net_write_timeout_msec = 100
 "#;
 
-/// Returns default configuration.
-pub fn spring_config_default() -> SpringConfig {
-    SpringConfig::new("").expect("default configuration must be valid")
-}
-
 /// Top-level config.
 #[allow(missing_docs)]
 #[derive(Clone, Eq, PartialEq, Debug, Deserialize)]
@@ -77,7 +72,7 @@ pub struct SpringConfig {
 
 impl Default for SpringConfig {
     fn default() -> Self {
-        spring_config_default()
+        Self::new("").expect("default configuration must be valid")
     }
 }
 
