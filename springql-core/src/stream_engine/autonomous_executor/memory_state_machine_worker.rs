@@ -4,7 +4,7 @@
 //! State transition occurs when task executor's memory usage cross the threshold.
 //! Threshold is calculated from memory usage upper limit configuration.
 //!
-//! ![Memory state machine](https://raw.githubusercontent.com/SpringQL/SpringQL.github.io/main/static/img/memory-state-machine-and-effect.svg)
+//! ![Memory state machine](https://raw.githubusercontent.com/SpringQL/SpringQL/main/springql-core/doc/img/memory-state-machine-and-effect.drawio.svg)
 //!
 //! `TransitMemoryState` event is published on state transition and generic workers are supposed to
 //! change their scheduler on Moderate and Severe state.

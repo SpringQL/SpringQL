@@ -7,7 +7,7 @@
 //!
 //! # Task graph concept diagram
 //!
-//! ![Task graph concept diagram](https://raw.githubusercontent.com/SpringQL/SpringQL.github.io/main/static/img/pipeline-and-task-graph.svg)
+//! ![Task graph concept diagram](https://raw.githubusercontent.com/SpringQL/SpringQL/main/springql-core/doc/img/pipeline-and-task-graph.drawio.svg)
 
 pub(super) mod queue_id;
 pub(super) mod task_id;
