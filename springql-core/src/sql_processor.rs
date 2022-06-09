@@ -135,7 +135,7 @@ mod tests {
             name::{SinkWriterName, SourceReaderName, StreamName},
             option::OptionsBuilder,
             pipeline_version::PipelineVersion,
-            sink_writer_model::{sink_writer_type::SinkWriterType, SinkWriterModel},
+            sink_writer_model::{SinkWriterModel, SinkWriterType},
             source_reader_model::{source_reader_type::SourceReaderType, SourceReaderModel},
             stream_model::{stream_shape::StreamShape, StreamModel},
         },
