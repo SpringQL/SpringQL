@@ -1,6 +1,7 @@
 // This file is part of https://github.com/SpringQL/SpringQL which is licensed under MIT OR Apache-2.0. See file LICENSE-MIT or LICENSE-APACHE for full license details.
 
-pub(crate) mod expr_label;
+pub mod expr_label;
+pub(crate) use expr_label::{AggrExprLabel, ExprLabel, ExprLabelGenerator, ValueExprLabel};
 
 use std::collections::HashMap;
 
@@ -8,7 +9,6 @@ use anyhow::anyhow;
 
 use crate::{
     api::error::{Result, SpringError},
-    expr_resolver::expr_label::{AggrExprLabel, ExprLabel, ExprLabelGenerator, ValueExprLabel},
     expression::{AggrExpr, ValueExpr},
     pipeline::name::{AggrAlias, ValueAlias},
     sql_processor::sql_parser::syntax::SelectFieldSyntax,
