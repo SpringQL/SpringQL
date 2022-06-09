@@ -28,8 +28,8 @@ pub struct SpringPipeline(crate::pipeline::SpringPipeline);
 impl SpringPipeline {
     /// Creates and open an in-process stream pipeline.
     pub fn new(config: &SpringConfig) -> Result<Self> {
-        let low_level = spring_open(config)?;
-        Ok(Self(low_level))
+        let underlying = spring_open(config)?;
+        Ok(Self(underlying))
     }
 
     /// Execute commands (DDL).
@@ -110,7 +110,7 @@ impl SpringConfig {
     ///
     /// # Parameters
     ///
-    /// - `overwrite_config_toml`: TOML format configuration to overwrite default. See `SPRING_CONFIG_DEFAULT` in [spring_config.rs](https://github.com/SpringQL/SpringQL/tree/main/springql-core/src/api/low_level_rs/spring_config.rs) for full-set default configuration.
+    /// - `overwrite_config_toml`: TOML format configuration to overwrite default. See `SPRING_CONFIG_DEFAULT` in [spring_config.rs](https://github.com/SpringQL/SpringQL/tree/main/springql-core/src/api/spring_config.rs) for full-set default configuration.
     ///
     /// # Failures
     ///

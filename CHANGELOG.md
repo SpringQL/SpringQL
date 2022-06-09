@@ -15,6 +15,10 @@ All other sections are for end-users.
 - Remove `spring_config_default()` ([#182](https://github.com/SpringQL/SpringQL/pull/182))
   - You may use `SpringConfig::default()` instead
 
+### Fixed
+
+- Fixed some broken links in rustdoc ([#183](https://github.com/SpringQL/SpringQL/pull/183))
+
 ## [v0.11.0]
 
 ### Changed
