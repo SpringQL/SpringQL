@@ -2,8 +2,7 @@
 
 use crate::{
     expression::{
-        boolean_expression::{BinaryExpr, ComparisonFunction, LogicalFunction, NumericalFunction},
-        operator::UnaryOperator,
+        BinaryExpr, ComparisonFunction, LogicalFunction, NumericalFunction, UnaryOperator,
         ValueExpr, ValueExprType,
     },
     pipeline::{

@@ -2,19 +2,20 @@
 
 #![doc = include_str!("expression.md")]
 
-pub(crate) mod boolean_expression;
-pub(crate) mod function_call;
-pub(crate) mod operator;
+mod boolean_expression;
+mod function_call;
+mod operator;
+
+pub(crate) use boolean_expression::{
+    BinaryExpr, ComparisonFunction, LogicalFunction, NumericalFunction,
+};
+pub(crate) use function_call::FunctionCall;
+pub(crate) use operator::{BinaryOperator, UnaryOperator};
 
 use anyhow::anyhow;
 
 use crate::{
     api::error::{Result, SpringError},
-    expression::{
-        boolean_expression::{BinaryExpr, ComparisonFunction, LogicalFunction, NumericalFunction},
-        function_call::FunctionCall,
-        operator::UnaryOperator,
-    },
     pipeline::{field::ColumnReference, pump_model::AggregateFunctionParameter},
     stream_engine::{
         time::duration::{event_duration::SpringEventDuration, SpringDuration},

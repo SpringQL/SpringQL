@@ -12,10 +12,8 @@ use pest::{iterators::Pairs, Parser};
 use crate::{
     api::error::{Result, SpringError},
     expression::{
-        boolean_expression::{BinaryExpr, ComparisonFunction, LogicalFunction, NumericalFunction},
-        function_call::FunctionCall,
-        operator::{BinaryOperator, UnaryOperator},
-        AggrExpr, ValueExpr,
+        AggrExpr, BinaryExpr, BinaryOperator, ComparisonFunction, FunctionCall, LogicalFunction,
+        NumericalFunction, UnaryOperator, ValueExpr,
     },
     pipeline::{
         field::ColumnReference,

@@ -81,7 +81,7 @@ impl Tuple {
 
 #[cfg(test)]
 mod tests {
-    use crate::expression::{operator::UnaryOperator, ValueExpr};
+    use crate::expression::{UnaryOperator, ValueExpr};
 
     use super::*;
 
