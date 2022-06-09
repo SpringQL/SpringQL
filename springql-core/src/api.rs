@@ -57,7 +57,7 @@ impl SpringPipeline {
     /// - [SpringError::Unavailable](crate::api::error::SpringError::Unavailable) when:
     ///   - queue named `queue` does not exist.
     pub fn pop(&self, queue: &str) -> Result<SpringRow> {
-        spring_pop(&self.0, queue).map(|row| SpringRow(row.0))
+        spring_pop(&self.0, queue).map(SpringRow)
     }
 
     /// Pop a row from an in memory queue. This is a non-blocking function.
@@ -72,7 +72,7 @@ impl SpringPipeline {
     /// - [SpringError::Unavailable](crate::api::error::SpringError::Unavailable) when:
     ///   - queue named `queue` does not exist.
     pub fn pop_non_blocking(&self, queue: &str) -> Result<Option<SpringRow>> {
-        spring_pop_non_blocking(&self.0, queue).map(|opt_row| opt_row.map(|row| SpringRow(row.0)))
+        spring_pop_non_blocking(&self.0, queue).map(|opt_row| opt_row.map(SpringRow))
     }
 }
 

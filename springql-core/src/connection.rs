@@ -31,16 +31,6 @@ pub struct Connection {
     sql_processor: SqlProcessor,
 }
 
-/// Row object from an in memory queue.
-#[derive(Debug)]
-pub struct SpringRow(pub(crate) SinkRow);
-
-impl From<SinkRow> for SpringRow {
-    fn from(sink_row: SinkRow) -> Self {
-        Self(sink_row)
-    }
-}
-
 /// Creates and open an in-process stream pipeline.
 pub fn spring_open(config: &SpringConfig) -> Result<Connection> {
     setup_logger();
@@ -86,7 +76,7 @@ pub fn spring_command(pipeline: &Connection, sql: &str) -> Result<()> {
 ///
 /// - `SpringError::Unavailable` when:
 ///   - queue named `queue` does not exist.
-pub fn spring_pop(pipeline: &Connection, queue: &str) -> Result<SpringRow> {
+pub(crate) fn spring_pop(pipeline: &Connection, queue: &str) -> Result<SinkRow> {
     const SLEEP_MSECS: u64 = 10;
 
     let mut engine = pipeline.engine.get()?;
@@ -95,7 +85,7 @@ pub fn spring_pop(pipeline: &Connection, queue: &str) -> Result<SpringRow> {
         if let Some(sink_row) =
             engine.pop_in_memory_queue_non_blocking(QueueName::new(queue.to_string()))?
         {
-            return Ok(SpringRow::from(sink_row));
+            return Ok(sink_row);
         } else {
             thread::sleep(Duration::from_millis(SLEEP_MSECS));
         }
@@ -113,8 +103,8 @@ pub fn spring_pop(pipeline: &Connection, queue: &str) -> Result<SpringRow> {
 ///
 /// - `SpringError::Unavailable` when:
 ///   - queue named `queue` does not exist.
-pub fn spring_pop_non_blocking(pipeline: &Connection, queue: &str) -> Result<Option<SpringRow>> {
+pub(crate) fn spring_pop_non_blocking(pipeline: &Connection, queue: &str) -> Result<Option<SinkRow>> {
     let mut engine = pipeline.engine.get()?;
     let sink_row = engine.pop_in_memory_queue_non_blocking(QueueName::new(queue.to_string()))?;
-    Ok(sink_row.map(SpringRow::from))
+    Ok(sink_row)
 }
