@@ -73,7 +73,7 @@ fn test_feat_add_mul_integer() {
         ),
     ];
 
-    let _pipeline = apply_ddls(&ddls, spring_config_default());
+    let _pipeline = apply_ddls(&ddls, SpringConfig::default());
     test_source.start(ForeignSourceInput::new_fifo_batch(source_input));
     let sink_received = drain_from_sink(&test_sink);
     let r = sink_received.get(0).unwrap();
@@ -141,7 +141,7 @@ fn test_feat_add_mul_float() {
         ),
     ];
 
-    let _pipeline = apply_ddls(&ddls, spring_config_default());
+    let _pipeline = apply_ddls(&ddls, SpringConfig::default());
     test_source.start(ForeignSourceInput::new_fifo_batch(source_input));
     let sink_received = drain_from_sink(&test_sink);
     let r = sink_received.get(0).unwrap();
