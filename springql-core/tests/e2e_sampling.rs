@@ -44,7 +44,7 @@ fn run_and_drain(
     test_source: ForeignSource,
     test_sink: &ForeignSink,
 ) -> Vec<serde_json::Value> {
-    let _pipeline = apply_ddls(ddls, spring_config_default());
+    let _pipeline = apply_ddls(ddls, SpringConfig::default());
     test_source.start(source_input);
     let mut sink_received = drain_from_sink(test_sink);
     sink_received.sort_by_key(|r| {
