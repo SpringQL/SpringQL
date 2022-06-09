@@ -31,17 +31,18 @@ pub struct Connection {
     sql_processor: SqlProcessor,
 }
 
-/// Creates and open an in-process stream pipeline.
-pub fn spring_open(config: &SpringConfig) -> Result<Connection> {
-    setup_logger();
+impl Connection {
+    pub fn new(config: &SpringConfig) -> Self {
+        setup_logger();
 
-    let engine = EngineMutex::new(config);
-    let sql_processor = SqlProcessor::default();
+        let engine = EngineMutex::new(config);
+        let sql_processor = SqlProcessor::default();
 
-    Ok(Connection {
-        engine,
-        sql_processor,
-    })
+        Self {
+            engine,
+            sql_processor,
+        }
+    }
 }
 
 /// Execute commands (DDL).

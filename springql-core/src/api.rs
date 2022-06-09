@@ -17,7 +17,7 @@ pub use crate::{
 // This file is part of https://github.com/SpringQL/SpringQL which is licensed under MIT OR Apache-2.0. See file LICENSE-MIT or LICENSE-APACHE for full license details.
 
 use crate::{
-    connection::{spring_command, spring_open, spring_pop, spring_pop_non_blocking, Connection},
+    connection::{spring_command, spring_pop, spring_pop_non_blocking, Connection},
     stream_engine::{SinkRow, SqlValue},
 };
 
@@ -28,8 +28,8 @@ pub struct SpringPipeline(Connection);
 impl SpringPipeline {
     /// Creates and open an in-process stream pipeline.
     pub fn new(config: &SpringConfig) -> Result<Self> {
-        let low_level = spring_open(config)?;
-        Ok(Self(low_level))
+        let conn = Connection::new(config);
+        Ok(Self(conn))
     }
 
     /// Execute commands (DDL).
