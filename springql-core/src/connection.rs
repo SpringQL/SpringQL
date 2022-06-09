@@ -43,27 +43,15 @@ impl Connection {
             sql_processor,
         }
     }
-}
 
-/// Execute commands (DDL).
-///
-/// # Failure
-///
-/// - `SpringError::Sql` when:
-///   - Invalid SQL syntax.
-///   - Refers to undefined objects (streams, pumps, etc)
-///   - Other semantic errors.
-/// - `SpringError::InvalidOption` when:
-///   - `OPTIONS` in `CREATE` statement includes invalid key or value.
-pub fn spring_command(pipeline: &Connection, sql: &str) -> Result<()> {
-    let mut engine = pipeline.engine.get()?;
+    pub fn command(&self, sql: &str) -> Result<()> {
+        let mut engine = self.engine.get()?;
 
-    let command = pipeline
-        .sql_processor
-        .compile(sql, engine.current_pipeline())?;
+        let command = self.sql_processor.compile(sql, engine.current_pipeline())?;
 
-    match command {
-        Command::AlterPipeline(c) => engine.alter_pipeline(c),
+        match command {
+            Command::AlterPipeline(c) => engine.alter_pipeline(c),
+        }
     }
 }
 

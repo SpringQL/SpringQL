@@ -17,7 +17,7 @@ pub use crate::{
 // This file is part of https://github.com/SpringQL/SpringQL which is licensed under MIT OR Apache-2.0. See file LICENSE-MIT or LICENSE-APACHE for full license details.
 
 use crate::{
-    connection::{spring_command, spring_pop, spring_pop_non_blocking, Connection},
+    connection::{spring_pop, spring_pop_non_blocking, Connection},
     stream_engine::{SinkRow, SqlValue},
 };
 
@@ -43,7 +43,7 @@ impl SpringPipeline {
     /// - [SpringError::InvalidOption](crate::api::error::SpringError::Sql) when:
     ///   - `OPTIONS` in `CREATE` statement includes invalid key or value.
     pub fn command<S: AsRef<str>>(&self, sql: S) -> Result<()> {
-        spring_command(&self.0, sql.as_ref())
+        self.0.command(sql.as_ref())
     }
 
     /// Pop a row from an in memory queue. This is a blocking function.
