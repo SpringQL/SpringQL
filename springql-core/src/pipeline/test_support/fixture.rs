@@ -5,7 +5,7 @@ use std::{net::IpAddr, sync::Arc};
 use crate::{
     api::{SpringConfig, SpringSinkWriterConfig, SpringSourceReaderConfig},
     pipeline::{
-        field::field_name::ColumnReference,
+        field::ColumnReference,
         name::{ColumnName, SinkWriterName, SourceReaderName, StreamName},
         option::{options_builder::OptionsBuilder, Options},
         pipeline_version::PipelineVersion,

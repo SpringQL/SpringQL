@@ -7,11 +7,11 @@
 //! - constant (e.g. `777`, `"abc").
 //! - other expressions (e.g. `c1 + 1 AS c1p`).
 
-pub(crate) mod field_name;
+mod field_name;
 
-use crate::{
-    mem_size::MemSize, pipeline::field::field_name::ColumnReference, stream_engine::SqlValue,
-};
+pub(crate) use field_name::ColumnReference;
+
+use crate::{mem_size::MemSize, stream_engine::SqlValue};
 
 /// Field == SqlValue + ColumnReference
 #[derive(Clone, PartialEq, Debug, new)]

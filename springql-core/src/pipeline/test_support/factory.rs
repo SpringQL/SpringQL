@@ -10,7 +10,7 @@ use crate::{
         ValueExpr, ValueExprType,
     },
     pipeline::{
-        field::field_name::ColumnReference,
+        field::ColumnReference,
         name::{ColumnName, StreamName},
     },
     stream_engine::SqlValue,

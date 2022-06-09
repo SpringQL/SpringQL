@@ -19,7 +19,7 @@ use crate::{
         operator::UnaryOperator,
     },
     pipeline::{
-        field::field_name::ColumnReference,
+        field::ColumnReference,
         pump_model::window_operation_parameter::aggregate::AggregateFunctionParameter,
     },
     stream_engine::{

@@ -21,7 +21,7 @@ use crate::{
         AggrExpr, ValueExpr,
     },
     pipeline::{
-        field::field_name::ColumnReference,
+        field::ColumnReference,
         name::{
             AggrAlias, ColumnName, CorrelationAlias, PumpName, SinkWriterName, SourceReaderName,
             StreamName, ValueAlias,

@@ -3,7 +3,7 @@
 use crate::{
     api::error::{Result, SpringError},
     mem_size::MemSize,
-    pipeline::field::{field_name::ColumnReference, Field},
+    pipeline::field::{ColumnReference, Field},
     stream_engine::{autonomous_executor::row::Row, time::timestamp::SpringTimestamp, SqlValue},
 };
 use anyhow::anyhow;

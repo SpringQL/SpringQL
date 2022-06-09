@@ -3,7 +3,7 @@
 pub(crate) mod stream_shape;
 
 use crate::pipeline::{
-    field::field_name::ColumnReference, name::StreamName, stream_model::stream_shape::StreamShape,
+    field::ColumnReference, name::StreamName, stream_model::stream_shape::StreamShape,
 };
 
 #[derive(Clone, Eq, PartialEq, Debug, new)]

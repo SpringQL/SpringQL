@@ -65,7 +65,7 @@ mod tests {
         expr_resolver::ExprResolver,
         expression::ValueExpr,
         pipeline::{
-            field::field_name::ColumnReference,
+            field::ColumnReference,
             name::{ColumnName, StreamName},
             pump_model::window_operation_parameter::join_parameter::{JoinParameter, JoinType},
         },
