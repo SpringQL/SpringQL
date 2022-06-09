@@ -4,8 +4,8 @@ use anyhow::{anyhow, Context};
 
 use crate::{
     api::error::{Result, SpringError},
-    pipeline::relation::{column::column_definition::ColumnDefinition, sql_type::SqlType},
-    pipeline::{name::ColumnName, relation::column::column_constraint::ColumnConstraint},
+    pipeline::relation::{column::ColumnDefinition, sql_type::SqlType},
+    pipeline::{name::ColumnName, relation::column::ColumnConstraint},
 };
 
 #[derive(Clone, Eq, PartialEq, Debug)]
@@ -108,7 +108,7 @@ impl StreamShape {
 
 #[cfg(test)]
 mod tests {
-    use crate::pipeline::relation::column::column_data_type::ColumnDataType;
+    use crate::pipeline::relation::column::ColumnDataType;
 
     use super::*;
 

@@ -10,10 +10,7 @@ use crate::{
         option::{options_builder::OptionsBuilder, Options},
         pipeline_version::PipelineVersion,
         relation::{
-            column::{
-                column_constraint::ColumnConstraint, column_data_type::ColumnDataType,
-                column_definition::ColumnDefinition,
-            },
+            column::{ColumnConstraint, ColumnDataType, ColumnDefinition},
             sql_type::SqlType,
         },
         sink_writer_model::{sink_writer_type::SinkWriterType, SinkWriterModel},
