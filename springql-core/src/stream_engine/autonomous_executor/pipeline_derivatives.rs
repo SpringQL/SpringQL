@@ -53,7 +53,7 @@ impl PipelineDerivatives {
 
     /// # Failure
     ///
-    /// - [SpringError::Sql](crate::error::SpringError::Sql) when:
+    /// - `SpringError::Sql` when:
     ///   - TaskId is not found in task graph.
     pub(in crate::stream_engine::autonomous_executor) fn get_task(
         &self,

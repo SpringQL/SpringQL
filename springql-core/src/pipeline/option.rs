@@ -21,7 +21,7 @@ pub(crate) struct Options(HashMap<String, String>);
 impl Options {
     /// # Failure
     ///
-    /// - [SpringError::InvalidOption](crate SpringError::InvalidOption) when:
+    /// - `SpringError::InvalidOption` when:
     ///   - key is not found in this Options.
     pub(crate) fn get<V, F>(&self, key: &str, value_parser: F) -> Result<V>
     where

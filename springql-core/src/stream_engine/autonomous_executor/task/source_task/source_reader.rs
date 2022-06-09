@@ -27,9 +27,9 @@ pub(in crate::stream_engine::autonomous_executor) trait SourceReader:
     ///
     /// # Failure
     ///
-    /// - [SpringError::ForeignSourceTimeout](crate::error::SpringError::ForeignSourceTimeout) when:
+    /// - `SpringError::ForeignSourceTimeout` when:
     ///   - Remote source does not provide row within timeout.
-    /// - [SpringError::ForeignIo](crate::error::SpringError::ForeignIo) when:
+    /// - `SpringError::ForeignIo` when:
     ///   - Failed to parse response from remote source.
     ///   - Unknown foreign error.
     fn next_row(&mut self) -> Result<SourceRow>;

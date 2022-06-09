@@ -36,7 +36,7 @@ impl InMemoryQueueRepository {
 
     /// # Failure
     ///
-    /// - [SpringError::Unavailable](crate::error::SpringError::Unavailable) when:
+    /// - `SpringError::Unavailable` when:
     ///   - queue named `queue_name` does not exist.
     pub(in crate::stream_engine) fn get(
         &self,
@@ -53,7 +53,7 @@ impl InMemoryQueueRepository {
 
     /// # Failure
     ///
-    /// - [SpringError::Sql](crate::error::SpringError::Sql) when:
+    /// - `SpringError::Sql` when:
     ///   - queue named `queue_name` already exists.
     pub(in crate::stream_engine) fn create(&self, queue_name: QueueName) -> Result<()> {
         let r = self

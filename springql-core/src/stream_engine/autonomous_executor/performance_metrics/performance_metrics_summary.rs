@@ -4,9 +4,9 @@ use std::fmt::Display;
 
 use crate::stream_engine::autonomous_executor::performance_metrics::PerformanceMetrics;
 
-/// Summary of [PerformanceMetrics](super::PerformanceMetrics).
+/// Summary of `PerformanceMetrics`.
 ///
-/// From this summary, [TaskExecutor](crate::stream_processor::autonomous_executor::task_executor::TaskExecutor):
+/// From this summary, `TaskExecutor`:
 /// - transits memory state diagram
 /// - changes task scheduler
 /// - launches purger

@@ -38,7 +38,7 @@ impl StreamColumns {
     ///
     /// # Failure
     ///
-    /// - [SpringError::Sql](crate::error::SpringError::Sql) when:
+    /// - `SpringError::Sql` when:
     ///   - `column_values` lacks any of `stream.columns()`.
     ///   - Type mismatch (and failed to convert type) with `stream_shape` and `column_values`.
     pub(in crate::stream_engine::autonomous_executor) fn new(
@@ -81,7 +81,7 @@ impl StreamColumns {
 
     /// # Failure
     ///
-    /// - [SpringError::Sql](crate::error::SpringError::Sql) when:
+    /// - `SpringError::Sql` when:
     ///   - Column index out of range
     pub(in crate::stream_engine::autonomous_executor) fn get_by_index(
         &self,
@@ -95,7 +95,7 @@ impl StreamColumns {
 
     /// # Failure
     ///
-    /// - [SpringError::Sql](crate::error::SpringError::Sql) when:
+    /// - `SpringError::Sql` when:
     ///   - No column named `column_name` is found from this stream.
     pub(in crate::stream_engine::autonomous_executor) fn get_by_column_name(
         &self,

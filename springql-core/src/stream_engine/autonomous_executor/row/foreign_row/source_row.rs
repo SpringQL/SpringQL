@@ -23,7 +23,7 @@ impl SourceRow {
 
     /// # Failure
     ///
-    /// - [SpringError::InvalidFormat](crate::error::SpringError::InvalidFormat) when:
+    /// - `SpringError::InvalidFormat` when:
     ///   - This input row cannot be converted into row.
     pub(in crate::stream_engine::autonomous_executor) fn into_row(
         self,

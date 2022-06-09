@@ -21,7 +21,7 @@ pub(in crate::stream_engine::autonomous_executor) struct TaskRepository {
 impl TaskRepository {
     /// # Failure
     ///
-    /// - [SpringError::Sql](crate::error::SpringError::Sql) when:
+    /// - `SpringError::Sql` when:
     ///   - TaskId is not found in task repo.
     pub(super) fn get(&self, task_id: &TaskId) -> Result<Arc<Task>> {
         self.repo

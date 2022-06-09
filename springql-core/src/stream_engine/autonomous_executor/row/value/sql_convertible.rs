@@ -22,7 +22,7 @@ use crate::stream_engine::autonomous_executor::row::value::sql_value::nn_sql_val
 pub trait SpringValue: Sized {
     /// # Failures
     ///
-    /// - [SpringError::Sql](crate::api::error::SpringError::Sql) when:
+    /// - `SpringError::Sql` when:
     ///   - the type implementing SqlConvertible is not convertible from i16
     fn try_from_i16(_: &i16) -> Result<Self> {
         Self::default_err("i16")
@@ -30,7 +30,7 @@ pub trait SpringValue: Sized {
 
     /// # Failures
     ///
-    /// - [SpringError::Sql](crate::api::error::SpringError::Sql) when:
+    /// - `SpringError::Sql` when:
     ///   - the type implementing SqlConvertible is not convertible from i32
     fn try_from_i32(_: &i32) -> Result<Self> {
         Self::default_err("i32")
@@ -38,7 +38,7 @@ pub trait SpringValue: Sized {
 
     /// # Failures
     ///
-    /// - [SpringError::Sql](crate::api::error::SpringError::Sql) when:
+    /// - `SpringError::Sql` when:
     ///   - the type implementing SqlConvertible is not convertible from i64
     fn try_from_i64(_: &i64) -> Result<Self> {
         Self::default_err("i64")
@@ -46,7 +46,7 @@ pub trait SpringValue: Sized {
 
     /// # Failures
     ///
-    /// - [SpringError::Sql](crate::api::error::SpringError::Sql) when:
+    /// - `SpringError::Sql` when:
     ///   - the type implementing SqlConvertible is not convertible from f32
     fn try_from_f32(_: &f32) -> Result<Self> {
         Self::default_err("f32")
@@ -54,7 +54,7 @@ pub trait SpringValue: Sized {
 
     /// # Failures
     ///
-    /// - [SpringError::Sql](crate::api::error::SpringError::Sql) when:
+    /// - `SpringError::Sql` when:
     ///   - the type implementing SqlConvertible is not convertible from String
     fn try_from_string(_: &str) -> Result<Self> {
         Self::default_err("String")
@@ -62,7 +62,7 @@ pub trait SpringValue: Sized {
 
     /// # Failures
     ///
-    /// - [SpringError::Sql](crate::api::error::SpringError::Sql) when:
+    /// - `SpringError::Sql` when:
     ///   - the type implementing SqlConvertible is not convertible from bool
     fn try_from_bool(_: &bool) -> Result<Self> {
         Self::default_err("bool")
@@ -70,7 +70,7 @@ pub trait SpringValue: Sized {
 
     /// # Failures
     ///
-    /// - [SpringError::Sql](crate::api::error::SpringError::Sql) when:
+    /// - `SpringError::Sql` when:
     ///   - the type implementing SqlConvertible is not convertible from Timestamp
     fn try_from_timestamp(_: &SpringTimestamp) -> Result<Self> {
         Self::default_err("Timestamp")
@@ -78,7 +78,7 @@ pub trait SpringValue: Sized {
 
     /// # Failures
     ///
-    /// - [SpringError::Sql](crate::api::error::SpringError::Sql) when:
+    /// - `SpringError::Sql` when:
     ///   - the type implementing SqlConvertible is not convertible from EventDuration
     fn try_from_duration(_: &SpringEventDuration) -> Result<Self> {
         Self::default_err("EventDuration")

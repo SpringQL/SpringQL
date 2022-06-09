@@ -28,7 +28,7 @@ impl From<JsonObject> for serde_json::Value {
 impl JsonObject {
     /// # Failure
     ///
-    /// - [SpringError::InvalidFormat](crate::error::SpringError::InvalidFormat) when:
+    /// - `SpringError::InvalidFormat` when:
     ///   - Internal JSON cannot be mapped to SQL type (nested, for example).
     ///
     /// # TODO

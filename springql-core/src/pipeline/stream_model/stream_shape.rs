@@ -17,7 +17,7 @@ pub(crate) struct StreamShape {
 impl StreamShape {
     /// # Failure
     ///
-    /// - [SpringError::Sql](crate::error::SpringError::Sql) when:
+    /// - `SpringError::Sql` when:
     ///   - ROWTIME column in `cols` is not a `TIMESTAMP NOT NULL` type.
     ///   - 2 or more column have ROWTIME constraints
     pub(in crate) fn new(cols: Vec<ColumnDefinition>) -> Result<Self> {
