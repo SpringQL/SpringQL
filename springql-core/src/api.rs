@@ -17,7 +17,7 @@ pub use crate::{
 // This file is part of https://github.com/SpringQL/SpringQL which is licensed under MIT OR Apache-2.0. See file LICENSE-MIT or LICENSE-APACHE for full license details.
 
 use crate::{
-    connection::{spring_pop, spring_pop_non_blocking, Connection},
+    connection::{spring_pop_non_blocking, Connection},
     stream_engine::{SinkRow, SqlValue},
 };
 
@@ -57,7 +57,7 @@ impl SpringPipeline {
     /// - [SpringError::Unavailable](crate::api::error::SpringError::Unavailable) when:
     ///   - queue named `queue` does not exist.
     pub fn pop(&self, queue: &str) -> Result<SpringRow> {
-        spring_pop(&self.0, queue).map(SpringRow)
+        self.0.pop(queue).map(SpringRow)
     }
 
     /// Pop a row from an in memory queue. This is a non-blocking function.

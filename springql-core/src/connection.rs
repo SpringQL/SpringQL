@@ -53,30 +53,20 @@ impl Connection {
             Command::AlterPipeline(c) => engine.alter_pipeline(c),
         }
     }
-}
 
-/// Pop a row from an in memory queue. This is a blocking function.
-///
-/// **Do not call this function from threads.**
-/// If you need to pop from multiple in-memory queues using threads, use `spring_pop_non_blocking()`.
-/// See: <https://github.com/SpringQL/SpringQL/issues/125>
-///
-/// # Failure
-///
-/// - `SpringError::Unavailable` when:
-///   - queue named `queue` does not exist.
-pub fn spring_pop(pipeline: &Connection, queue: &str) -> Result<SinkRow> {
-    const SLEEP_MSECS: u64 = 10;
+    pub fn pop(&self, queue: &str) -> Result<SinkRow> {
+        const SLEEP_MSECS: u64 = 10;
 
-    let mut engine = pipeline.engine.get()?;
+        let mut engine = self.engine.get()?;
 
-    loop {
-        if let Some(sink_row) =
-            engine.pop_in_memory_queue_non_blocking(QueueName::new(queue.to_string()))?
-        {
-            return Ok(sink_row);
-        } else {
-            thread::sleep(Duration::from_millis(SLEEP_MSECS));
+        loop {
+            if let Some(sink_row) =
+                engine.pop_in_memory_queue_non_blocking(QueueName::new(queue.to_string()))?
+            {
+                return Ok(sink_row);
+            } else {
+                thread::sleep(Duration::from_millis(SLEEP_MSECS));
+            }
         }
     }
 }
