@@ -17,19 +17,19 @@ pub use crate::{
 // This file is part of https://github.com/SpringQL/SpringQL which is licensed under MIT OR Apache-2.0. See file LICENSE-MIT or LICENSE-APACHE for full license details.
 
 use crate::{
-    pipeline::{spring_command, spring_open, spring_pop, spring_pop_non_blocking},
+    connection::Connection,
     stream_engine::{SinkRow, SqlValue},
 };
 
 /// Pipeline.
 #[derive(Debug)]
-pub struct SpringPipeline(crate::pipeline::SpringPipeline);
+pub struct SpringPipeline(Connection);
 
 impl SpringPipeline {
     /// Creates and open an in-process stream pipeline.
     pub fn new(config: &SpringConfig) -> Result<Self> {
-        let underlying = spring_open(config)?;
-        Ok(Self(underlying))
+        let conn = Connection::new(config);
+        Ok(Self(conn))
     }
 
     /// Execute commands (DDL).
@@ -43,13 +43,13 @@ impl SpringPipeline {
     /// - [SpringError::InvalidOption](crate::api::error::SpringError::Sql) when:
     ///   - `OPTIONS` in `CREATE` statement includes invalid key or value.
     pub fn command<S: AsRef<str>>(&self, sql: S) -> Result<()> {
-        spring_command(&self.0, sql.as_ref())
+        self.0.command(sql.as_ref())
     }
 
     /// Pop a row from an in memory queue. This is a blocking function.
     ///
     /// **Do not call this function from threads.**
-    /// If you need to pop from multiple in-memory queues using threads, use `spring_pop_non_blocking()`.
+    /// If you need to pop from multiple in-memory queues using threads, use `pop_non_blocking()`.
     /// See: <https://github.com/SpringQL/SpringQL/issues/125>
     ///
     /// # Failure
@@ -57,7 +57,7 @@ impl SpringPipeline {
     /// - [SpringError::Unavailable](crate::api::error::SpringError::Unavailable) when:
     ///   - queue named `queue` does not exist.
     pub fn pop(&self, queue: &str) -> Result<SpringRow> {
-        spring_pop(&self.0, queue).map(|row| SpringRow(row.0))
+        self.0.pop(queue).map(SpringRow)
     }
 
     /// Pop a row from an in memory queue. This is a non-blocking function.
@@ -72,7 +72,9 @@ impl SpringPipeline {
     /// - [SpringError::Unavailable](crate::api::error::SpringError::Unavailable) when:
     ///   - queue named `queue` does not exist.
     pub fn pop_non_blocking(&self, queue: &str) -> Result<Option<SpringRow>> {
-        spring_pop_non_blocking(&self.0, queue).map(|opt_row| opt_row.map(|row| SpringRow(row.0)))
+        self.0
+            .pop_non_blocking(queue)
+            .map(|opt_row| opt_row.map(SpringRow))
     }
 }
 

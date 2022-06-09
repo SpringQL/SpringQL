@@ -6,7 +6,7 @@ use crate::api::error::{Result, SpringError};
 
 /// Default configuration.
 ///
-/// Default key-values are overwritten by `overwrite_config` parameter in `spring_open()`.
+/// Default key-values are overwritten by `overwrite_config_toml` parameter in `SpringConfig::new()`.
 const SPRING_CONFIG_DEFAULT: &str = r#"
 [worker]
 # Number of generic worker threads. Generic worker threads deal with internal and sink tasks.

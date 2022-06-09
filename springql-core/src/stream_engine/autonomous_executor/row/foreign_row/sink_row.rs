@@ -12,7 +12,7 @@ use crate::{
 ///
 /// Immediately converted from Row on stream-engine boundary.
 #[derive(PartialEq, Debug)]
-pub(crate) struct SinkRow(Row);
+pub struct SinkRow(Row);
 
 impl From<SinkRow> for JsonObject {
     fn from(sink_row: SinkRow) -> Self {
