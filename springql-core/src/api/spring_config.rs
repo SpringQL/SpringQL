@@ -84,9 +84,9 @@ impl Default for SpringConfig {
 impl SpringConfig {
     /// # Failures
     ///
-    /// - [SpringError::InvalidConfig](crate::error::SpringError::InvalidConfig) when:
+    /// - [SpringError::InvalidConfig](crate::api::error::SpringError::InvalidConfig) when:
     ///   - `overwrite_config_toml` includes invalid key and/or value.
-    /// - [SpringError::InvalidFormat](crate::error::SpringError::InvalidFormat) when:
+    /// - [SpringError::InvalidFormat](crate::api::error::SpringError::InvalidFormat) when:
     ///   - `overwrite_config_toml` is not valid as TOML.
     pub fn new(overwrite_config_toml: &str) -> Result<Self> {
         let default_conf = config::Config::builder()
