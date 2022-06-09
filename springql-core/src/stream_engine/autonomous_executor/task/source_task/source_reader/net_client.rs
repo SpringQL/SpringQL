@@ -11,7 +11,7 @@ use anyhow::Context;
 use crate::{
     api::error::{foreign_info::ForeignInfo, Result, SpringError},
     api::SpringSourceReaderConfig,
-    pipeline::option::{net_options::NetClientOptions, Options},
+    pipeline::option::{NetClientOptions, Options},
     stream_engine::autonomous_executor::{
         row::foreign_row::source_row::{source_row_format::SourceRowFormat, SourceRow},
         task::source_task::source_reader::SourceReader,
@@ -100,7 +100,7 @@ mod tests {
     use springql_foreign_service::source::ForeignSource;
 
     use super::*;
-    use crate::pipeline::option::options_builder::OptionsBuilder;
+    use crate::pipeline::option::OptionsBuilder;
     use crate::stream_engine::autonomous_executor::row::foreign_row::format::json::JsonObject;
     use crate::stream_engine::autonomous_executor::row::foreign_row::source_row::json_source_row::JsonSourceRow;
 

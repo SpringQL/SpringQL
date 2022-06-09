@@ -26,7 +26,7 @@ use crate::{
             AggrAlias, ColumnName, CorrelationAlias, PumpName, SinkWriterName, SourceReaderName,
             StreamName, ValueAlias,
         },
-        option::options_builder::OptionsBuilder,
+        option::OptionsBuilder,
         pump_model::{
             window_operation_parameter::{AggregateFunctionParameter, JoinType},
             window_parameter::WindowParameter,

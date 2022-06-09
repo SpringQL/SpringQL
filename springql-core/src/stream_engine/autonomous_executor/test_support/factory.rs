@@ -8,7 +8,7 @@ use crate::{
     api::SpringSourceReaderConfig,
     pipeline::{
         name::{ColumnName, StreamName},
-        option::options_builder::OptionsBuilder,
+        option::OptionsBuilder,
         stream_model::{stream_shape::StreamShape, StreamModel},
     },
     stream_engine::{

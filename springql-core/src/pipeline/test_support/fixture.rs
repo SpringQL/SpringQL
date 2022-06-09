@@ -7,7 +7,7 @@ use crate::{
     pipeline::{
         field::ColumnReference,
         name::{ColumnName, SinkWriterName, SourceReaderName, StreamName},
-        option::{options_builder::OptionsBuilder, Options},
+        option::{Options, OptionsBuilder},
         pipeline_version::PipelineVersion,
         relation::{
             column::{ColumnConstraint, ColumnDataType, ColumnDefinition},

@@ -133,7 +133,7 @@ mod tests {
     use crate::{
         pipeline::{
             name::{SinkWriterName, SourceReaderName, StreamName},
-            option::options_builder::OptionsBuilder,
+            option::OptionsBuilder,
             pipeline_version::PipelineVersion,
             sink_writer_model::{sink_writer_type::SinkWriterType, SinkWriterModel},
             source_reader_model::{source_reader_type::SourceReaderType, SourceReaderModel},

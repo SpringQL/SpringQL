@@ -4,7 +4,7 @@ use crate::{
     api::{error::Result, SpringSinkWriterConfig},
     pipeline::{
         name::QueueName,
-        option::{in_memory_queue_options::InMemoryQueueOptions, Options},
+        option::{InMemoryQueueOptions, Options},
     },
     stream_engine::{
         autonomous_executor::task::sink_task::sink_writer::SinkWriter,

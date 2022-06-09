@@ -11,7 +11,7 @@ use anyhow::Context;
 use crate::{
     api::error::{foreign_info::ForeignInfo, Result, SpringError},
     api::SpringSinkWriterConfig,
-    pipeline::option::{net_options::NetClientOptions, Options},
+    pipeline::option::{NetClientOptions, Options},
     stream_engine::{
         autonomous_executor::{
             row::foreign_row::format::json::JsonObject, task::sink_task::sink_writer::SinkWriter,
@@ -91,7 +91,7 @@ mod tests {
 
     use super::*;
     use crate::{
-        pipeline::option::options_builder::OptionsBuilder,
+        pipeline::option::OptionsBuilder,
         stream_engine::autonomous_executor::row::foreign_row::format::json::JsonObject,
     };
 
