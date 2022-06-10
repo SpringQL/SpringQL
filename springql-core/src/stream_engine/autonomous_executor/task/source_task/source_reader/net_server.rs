@@ -137,7 +137,7 @@ mod tests {
         pipeline::option::options_builder::OptionsBuilder,
         stream_engine::{
             autonomous_executor::task::sink_task::sink_writer::{net::NetSinkWriter, SinkWriter},
-            SinkRow,
+            Row,
         },
     };
 
@@ -167,15 +167,9 @@ mod tests {
 
         let mut writer = tcp_writer(port);
 
-        writer
-            .send_row(SinkRow::fx_city_temperature_tokyo())
-            .unwrap();
-        writer
-            .send_row(SinkRow::fx_city_temperature_osaka())
-            .unwrap();
-        writer
-            .send_row(SinkRow::fx_city_temperature_london())
-            .unwrap();
+        writer.send_row(Row::fx_city_temperature_tokyo()).unwrap();
+        writer.send_row(Row::fx_city_temperature_osaka()).unwrap();
+        writer.send_row(Row::fx_city_temperature_london()).unwrap();
 
         assert_eq!(reader.next_row()?, SourceRow::fx_city_temperature_tokyo());
         assert_eq!(reader.next_row()?, SourceRow::fx_city_temperature_osaka());

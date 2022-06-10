@@ -10,8 +10,6 @@ pub(in crate::stream_engine) mod foreign_row;
 
 use std::vec;
 
-pub(crate) use self::foreign_row::SinkRow;
-
 use crate::{
     api::error::Result,
     mem_size::MemSize,
@@ -38,7 +36,7 @@ pub(crate) struct Row {
 }
 
 impl Row {
-    pub(in crate::stream_engine::autonomous_executor) fn new(cols: StreamColumns) -> Self {
+    pub(crate) fn new(cols: StreamColumns) -> Self {
         let arrival_rowtime = if cols.promoted_rowtime().is_some() {
             None
         } else {
@@ -51,7 +49,7 @@ impl Row {
         }
     }
 
-    pub(in crate::stream_engine::autonomous_executor) fn stream_model(&self) -> &StreamModel {
+    pub fn stream_model(&self) -> &StreamModel {
         self.cols.stream_model()
     }
 
@@ -61,7 +59,7 @@ impl Row {
     ///
     /// - (default) Arrival time to a stream.
     /// - Promoted from a column in a stream.
-    pub(in crate::stream_engine::autonomous_executor) fn rowtime(&self) -> SpringTimestamp {
+    pub fn rowtime(&self) -> SpringTimestamp {
         self.arrival_rowtime.unwrap_or_else(|| {
             self.cols
                 .promoted_rowtime()
@@ -73,10 +71,7 @@ impl Row {
     ///
     /// - `SpringError::Sql` when:
     ///   - Column index out of range
-    pub(in crate::stream_engine::autonomous_executor) fn get_by_index(
-        &self,
-        i_col: usize,
-    ) -> Result<&SqlValue> {
+    pub fn get_by_index(&self, i_col: usize) -> Result<&SqlValue> {
         self.cols.get_by_index(i_col)
     }
 }
@@ -169,8 +164,7 @@ mod tests {
     #[test]
     fn test_from_row_arrival_rowtime() {
         let row = Row::fx_no_promoted_rowtime();
-        let f_row = SinkRow::from(row);
-        let f_json = JsonObject::from(f_row);
+        let f_json = JsonObject::from(row);
         let mut f_colvals = f_json.into_column_values().unwrap();
         let f_rowtime_sql_value = f_colvals.remove(&ColumnName::arrival_rowtime()).unwrap();
 

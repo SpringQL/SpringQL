@@ -22,7 +22,6 @@ mod repositories;
 mod task_executor;
 mod task_graph;
 
-pub(crate) use self::row::SinkRow;
 use std::sync::Arc;
 
 use crate::{

@@ -5,11 +5,11 @@ use std::{
     sync::{Mutex, MutexGuard},
 };
 
-use crate::stream_engine::autonomous_executor::row::foreign_row::sink_row::SinkRow;
+use crate::stream_engine::Row;
 
 #[derive(Debug, Default)]
 pub(in crate::stream_engine) struct InMemoryQueue(
-    Mutex<VecDeque<SinkRow>>, // TODO faster (lock-free?) queue
+    Mutex<VecDeque<Row>>, // TODO faster (lock-free?) queue
 );
 
 impl InMemoryQueue {
@@ -17,15 +17,15 @@ impl InMemoryQueue {
     ///
     /// - `Ok(Some)` when at least a row is in the queue.
     /// - `None` when no row is in the queue.
-    pub(in crate::stream_engine) fn pop_non_blocking(&self) -> Option<SinkRow> {
+    pub(in crate::stream_engine) fn pop_non_blocking(&self) -> Option<Row> {
         self.lock().pop_front()
     }
 
-    pub(in crate::stream_engine) fn push(&self, row: SinkRow) {
+    pub(in crate::stream_engine) fn push(&self, row: Row) {
         self.lock().push_back(row)
     }
 
-    fn lock(&self) -> MutexGuard<'_, VecDeque<SinkRow>> {
+    fn lock(&self) -> MutexGuard<'_, VecDeque<Row>> {
         self.0
             .lock()
             .expect("another thread sharing the same InMemoryQueue internal got panic")

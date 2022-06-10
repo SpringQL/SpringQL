@@ -39,7 +39,6 @@ use crate::{
             task_graph::TaskGraph,
         },
         time::timestamp::SpringTimestamp,
-        SinkRow,
     },
 };
 
@@ -124,28 +123,6 @@ impl SourceRow {
     }
     pub(in crate::stream_engine) fn fx_trade_google() -> Self {
         Self::from_json(JsonObject::fx_trade_google())
-    }
-}
-
-impl SinkRow {
-    pub(in crate::stream_engine) fn fx_city_temperature_tokyo() -> Self {
-        Row::fx_city_temperature_tokyo().into()
-    }
-    pub(in crate::stream_engine) fn fx_city_temperature_osaka() -> Self {
-        Row::fx_city_temperature_osaka().into()
-    }
-    pub(in crate::stream_engine) fn fx_city_temperature_london() -> Self {
-        Row::fx_city_temperature_london().into()
-    }
-
-    pub(in crate::stream_engine) fn fx_trade_oracle() -> Self {
-        Row::fx_trade_oracle().into()
-    }
-    pub(in crate::stream_engine) fn fx_trade_ibm() -> Self {
-        Row::fx_trade_ibm().into()
-    }
-    pub(in crate::stream_engine) fn fx_trade_google() -> Self {
-        Row::fx_trade_google().into()
     }
 }
 

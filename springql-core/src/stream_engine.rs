@@ -15,11 +15,13 @@ use anyhow::anyhow;
 
 pub use crate::stream_engine::autonomous_executor::SpringValue;
 pub(crate) use autonomous_executor::{
-    row::value::sql_value::{
-        nn_sql_value::NnSqlValue, sql_compare_result::SqlCompareResult, SqlValue,
+    row::{
+        value::sql_value::{
+            nn_sql_value::NnSqlValue, sql_compare_result::SqlCompareResult, SqlValue,
+        },
+        Row,
     },
     task::tuple::Tuple,
-    SinkRow,
 };
 
 use crate::{
@@ -98,7 +100,7 @@ impl StreamEngine {
     pub(crate) fn pop_in_memory_queue_non_blocking(
         &mut self,
         queue_name: QueueName,
-    ) -> Result<Option<SinkRow>> {
+    ) -> Result<Option<Row>> {
         let q = InMemoryQueueRepository::instance().get(&queue_name)?;
         let row = q.pop_non_blocking();
         Ok(row)

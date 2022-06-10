@@ -18,7 +18,7 @@ use crate::{
 ///
 /// Should keep as small size as possible because all Row has this inside.
 #[derive(Clone, PartialEq, Debug)]
-pub(in crate::stream_engine::autonomous_executor) struct StreamColumns {
+pub(crate) struct StreamColumns {
     stream_model: Arc<StreamModel>,
 
     /// sorted to the same order as `stream_shape.columns()`.

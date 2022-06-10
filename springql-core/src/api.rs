@@ -2,23 +2,18 @@
 
 pub mod error;
 mod spring_config;
+use crate::stream_engine::{Row, SqlValue};
 pub use crate::{
     api::{
         error::{Result, SpringError},
         spring_config::*,
         SpringConfig,
     },
+    connection::Connection,
     stream_engine::{
         time::{duration::event_duration::SpringEventDuration, timestamp::SpringTimestamp},
         SpringValue,
     },
-};
-
-// This file is part of https://github.com/SpringQL/SpringQL which is licensed under MIT OR Apache-2.0. See file LICENSE-MIT or LICENSE-APACHE for full license details.
-
-use crate::{
-    connection::Connection,
-    stream_engine::{SinkRow, SqlValue},
 };
 
 /// Pipeline.
@@ -80,7 +75,7 @@ impl SpringPipeline {
 
 /// Row object from an in memory queue.
 #[derive(Debug)]
-pub struct SpringRow(SinkRow);
+pub struct SpringRow(Row);
 
 impl SpringRow {
     /// Get a i-th column value from the row.
@@ -99,7 +94,7 @@ impl SpringRow {
 
         match sql_value {
             SqlValue::Null => Err(SpringError::Null {
-                stream_name: self.0.stream_name().clone(),
+                stream_name: self.0.stream_model().name().clone(),
                 i_col,
             }),
             SqlValue::NotNull(nn_sql_value) => nn_sql_value.unpack(),

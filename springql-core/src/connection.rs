@@ -6,7 +6,7 @@ use crate::{
     api::{error::Result, SpringConfig},
     pipeline::name::QueueName,
     sql_processor::SqlProcessor,
-    stream_engine::{command::Command, EngineMutex, SinkRow},
+    stream_engine::{command::Command, EngineMutex, Row},
 };
 
 fn setup_logger() {
@@ -32,7 +32,7 @@ pub struct Connection {
 }
 
 impl Connection {
-    pub fn new(config: &SpringConfig) -> Self {
+    pub(crate) fn new(config: &SpringConfig) -> Self {
         setup_logger();
 
         let engine = EngineMutex::new(config);
@@ -44,7 +44,7 @@ impl Connection {
         }
     }
 
-    pub fn command(&self, sql: &str) -> Result<()> {
+    pub(crate) fn command(&self, sql: &str) -> Result<()> {
         let mut engine = self.engine.get()?;
 
         let command = self.sql_processor.compile(sql, engine.current_pipeline())?;
@@ -54,7 +54,7 @@ impl Connection {
         }
     }
 
-    pub fn pop(&self, queue: &str) -> Result<SinkRow> {
+    pub(crate) fn pop(&self, queue: &str) -> Result<Row> {
         const SLEEP_MSECS: u64 = 10;
 
         let mut engine = self.engine.get()?;
@@ -70,7 +70,7 @@ impl Connection {
         }
     }
 
-    pub fn pop_non_blocking(&self, queue: &str) -> Result<Option<SinkRow>> {
+    pub(crate) fn pop_non_blocking(&self, queue: &str) -> Result<Option<Row>> {
         let mut engine = self.engine.get()?;
         let sink_row =
             engine.pop_in_memory_queue_non_blocking(QueueName::new(queue.to_string()))?;
