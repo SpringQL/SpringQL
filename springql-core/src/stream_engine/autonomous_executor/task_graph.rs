@@ -19,7 +19,7 @@ use std::collections::HashMap;
 use petgraph::graph::{DiGraph, NodeIndex};
 
 use crate::{
-    pipeline::{pipeline_graph::Edge, pipeline_version::PipelineVersion, Pipeline, StreamName},
+    pipeline::{pipeline_version::PipelineVersion, Edge, Pipeline, StreamName},
     stream_engine::autonomous_executor::task_graph::{
         edge_ref::MyEdgeRef,
         queue_id::{row_queue_id::RowQueueId, window_queue_id::WindowQueueId, QueueId},

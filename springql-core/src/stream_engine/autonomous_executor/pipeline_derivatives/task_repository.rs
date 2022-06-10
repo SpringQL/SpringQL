@@ -6,7 +6,7 @@ use anyhow::anyhow;
 
 use crate::{
     api::error::{Result, SpringError},
-    pipeline::pipeline_graph::PipelineGraph,
+    pipeline::PipelineGraph,
     stream_engine::autonomous_executor::{
         task::{window::Window, Task},
         task_graph::task_id::TaskId,

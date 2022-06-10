@@ -5,7 +5,7 @@
 mod field;
 mod name;
 mod option;
-pub(crate) mod pipeline_graph;
+mod pipeline_graph;
 pub(crate) mod pipeline_version;
 pub(crate) mod pump_model;
 pub(crate) mod relation;
@@ -24,6 +24,7 @@ pub(crate) use name::{
 pub(crate) use option::{
     InMemoryQueueOptions, NetClientOptions, NetProtocol, NetServerOptions, Options, OptionsBuilder,
 };
+pub(crate) use pipeline_graph::{Edge, PipelineGraph};
 
 use std::{collections::HashSet, sync::Arc};
 
@@ -32,7 +33,7 @@ use anyhow::anyhow;
 use crate::{
     api::error::{Result, SpringError},
     pipeline::{
-        pipeline_graph::PipelineGraph, pipeline_version::PipelineVersion, pump_model::PumpModel,
+        pipeline_version::PipelineVersion, pump_model::PumpModel,
         sink_writer_model::SinkWriterModel, source_reader_model::SourceReaderModel,
         stream_model::StreamModel,
     },

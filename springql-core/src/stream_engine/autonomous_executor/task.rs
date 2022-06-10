@@ -10,7 +10,7 @@ pub(super) mod window;
 
 use crate::{
     api::error::Result,
-    pipeline::pipeline_graph::{Edge, PipelineGraph},
+    pipeline::{Edge, PipelineGraph},
     stream_engine::autonomous_executor::{
         performance_metrics::metrics_update_command::metrics_update_by_task_execution::MetricsUpdateByTaskExecution,
         task::{
