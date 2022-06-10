@@ -1,9 +1,7 @@
 // This file is part of https://github.com/SpringQL/SpringQL which is licensed under MIT OR Apache-2.0. See file LICENSE-MIT or LICENSE-APACHE for full license details.
 
 use crate::{
-    pipeline::pump_model::{
-        WindowParameter, {JoinParameter, WindowOperationParameter},
-    },
+    pipeline::{JoinParameter, WindowOperationParameter, WindowParameter},
     stream_engine::autonomous_executor::task::window::{
         panes::{pane::join_pane::JoinPane, Panes},
         watermark::Watermark,
@@ -63,10 +61,7 @@ mod tests {
     use crate::{
         expr_resolver::ExprResolver,
         expression::ValueExpr,
-        pipeline::{
-            pump_model::{JoinParameter, JoinType},
-            ColumnName, ColumnReference, StreamName,
-        },
+        pipeline::{ColumnName, ColumnReference, JoinParameter, JoinType, StreamName},
         sql_processor::sql_parser::syntax::SelectFieldSyntax,
         stream_engine::{
             autonomous_executor::task::window::panes::pane::join_pane::JoinDir,

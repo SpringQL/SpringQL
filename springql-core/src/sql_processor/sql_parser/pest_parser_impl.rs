@@ -16,13 +16,13 @@ use crate::{
         NumericalFunction, UnaryOperator, ValueExpr,
     },
     pipeline::{
-        pump_model::{AggregateFunctionParameter, JoinType, WindowParameter},
         relation::{ColumnConstraint, ColumnDataType, ColumnDefinition, SqlType},
         sink_writer_model::{SinkWriterModel, SinkWriterType},
         source_reader_model::{SourceReaderModel, SourceReaderType},
         stream_model::{StreamModel, StreamShape},
-        AggrAlias, ColumnName, ColumnReference, CorrelationAlias, OptionsBuilder, PumpName,
-        SinkWriterName, SourceReaderName, StreamName, ValueAlias,
+        AggrAlias, AggregateFunctionParameter, ColumnName, ColumnReference, CorrelationAlias,
+        JoinType, OptionsBuilder, PumpName, SinkWriterName, SourceReaderName, StreamName,
+        ValueAlias, WindowParameter,
     },
     sql_processor::sql_parser::{
         parse_success::{CreatePump, ParseSuccess},

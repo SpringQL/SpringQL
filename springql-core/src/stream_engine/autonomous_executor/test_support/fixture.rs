@@ -6,9 +6,8 @@ use serde_json::json;
 
 use crate::{
     pipeline::{
-        pump_model::PumpInputType, sink_writer_model::SinkWriterModel,
-        source_reader_model::SourceReaderModel, stream_model::StreamModel, PipelineVersion,
-        StreamName,
+        sink_writer_model::SinkWriterModel, source_reader_model::SourceReaderModel,
+        stream_model::StreamModel, PipelineVersion, PumpInputType, StreamName,
     },
     stream_engine::{
         autonomous_executor::{

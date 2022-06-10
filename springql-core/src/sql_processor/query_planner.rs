@@ -61,10 +61,7 @@ use crate::{
     api::error::Result,
     expr_resolver::{expr_label::ExprLabel, ExprResolver},
     pipeline::{
-        pump_model::{
-            AggregateParameter, GroupByLabels, WindowOperationParameter, WindowParameter,
-        },
-        Pipeline,
+        AggregateParameter, GroupByLabels, Pipeline, WindowOperationParameter, WindowParameter,
     },
     sql_processor::{
         query_planner::select_syntax_analyzer::SelectSyntaxAnalyzer,

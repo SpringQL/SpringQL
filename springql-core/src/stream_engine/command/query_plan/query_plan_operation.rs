@@ -2,12 +2,7 @@
 
 use crate::{
     expr_resolver::expr_label::ExprLabel,
-    pipeline::{
-        pump_model::{
-            WindowParameter, {JoinParameter, WindowOperationParameter},
-        },
-        StreamName,
-    },
+    pipeline::{JoinParameter, StreamName, WindowOperationParameter, WindowParameter},
 };
 
 #[derive(Clone, PartialEq, Debug)]

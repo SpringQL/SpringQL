@@ -7,7 +7,7 @@ mod name;
 mod option;
 mod pipeline_graph;
 mod pipeline_version;
-pub(crate) mod pump_model;
+mod pump_model;
 pub(crate) mod relation;
 pub(crate) mod sink_writer_model;
 pub(crate) mod source_reader_model;
@@ -26,6 +26,10 @@ pub(crate) use option::{
 };
 pub(crate) use pipeline_graph::{Edge, PipelineGraph};
 pub(crate) use pipeline_version::PipelineVersion;
+pub(crate) use pump_model::{
+    AggregateFunctionParameter, AggregateParameter, GroupByLabels, JoinParameter, JoinType,
+    PumpInputType, PumpModel, WindowOperationParameter, WindowParameter,
+};
 
 use std::{collections::HashSet, sync::Arc};
 
@@ -34,8 +38,8 @@ use anyhow::anyhow;
 use crate::{
     api::error::{Result, SpringError},
     pipeline::{
-        pump_model::PumpModel, sink_writer_model::SinkWriterModel,
-        source_reader_model::SourceReaderModel, stream_model::StreamModel,
+        sink_writer_model::SinkWriterModel, source_reader_model::SourceReaderModel,
+        stream_model::StreamModel,
     },
 };
 

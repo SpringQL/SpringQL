@@ -7,7 +7,7 @@ use anyhow::anyhow;
 use crate::{
     api::error::{Result, SpringError},
     expr_resolver::expr_label::{AggrExprLabel, ValueExprLabel},
-    pipeline::pump_model::{WindowOperationParameter, WindowParameter},
+    pipeline::{WindowOperationParameter, WindowParameter},
     stream_engine::{
         autonomous_executor::task::window::{
             panes::{pane::aggregate_pane::AggrPane, Panes},
@@ -120,8 +120,8 @@ mod tests {
         expr_resolver::{expr_label::ExprLabel, ExprResolver},
         expression::{AggrExpr, ValueExpr},
         pipeline::{
-            pump_model::{AggregateFunctionParameter, AggregateParameter, GroupByLabels},
-            AggrAlias, ColumnName, StreamName,
+            AggrAlias, AggregateFunctionParameter, AggregateParameter, ColumnName, GroupByLabels,
+            StreamName,
         },
         sql_processor::sql_parser::syntax::SelectFieldSyntax,
         stream_engine::{

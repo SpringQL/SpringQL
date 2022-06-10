@@ -7,8 +7,8 @@ mod query_planner;
 use crate::{
     api::error::Result,
     pipeline::{
-        pump_model::PumpModel, sink_writer_model::SinkWriterModel,
-        source_reader_model::SourceReaderModel, stream_model::StreamModel, Pipeline,
+        sink_writer_model::SinkWriterModel, source_reader_model::SourceReaderModel,
+        stream_model::StreamModel, Pipeline, PumpModel,
     },
     sql_processor::{
         query_planner::QueryPlanner,

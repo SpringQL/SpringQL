@@ -16,7 +16,7 @@ use anyhow::anyhow;
 
 use crate::{
     api::error::{Result, SpringError},
-    pipeline::{pump_model::AggregateFunctionParameter, ColumnReference},
+    pipeline::{AggregateFunctionParameter, ColumnReference},
     stream_engine::{
         time::duration::{event_duration::SpringEventDuration, SpringDuration},
         NnSqlValue, SqlCompareResult, SqlValue, Tuple,

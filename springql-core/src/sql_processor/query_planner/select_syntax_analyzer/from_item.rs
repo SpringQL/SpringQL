@@ -3,7 +3,7 @@
 use crate::{
     api::error::Result,
     expr_resolver::ExprResolver,
-    pipeline::{pump_model::JoinParameter, Pipeline},
+    pipeline::{JoinParameter, Pipeline},
     sql_processor::{
         query_planner::SelectSyntaxAnalyzer,
         sql_parser::syntax::{FromItemSyntax, SubFromItemSyntax},

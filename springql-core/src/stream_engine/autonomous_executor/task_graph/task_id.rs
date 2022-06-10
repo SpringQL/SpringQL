@@ -3,10 +3,8 @@
 use std::fmt::Display;
 
 use crate::pipeline::{
-    pump_model::{PumpInputType, PumpModel},
-    sink_writer_model::SinkWriterModel,
-    source_reader_model::SourceReaderModel,
-    Edge,
+    sink_writer_model::SinkWriterModel, source_reader_model::SourceReaderModel, Edge,
+    PumpInputType, PumpModel,
 };
 
 #[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]

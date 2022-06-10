@@ -5,10 +5,7 @@ use std::str::FromStr;
 use crate::{
     expr_resolver::ExprResolver,
     mem_size::MemSize,
-    pipeline::{
-        pump_model::{JoinParameter, JoinType, WindowOperationParameter},
-        Field,
-    },
+    pipeline::{Field, JoinParameter, JoinType, WindowOperationParameter},
     stream_engine::{
         autonomous_executor::{
             performance_metrics::metrics_update_command::metrics_update_by_task_execution::WindowInFlowByWindowTask,

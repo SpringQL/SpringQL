@@ -8,7 +8,7 @@ use std::time::Duration;
 
 use crate::{
     api::error::Result,
-    pipeline::{pump_model::PumpModel, PipelineGraph},
+    pipeline::{PipelineGraph, PumpModel},
     stream_engine::{
         autonomous_executor::{
             performance_metrics::metrics_update_command::metrics_update_by_task_execution::{

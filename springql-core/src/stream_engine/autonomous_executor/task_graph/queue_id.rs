@@ -4,11 +4,7 @@ pub(in crate::stream_engine::autonomous_executor) mod row_queue_id;
 pub(in crate::stream_engine::autonomous_executor) mod window_queue_id;
 
 use crate::{
-    pipeline::{
-        pump_model::{PumpInputType, PumpModel},
-        sink_writer_model::SinkWriterModel,
-        StreamName,
-    },
+    pipeline::{sink_writer_model::SinkWriterModel, PumpInputType, PumpModel, StreamName},
     stream_engine::autonomous_executor::task_graph::queue_id::{
         row_queue_id::RowQueueId, window_queue_id::WindowQueueId,
     },

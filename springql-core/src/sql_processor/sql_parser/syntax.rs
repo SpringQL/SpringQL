@@ -2,10 +2,7 @@
 
 use crate::{
     expression::{AggrExpr, ValueExpr},
-    pipeline::{
-        pump_model::{JoinType, WindowParameter},
-        AggrAlias, CorrelationAlias, StreamName, ValueAlias,
-    },
+    pipeline::{AggrAlias, CorrelationAlias, JoinType, StreamName, ValueAlias, WindowParameter},
 };
 
 #[derive(Clone, Eq, PartialEq, Debug)]
