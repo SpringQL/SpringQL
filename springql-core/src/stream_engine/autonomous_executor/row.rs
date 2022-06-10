@@ -17,7 +17,7 @@ use crate::{
     stream_engine::{
         autonomous_executor::row::{
             column::stream_column::StreamColumns,
-            foreign_row::format::JsonObject,
+            foreign_row::JsonObject,
             value::sql_value::{nn_sql_value::NnSqlValue, SqlValue},
         },
         time::timestamp::{system_timestamp::SystemTimestamp, SpringTimestamp},
@@ -125,9 +125,7 @@ impl From<Row> for JsonObject {
 mod tests {
     use serde_json::json;
 
-    use crate::{
-        stream_engine::autonomous_executor::row::foreign_row::format::JsonObject, time::Duration,
-    };
+    use crate::{stream_engine::autonomous_executor::row::foreign_row::JsonObject, time::Duration};
 
     use super::*;
 

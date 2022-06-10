@@ -13,7 +13,7 @@ use crate::{
     api::SpringSourceReaderConfig,
     pipeline::{NetClientOptions, Options},
     stream_engine::autonomous_executor::{
-        row::foreign_row::source_row::{source_row_format::SourceRowFormat, SourceRow},
+        row::foreign_row::{SourceRow, SourceRowFormat},
         task::source_task::source_reader::SourceReader,
     },
 };
@@ -101,8 +101,8 @@ mod tests {
 
     use super::*;
     use crate::pipeline::OptionsBuilder;
-    use crate::stream_engine::autonomous_executor::row::foreign_row::format::JsonObject;
-    use crate::stream_engine::autonomous_executor::row::foreign_row::source_row::json_source_row::JsonSourceRow;
+    use crate::stream_engine::autonomous_executor::row::foreign_row::JsonObject;
+    use crate::stream_engine::autonomous_executor::row::foreign_row::JsonSourceRow;
 
     #[test]
     fn test_source_tcp() -> crate::api::error::Result<()> {

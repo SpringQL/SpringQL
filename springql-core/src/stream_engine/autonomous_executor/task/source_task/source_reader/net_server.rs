@@ -13,10 +13,7 @@ use crate::{
     api::SpringSourceReaderConfig,
     pipeline::{NetProtocol, NetServerOptions, Options},
     stream_engine::autonomous_executor::{
-        row::foreign_row::{
-            format::JsonObject,
-            source_row::{json_source_row::JsonSourceRow, SourceRow},
-        },
+        row::foreign_row::{JsonObject, JsonSourceRow, SourceRow},
         task::source_task::source_reader::SourceReader,
     },
 };

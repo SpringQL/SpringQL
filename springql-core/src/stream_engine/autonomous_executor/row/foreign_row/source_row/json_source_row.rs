@@ -17,16 +17,16 @@ use crate::{
 pub struct JsonSourceRow(JsonObject);
 
 impl JsonSourceRow {
-    pub(crate) fn parse(json_s: &str) -> Result<Self> {
+    pub fn parse(json_s: &str) -> Result<Self> {
         let json_obj = JsonObject::parse(json_s)?;
         Ok(Self::from_json(json_obj))
     }
 
-    pub(crate) fn from_json(json: JsonObject) -> Self {
+    pub fn from_json(json: JsonObject) -> Self {
         Self(json)
     }
 
-    pub(crate) fn into_row(self, stream_model: Arc<StreamModel>) -> Result<Row> {
+    pub fn into_row(self, stream_model: Arc<StreamModel>) -> Result<Row> {
         // SourceRow -> JsonObject -> HashMap<ColumnName, SqlValue> -> StreamColumns -> Row
 
         let column_values = self.0.into_column_values()?;

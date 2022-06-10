@@ -1,7 +1,10 @@
 // This file is part of https://github.com/SpringQL/SpringQL which is licensed under MIT OR Apache-2.0. See file LICENSE-MIT or LICENSE-APACHE for full license details.
 
-pub(in crate::stream_engine::autonomous_executor) mod json_source_row;
-pub(in crate::stream_engine::autonomous_executor) mod source_row_format;
+mod json_source_row;
+mod source_row_format;
+
+pub use json_source_row::JsonSourceRow;
+pub use source_row_format::SourceRowFormat;
 
 use std::sync::Arc;
 
@@ -10,12 +13,7 @@ use anyhow::Context;
 use crate::{
     api::{error::Result, SpringError},
     pipeline::StreamModel,
-    stream_engine::{
-        autonomous_executor::row::foreign_row::source_row::{
-            json_source_row::JsonSourceRow, source_row_format::SourceRowFormat,
-        },
-        Row,
-    },
+    stream_engine::{ Row},
 };
 
 /// Input row from foreign sources (retrieved from SourceReader).

@@ -14,7 +14,7 @@ use crate::{
     pipeline::{NetClientOptions, Options},
     stream_engine::{
         autonomous_executor::{
-            row::foreign_row::format::JsonObject, task::sink_task::sink_writer::SinkWriter,
+            row::foreign_row::JsonObject, task::sink_task::sink_writer::SinkWriter,
         },
         Row,
     },
@@ -91,8 +91,7 @@ mod tests {
 
     use super::*;
     use crate::{
-        pipeline::OptionsBuilder,
-        stream_engine::autonomous_executor::row::foreign_row::format::JsonObject,
+        pipeline::OptionsBuilder, stream_engine::autonomous_executor::row::foreign_row::JsonObject,
     };
 
     #[test]
