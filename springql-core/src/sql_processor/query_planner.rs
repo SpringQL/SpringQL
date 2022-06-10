@@ -65,7 +65,7 @@ use crate::{
     },
     sql_processor::{
         query_planner::select_syntax_analyzer::SelectSyntaxAnalyzer,
-        sql_parser::syntax::{GroupingElementSyntax, SelectStreamSyntax},
+        sql_parser::{GroupingElementSyntax, SelectStreamSyntax},
     },
     stream_engine::command::query_plan::{
         query_plan_operation::{GroupAggregateWindowOp, JoinOp, LowerOps, ProjectionOp, UpperOps},

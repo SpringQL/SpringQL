@@ -5,7 +5,7 @@ mod from_item;
 mod group_aggregate;
 mod window;
 
-use crate::sql_processor::sql_parser::syntax::SelectStreamSyntax;
+use crate::sql_processor::sql_parser::SelectStreamSyntax;
 
 #[derive(Clone, Debug, new)]
 pub struct SelectSyntaxAnalyzer {

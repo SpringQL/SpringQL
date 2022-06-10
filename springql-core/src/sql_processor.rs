@@ -9,11 +9,7 @@ use crate::{
     pipeline::{Pipeline, PumpModel, SinkWriterModel, SourceReaderModel, StreamModel},
     sql_processor::{
         query_planner::QueryPlanner,
-        sql_parser::{
-            parse_success::{CreatePump, ParseSuccess},
-            syntax::SelectStreamSyntax,
-            SqlParser,
-        },
+        sql_parser::{CreatePump, ParseSuccess, SelectStreamSyntax, SqlParser},
     },
     stream_engine::command::{
         alter_pipeline_command::AlterPipelineCommand, query_plan::QueryPlan, Command,

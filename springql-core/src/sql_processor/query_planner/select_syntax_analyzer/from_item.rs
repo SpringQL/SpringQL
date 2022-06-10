@@ -6,7 +6,7 @@ use crate::{
     pipeline::{JoinParameter, Pipeline},
     sql_processor::{
         query_planner::SelectSyntaxAnalyzer,
-        sql_parser::syntax::{FromItemSyntax, SubFromItemSyntax},
+        sql_parser::{FromItemSyntax, SubFromItemSyntax},
     },
     stream_engine::command::query_plan::query_plan_operation::{CollectOp, JoinOp, JoinWindowOp},
 };

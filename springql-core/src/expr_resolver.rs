@@ -11,7 +11,7 @@ use crate::{
     api::error::{Result, SpringError},
     expression::{AggrExpr, ValueExpr},
     pipeline::{AggrAlias, ValueAlias},
-    sql_processor::sql_parser::syntax::SelectFieldSyntax,
+    sql_processor::sql_parser::SelectFieldSyntax,
     stream_engine::{SqlValue, Tuple},
 };
 

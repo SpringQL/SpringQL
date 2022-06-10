@@ -137,7 +137,7 @@ mod tests {
         expr_resolver::{expr_label::ExprLabel, ExprResolver},
         expression::{AggrExpr, ValueExpr},
         pipeline::{AggregateFunctionParameter, AggregateParameter, GroupByLabels},
-        sql_processor::sql_parser::syntax::SelectFieldSyntax,
+        sql_processor::sql_parser::SelectFieldSyntax,
         stream_engine::{
             autonomous_executor::task::window::panes::pane::aggregate_pane::AggrPane,
             time::duration::event_duration::SpringEventDuration,

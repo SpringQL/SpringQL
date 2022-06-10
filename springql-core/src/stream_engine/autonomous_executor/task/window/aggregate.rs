@@ -114,7 +114,7 @@ mod tests {
             AggrAlias, AggregateFunctionParameter, AggregateParameter, ColumnName, GroupByLabels,
             StreamName,
         },
-        sql_processor::sql_parser::syntax::SelectFieldSyntax,
+        sql_processor::sql_parser::SelectFieldSyntax,
         stream_engine::{
             autonomous_executor::task::tuple::Tuple,
             time::{

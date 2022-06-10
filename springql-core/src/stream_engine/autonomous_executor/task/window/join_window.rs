@@ -59,7 +59,7 @@ mod tests {
         expr_resolver::ExprResolver,
         expression::ValueExpr,
         pipeline::{ColumnName, ColumnReference, JoinParameter, JoinType, StreamName},
-        sql_processor::sql_parser::syntax::SelectFieldSyntax,
+        sql_processor::sql_parser::SelectFieldSyntax,
         stream_engine::{
             autonomous_executor::task::window::panes::pane::join_pane::JoinDir,
             time::{
