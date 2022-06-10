@@ -12,7 +12,7 @@ use crate::{
             row::{
                 column::stream_column::StreamColumns,
                 column_values::ColumnValues,
-                value::sql_value::{nn_sql_value::NnSqlValue, SqlValue},
+                value::{NnSqlValue, SqlValue},
                 Row,
             },
             task::{

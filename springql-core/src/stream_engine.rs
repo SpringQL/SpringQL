@@ -15,9 +15,7 @@ use anyhow::anyhow;
 pub use crate::stream_engine::autonomous_executor::SpringValue;
 pub use autonomous_executor::{
     row::{
-        value::sql_value::{
-            nn_sql_value::NnSqlValue, sql_compare_result::SqlCompareResult, SqlValue,
-        },
+        value::{NnSqlValue, SqlCompareResult, SqlValue},
         Row,
     },
     task::tuple::Tuple,

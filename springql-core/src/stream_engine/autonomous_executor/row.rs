@@ -18,7 +18,7 @@ use crate::{
         autonomous_executor::row::{
             column::stream_column::StreamColumns,
             foreign_row::JsonObject,
-            value::sql_value::{nn_sql_value::NnSqlValue, SqlValue},
+            value::{NnSqlValue, SqlValue},
         },
         time::timestamp::{system_timestamp::SystemTimestamp, SpringTimestamp},
     },

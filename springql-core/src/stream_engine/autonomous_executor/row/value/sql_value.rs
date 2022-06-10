@@ -1,8 +1,12 @@
 // This file is part of https://github.com/SpringQL/SpringQL which is licensed under MIT OR Apache-2.0. See file LICENSE-MIT or LICENSE-APACHE for full license details.
 
-pub mod nn_sql_value;
-pub mod sql_compare_result;
-pub mod sql_value_hash_key;
+mod nn_sql_value;
+mod sql_compare_result;
+mod sql_value_hash_key;
+
+pub use nn_sql_value::NnSqlValue;
+pub use sql_compare_result::SqlCompareResult;
+pub use sql_value_hash_key::SqlValueHashKey;
 
 use std::{
     fmt::Display,
@@ -16,12 +20,7 @@ use ordered_float::OrderedFloat;
 use crate::{
     api::error::{Result, SpringError},
     mem_size::MemSize,
-    stream_engine::{
-        autonomous_executor::row::value::sql_value::{
-            nn_sql_value::NnSqlValue, sql_compare_result::SqlCompareResult,
-        },
-        time::duration::event_duration::SpringEventDuration,
-    },
+    stream_engine::time::duration::event_duration::SpringEventDuration,
 };
 
 /// SQL-typed value that is efficiently compressed.

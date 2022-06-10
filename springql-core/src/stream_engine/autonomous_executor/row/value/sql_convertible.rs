@@ -16,7 +16,7 @@ use crate::{
 use anyhow::anyhow;
 use std::any::type_name;
 
-use crate::stream_engine::autonomous_executor::row::value::sql_value::nn_sql_value::NnSqlValue;
+use crate::stream_engine::autonomous_executor::row::value::sql_value::NnSqlValue;
 
 /// Rust values can be unpacked from NnSqlValue back into them.
 pub trait SpringValue: Sized {

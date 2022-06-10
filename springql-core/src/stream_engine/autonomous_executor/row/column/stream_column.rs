@@ -8,7 +8,7 @@ use crate::{
     mem_size::{arc_overhead_size, MemSize},
     pipeline::{ColumnDefinition, ColumnName, StreamModel},
     stream_engine::{
-        autonomous_executor::row::{column_values::ColumnValues, value::sql_value::SqlValue},
+        autonomous_executor::row::{column_values::ColumnValues, value::SqlValue},
         time::timestamp::SpringTimestamp,
     },
 };
@@ -160,8 +160,7 @@ impl IntoIterator for StreamColumns {
 #[cfg(test)]
 mod tests {
     use crate::stream_engine::{
-        autonomous_executor::row::value::sql_value::nn_sql_value::NnSqlValue,
-        time::timestamp::SpringTimestamp,
+        autonomous_executor::row::value::NnSqlValue, time::timestamp::SpringTimestamp,
     };
 
     use super::*;
