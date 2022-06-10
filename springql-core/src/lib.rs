@@ -2,6 +2,7 @@
 
 #![doc = include_str!("lib.md")]
 #![deny(missing_debug_implementations, missing_docs)]
+#![deny(rustdoc::broken_intra_doc_links)]
 
 #[macro_use]
 extern crate derive_new;
