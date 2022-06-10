@@ -4,7 +4,7 @@ use std::{sync::Once, thread, time::Duration};
 
 use crate::{
     api::{error::Result, SpringConfig},
-    pipeline::name::QueueName,
+    pipeline::QueueName,
     sql_processor::SqlProcessor,
     stream_engine::{command::Command, EngineMutex, Row},
 };
