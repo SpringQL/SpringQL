@@ -3,8 +3,8 @@
 use crate::{
     expression::{AggrExpr, ValueExpr},
     pipeline::{
-        name::{AggrAlias, CorrelationAlias, StreamName, ValueAlias},
         pump_model::{JoinType, WindowParameter},
+        AggrAlias, CorrelationAlias, StreamName, ValueAlias,
     },
 };
 

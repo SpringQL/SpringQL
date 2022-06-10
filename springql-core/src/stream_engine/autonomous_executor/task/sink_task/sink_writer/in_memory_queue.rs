@@ -3,8 +3,8 @@
 use crate::{
     api::{error::Result, SpringSinkWriterConfig},
     pipeline::{
-        name::QueueName,
         option::{InMemoryQueueOptions, Options},
+        QueueName,
     },
     stream_engine::{
         autonomous_executor::task::sink_task::sink_writer::SinkWriter,

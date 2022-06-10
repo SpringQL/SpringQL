@@ -12,7 +12,7 @@ use once_cell::sync::Lazy;
 
 use crate::{
     api::error::{Result, SpringError},
-    pipeline::name::QueueName,
+    pipeline::QueueName,
     stream_engine::in_memory_queue_repository::in_memory_queue::InMemoryQueue,
 };
 

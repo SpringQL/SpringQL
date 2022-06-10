@@ -6,8 +6,8 @@ use crate::{
     expr_resolver::ExprResolver,
     mem_size::MemSize,
     pipeline::{
-        field::Field,
         pump_model::{JoinParameter, JoinType, WindowOperationParameter},
+        Field,
     },
     stream_engine::{
         autonomous_executor::{

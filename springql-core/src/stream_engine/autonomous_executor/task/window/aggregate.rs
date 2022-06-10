@@ -120,8 +120,8 @@ mod tests {
         expr_resolver::{expr_label::ExprLabel, ExprResolver},
         expression::{AggrExpr, ValueExpr},
         pipeline::{
-            name::{AggrAlias, ColumnName, StreamName},
             pump_model::{AggregateFunctionParameter, AggregateParameter, GroupByLabels},
+            AggrAlias, ColumnName, StreamName,
         },
         sql_processor::sql_parser::syntax::SelectFieldSyntax,
         stream_engine::{

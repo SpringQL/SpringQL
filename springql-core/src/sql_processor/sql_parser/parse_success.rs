@@ -2,8 +2,8 @@
 
 use crate::{
     pipeline::{
-        name::PumpName, sink_writer_model::SinkWriterModel, source_reader_model::SourceReaderModel,
-        stream_model::StreamModel,
+        sink_writer_model::SinkWriterModel, source_reader_model::SourceReaderModel,
+        stream_model::StreamModel, PumpName,
     },
     sql_processor::sql_parser::syntax::SelectStreamSyntax,
     stream_engine::command::insert_plan::InsertPlan,

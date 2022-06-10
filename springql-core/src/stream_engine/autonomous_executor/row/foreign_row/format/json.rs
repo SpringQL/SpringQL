@@ -4,7 +4,7 @@ use anyhow::Context;
 
 use crate::{
     api::error::{Result, SpringError},
-    pipeline::name::ColumnName,
+    pipeline::ColumnName,
     stream_engine::autonomous_executor::row::{
         column_values::ColumnValues, value::sql_value::SqlValue,
     },

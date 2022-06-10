@@ -2,7 +2,7 @@
 
 use crate::{
     api::error::{Result, SpringError},
-    pipeline::name::ColumnName,
+    pipeline::ColumnName,
 };
 
 use std::collections::HashMap;

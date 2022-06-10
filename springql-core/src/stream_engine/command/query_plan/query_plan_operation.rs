@@ -3,10 +3,10 @@
 use crate::{
     expr_resolver::expr_label::ExprLabel,
     pipeline::{
-        name::StreamName,
         pump_model::{
             WindowParameter, {JoinParameter, WindowOperationParameter},
         },
+        StreamName,
     },
 };
 

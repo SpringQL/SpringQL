@@ -10,7 +10,7 @@ use parking_lot::RwLock;
 use crate::{
     api::error::Result,
     api::SpringSourceReaderConfig,
-    pipeline::{name::SourceReaderName, source_reader_model::SourceReaderModel},
+    pipeline::{source_reader_model::SourceReaderModel, SourceReaderName},
     stream_engine::autonomous_executor::task::source_task::source_reader::{
         source_reader_factory::SourceReaderFactory, SourceReader,
     },

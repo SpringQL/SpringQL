@@ -26,7 +26,7 @@ pub(crate) use autonomous_executor::{
 
 use crate::{
     api::{error::Result, SpringConfig, SpringError},
-    pipeline::{name::QueueName, Pipeline},
+    pipeline::{Pipeline, QueueName},
     stream_engine::{
         autonomous_executor::AutonomousExecutor,
         command::alter_pipeline_command::AlterPipelineCommand,

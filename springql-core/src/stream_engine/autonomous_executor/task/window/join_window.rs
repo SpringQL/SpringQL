@@ -64,9 +64,8 @@ mod tests {
         expr_resolver::ExprResolver,
         expression::ValueExpr,
         pipeline::{
-            field::ColumnReference,
-            name::{ColumnName, StreamName},
             pump_model::{JoinParameter, JoinType},
+            ColumnName, ColumnReference, StreamName,
         },
         sql_processor::sql_parser::syntax::SelectFieldSyntax,
         stream_engine::{

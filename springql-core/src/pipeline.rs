@@ -2,8 +2,8 @@
 
 #![doc = include_str!("pipeline.md")]
 
-pub(crate) mod field;
-pub(crate) mod name;
+mod field;
+mod name;
 pub(crate) mod option;
 pub(crate) mod pipeline_graph;
 pub(crate) mod pipeline_version;
@@ -16,6 +16,11 @@ pub(crate) mod stream_model;
 #[cfg(test)]
 pub(crate) mod test_support;
 
+pub(crate) use field::{ColumnReference, Field};
+pub(crate) use name::{
+    AggrAlias, ColumnName, CorrelationAlias, PumpName, QueueName, SinkWriterName, SourceReaderName,
+    StreamName, ValueAlias,
+};
 use std::{collections::HashSet, sync::Arc};
 
 use anyhow::anyhow;
@@ -23,9 +28,9 @@ use anyhow::anyhow;
 use crate::{
     api::error::{Result, SpringError},
     pipeline::{
-        name::StreamName, pipeline_graph::PipelineGraph, pipeline_version::PipelineVersion,
-        pump_model::PumpModel, sink_writer_model::SinkWriterModel,
-        source_reader_model::SourceReaderModel, stream_model::StreamModel,
+        pipeline_graph::PipelineGraph, pipeline_version::PipelineVersion, pump_model::PumpModel,
+        sink_writer_model::SinkWriterModel, source_reader_model::SourceReaderModel,
+        stream_model::StreamModel,
     },
 };
 
