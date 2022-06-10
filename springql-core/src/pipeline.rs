@@ -8,7 +8,7 @@ mod option;
 mod pipeline_graph;
 mod pipeline_version;
 mod pump_model;
-pub(crate) mod relation;
+mod relation;
 pub(crate) mod sink_writer_model;
 pub(crate) mod source_reader_model;
 pub(crate) mod stream_model;
@@ -29,6 +29,10 @@ pub(crate) use pipeline_version::PipelineVersion;
 pub(crate) use pump_model::{
     AggregateFunctionParameter, AggregateParameter, GroupByLabels, JoinParameter, JoinType,
     PumpInputType, PumpModel, WindowOperationParameter, WindowParameter,
+};
+pub(crate) use relation::{
+    ColumnConstraint, ColumnDataType, ColumnDefinition, F32LooseType, I64LooseType,
+    NumericComparableType, SqlType, StringComparableLoseType,
 };
 
 use std::{collections::HashSet, sync::Arc};

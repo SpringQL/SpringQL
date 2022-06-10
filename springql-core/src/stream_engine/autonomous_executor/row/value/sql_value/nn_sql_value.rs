@@ -13,7 +13,7 @@ use ordered_float::OrderedFloat;
 use crate::{
     api::error::{Result, SpringError},
     mem_size::MemSize,
-    pipeline::relation::{
+    pipeline::{
         F32LooseType, I64LooseType, NumericComparableType, SqlType, StringComparableLoseType,
     },
     stream_engine::{

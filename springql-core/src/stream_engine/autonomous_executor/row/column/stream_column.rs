@@ -7,7 +7,7 @@ use crate::{
     api::error::{Result, SpringError},
     mem_size::{arc_overhead_size, MemSize},
     pipeline::ColumnName,
-    pipeline::{relation::ColumnDefinition, stream_model::StreamModel},
+    pipeline::{stream_model::StreamModel, ColumnDefinition},
     stream_engine::{
         autonomous_executor::row::{column_values::ColumnValues, value::sql_value::SqlValue},
         time::timestamp::SpringTimestamp,
