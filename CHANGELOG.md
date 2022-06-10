@@ -10,6 +10,10 @@ All other sections are for end-users.
 <!-- markdownlint-disable MD024 -->
 ## [Unreleased]
 
+### For developers
+
+- Add deny lint option for `rustdoc::broken_intra_doc_links` ([#185](https://github.com/SpringQL/SpringQL/pull/185))
+
 ## [v0.12.0]
 
 ### Changed
