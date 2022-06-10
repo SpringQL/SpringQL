@@ -10,15 +10,12 @@ use crate::{
     stream_engine::{
         autonomous_executor::{
             row::{
-                column::stream_column::StreamColumns,
+                column::StreamColumns,
                 column_values::ColumnValues,
                 value::{NnSqlValue, SqlValue},
                 Row,
             },
-            task::{
-                source_task::source_reader::{net_client::NetClientSourceReader, SourceReader},
-                tuple::Tuple,
-            },
+            task::{NetClientSourceReader, SourceReader, Tuple},
         },
         time::timestamp::SpringTimestamp,
     },

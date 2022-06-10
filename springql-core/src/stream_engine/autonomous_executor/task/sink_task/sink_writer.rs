@@ -1,9 +1,12 @@
 // This file is part of https://github.com/SpringQL/SpringQL which is licensed under MIT OR Apache-2.0. See file LICENSE-MIT or LICENSE-APACHE for full license details.
 
-pub mod in_memory_queue;
-pub mod net;
+mod in_memory_queue;
+mod net;
 pub mod sink_writer_factory;
-pub mod sink_writer_repository;
+mod sink_writer_repository;
+
+pub use net::NetSinkWriter;
+pub use sink_writer_repository::SinkWriterRepository;
 
 use std::fmt::Debug;
 

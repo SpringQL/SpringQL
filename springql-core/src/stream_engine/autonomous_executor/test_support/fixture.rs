@@ -15,10 +15,9 @@ use crate::{
                 OutQueueMetricsUpdateByTask, TaskMetricsUpdateByTask, WindowInFlowByWindowTask,
             },
             row::{
-                column::stream_column::StreamColumns, foreign_row::JsonObject,
-                foreign_row::JsonSourceRow, Row,
+                column::StreamColumns, foreign_row::JsonObject, foreign_row::JsonSourceRow, Row,
             },
-            task::tuple::Tuple,
+            task::Tuple,
             task_graph::{
                 queue_id::{row_queue_id::RowQueueId, window_queue_id::WindowQueueId, QueueId},
                 task_id::TaskId,

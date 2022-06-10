@@ -1,9 +1,9 @@
 // This file is part of https://github.com/SpringQL/SpringQL which is licensed under MIT OR Apache-2.0. See file LICENSE-MIT or LICENSE-APACHE for full license details.
 
-pub mod collect_subtask;
-pub mod group_aggregate_window_subtask;
-pub mod join_subtask;
-pub mod projection_subtask;
+mod collect_subtask;
+mod group_aggregate_window_subtask;
+mod join_subtask;
+mod projection_subtask;
 
 use std::sync::{Arc, Mutex, MutexGuard};
 
@@ -21,7 +21,7 @@ use crate::{
             performance_metrics::metrics_update_command::{
                 InQueueMetricsUpdateByCollect, InQueueMetricsUpdateByTask, WindowInFlowByWindowTask,
             },
-            row::{column::stream_column::StreamColumns, column_values::ColumnValues, Row},
+            row::{column::StreamColumns, column_values::ColumnValues, Row},
             task::{
                 pump_task::pump_subtask::query_subtask::{
                     collect_subtask::CollectSubtask,

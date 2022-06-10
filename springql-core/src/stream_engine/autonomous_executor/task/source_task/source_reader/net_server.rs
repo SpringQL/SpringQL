@@ -133,11 +133,10 @@ mod tests {
         api::SpringSinkWriterConfig,
         pipeline::OptionsBuilder,
         stream_engine::{
-            autonomous_executor::task::sink_task::sink_writer::{net::NetSinkWriter, SinkWriter},
+            autonomous_executor::task::sink_task::{NetSinkWriter, SinkWriter},
             Row,
         },
     };
-
     fn ephemeral_port() -> u16 {
         let addr = TcpListener::bind("127.0.0.1:0").unwrap();
         addr.local_addr().unwrap().port()

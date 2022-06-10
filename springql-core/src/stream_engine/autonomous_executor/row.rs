@@ -16,7 +16,7 @@ use crate::{
     pipeline::{ColumnName, StreamModel},
     stream_engine::{
         autonomous_executor::row::{
-            column::stream_column::StreamColumns,
+            column::StreamColumns,
             foreign_row::JsonObject,
             value::{NnSqlValue, SqlValue},
         },

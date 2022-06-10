@@ -16,9 +16,7 @@ use crate::{
                 OutQueueMetricsUpdateByTask, TaskMetricsUpdateByTask,
             },
             task::{
-                pump_task::pump_subtask::{
-                    insert_subtask::InsertSubtask, query_subtask::QuerySubtask,
-                },
+                pump_task::pump_subtask::{InsertSubtask, QuerySubtask},
                 task_context::TaskContext,
                 window::{aggregate::AggrWindow, join_window::JoinWindow},
             },

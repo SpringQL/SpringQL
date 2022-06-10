@@ -18,7 +18,7 @@ pub use autonomous_executor::{
         value::{NnSqlValue, SqlCompareResult, SqlValue},
         Row,
     },
-    task::tuple::Tuple,
+    task::Tuple,
 };
 
 use crate::{

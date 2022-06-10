@@ -8,7 +8,7 @@ use crate::{
     api::error::{Result, SpringError},
     pipeline::PipelineGraph,
     stream_engine::autonomous_executor::{
-        task::{window::Window, Task},
+        task::{Task, Window},
         task_graph::task_id::TaskId,
     },
 };

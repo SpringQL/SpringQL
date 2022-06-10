@@ -13,7 +13,7 @@ use anyhow::Context;
 use crate::{
     api::{error::Result, SpringError},
     pipeline::StreamModel,
-    stream_engine::{ Row},
+    stream_engine::Row,
 };
 
 /// Input row from foreign sources (retrieved from SourceReader).

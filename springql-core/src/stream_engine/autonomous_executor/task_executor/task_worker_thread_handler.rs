@@ -11,7 +11,7 @@ use crate::stream_engine::autonomous_executor::{
     },
     pipeline_derivatives::PipelineDerivatives,
     repositories::Repositories,
-    task::task_context::TaskContext,
+    task::TaskContext,
     task_executor::{scheduler::Scheduler, task_executor_lock::TaskExecutorLock},
     task_graph::task_id::TaskId,
     worker::worker_thread::WorkerThreadLoopState,

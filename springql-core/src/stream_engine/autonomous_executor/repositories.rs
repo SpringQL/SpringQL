@@ -7,10 +7,7 @@ use crate::{
             row_queue_repository::RowQueueRepository,
             window_queue_repository::WindowQueueRepository,
         },
-        task::{
-            sink_task::sink_writer::sink_writer_repository::SinkWriterRepository,
-            source_task::source_reader::source_reader_repository::SourceReaderRepository,
-        },
+        task::{SinkWriterRepository, SourceReaderRepository},
     },
 };
 

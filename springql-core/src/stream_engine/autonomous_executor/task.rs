@@ -1,22 +1,27 @@
 // This file is part of https://github.com/SpringQL/SpringQL which is licensed under MIT OR Apache-2.0. See file LICENSE-MIT or LICENSE-APACHE for full license details.
 
-pub mod tuple;
+mod tuple;
 
-pub mod pump_task;
-pub mod sink_task;
-pub mod source_task;
-pub mod task_context;
-pub mod window;
+mod pump_task;
+mod sink_task;
+mod source_task;
+mod task_context;
+mod window;
+
+pub use sink_task::SinkWriterRepository;
+pub use source_task::{
+    NetClientSourceReader, NetServerSourceReader, SourceReader, SourceReaderRepository, SourceTask,
+};
+pub use task_context::TaskContext;
+pub use tuple::Tuple;
+pub use window::Window;
 
 use crate::{
     api::error::Result,
     pipeline::{Edge, PipelineGraph},
     stream_engine::autonomous_executor::{
         performance_metrics::metrics_update_command::MetricsUpdateByTaskExecution,
-        task::{
-            pump_task::PumpTask, sink_task::SinkTask, source_task::SourceTask,
-            task_context::TaskContext,
-        },
+        task::{pump_task::PumpTask, sink_task::SinkTask},
         task_graph::task_id::TaskId,
     },
 };
