@@ -5,8 +5,8 @@ use std::sync::Arc;
 use crate::{
     api::error::Result,
     pipeline::{
-        source_reader_model::SourceReaderModel, stream_model::StreamModel, Pipeline,
-        PipelineVersion, PumpModel, SinkWriterModel,
+        stream_model::StreamModel, Pipeline, PipelineVersion, PumpModel, SinkWriterModel,
+        SourceReaderModel,
     },
     stream_engine::command::alter_pipeline_command::AlterPipelineCommand,
 };

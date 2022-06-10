@@ -2,7 +2,7 @@
 
 use crate::{
     api::{error::Result, SpringSourceReaderConfig},
-    pipeline::{source_reader_model::SourceReaderType, Options},
+    pipeline::{Options, SourceReaderType},
     stream_engine::autonomous_executor::task::source_task::source_reader::{
         net_client::NetClientSourceReader, net_server::NetServerSourceReader, SourceReader,
     },

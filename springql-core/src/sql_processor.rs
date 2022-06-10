@@ -7,8 +7,7 @@ mod query_planner;
 use crate::{
     api::error::Result,
     pipeline::{
-        source_reader_model::SourceReaderModel, stream_model::StreamModel, Pipeline, PumpModel,
-        SinkWriterModel,
+        stream_model::StreamModel, Pipeline, PumpModel, SinkWriterModel, SourceReaderModel,
     },
     sql_processor::{
         query_planner::QueryPlanner,
@@ -132,10 +131,9 @@ mod tests {
     use super::*;
     use crate::{
         pipeline::{
-            source_reader_model::{SourceReaderModel, SourceReaderType},
             stream_model::{StreamModel, StreamShape},
             OptionsBuilder, PipelineVersion, SinkWriterModel, SinkWriterName, SinkWriterType,
-            SourceReaderName, StreamName,
+            SourceReaderModel, SourceReaderName, SourceReaderType, StreamName,
         },
         stream_engine::command::alter_pipeline_command::AlterPipelineCommand,
     };
