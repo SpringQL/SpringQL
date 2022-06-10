@@ -185,7 +185,7 @@ impl QueueInnerRequest {
 
 #[cfg(test)]
 mod tests {
-    use crate::pipeline::pipeline_version::PipelineVersion;
+    use crate::pipeline::PipelineVersion;
 
     use super::*;
     use pretty_assertions::assert_eq;

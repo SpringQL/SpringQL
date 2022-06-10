@@ -6,7 +6,7 @@ use std::sync::Arc;
 
 use crate::{
     api::error::Result,
-    pipeline::{pipeline_version::PipelineVersion, Pipeline},
+    pipeline::{Pipeline, PipelineVersion},
     stream_engine::autonomous_executor::{
         pipeline_derivatives::task_repository::TaskRepository,
         task::Task,

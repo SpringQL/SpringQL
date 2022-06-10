@@ -14,7 +14,7 @@ use std::collections::HashMap;
 use parking_lot::{RwLock, RwLockReadGuard, RwLockWriteGuard};
 
 use crate::{
-    pipeline::pipeline_version::PipelineVersion,
+    pipeline::PipelineVersion,
     stream_engine::autonomous_executor::{
         performance_metrics::{
             metrics_update_command::metrics_update_by_task_execution::MetricsUpdateByTaskExecution,
