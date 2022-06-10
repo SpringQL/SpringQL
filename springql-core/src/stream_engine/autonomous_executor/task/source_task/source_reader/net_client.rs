@@ -13,7 +13,7 @@ use crate::{
     api::SpringSourceReaderConfig,
     pipeline::option::{net_options::NetClientOptions, Options},
     stream_engine::autonomous_executor::{
-        row::foreign_row::{format::json::JsonObject, source_row::SourceRow},
+        row::foreign_row::{format::json::JsonObject, source_row::json_source_row::JsonSourceRow},
         task::source_task::source_reader::SourceReader,
     },
 };
@@ -62,7 +62,7 @@ impl SourceReader for NetClientSourceReader {
         })
     }
 
-    fn next_row(&mut self) -> Result<SourceRow> {
+    fn next_row(&mut self) -> Result<JsonSourceRow> {
         let mut json_s = String::new();
 
         self.tcp_stream_reader
@@ -86,7 +86,7 @@ impl SourceReader for NetClientSourceReader {
 }
 
 impl NetClientSourceReader {
-    fn parse_resp(&self, json_s: &str) -> Result<SourceRow> {
+    fn parse_resp(&self, json_s: &str) -> Result<JsonSourceRow> {
         let json_v = serde_json::from_str(json_s)
             .with_context(|| {
                 format!(
@@ -101,7 +101,7 @@ impl NetClientSourceReader {
 
         let json_obj = JsonObject::new(json_v);
 
-        Ok(SourceRow::from_json(json_obj))
+        Ok(JsonSourceRow::from_json(json_obj))
     }
 }
 
@@ -139,9 +139,9 @@ mod tests {
         let mut subtask =
             NetClientSourceReader::start(&options, &SpringSourceReaderConfig::fx_default())?;
 
-        assert_eq!(subtask.next_row()?, SourceRow::from_json(j2));
-        assert_eq!(subtask.next_row()?, SourceRow::from_json(j3));
-        assert_eq!(subtask.next_row()?, SourceRow::from_json(j1));
+        assert_eq!(subtask.next_row()?, JsonSourceRow::from_json(j2));
+        assert_eq!(subtask.next_row()?, JsonSourceRow::from_json(j3));
+        assert_eq!(subtask.next_row()?, JsonSourceRow::from_json(j1));
         assert!(matches!(
             subtask.next_row().unwrap_err(),
             SpringError::ForeignSourceTimeout { .. }

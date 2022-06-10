@@ -9,7 +9,7 @@ use std::fmt::Debug;
 
 use crate::{
     api::error::Result, api::SpringSourceReaderConfig, pipeline::option::Options,
-    stream_engine::autonomous_executor::row::foreign_row::source_row::SourceRow,
+    stream_engine::autonomous_executor::row::foreign_row::source_row::json_source_row::JsonSourceRow,
 };
 
 /// Instance of SourceReaderModel.
@@ -32,5 +32,5 @@ pub(in crate::stream_engine::autonomous_executor) trait SourceReader:
     /// - `SpringError::ForeignIo` when:
     ///   - Failed to parse response from remote source.
     ///   - Unknown foreign error.
-    fn next_row(&mut self) -> Result<SourceRow>;
+    fn next_row(&mut self) -> Result<JsonSourceRow>;
 }
