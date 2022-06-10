@@ -9,7 +9,7 @@ mod pipeline_graph;
 mod pipeline_version;
 mod pump_model;
 mod relation;
-pub(crate) mod sink_writer_model;
+mod sink_writer_model;
 pub(crate) mod source_reader_model;
 pub(crate) mod stream_model;
 
@@ -34,6 +34,7 @@ pub(crate) use relation::{
     ColumnConstraint, ColumnDataType, ColumnDefinition, F32LooseType, I64LooseType,
     NumericComparableType, SqlType, StringComparableLoseType,
 };
+pub(crate) use sink_writer_model::{SinkWriterModel, SinkWriterType};
 
 use std::{collections::HashSet, sync::Arc};
 
@@ -41,10 +42,7 @@ use anyhow::anyhow;
 
 use crate::{
     api::error::{Result, SpringError},
-    pipeline::{
-        sink_writer_model::SinkWriterModel, source_reader_model::SourceReaderModel,
-        stream_model::StreamModel,
-    },
+    pipeline::{source_reader_model::SourceReaderModel, stream_model::StreamModel},
 };
 
 #[derive(Clone, Debug)]
