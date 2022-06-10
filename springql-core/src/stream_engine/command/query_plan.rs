@@ -1,6 +1,6 @@
 // This file is part of https://github.com/SpringQL/SpringQL which is licensed under MIT OR Apache-2.0. See file LICENSE-MIT or LICENSE-APACHE for full license details.
 
-pub(crate) mod query_plan_operation;
+pub mod query_plan_operation;
 
 use crate::{
     expr_resolver::ExprResolver,
@@ -12,16 +12,16 @@ use crate::{
 
 /// Query plan from which an executor can do its work deterministically.
 #[derive(Clone, PartialEq, Debug, new)]
-pub(crate) struct QueryPlan {
-    pub(crate) upper_ops: UpperOps,
-    pub(crate) lower_ops: LowerOps,
+pub struct QueryPlan {
+    pub upper_ops: UpperOps,
+    pub lower_ops: LowerOps,
 
     /// to convert *Expr in *Syntax into *ExprLabel
-    pub(crate) expr_resolver: ExprResolver,
+    pub expr_resolver: ExprResolver,
 }
 
 impl QueryPlan {
-    pub(crate) fn input_type(&self) -> PumpInputType {
+    pub fn input_type(&self) -> PumpInputType {
         if self.upper_ops.has_window() || self.lower_ops.has_window() {
             PumpInputType::Window
         } else {
@@ -29,7 +29,7 @@ impl QueryPlan {
         }
     }
 
-    pub(crate) fn upstreams(&self) -> Vec<&StreamName> {
+    pub fn upstreams(&self) -> Vec<&StreamName> {
         match &self.lower_ops.join {
             JoinOp::Collect(collect) => vec![&collect.stream],
             JoinOp::JoinWindow(JoinWindowOp { left, right, .. }) => {

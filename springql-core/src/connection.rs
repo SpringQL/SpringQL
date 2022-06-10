@@ -26,7 +26,7 @@ fn setup_logger() {
 /// 1 stream pipeline has only 1 connection.
 /// In other words, the lifecycle of Connection and internal stream pipeline are the same.
 #[derive(Debug)]
-pub(crate) struct Connection {
+pub struct Connection {
     engine: EngineMutex,
     sql_processor: SqlProcessor,
 }

@@ -17,13 +17,13 @@ use crate::{
 };
 
 #[derive(Copy, Clone, Eq, PartialEq, Hash, Debug)]
-pub(in crate::stream_engine::autonomous_executor) enum JoinDir {
+pub enum JoinDir {
     Left,
     Right,
 }
 
 #[derive(Debug)]
-pub(in crate::stream_engine::autonomous_executor) struct JoinPane {
+pub struct JoinPane {
     open_at: SpringTimestamp,
     close_at: SpringTimestamp,
 

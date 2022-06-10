@@ -22,13 +22,13 @@ use crate::stream_engine::autonomous_executor::{
 };
 
 #[derive(Debug, new)]
-pub(in crate::stream_engine::autonomous_executor) struct PurgerWorkerThreadArg {
+pub struct PurgerWorkerThreadArg {
     repos: Arc<Repositories>,
     task_executor_lock: Arc<TaskExecutorLock>,
 }
 
 #[derive(Debug)]
-pub(super) struct PurgerWorkerLoopState {
+pub struct PurgerWorkerLoopState {
     pipeline_derivatives: Option<Arc<PipelineDerivatives>>,
 }
 impl WorkerThreadLoopState for PurgerWorkerLoopState {
@@ -50,7 +50,7 @@ impl WorkerThreadLoopState for PurgerWorkerLoopState {
 
 /// Runs a worker thread.
 #[derive(Debug)]
-pub(super) struct PurgerWorkerThread;
+pub struct PurgerWorkerThread;
 
 impl WorkerThread for PurgerWorkerThread {
     const THREAD_NAME: &'static str = "PurgerWorker";

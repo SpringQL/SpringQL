@@ -42,21 +42,21 @@ pub enum WindowParameter {
 }
 
 impl WindowParameter {
-    pub(crate) fn length(&self) -> SpringEventDuration {
+    pub fn length(&self) -> SpringEventDuration {
         match self {
             WindowParameter::TimedSlidingWindow { length, .. } => *length,
             WindowParameter::TimedFixedWindow { length, .. } => *length,
         }
     }
 
-    pub(crate) fn period(&self) -> SpringEventDuration {
+    pub fn period(&self) -> SpringEventDuration {
         match self {
             WindowParameter::TimedSlidingWindow { period, .. } => *period,
             WindowParameter::TimedFixedWindow { length, .. } => *length,
         }
     }
 
-    pub(crate) fn allowed_delay(&self) -> SpringEventDuration {
+    pub fn allowed_delay(&self) -> SpringEventDuration {
         match self {
             WindowParameter::TimedSlidingWindow { allowed_delay, .. } => *allowed_delay,
             WindowParameter::TimedFixedWindow { allowed_delay, .. } => *allowed_delay,

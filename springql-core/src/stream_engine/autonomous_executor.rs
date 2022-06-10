@@ -2,14 +2,14 @@
 
 pub use row::SpringValue;
 
-pub(crate) mod row;
-pub(crate) mod task;
+pub mod row;
+pub mod task;
 
-pub(in crate::stream_engine) mod event_queue;
+pub mod event_queue;
 
-pub(in crate::stream_engine::autonomous_executor) mod args;
-pub(in crate::stream_engine::autonomous_executor) mod main_job_lock;
-pub(in crate::stream_engine::autonomous_executor) mod worker;
+pub mod args;
+pub mod main_job_lock;
+pub mod worker;
 
 mod memory_state_machine;
 mod memory_state_machine_worker;
@@ -48,7 +48,7 @@ use crate::{
 };
 
 #[cfg(test)]
-pub(super) mod test_support;
+pub mod test_support;
 
 /// Automatically executes the latest task graph (uniquely deduced from the latest pipeline).
 ///
@@ -56,7 +56,7 @@ pub(super) mod test_support;
 ///
 /// All interface methods are called from main thread, while `new()` spawns worker threads.
 #[derive(Debug)]
-pub(in crate::stream_engine) struct AutonomousExecutor {
+pub struct AutonomousExecutor {
     b_event_queue: Arc<BlockingEventQueue>,
 
     main_job_lock: Arc<MainJobLock>,
@@ -69,7 +69,7 @@ pub(in crate::stream_engine) struct AutonomousExecutor {
 }
 
 impl AutonomousExecutor {
-    pub(in crate::stream_engine) fn new(config: &SpringConfig) -> Self {
+    pub fn new(config: &SpringConfig) -> Self {
         let repos = Arc::new(Repositories::new(config));
         let locks = Locks::new(
             Arc::new(MainJobLock::default()),
@@ -125,10 +125,7 @@ impl AutonomousExecutor {
         }
     }
 
-    pub(in crate::stream_engine) fn notify_pipeline_update(
-        &self,
-        pipeline: Pipeline,
-    ) -> Result<()> {
+    pub fn notify_pipeline_update(&self, pipeline: Pipeline) -> Result<()> {
         let main_job_lock = &self.main_job_lock;
         let lock = main_job_lock.main_job_barrier();
 

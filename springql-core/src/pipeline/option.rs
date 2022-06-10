@@ -4,9 +4,9 @@ mod in_memory_queue_options;
 mod net_options;
 mod options_builder;
 
-pub(crate) use in_memory_queue_options::InMemoryQueueOptions;
-pub(crate) use net_options::{NetClientOptions, NetProtocol, NetServerOptions};
-pub(crate) use options_builder::OptionsBuilder;
+pub use in_memory_queue_options::InMemoryQueueOptions;
+pub use net_options::{NetClientOptions, NetProtocol, NetServerOptions};
+pub use options_builder::OptionsBuilder;
 
 use std::collections::HashMap;
 
@@ -16,14 +16,14 @@ use crate::api::error::{Result, SpringError};
 
 /// Options in CREATE statement.
 #[derive(Clone, Eq, PartialEq, Debug)]
-pub(crate) struct Options(HashMap<String, String>);
+pub struct Options(HashMap<String, String>);
 
 impl Options {
     /// # Failure
     ///
     /// - `SpringError::InvalidOption` when:
     ///   - key is not found in this Options.
-    pub(crate) fn get<V, F>(&self, key: &str, value_parser: F) -> Result<V>
+    pub fn get<V, F>(&self, key: &str, value_parser: F) -> Result<V>
     where
         F: FnOnce(&String) -> std::result::Result<V, anyhow::Error>,
     {

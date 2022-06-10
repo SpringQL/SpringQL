@@ -40,19 +40,19 @@ use crate::{
 };
 
 impl SpringTimestamp {
-    pub(crate) fn fx_ts1() -> Self {
+    pub fn fx_ts1() -> Self {
         "2021-01-01 13:00:00.000000001".parse().unwrap()
     }
-    pub(crate) fn fx_ts2() -> Self {
+    pub fn fx_ts2() -> Self {
         "2021-01-01 13:00:00.000000002".parse().unwrap()
     }
-    pub(crate) fn fx_ts3() -> Self {
+    pub fn fx_ts3() -> Self {
         "2021-01-01 13:00:00.000000003".parse().unwrap()
     }
 }
 
 impl JsonObject {
-    pub(in crate::stream_engine) fn fx_city_temperature_tokyo() -> Self {
+    pub fn fx_city_temperature_tokyo() -> Self {
         Self::new(json!({
             "ts": SpringTimestamp::fx_ts1().to_string(),
             "city": "Tokyo",
@@ -60,7 +60,7 @@ impl JsonObject {
         }))
     }
 
-    pub(in crate::stream_engine) fn fx_city_temperature_osaka() -> Self {
+    pub fn fx_city_temperature_osaka() -> Self {
         Self::new(json!({
             "ts": SpringTimestamp::fx_ts2().to_string(),
             "city": "Osaka",
@@ -68,7 +68,7 @@ impl JsonObject {
         }))
     }
 
-    pub(in crate::stream_engine) fn fx_city_temperature_london() -> Self {
+    pub fn fx_city_temperature_london() -> Self {
         Self::new(json!({
             "ts": SpringTimestamp::fx_ts3().to_string(),
             "city": "London",
@@ -76,7 +76,7 @@ impl JsonObject {
         }))
     }
 
-    pub(in crate::stream_engine) fn fx_trade_oracle() -> Self {
+    pub fn fx_trade_oracle() -> Self {
         Self::new(json!({
             "ts": SpringTimestamp::fx_ts1().to_string(),
             "ticker": "ORCL",
@@ -84,7 +84,7 @@ impl JsonObject {
         }))
     }
 
-    pub(in crate::stream_engine) fn fx_trade_ibm() -> Self {
+    pub fn fx_trade_ibm() -> Self {
         Self::new(json!({
             "ts": SpringTimestamp::fx_ts2().to_string(),
             "ticker": "IBM",
@@ -92,7 +92,7 @@ impl JsonObject {
         }))
     }
 
-    pub(in crate::stream_engine) fn fx_trade_google() -> Self {
+    pub fn fx_trade_google() -> Self {
         Self::new(json!({
             "ts": SpringTimestamp::fx_ts3().to_string(),
             "ticker": "GOOGL",
@@ -105,90 +105,90 @@ impl JsonSourceRow {
     pub(in crate::stream_engine) fn fx_city_temperature_tokyo() -> Self {
         Self::from_json(JsonObject::fx_city_temperature_tokyo())
     }
-    pub(in crate::stream_engine) fn fx_city_temperature_osaka() -> Self {
+    pub fn fx_city_temperature_osaka() -> Self {
         Self::from_json(JsonObject::fx_city_temperature_osaka())
     }
-    pub(in crate::stream_engine) fn fx_city_temperature_london() -> Self {
+    pub fn fx_city_temperature_london() -> Self {
         Self::from_json(JsonObject::fx_city_temperature_london())
     }
 
-    pub(in crate::stream_engine) fn fx_trade_oracle() -> Self {
+    pub fn fx_trade_oracle() -> Self {
         Self::from_json(JsonObject::fx_trade_oracle())
     }
-    pub(in crate::stream_engine) fn fx_trade_ibm() -> Self {
+    pub fn fx_trade_ibm() -> Self {
         Self::from_json(JsonObject::fx_trade_ibm())
     }
-    pub(in crate::stream_engine) fn fx_trade_google() -> Self {
+    pub fn fx_trade_google() -> Self {
         Self::from_json(JsonObject::fx_trade_google())
     }
 }
 
 impl Row {
-    pub(in crate::stream_engine) fn fx_city_temperature_tokyo() -> Self {
+    pub fn fx_city_temperature_tokyo() -> Self {
         Self::new(StreamColumns::fx_city_temperature_tokyo())
     }
-    pub(in crate::stream_engine) fn fx_city_temperature_osaka() -> Self {
+    pub fn fx_city_temperature_osaka() -> Self {
         Self::new(StreamColumns::fx_city_temperature_osaka())
     }
-    pub(in crate::stream_engine) fn fx_city_temperature_london() -> Self {
+    pub fn fx_city_temperature_london() -> Self {
         Self::new(StreamColumns::fx_city_temperature_london())
     }
 
-    pub(in crate::stream_engine) fn fx_trade_oracle() -> Self {
+    pub fn fx_trade_oracle() -> Self {
         Self::new(StreamColumns::fx_trade_oracle())
     }
-    pub(in crate::stream_engine) fn fx_trade_ibm() -> Self {
+    pub fn fx_trade_ibm() -> Self {
         Self::new(StreamColumns::fx_trade_ibm())
     }
-    pub(in crate::stream_engine) fn fx_trade_google() -> Self {
+    pub fn fx_trade_google() -> Self {
         Self::new(StreamColumns::fx_trade_google())
     }
 
-    pub(in crate::stream_engine) fn fx_no_promoted_rowtime() -> Self {
+    pub fn fx_no_promoted_rowtime() -> Self {
         Self::new(StreamColumns::fx_no_promoted_rowtime())
     }
 }
 
 impl Tuple {
-    pub(in crate::stream_engine) fn fx_trade_oracle() -> Self {
+    pub fn fx_trade_oracle() -> Self {
         let row = Row::fx_trade_oracle();
         Self::from_row(row)
     }
 }
 
 impl StreamColumns {
-    pub(in crate::stream_engine) fn fx_city_temperature_tokyo() -> Self {
+    pub fn fx_city_temperature_tokyo() -> Self {
         Self::factory_city_temperature(SpringTimestamp::fx_ts1(), "Tokyo", 21)
     }
-    pub(in crate::stream_engine) fn fx_city_temperature_osaka() -> Self {
+    pub fn fx_city_temperature_osaka() -> Self {
         Self::factory_city_temperature(SpringTimestamp::fx_ts2(), "Osaka", 23)
     }
-    pub(in crate::stream_engine) fn fx_city_temperature_london() -> Self {
+    pub fn fx_city_temperature_london() -> Self {
         Self::factory_city_temperature(SpringTimestamp::fx_ts3(), "London", 13)
     }
 
-    pub(in crate::stream_engine) fn fx_trade_oracle() -> Self {
+    pub fn fx_trade_oracle() -> Self {
         Self::factory_trade(SpringTimestamp::fx_ts1(), "ORCL", 20)
     }
-    pub(in crate::stream_engine) fn fx_trade_ibm() -> Self {
+    pub fn fx_trade_ibm() -> Self {
         Self::factory_trade(SpringTimestamp::fx_ts2(), "IBM", 30)
     }
-    pub(in crate::stream_engine) fn fx_trade_google() -> Self {
+    pub fn fx_trade_google() -> Self {
         Self::factory_trade(SpringTimestamp::fx_ts3(), "GOOGL", 100)
     }
 
-    pub(in crate::stream_engine) fn fx_no_promoted_rowtime() -> Self {
+    pub fn fx_no_promoted_rowtime() -> Self {
         Self::factory_no_promoted_rowtime(12345)
     }
 }
 
 impl AlterPipelineCommand {
-    pub(in crate::stream_engine) fn fx_create_source_stream_trade(stream_name: StreamName) -> Self {
+    pub fn fx_create_source_stream_trade(stream_name: StreamName) -> Self {
         let stream = StreamModel::fx_trade_with_name(stream_name);
         Self::CreateSourceStream(stream)
     }
 
-    pub(in crate::stream_engine) fn fx_create_source_reader_trade(
+    pub fn fx_create_source_reader_trade(
         stream_name: StreamName,
         source_server_host: IpAddr,
         source_server_port: u16,
@@ -197,12 +197,12 @@ impl AlterPipelineCommand {
         Self::CreateSourceReader(source)
     }
 
-    pub(in crate::stream_engine) fn fx_create_sink_stream_trade(stream_name: StreamName) -> Self {
+    pub fn fx_create_sink_stream_trade(stream_name: StreamName) -> Self {
         let stream = StreamModel::fx_trade_with_name(stream_name);
         Self::CreateSinkStream(stream)
     }
 
-    pub(in crate::stream_engine) fn fx_create_sink_writer_trade(
+    pub fn fx_create_sink_writer_trade(
         stream_name: StreamName,
         sink_server_host: IpAddr,
         sink_server_port: u16,
@@ -213,7 +213,7 @@ impl AlterPipelineCommand {
 }
 
 impl TaskGraph {
-    pub(in crate::stream_engine) fn fx_split_join() -> Self {
+    pub fn fx_split_join() -> Self {
         let mut g = TaskGraph::new(PipelineVersion::new());
 
         g.add_task(TaskId::fx_split_join_t1());
@@ -278,58 +278,58 @@ impl TaskGraph {
 }
 
 impl TaskId {
-    pub(in crate::stream_engine) fn fx_split_join_t1() -> Self {
+    pub fn fx_split_join_t1() -> Self {
         TaskId::Source {
             id: "source_task1".to_string(),
         }
     }
-    pub(in crate::stream_engine) fn fx_split_join_t2() -> Self {
+    pub fn fx_split_join_t2() -> Self {
         TaskId::Pump {
             id: "pump_task2".to_string(),
             input_type: PumpInputType::Row,
         }
     }
-    pub(in crate::stream_engine) fn fx_split_join_t3() -> Self {
+    pub fn fx_split_join_t3() -> Self {
         TaskId::Pump {
             id: "pump_task3".to_string(),
             input_type: PumpInputType::Window,
         }
     }
-    pub(in crate::stream_engine) fn fx_split_join_t4() -> Self {
+    pub fn fx_split_join_t4() -> Self {
         TaskId::Pump {
             id: "pump_task4".to_string(),
             input_type: PumpInputType::Row,
         }
     }
-    pub(in crate::stream_engine) fn fx_split_join_t5() -> Self {
+    pub fn fx_split_join_t5() -> Self {
         TaskId::Sink {
             id: "sink_task5".to_string(),
         }
     }
-    pub(in crate::stream_engine) fn fx_split_join_t6() -> Self {
+    pub fn fx_split_join_t6() -> Self {
         TaskId::Source {
             id: "source_task6".to_string(),
         }
     }
-    pub(in crate::stream_engine) fn fx_split_join_t7() -> Self {
+    pub fn fx_split_join_t7() -> Self {
         TaskId::Pump {
             id: "pump_task7".to_string(),
             input_type: PumpInputType::Row,
         }
     }
-    pub(in crate::stream_engine) fn fx_split_join_t8() -> Self {
+    pub fn fx_split_join_t8() -> Self {
         TaskId::Pump {
             id: "pump_task8".to_string(),
             input_type: PumpInputType::Row,
         }
     }
-    pub(in crate::stream_engine) fn fx_split_join_t9() -> Self {
+    pub fn fx_split_join_t9() -> Self {
         TaskId::Pump {
             id: "pump_task9".to_string(),
             input_type: PumpInputType::Row,
         }
     }
-    pub(in crate::stream_engine) fn fx_split_join_t10() -> Self {
+    pub fn fx_split_join_t10() -> Self {
         TaskId::Sink {
             id: "sink_task10".to_string(),
         }
@@ -337,97 +337,97 @@ impl TaskId {
 }
 
 impl QueueIdWithUpstream {
-    pub(in crate::stream_engine) fn fx_split_join_q2() -> Self {
+    pub fn fx_split_join_q2() -> Self {
         Self::new(QueueId::fx_split_join_q2(), StreamName::factory("ss1"))
     }
-    pub(in crate::stream_engine) fn fx_split_join_q3_1() -> Self {
+    pub fn fx_split_join_q3_1() -> Self {
         Self::new(QueueId::fx_split_join_q3_1(), StreamName::factory("s1"))
     }
-    pub(in crate::stream_engine) fn fx_split_join_q3_2() -> Self {
+    pub fn fx_split_join_q3_2() -> Self {
         Self::new(QueueId::fx_split_join_q3_2(), StreamName::factory("s3"))
     }
-    pub(in crate::stream_engine) fn fx_split_join_q4() -> Self {
+    pub fn fx_split_join_q4() -> Self {
         Self::new(QueueId::fx_split_join_q4(), StreamName::factory("s2"))
     }
-    pub(in crate::stream_engine) fn fx_split_join_q5() -> Self {
+    pub fn fx_split_join_q5() -> Self {
         Self::new(QueueId::fx_split_join_q5(), StreamName::factory("ss2"))
     }
-    pub(in crate::stream_engine) fn fx_split_join_q7() -> Self {
+    pub fn fx_split_join_q7() -> Self {
         Self::new(QueueId::fx_split_join_q7(), StreamName::factory("ss3"))
     }
-    pub(in crate::stream_engine) fn fx_split_join_q8() -> Self {
+    pub fn fx_split_join_q8() -> Self {
         Self::new(QueueId::fx_split_join_q8(), StreamName::factory("s3"))
     }
-    pub(in crate::stream_engine) fn fx_split_join_q9() -> Self {
+    pub fn fx_split_join_q9() -> Self {
         Self::new(QueueId::fx_split_join_q9(), StreamName::factory("s4"))
     }
-    pub(in crate::stream_engine) fn fx_split_join_q10() -> Self {
+    pub fn fx_split_join_q10() -> Self {
         Self::new(QueueId::fx_split_join_q10(), StreamName::factory("ss4"))
     }
 }
 impl QueueId {
-    pub(in crate::stream_engine) fn fx_split_join_q2() -> Self {
+    pub fn fx_split_join_q2() -> Self {
         Self::Row(RowQueueId::fx_q2())
     }
-    pub(in crate::stream_engine) fn fx_split_join_q3_1() -> Self {
+    pub fn fx_split_join_q3_1() -> Self {
         Self::Window(WindowQueueId::fx_q3_1())
     }
-    pub(in crate::stream_engine) fn fx_split_join_q3_2() -> Self {
+    pub fn fx_split_join_q3_2() -> Self {
         Self::Window(WindowQueueId::fx_q3_2())
     }
-    pub(in crate::stream_engine) fn fx_split_join_q4() -> Self {
+    pub fn fx_split_join_q4() -> Self {
         Self::Row(RowQueueId::fx_q4())
     }
-    pub(in crate::stream_engine) fn fx_split_join_q5() -> Self {
+    pub fn fx_split_join_q5() -> Self {
         Self::Row(RowQueueId::fx_q5())
     }
-    pub(in crate::stream_engine) fn fx_split_join_q7() -> Self {
+    pub fn fx_split_join_q7() -> Self {
         Self::Row(RowQueueId::fx_q7())
     }
-    pub(in crate::stream_engine) fn fx_split_join_q8() -> Self {
+    pub fn fx_split_join_q8() -> Self {
         Self::Row(RowQueueId::fx_q8())
     }
-    pub(in crate::stream_engine) fn fx_split_join_q9() -> Self {
+    pub fn fx_split_join_q9() -> Self {
         Self::Row(RowQueueId::fx_q9())
     }
-    pub(in crate::stream_engine) fn fx_split_join_q10() -> Self {
+    pub fn fx_split_join_q10() -> Self {
         Self::Row(RowQueueId::fx_q10())
     }
 }
 impl RowQueueId {
-    pub(in crate::stream_engine) fn fx_q2() -> Self {
+    pub fn fx_q2() -> Self {
         Self::new("q2".to_string())
     }
-    pub(in crate::stream_engine) fn fx_q4() -> Self {
+    pub fn fx_q4() -> Self {
         Self::new("q4".to_string())
     }
-    pub(in crate::stream_engine) fn fx_q5() -> Self {
+    pub fn fx_q5() -> Self {
         Self::new("q5".to_string())
     }
-    pub(in crate::stream_engine) fn fx_q7() -> Self {
+    pub fn fx_q7() -> Self {
         Self::new("q7".to_string())
     }
-    pub(in crate::stream_engine) fn fx_q8() -> Self {
+    pub fn fx_q8() -> Self {
         Self::new("q8".to_string())
     }
-    pub(in crate::stream_engine) fn fx_q9() -> Self {
+    pub fn fx_q9() -> Self {
         Self::new("q9".to_string())
     }
-    pub(in crate::stream_engine) fn fx_q10() -> Self {
+    pub fn fx_q10() -> Self {
         Self::new("q10".to_string())
     }
 }
 impl WindowQueueId {
-    pub(in crate::stream_engine) fn fx_q3_1() -> Self {
+    pub fn fx_q3_1() -> Self {
         Self::new("q3_1".to_string())
     }
-    pub(in crate::stream_engine) fn fx_q3_2() -> Self {
+    pub fn fx_q3_2() -> Self {
         Self::new("q3_2".to_string())
     }
 }
 
 impl PerformanceMetrics {
-    pub(in crate::stream_engine) fn fx_split_join() -> Self {
+    pub fn fx_split_join() -> Self {
         let graph = TaskGraph::fx_split_join();
         let metrics = PerformanceMetrics::from_task_graph(&graph);
 
@@ -454,7 +454,7 @@ impl PerformanceMetrics {
 }
 
 impl MetricsUpdateByTaskExecution {
-    pub(in crate::stream_engine) fn fx_split_join_t1() -> Self {
+    pub fn fx_split_join_t1() -> Self {
         let task = TaskMetricsUpdateByTask::new(
             TaskId::fx_split_join_t1(),
             WallClockDuration::from_micros(200),
@@ -466,7 +466,7 @@ impl MetricsUpdateByTaskExecution {
         )];
         Self::new(task, vec![], out_queues)
     }
-    pub(in crate::stream_engine) fn fx_split_join_t2() -> Self {
+    pub fn fx_split_join_t2() -> Self {
         let task = TaskMetricsUpdateByTask::new(
             TaskId::fx_split_join_t2(),
             WallClockDuration::from_micros(50),
@@ -486,7 +486,7 @@ impl MetricsUpdateByTaskExecution {
         )];
         Self::new(task, in_queues, out_queues)
     }
-    pub(in crate::stream_engine) fn fx_split_join_t3() -> Self {
+    pub fn fx_split_join_t3() -> Self {
         let task = TaskMetricsUpdateByTask::new(
             TaskId::fx_split_join_t3(),
             WallClockDuration::from_micros(90),
@@ -502,7 +502,7 @@ impl MetricsUpdateByTaskExecution {
         let out_queues = vec![];
         Self::new(task, in_queues, out_queues)
     }
-    pub(in crate::stream_engine) fn fx_split_join_t6() -> Self {
+    pub fn fx_split_join_t6() -> Self {
         let task = TaskMetricsUpdateByTask::new(
             TaskId::fx_split_join_t6(),
             WallClockDuration::from_micros(800),
@@ -514,7 +514,7 @@ impl MetricsUpdateByTaskExecution {
         )];
         Self::new(task, vec![], out_queues)
     }
-    pub(in crate::stream_engine) fn fx_split_join_t7() -> Self {
+    pub fn fx_split_join_t7() -> Self {
         let task = TaskMetricsUpdateByTask::new(
             TaskId::fx_split_join_t7(),
             WallClockDuration::from_micros(50),
@@ -533,7 +533,7 @@ impl MetricsUpdateByTaskExecution {
         ];
         Self::new(task, in_queues, out_queues)
     }
-    pub(in crate::stream_engine) fn fx_split_join_t8() -> Self {
+    pub fn fx_split_join_t8() -> Self {
         let task = TaskMetricsUpdateByTask::new(
             TaskId::fx_split_join_t8(),
             WallClockDuration::from_micros(50),
@@ -553,7 +553,7 @@ impl MetricsUpdateByTaskExecution {
         )];
         Self::new(task, in_queues, out_queues)
     }
-    pub(in crate::stream_engine) fn fx_split_join_t9() -> Self {
+    pub fn fx_split_join_t9() -> Self {
         let task = TaskMetricsUpdateByTask::new(
             TaskId::fx_split_join_t9(),
             WallClockDuration::from_micros(50),
@@ -573,7 +573,7 @@ impl MetricsUpdateByTaskExecution {
         )];
         Self::new(task, in_queues, out_queues)
     }
-    pub(in crate::stream_engine) fn fx_split_join_t10() -> Self {
+    pub fn fx_split_join_t10() -> Self {
         let task = TaskMetricsUpdateByTask::new(
             TaskId::fx_split_join_t10(),
             WallClockDuration::from_micros(200),

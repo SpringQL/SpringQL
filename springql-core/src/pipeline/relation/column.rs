@@ -4,6 +4,6 @@ mod column_constraint;
 mod column_data_type;
 mod column_definition;
 
-pub(crate) use column_constraint::ColumnConstraint;
-pub(crate) use column_data_type::ColumnDataType;
-pub(crate) use column_definition::ColumnDefinition;
+pub use column_constraint::ColumnConstraint;
+pub use column_data_type::ColumnDataType;
+pub use column_definition::ColumnDefinition;

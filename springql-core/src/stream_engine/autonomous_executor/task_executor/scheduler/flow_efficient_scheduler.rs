@@ -82,7 +82,7 @@ struct Stopper {
 }
 
 #[derive(Debug, Default)]
-pub(in crate::stream_engine::autonomous_executor) struct FlowEfficientScheduler {
+pub struct FlowEfficientScheduler {
     rng: RefCell<ThreadRng>,
 }
 

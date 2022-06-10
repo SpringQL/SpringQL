@@ -10,26 +10,26 @@ use crate::stream_engine::autonomous_executor::row::Row;
 ///
 /// ![Window queue](https://raw.githubusercontent.com/SpringQL/SpringQL/main/springql-core/doc/img/window-queue.drawio.svg)
 #[derive(Debug, Default)]
-pub(in crate::stream_engine::autonomous_executor) struct WindowQueue {
+pub struct WindowQueue {
     waiting_q: Mutex<VecDeque<Row>>,
 }
 
 impl WindowQueue {
-    pub(in crate::stream_engine::autonomous_executor) fn put(&self, row: Row) {
+    pub fn put(&self, row: Row) {
         self.waiting_q
             .lock()
             .expect("mutex in WindowQueue is poisoned")
             .push_back(row);
     }
 
-    pub(in crate::stream_engine::autonomous_executor) fn dispatch(&self) -> Option<Row> {
+    pub fn dispatch(&self) -> Option<Row> {
         self.waiting_q
             .lock()
             .expect("mutex in WindowQueue is poisoned")
             .pop_front()
     }
 
-    pub(in crate::stream_engine::autonomous_executor) fn purge(&self) {
+    pub fn purge(&self) {
         self.waiting_q
             .lock()
             .expect("mutex in WindowQueue is poisoned")

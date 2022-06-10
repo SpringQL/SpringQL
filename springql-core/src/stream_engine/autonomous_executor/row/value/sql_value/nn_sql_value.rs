@@ -178,7 +178,7 @@ impl NnSqlValue {
     }
 
     /// SqlType of this value
-    pub(crate) fn sql_type(&self) -> SqlType {
+    pub fn sql_type(&self) -> SqlType {
         match self {
             NnSqlValue::SmallInt(_) => SqlType::small_int(),
             NnSqlValue::Integer(_) => SqlType::integer(),
@@ -201,7 +201,7 @@ impl NnSqlValue {
     ///
     /// - `SpringError::Sql` when:
     ///   - Value cannot be converted to `typ`.
-    pub(crate) fn try_convert(&self, typ: &SqlType) -> Result<NnSqlValue> {
+    pub fn try_convert(&self, typ: &SqlType) -> Result<NnSqlValue> {
         match typ {
             SqlType::NumericComparable(n) => match n {
                 NumericComparableType::I64Loose(i) => match i {
@@ -228,7 +228,7 @@ impl NnSqlValue {
         }
     }
 
-    pub(super) fn sql_compare(&self, other: &Self) -> Result<SqlCompareResult> {
+    pub fn sql_compare(&self, other: &Self) -> Result<SqlCompareResult> {
         match (self.sql_type(), other.sql_type()) {
             (SqlType::NumericComparable(ref self_n), SqlType::NumericComparable(ref other_n)) => {
                 match (self_n, other_n) {
@@ -279,7 +279,7 @@ impl NnSqlValue {
     ///
     /// - `SpringError::Sql` when:
     ///   - inner value cannot negate
-    pub(crate) fn negate(self) -> Result<Self> {
+    pub fn negate(self) -> Result<Self> {
         match self {
             NnSqlValue::SmallInt(v) => Ok(Self::SmallInt(-v)),
             NnSqlValue::Integer(v) => Ok(Self::Integer(-v)),

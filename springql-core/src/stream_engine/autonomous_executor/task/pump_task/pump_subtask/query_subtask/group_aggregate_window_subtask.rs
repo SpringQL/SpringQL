@@ -18,20 +18,15 @@ use crate::{
 };
 
 #[derive(Debug)]
-pub(in crate::stream_engine::autonomous_executor) struct GroupAggregateWindowSubtask(
-    Mutex<AggrWindow>,
-);
+pub struct GroupAggregateWindowSubtask(Mutex<AggrWindow>);
 
 impl GroupAggregateWindowSubtask {
-    pub(in crate::stream_engine::autonomous_executor) fn new(
-        window_param: WindowParameter,
-        op_param: WindowOperationParameter,
-    ) -> Self {
+    pub fn new(window_param: WindowParameter, op_param: WindowOperationParameter) -> Self {
         let window = AggrWindow::new(window_param, op_param);
         Self(Mutex::new(window))
     }
 
-    pub(in crate::stream_engine::autonomous_executor) fn run(
+    pub fn run(
         &self,
         expr_resolver: &ExprResolver,
         tuple: Tuple,
@@ -42,9 +37,7 @@ impl GroupAggregateWindowSubtask {
             .dispatch(expr_resolver, tuple, ())
     }
 
-    pub(in crate::stream_engine::autonomous_executor) fn get_window_mut(
-        &self,
-    ) -> MutexGuard<AggrWindow> {
+    pub fn get_window_mut(&self) -> MutexGuard<AggrWindow> {
         self.0
             .lock()
             .expect("another thread accessing to window gets poisoned")

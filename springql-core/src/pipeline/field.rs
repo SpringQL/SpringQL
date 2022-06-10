@@ -9,13 +9,13 @@
 
 mod field_name;
 
-pub(crate) use field_name::ColumnReference;
+pub use field_name::ColumnReference;
 
 use crate::{mem_size::MemSize, stream_engine::SqlValue};
 
 /// Field == SqlValue + ColumnReference
 #[derive(Clone, PartialEq, Debug, new)]
-pub(crate) struct Field {
+pub struct Field {
     name: ColumnReference,
     value: SqlValue,
 }
@@ -27,11 +27,11 @@ impl MemSize for Field {
 }
 
 impl Field {
-    pub(crate) fn name(&self) -> &ColumnReference {
+    pub fn name(&self) -> &ColumnReference {
         &self.name
     }
 
-    pub(crate) fn sql_value(&self) -> &SqlValue {
+    pub fn sql_value(&self) -> &SqlValue {
         &self.value
     }
 }

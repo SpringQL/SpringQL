@@ -45,7 +45,7 @@ impl NnSqlValue {
 }
 
 impl NetClientSourceReader {
-    pub(in crate::stream_engine) fn factory_with_test_source(input: ForeignSourceInput) -> Self {
+    pub fn factory_with_test_source(input: ForeignSourceInput) -> Self {
         let source = ForeignSource::new().unwrap();
 
         let options = OptionsBuilder::default()
@@ -60,7 +60,7 @@ impl NetClientSourceReader {
 }
 
 impl StreamColumns {
-    pub(in crate::stream_engine) fn factory_city_temperature(
+    pub fn factory_city_temperature(
         timestamp: SpringTimestamp,
         city: &str,
         temperature: i32,
@@ -88,11 +88,7 @@ impl StreamColumns {
         Self::new(Arc::new(StreamModel::fx_city_temperature()), column_values).unwrap()
     }
 
-    pub(in crate::stream_engine) fn factory_trade(
-        timestamp: SpringTimestamp,
-        ticker: &str,
-        amount: i16,
-    ) -> Self {
+    pub fn factory_trade(timestamp: SpringTimestamp, ticker: &str, amount: i16) -> Self {
         let mut column_values = ColumnValues::default();
         column_values
             .insert(
@@ -116,7 +112,7 @@ impl StreamColumns {
         Self::new(Arc::new(StreamModel::fx_trade()), column_values).unwrap()
     }
 
-    pub(in crate::stream_engine) fn factory_no_promoted_rowtime(amount: i32) -> Self {
+    pub fn factory_no_promoted_rowtime(amount: i32) -> Self {
         let mut column_values = ColumnValues::default();
         column_values
             .insert(
@@ -137,7 +133,7 @@ impl StreamColumns {
 }
 
 impl Row {
-    pub(in crate::stream_engine) fn factory_city_temperature(
+    pub fn factory_city_temperature(
         timestamp: SpringTimestamp,
         city: &str,
         temperature: i32,
@@ -148,28 +144,20 @@ impl Row {
             temperature,
         ))
     }
-    pub(in crate::stream_engine) fn factory_trade(
-        timestamp: SpringTimestamp,
-        ticker: &str,
-        amount: i16,
-    ) -> Self {
+    pub fn factory_trade(timestamp: SpringTimestamp, ticker: &str, amount: i16) -> Self {
         Self::new(StreamColumns::factory_trade(timestamp, ticker, amount))
     }
 }
 
 impl Tuple {
-    pub(in crate::stream_engine) fn factory_city_temperature(
+    pub fn factory_city_temperature(
         timestamp: SpringTimestamp,
         city: &str,
         temperature: i32,
     ) -> Self {
         Self::from_row(Row::factory_city_temperature(timestamp, city, temperature))
     }
-    pub(in crate::stream_engine) fn factory_trade(
-        timestamp: SpringTimestamp,
-        ticker: &str,
-        amount: i16,
-    ) -> Self {
+    pub fn factory_trade(timestamp: SpringTimestamp, ticker: &str, amount: i16) -> Self {
         Self::from_row(Row::factory_trade(timestamp, ticker, amount))
     }
 }

@@ -24,7 +24,7 @@ use crate::stream_engine::autonomous_executor::{
 
 /// Runs a worker thread.
 #[derive(Debug)]
-pub(super) struct SourceWorkerThread;
+pub struct SourceWorkerThread;
 
 impl WorkerThread for SourceWorkerThread {
     const THREAD_NAME: &'static str = "SourceWorker";

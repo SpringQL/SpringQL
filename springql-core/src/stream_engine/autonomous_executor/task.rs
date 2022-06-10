@@ -1,12 +1,12 @@
 // This file is part of https://github.com/SpringQL/SpringQL which is licensed under MIT OR Apache-2.0. See file LICENSE-MIT or LICENSE-APACHE for full license details.
 
-pub(crate) mod tuple;
+pub mod tuple;
 
-pub(super) mod pump_task;
-pub(super) mod sink_task;
-pub(super) mod source_task;
-pub(super) mod task_context;
-pub(super) mod window;
+pub mod pump_task;
+pub mod sink_task;
+pub mod source_task;
+pub mod task_context;
+pub mod window;
 
 use crate::{
     api::error::Result,
@@ -22,14 +22,14 @@ use crate::{
 };
 
 #[derive(Debug)]
-pub(crate) enum Task {
+pub enum Task {
     Pump(Box<PumpTask>),
     Source(SourceTask),
     Sink(SinkTask),
 }
 
 impl Task {
-    pub(super) fn new(edge: &Edge, pipeline_graph: &PipelineGraph) -> Self {
+    pub fn new(edge: &Edge, pipeline_graph: &PipelineGraph) -> Self {
         match edge {
             Edge::Pump { pump_model, .. } => {
                 Self::Pump(Box::new(PumpTask::new(pump_model.as_ref(), pipeline_graph)))
@@ -39,7 +39,7 @@ impl Task {
         }
     }
 
-    pub(super) fn id(&self) -> TaskId {
+    pub fn id(&self) -> TaskId {
         match self {
             Task::Pump(t) => t.id().clone(),
             Task::Source(source_task) => source_task.id().clone(),
@@ -47,7 +47,7 @@ impl Task {
         }
     }
 
-    pub(super) fn run(&self, context: &TaskContext) -> Result<MetricsUpdateByTaskExecution> {
+    pub fn run(&self, context: &TaskContext) -> Result<MetricsUpdateByTaskExecution> {
         match self {
             Task::Pump(pump_task) => pump_task.run(context),
             Task::Source(source_task) => source_task.run(context),

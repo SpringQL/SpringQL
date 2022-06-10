@@ -2,24 +2,24 @@
 
 mod stream_shape;
 use crate::pipeline::{field::ColumnReference, name::StreamName};
-pub(crate) use stream_shape::StreamShape;
+pub use stream_shape::StreamShape;
 
 #[derive(Clone, Eq, PartialEq, Debug, new)]
-pub(crate) struct StreamModel {
+pub struct StreamModel {
     name: StreamName,
     shape: StreamShape,
 }
 
 impl StreamModel {
-    pub(crate) fn name(&self) -> &StreamName {
+    pub fn name(&self) -> &StreamName {
         &self.name
     }
 
-    pub(crate) fn shape(&self) -> &StreamShape {
+    pub fn shape(&self) -> &StreamShape {
         &self.shape
     }
 
-    pub(crate) fn column_references(&self) -> Vec<ColumnReference> {
+    pub fn column_references(&self) -> Vec<ColumnReference> {
         self.shape
             .column_names()
             .iter()

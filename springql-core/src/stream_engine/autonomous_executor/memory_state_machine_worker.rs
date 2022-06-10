@@ -10,7 +10,7 @@
 //! change their scheduler on Moderate and Severe state.
 //! On Critical state, generic workers are stopped and purger worker cleans all rows and windows.
 
-pub(in crate::stream_engine::autonomous_executor) mod memory_state_machine_worker_thread;
+pub mod memory_state_machine_worker_thread;
 
 use std::sync::Arc;
 
@@ -28,12 +28,12 @@ use crate::{
 };
 
 #[derive(Debug)]
-pub(in crate::stream_engine::autonomous_executor) struct MemoryStateMachineWorker {
+pub struct MemoryStateMachineWorker {
     _handle: WorkerHandle,
 }
 
 impl MemoryStateMachineWorker {
-    pub(in crate::stream_engine::autonomous_executor) fn new(
+    pub fn new(
         memory_config: &SpringMemoryConfig,
         main_job_lock: Arc<MainJobLock>,
         event_queues: EventQueues,

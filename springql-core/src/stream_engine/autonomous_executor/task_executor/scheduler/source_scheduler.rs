@@ -16,7 +16,7 @@ struct SourceTask {
 }
 
 #[derive(Debug, Default)]
-pub(in crate::stream_engine::autonomous_executor) struct SourceScheduler {}
+pub struct SourceScheduler {}
 
 impl Scheduler for SourceScheduler {
     /// TODO [prioritize source with lower source-miss rate](https://gh01.base.toyota-tokyo.tech/SpringQL-internal/SpringQL/issues/122)

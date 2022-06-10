@@ -19,7 +19,7 @@ use crate::{
 };
 
 #[derive(Debug)]
-pub(in crate::stream_engine) struct NetClientSourceReader {
+pub struct NetClientSourceReader {
     foreign_addr: SocketAddr,
     tcp_stream_reader: BufReader<TcpStream>, // TODO UDP
 }

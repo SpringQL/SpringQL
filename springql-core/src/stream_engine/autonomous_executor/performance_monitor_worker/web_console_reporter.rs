@@ -13,13 +13,13 @@ use crate::stream_engine::{
 
 /// Reports performance summary to [web-console API](https://github.com/SpringQL/web-console/blob/main/doc/api.md).
 #[derive(Debug)]
-pub(super) struct WebConsoleReporter {
+pub struct WebConsoleReporter {
     url: String,
     client: reqwest::blocking::Client,
 }
 
 impl WebConsoleReporter {
-    pub(super) fn new(host: &str, port: u16, timeout: WallClockDuration) -> Self {
+    pub fn new(host: &str, port: u16, timeout: WallClockDuration) -> Self {
         let client = reqwest::blocking::Client::builder()
             .timeout(Some(*timeout.as_std()))
             .build()
@@ -30,7 +30,7 @@ impl WebConsoleReporter {
         Self { url, client }
     }
 
-    pub(super) fn report(&self, metrics: &PerformanceMetrics, graph: &TaskGraph) {
+    pub fn report(&self, metrics: &PerformanceMetrics, graph: &TaskGraph) {
         let request = WebConsoleRequest::from_metrics(metrics, graph);
 
         let res = self.client.post(&self.url).json(&request.to_json()).send();

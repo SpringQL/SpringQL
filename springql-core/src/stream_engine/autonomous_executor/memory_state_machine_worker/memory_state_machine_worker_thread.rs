@@ -23,16 +23,16 @@ use crate::stream_engine::autonomous_executor::{
 
 /// Runs a worker thread.
 #[derive(Debug)]
-pub(super) struct MemoryStateMachineWorkerThread;
+pub struct MemoryStateMachineWorkerThread;
 
 #[derive(Debug, new)]
-pub(in crate::stream_engine::autonomous_executor) struct MemoryStateMachineWorkerThreadArg {
+pub struct MemoryStateMachineWorkerThreadArg {
     threshold: MemoryStateMachineThreshold,
     memory_state_transition_interval_msec: u32,
 }
 
 #[derive(Debug)]
-pub(super) struct MemoryStateMachineWorkerLoopState {
+pub struct MemoryStateMachineWorkerLoopState {
     memory_state_machine: MemoryStateMachine,
 }
 

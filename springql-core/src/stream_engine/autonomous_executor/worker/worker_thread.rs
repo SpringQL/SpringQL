@@ -23,7 +23,7 @@ use crate::stream_engine::autonomous_executor::{
 };
 
 /// State updated by loop cycles and event handlers.
-pub(in crate::stream_engine::autonomous_executor) trait WorkerThreadLoopState {
+pub trait WorkerThreadLoopState {
     /// Supposed to be same type as `WorkerThread::ThreadArg`.
     ///
     /// Use `()` if no arg needed.
@@ -39,7 +39,7 @@ pub(in crate::stream_engine::autonomous_executor) trait WorkerThreadLoopState {
     fn is_integral(&self) -> bool;
 }
 
-pub(in crate::stream_engine::autonomous_executor) trait WorkerThread {
+pub trait WorkerThread {
     const THREAD_NAME: &'static str;
 
     /// Immutable argument to pass to `main_loop_cycle`.

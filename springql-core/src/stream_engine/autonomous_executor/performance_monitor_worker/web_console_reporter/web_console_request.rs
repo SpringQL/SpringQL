@@ -16,13 +16,13 @@ use crate::stream_engine::autonomous_executor::{
 };
 
 #[derive(Clone, PartialEq, Debug)]
-pub(super) struct WebConsoleRequest {
+pub struct WebConsoleRequest {
     tasks: Vec<TaskRequest>,
     queues: Vec<QueueRequest>,
 }
 
 impl WebConsoleRequest {
-    pub(super) fn from_metrics(metrics: &PerformanceMetrics, graph: &TaskGraph) -> Self {
+    pub fn from_metrics(metrics: &PerformanceMetrics, graph: &TaskGraph) -> Self {
         let tasks = metrics
             .get_tasks()
             .iter()
@@ -46,7 +46,7 @@ impl WebConsoleRequest {
 }
 
 impl WebConsoleRequest {
-    pub(super) fn to_json(&self) -> serde_json::Value {
+    pub fn to_json(&self) -> serde_json::Value {
         json!(
             {
                 "tasks": self.tasks.iter().map(TaskRequest::to_json).collect::<Vec<_>>(),

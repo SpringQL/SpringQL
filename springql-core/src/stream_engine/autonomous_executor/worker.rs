@@ -2,5 +2,5 @@
 
 //! Worker framework.
 
-pub(in crate::stream_engine::autonomous_executor) mod worker_handle;
-pub(in crate::stream_engine::autonomous_executor) mod worker_thread;
+pub mod worker_handle;
+pub mod worker_thread;

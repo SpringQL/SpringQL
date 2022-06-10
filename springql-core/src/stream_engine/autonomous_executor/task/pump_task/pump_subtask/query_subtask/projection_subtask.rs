@@ -10,13 +10,13 @@ use crate::{
 };
 
 #[derive(Debug, new)]
-pub(in crate::stream_engine::autonomous_executor) struct ProjectionSubtask {
+pub struct ProjectionSubtask {
     exprs: Vec<ExprLabel>,
 }
 
 impl ProjectionSubtask {
     /// Projection for SELECT without aggregate.
-    pub(in crate::stream_engine::autonomous_executor) fn run_without_aggr(
+    pub fn run_without_aggr(
         &self,
         expr_resolver: &ExprResolver,
         tuple: &Tuple,
@@ -38,7 +38,7 @@ impl ProjectionSubtask {
     /// Projection for SELECT with aggregate.
     /// select_list must only have GROUP BY elements or aggregate expressions.
     /// (Column reference without aggregate is not allowed.)
-    pub(in crate::stream_engine::autonomous_executor) fn run_with_aggr(
+    pub fn run_with_aggr(
         &self,
         aggregated_and_grouping_values: AggregatedAndGroupingValues,
     ) -> Result<SqlValues> {

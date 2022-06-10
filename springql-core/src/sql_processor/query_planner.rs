@@ -74,18 +74,18 @@ use crate::{
 };
 
 #[derive(Debug)]
-pub(crate) struct QueryPlanner {
+pub struct QueryPlanner {
     analyzer: SelectSyntaxAnalyzer,
 }
 
 impl QueryPlanner {
-    pub(in crate::sql_processor) fn new(select_stream_syntax: SelectStreamSyntax) -> Self {
+    pub fn new(select_stream_syntax: SelectStreamSyntax) -> Self {
         Self {
             analyzer: SelectSyntaxAnalyzer::new(select_stream_syntax),
         }
     }
 
-    pub(crate) fn plan(self, pipeline: &Pipeline) -> Result<QueryPlan> {
+    pub fn plan(self, pipeline: &Pipeline) -> Result<QueryPlan> {
         let (mut expr_resolver, labels_select_list) =
             ExprResolver::new(self.analyzer.select_list().to_vec());
         let projection = ProjectionOp {

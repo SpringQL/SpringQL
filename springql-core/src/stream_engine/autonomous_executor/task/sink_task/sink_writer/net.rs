@@ -21,7 +21,7 @@ use crate::{
 };
 
 #[derive(Debug)]
-pub(in crate::stream_engine) struct NetSinkWriter {
+pub struct NetSinkWriter {
     foreign_addr: SocketAddr,
     tcp_stream_writer: BufWriter<TcpStream>, // TODO UDP
 }

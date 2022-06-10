@@ -1,6 +1,6 @@
 // This file is part of https://github.com/SpringQL/SpringQL which is licensed under MIT OR Apache-2.0. See file LICENSE-MIT or LICENSE-APACHE for full license details.
 
-pub(in crate::stream_engine::autonomous_executor) mod source_reader;
+pub mod source_reader;
 
 use std::fmt::Debug;
 use std::sync::Arc;
@@ -28,14 +28,14 @@ use crate::{
 };
 
 #[derive(Debug)]
-pub(crate) struct SourceTask {
+pub struct SourceTask {
     id: TaskId,
     source_reader_name: SourceReaderName,
     source_stream_name: StreamName,
 }
 
 impl SourceTask {
-    pub(in crate::stream_engine) fn new(source_reader: &SourceReaderModel) -> Self {
+    pub fn new(source_reader: &SourceReaderModel) -> Self {
         let id = TaskId::from_source(source_reader);
         Self {
             id,
@@ -44,14 +44,11 @@ impl SourceTask {
         }
     }
 
-    pub(in crate::stream_engine::autonomous_executor) fn id(&self) -> &TaskId {
+    pub fn id(&self) -> &TaskId {
         &self.id
     }
 
-    pub(in crate::stream_engine::autonomous_executor) fn run(
-        &self,
-        context: &TaskContext,
-    ) -> Result<MetricsUpdateByTaskExecution> {
+    pub fn run(&self, context: &TaskContext) -> Result<MetricsUpdateByTaskExecution> {
         let stopwatch = WallClockStopwatch::start();
 
         let out_queue_metrics_seq = match self.collect_next(context) {

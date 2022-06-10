@@ -1,7 +1,7 @@
 // This file is part of https://github.com/SpringQL/SpringQL which is licensed under MIT OR Apache-2.0. See file LICENSE-MIT or LICENSE-APACHE for full license details.
 
-pub(in crate::stream_engine::autonomous_executor) mod aggregate_pane;
-pub(in crate::stream_engine::autonomous_executor) mod join_pane;
+pub mod aggregate_pane;
+pub mod join_pane;
 
 use crate::{
     expr_resolver::ExprResolver,
@@ -16,7 +16,7 @@ use crate::{
     },
 };
 
-pub(in crate::stream_engine::autonomous_executor) trait Pane {
+pub trait Pane {
     type CloseOut;
     type DispatchArg: Clone;
 

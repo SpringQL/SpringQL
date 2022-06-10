@@ -30,10 +30,10 @@ const CLOCK_MSEC: u64 = 10;
 
 /// Runs a worker thread.
 #[derive(Debug)]
-pub(super) struct PerformanceMonitorWorkerThread;
+pub struct PerformanceMonitorWorkerThread;
 
 #[derive(Debug)]
-pub(in crate::stream_engine::autonomous_executor) struct PerformanceMonitorWorkerThreadArg {
+pub struct PerformanceMonitorWorkerThreadArg {
     config: SpringConfig,
     web_console_reporter: WebConsoleReporter,
 }
@@ -53,7 +53,7 @@ impl From<&SpringConfig> for PerformanceMonitorWorkerThreadArg {
 }
 
 #[derive(Debug)]
-pub(super) struct PerformanceMonitorWorkerLoopState {
+pub struct PerformanceMonitorWorkerLoopState {
     pipeline_derivatives: Option<Arc<PipelineDerivatives>>,
     metrics: Option<Arc<PerformanceMetrics>>,
     countdown_metrics_summary_msec: i32,

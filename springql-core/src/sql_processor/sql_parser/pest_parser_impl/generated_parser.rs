@@ -7,4 +7,4 @@ use pest_derive::Parser;
 /// pest_derive::Parser macro puts `pub enum Rule` at this level.
 #[derive(Parser)]
 #[grammar = "sql_processor/sql_parser/pest_grammar/springql.pest"]
-pub(super) struct GeneratedParser;
+pub struct GeneratedParser;

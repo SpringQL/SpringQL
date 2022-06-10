@@ -6,40 +6,40 @@ use crate::{
 };
 
 #[derive(Clone, PartialEq, Debug)]
-pub(crate) struct UpperOps {
-    pub(crate) projection: ProjectionOp,
-    pub(crate) group_aggr_window: Option<GroupAggregateWindowOp>,
+pub struct UpperOps {
+    pub projection: ProjectionOp,
+    pub group_aggr_window: Option<GroupAggregateWindowOp>,
 }
 impl UpperOps {
-    pub(crate) fn has_window(&self) -> bool {
+    pub fn has_window(&self) -> bool {
         self.group_aggr_window.is_some()
     }
 }
 
 #[derive(Clone, PartialEq, Debug)]
-pub(crate) struct LowerOps {
-    pub(crate) join: JoinOp,
+pub struct LowerOps {
+    pub join: JoinOp,
 }
 impl LowerOps {
-    pub(crate) fn has_window(&self) -> bool {
+    pub fn has_window(&self) -> bool {
         matches!(self.join, JoinOp::JoinWindow(_))
     }
 }
 
 #[derive(Clone, PartialEq, Debug)]
-pub(crate) struct ProjectionOp {
-    pub(crate) expr_labels: Vec<ExprLabel>,
+pub struct ProjectionOp {
+    pub expr_labels: Vec<ExprLabel>,
 }
 
 #[derive(Clone, PartialEq, Debug)]
-pub(crate) struct GroupAggregateWindowOp {
-    pub(crate) window_param: WindowParameter,
-    pub(crate) op_param: WindowOperationParameter,
+pub struct GroupAggregateWindowOp {
+    pub window_param: WindowParameter,
+    pub op_param: WindowOperationParameter,
 }
 
 #[derive(Clone, PartialEq, Debug)]
 pub struct CollectOp {
-    pub(crate) stream: StreamName,
+    pub stream: StreamName,
 }
 
 /// TODO recursive join
@@ -51,9 +51,9 @@ pub enum JoinOp {
 
 #[derive(Clone, PartialEq, Debug)]
 pub struct JoinWindowOp {
-    pub(crate) left: CollectOp,
-    pub(crate) right: CollectOp,
+    pub left: CollectOp,
+    pub right: CollectOp,
 
-    pub(crate) window_param: WindowParameter,
-    pub(crate) join_param: JoinParameter,
+    pub window_param: WindowParameter,
+    pub join_param: JoinParameter,
 }

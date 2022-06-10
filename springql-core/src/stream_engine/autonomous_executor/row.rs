@@ -2,11 +2,11 @@
 
 pub use value::SpringValue;
 
-pub(crate) mod value;
+pub mod value;
 
-pub(in crate::stream_engine::autonomous_executor) mod column;
-pub(in crate::stream_engine::autonomous_executor) mod column_values;
-pub(in crate::stream_engine) mod foreign_row;
+pub mod column;
+pub mod column_values;
+pub mod foreign_row;
 
 use std::vec;
 
@@ -28,7 +28,7 @@ use crate::{
 /// - PartialEq by all columns (NULL prevents Eq).
 /// - PartialOrd by timestamp.
 #[derive(Clone, PartialEq, Debug)]
-pub(crate) struct Row {
+pub struct Row {
     arrival_rowtime: Option<SpringTimestamp>,
 
     /// Columns
@@ -36,7 +36,7 @@ pub(crate) struct Row {
 }
 
 impl Row {
-    pub(crate) fn new(cols: StreamColumns) -> Self {
+    pub fn new(cols: StreamColumns) -> Self {
         let arrival_rowtime = if cols.promoted_rowtime().is_some() {
             None
         } else {

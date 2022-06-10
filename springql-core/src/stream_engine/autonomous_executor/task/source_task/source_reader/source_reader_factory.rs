@@ -8,10 +8,10 @@ use crate::{
     },
 };
 
-pub(in crate::stream_engine::autonomous_executor) struct SourceReaderFactory;
+pub struct SourceReaderFactory;
 
 impl SourceReaderFactory {
-    pub(in crate::stream_engine::autonomous_executor) fn source(
+    pub fn source(
         source_reader_type: &SourceReaderType,
         options: &Options,
         config: &SpringSourceReaderConfig,

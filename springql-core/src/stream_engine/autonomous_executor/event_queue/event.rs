@@ -16,7 +16,7 @@ use crate::stream_engine::autonomous_executor::{
 };
 
 #[derive(Clone, Debug)]
-pub(in crate::stream_engine::autonomous_executor) enum Event {
+pub enum Event {
     UpdatePipeline {
         pipeline_derivatives: Arc<PipelineDerivatives>,
     },
@@ -35,18 +35,18 @@ pub(in crate::stream_engine::autonomous_executor) enum Event {
 }
 
 #[derive(Copy, Clone, Eq, PartialEq, Hash, Debug)]
-pub(in crate::stream_engine::autonomous_executor) enum EventTag {
+pub enum EventTag {
     Blocking(BlockingEventTag),
     NonBlocking(NonBlockingEventTag),
 }
 
 #[derive(Copy, Clone, Eq, PartialEq, Hash, Debug)]
-pub(in crate::stream_engine::autonomous_executor) enum BlockingEventTag {
+pub enum BlockingEventTag {
     UpdatePipeline,
 }
 
 #[derive(Copy, Clone, Eq, PartialEq, Hash, Debug)]
-pub(in crate::stream_engine::autonomous_executor) enum NonBlockingEventTag {
+pub enum NonBlockingEventTag {
     ReplacePerformanceMetrics,
     IncrementalUpdateMetrics,
     ReportMetricsSummary,

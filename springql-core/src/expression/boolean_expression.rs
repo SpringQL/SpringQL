@@ -4,9 +4,9 @@ mod comparison_function;
 mod logical_function;
 mod numerical_function;
 
-pub(crate) use comparison_function::ComparisonFunction;
-pub(crate) use logical_function::LogicalFunction;
-pub(crate) use numerical_function::NumericalFunction;
+pub use comparison_function::ComparisonFunction;
+pub use logical_function::LogicalFunction;
+pub use numerical_function::NumericalFunction;
 
 use crate::expression::ValueExprType;
 

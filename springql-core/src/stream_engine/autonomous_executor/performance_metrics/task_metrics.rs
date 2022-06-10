@@ -6,16 +6,13 @@ use crate::stream_engine::autonomous_executor::performance_metrics::{
 
 /// Flow monitor of a task (including in-memory queue sink) execution.
 #[derive(Clone, PartialEq, Debug, Default)]
-pub(in crate::stream_engine::autonomous_executor) struct TaskMetrics {
+pub struct TaskMetrics {
     avg_gain_bytes_per_sec: f32,
     n_executions: u64,
 }
 
 impl TaskMetrics {
-    pub(in crate::stream_engine::autonomous_executor) fn update_by_task_execution(
-        &mut self,
-        command: &MetricsUpdateByTaskExecution,
-    ) {
+    pub fn update_by_task_execution(&mut self, command: &MetricsUpdateByTaskExecution) {
         let n = self.n_executions;
 
         self.n_executions += 1;
@@ -26,7 +23,7 @@ impl TaskMetrics {
         );
     }
 
-    pub(in crate::stream_engine::autonomous_executor) fn avg_gain_bytes_per_sec(&self) -> f32 {
+    pub fn avg_gain_bytes_per_sec(&self) -> f32 {
         self.avg_gain_bytes_per_sec
     }
 }

@@ -6,11 +6,9 @@ mod boolean_expression;
 mod function_call;
 mod operator;
 
-pub(crate) use boolean_expression::{
-    BinaryExpr, ComparisonFunction, LogicalFunction, NumericalFunction,
-};
-pub(crate) use function_call::FunctionCall;
-pub(crate) use operator::{BinaryOperator, UnaryOperator};
+pub use boolean_expression::{BinaryExpr, ComparisonFunction, LogicalFunction, NumericalFunction};
+pub use function_call::FunctionCall;
+pub use operator::{BinaryOperator, UnaryOperator};
 
 use anyhow::anyhow;
 
@@ -41,7 +39,7 @@ pub enum ValueExpr {
 impl ValueExprType for ValueExpr {}
 
 impl ValueExpr {
-    pub(crate) fn resolve_colref(self, tuple: &Tuple) -> Result<ValueExprPh2> {
+    pub fn resolve_colref(self, tuple: &Tuple) -> Result<ValueExprPh2> {
         match self {
             Self::Constant(value) => Ok(ValueExprPh2::Constant(value)),
 
@@ -142,7 +140,7 @@ impl ValueExpr {
 ///
 /// A value expression phase2 can be evaluated by itself.
 #[derive(Clone, PartialEq, Hash, Debug)]
-pub(crate) enum ValueExprPh2 {
+pub enum ValueExprPh2 {
     Constant(SqlValue),
     UnaryOperator(UnaryOperator, Box<Self>),
     BinaryExpr(BinaryExpr<Self>),
@@ -151,7 +149,7 @@ pub(crate) enum ValueExprPh2 {
 impl ValueExprType for ValueExprPh2 {}
 
 impl ValueExprPh2 {
-    pub(crate) fn eval(self) -> Result<SqlValue> {
+    pub fn eval(self) -> Result<SqlValue> {
         match self {
             Self::Constant(sql_value) => Ok(sql_value),
             Self::UnaryOperator(uni_op, child) => {
@@ -276,6 +274,6 @@ impl ValueExprPh2 {
 /// Aggregate expression.
 #[derive(Clone, PartialEq, Debug)]
 pub struct AggrExpr {
-    pub(crate) func: AggregateFunctionParameter,
-    pub(crate) aggregated: ValueExpr,
+    pub func: AggregateFunctionParameter,
+    pub aggregated: ValueExpr,
 }

@@ -10,7 +10,7 @@ use crate::{
 };
 
 #[derive(Debug)]
-pub(in crate::stream_engine::autonomous_executor) struct JoinWindow {
+pub struct JoinWindow {
     watermark: Watermark,
     panes: Panes<JoinPane>,
 }
@@ -40,10 +40,7 @@ impl Window for JoinWindow {
 }
 
 impl JoinWindow {
-    pub(in crate::stream_engine::autonomous_executor) fn new(
-        window_param: WindowParameter,
-        join_param: JoinParameter,
-    ) -> Self {
+    pub fn new(window_param: WindowParameter, join_param: JoinParameter) -> Self {
         let watermark = Watermark::new(window_param.allowed_delay());
         Self {
             watermark,

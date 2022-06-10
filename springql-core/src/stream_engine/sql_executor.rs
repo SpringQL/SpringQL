@@ -14,7 +14,7 @@ use crate::{
 ///
 /// All methods (recursive) are called from main thread.
 #[derive(Debug)]
-pub(in crate::stream_engine) struct SqlExecutor {
+pub struct SqlExecutor {
     pipeline: Pipeline,
 }
 
@@ -27,14 +27,11 @@ impl Default for SqlExecutor {
 }
 
 impl SqlExecutor {
-    pub(crate) fn current_pipeline(&self) -> &Pipeline {
+    pub fn current_pipeline(&self) -> &Pipeline {
         &self.pipeline
     }
 
-    pub(in crate::stream_engine) fn alter_pipeline(
-        &mut self,
-        command: AlterPipelineCommand,
-    ) -> Result<Pipeline> {
+    pub fn alter_pipeline(&mut self, command: AlterPipelineCommand) -> Result<Pipeline> {
         let new_pipeline = Self::new_pipeline(self.pipeline.clone(), command)?;
         self.pipeline = new_pipeline;
         Ok(self.pipeline.clone())

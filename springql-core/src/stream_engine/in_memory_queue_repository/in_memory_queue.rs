@@ -8,7 +8,7 @@ use std::{
 use crate::stream_engine::Row;
 
 #[derive(Debug, Default)]
-pub(in crate::stream_engine) struct InMemoryQueue(
+pub struct InMemoryQueue(
     Mutex<VecDeque<Row>>, // TODO faster (lock-free?) queue
 );
 
@@ -17,11 +17,11 @@ impl InMemoryQueue {
     ///
     /// - `Ok(Some)` when at least a row is in the queue.
     /// - `None` when no row is in the queue.
-    pub(in crate::stream_engine) fn pop_non_blocking(&self) -> Option<Row> {
+    pub fn pop_non_blocking(&self) -> Option<Row> {
         self.lock().pop_front()
     }
 
-    pub(in crate::stream_engine) fn push(&self, row: Row) {
+    pub fn push(&self, row: Row) {
         self.lock().push_back(row)
     }
 

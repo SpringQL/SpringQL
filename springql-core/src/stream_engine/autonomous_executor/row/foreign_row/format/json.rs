@@ -49,9 +49,7 @@ impl JsonObject {
     /// # TODO
     ///
     /// See stream.options to more intelligently parse JSON. <https://docs.sqlstream.com/sql-reference-guide/create-statements/createforeignstream/#parsing-json>
-    pub(in crate::stream_engine::autonomous_executor) fn into_column_values(
-        self,
-    ) -> Result<ColumnValues> {
+    pub fn into_column_values(self) -> Result<ColumnValues> {
         let json_object = self.0;
 
         let top_object = json_object

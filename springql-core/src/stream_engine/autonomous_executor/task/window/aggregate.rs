@@ -23,12 +23,12 @@ use crate::{
 ///
 /// Projection operation for SELECT with aggregate completes with this instance (without Tuple).
 #[derive(Clone, PartialEq, Debug, Default)]
-pub(in crate::stream_engine::autonomous_executor) struct AggregatedAndGroupingValues {
+pub struct AggregatedAndGroupingValues {
     aggr: HashMap<AggrExprLabel, SqlValue>,
     group_by: HashMap<ValueExprLabel, SqlValue>,
 }
 impl AggregatedAndGroupingValues {
-    pub(in crate::stream_engine::autonomous_executor) fn new(
+    pub fn new(
         aggregates: Vec<(AggrExprLabel, SqlValue)>,
         group_bys: Vec<(ValueExprLabel, SqlValue)>,
     ) -> Self {
@@ -42,10 +42,7 @@ impl AggregatedAndGroupingValues {
     ///
     /// - `SpringError::Sql` when:
     ///   - `label` is not included in aggregation result
-    pub(in crate::stream_engine::autonomous_executor) fn get_aggregated_value(
-        &self,
-        label: &AggrExprLabel,
-    ) -> Result<&SqlValue> {
+    pub fn get_aggregated_value(&self, label: &AggrExprLabel) -> Result<&SqlValue> {
         self.aggr
             .get(label)
             .ok_or_else(|| SpringError::Sql(anyhow!("aggregate label not found: {:?}", label)))
@@ -55,10 +52,7 @@ impl AggregatedAndGroupingValues {
     ///
     /// - `SpringError::Sql` when:
     ///   - `label` is not included in aggregation result
-    pub(in crate::stream_engine::autonomous_executor) fn get_group_by_value(
-        &self,
-        label: &ValueExprLabel,
-    ) -> Result<&SqlValue> {
+    pub fn get_group_by_value(&self, label: &ValueExprLabel) -> Result<&SqlValue> {
         self.group_by
             .get(label)
             .ok_or_else(|| SpringError::Sql(anyhow!("GROUP BY label not found: {:?}", label)))
@@ -66,7 +60,7 @@ impl AggregatedAndGroupingValues {
 }
 
 #[derive(Debug)]
-pub(in crate::stream_engine::autonomous_executor) struct AggrWindow {
+pub struct AggrWindow {
     watermark: Watermark,
     panes: Panes<AggrPane>,
 }
@@ -96,10 +90,7 @@ impl Window for AggrWindow {
 }
 
 impl AggrWindow {
-    pub(in crate::stream_engine::autonomous_executor) fn new(
-        window_param: WindowParameter,
-        op_param: WindowOperationParameter,
-    ) -> Self {
+    pub fn new(window_param: WindowParameter, op_param: WindowOperationParameter) -> Self {
         let watermark = Watermark::new(window_param.allowed_delay());
         Self {
             watermark,

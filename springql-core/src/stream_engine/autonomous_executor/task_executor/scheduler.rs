@@ -6,9 +6,9 @@
 //!
 //! A scheduler generates series of TaskId which a GenericWorker executes at a time.
 
-pub(in crate::stream_engine::autonomous_executor) mod flow_efficient_scheduler;
-pub(in crate::stream_engine::autonomous_executor) mod memory_reducing_scheduler;
-pub(in crate::stream_engine::autonomous_executor) mod source_scheduler;
+pub mod flow_efficient_scheduler;
+pub mod memory_reducing_scheduler;
+pub mod source_scheduler;
 
 /// Max length of task series a scheduler calculates.
 /// FlowEfficientScheduler does not care this value to achieve _collector-to-stopper_ policy.
@@ -25,9 +25,7 @@ use crate::stream_engine::autonomous_executor::{
 
 /// All scheduler implementation must be stateless because MemoryStateMachine replace scheduler implementation
 /// dynamically.
-pub(in crate::stream_engine::autonomous_executor) trait Scheduler:
-    Debug + Default
-{
+pub trait Scheduler: Debug + Default {
     /// Called from worker threads.
     fn next_task_series(&self, graph: &TaskGraph, metrics: &PerformanceMetrics) -> Vec<TaskId>;
 }

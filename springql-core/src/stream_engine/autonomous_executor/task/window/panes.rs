@@ -1,6 +1,6 @@
 // This file is part of https://github.com/SpringQL/SpringQL which is licensed under MIT OR Apache-2.0. See file LICENSE-MIT or LICENSE-APACHE for full license details.
 
-pub(in crate::stream_engine::autonomous_executor) mod pane;
+pub mod pane;
 
 use std::cmp::Ordering;
 
@@ -13,7 +13,7 @@ use crate::{
 };
 
 #[derive(Debug)]
-pub(in crate::stream_engine::autonomous_executor) struct Panes<P>
+pub struct Panes<P>
 where
     P: Pane,
 {
@@ -30,7 +30,7 @@ impl<P> Panes<P>
 where
     P: Pane,
 {
-    pub(super) fn new(window_param: WindowParameter, op_param: WindowOperationParameter) -> Self {
+    pub fn new(window_param: WindowParameter, op_param: WindowOperationParameter) -> Self {
         Self {
             panes: vec![],
             window_param,
@@ -42,10 +42,7 @@ where
     /// Then, return all panes to get a tuple with the `rowtime`.
     ///
     /// Caller must assure rowtime is not smaller than watermark.
-    pub(super) fn panes_to_dispatch(
-        &mut self,
-        rowtime: SpringTimestamp,
-    ) -> impl Iterator<Item = &mut P> {
+    pub fn panes_to_dispatch(&mut self, rowtime: SpringTimestamp) -> impl Iterator<Item = &mut P> {
         self.generate_panes_if_not_exist(rowtime);
 
         self.panes
@@ -53,7 +50,7 @@ where
             .filter(move |pane| pane.is_acceptable(&rowtime))
     }
 
-    pub(super) fn remove_panes_to_close(&mut self, watermark: &Watermark) -> Vec<P> {
+    pub fn remove_panes_to_close(&mut self, watermark: &Watermark) -> Vec<P> {
         let mut panes_to_close = vec![];
 
         let mut idx = 0;
@@ -71,7 +68,7 @@ where
         panes_to_close
     }
 
-    pub(super) fn purge(&mut self) {
+    pub fn purge(&mut self) {
         self.panes.clear()
     }
 

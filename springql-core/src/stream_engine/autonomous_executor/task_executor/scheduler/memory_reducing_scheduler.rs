@@ -45,7 +45,7 @@ struct TaskProfile {
 }
 
 #[derive(Debug, Default)]
-pub(in crate::stream_engine::autonomous_executor) struct MemoryReducingScheduler;
+pub struct MemoryReducingScheduler;
 
 impl Scheduler for MemoryReducingScheduler {
     fn next_task_series(&self, graph: &TaskGraph, metrics: &PerformanceMetrics) -> Vec<TaskId> {

@@ -11,8 +11,8 @@
 mod edge;
 mod stream_node;
 
-pub(crate) use edge::Edge;
-pub(crate) use stream_node::StreamNode;
+pub use edge::Edge;
+pub use stream_node::StreamNode;
 
 use std::{collections::HashMap, sync::Arc};
 
@@ -31,7 +31,7 @@ use crate::{
 };
 
 #[derive(Clone, Debug)]
-pub(crate) struct PipelineGraph {
+pub struct PipelineGraph {
     graph: DiGraph<StreamNode, Edge>,
     stream_nodes: HashMap<StreamName, NodeIndex>,
 }
@@ -52,14 +52,14 @@ impl Default for PipelineGraph {
 }
 
 impl PipelineGraph {
-    pub(super) fn add_stream(&mut self, stream: Arc<StreamModel>) -> Result<()> {
+    pub fn add_stream(&mut self, stream: Arc<StreamModel>) -> Result<()> {
         let st_name = stream.name().clone();
         let st_node = self.graph.add_node(StreamNode::Stream(stream));
         let _ = self.stream_nodes.insert(st_name, st_node);
         Ok(())
     }
 
-    pub(crate) fn get_stream(&self, name: &StreamName) -> Result<Arc<StreamModel>> {
+    pub fn get_stream(&self, name: &StreamName) -> Result<Arc<StreamModel>> {
         let node = self._find_stream(name)?;
         let stream_node = self.graph.node_weight(node).expect("index found");
         if let StreamNode::Stream(source_stream) = stream_node {
@@ -73,10 +73,7 @@ impl PipelineGraph {
     }
 
     /// Find all incoming edges of `edge_ref`'s upstream.
-    pub(crate) fn upstream_edges(
-        &self,
-        edge_ref: &EdgeReference<Edge>,
-    ) -> Vec<EdgeReference<Edge>> {
+    pub fn upstream_edges(&self, edge_ref: &EdgeReference<Edge>) -> Vec<EdgeReference<Edge>> {
         let upstream_node = edge_ref.source();
         let upstream_edges = self
             .graph
@@ -84,7 +81,7 @@ impl PipelineGraph {
         upstream_edges.collect()
     }
 
-    pub(super) fn all_sources(&self) -> Vec<&SourceReaderModel> {
+    pub fn all_sources(&self) -> Vec<&SourceReaderModel> {
         self.graph
             .edge_references()
             .filter_map(|edge| match edge.weight() {
@@ -93,7 +90,7 @@ impl PipelineGraph {
             })
             .collect()
     }
-    pub(super) fn all_sinks(&self) -> Vec<&SinkWriterModel> {
+    pub fn all_sinks(&self) -> Vec<&SinkWriterModel> {
         self.graph
             .edge_references()
             .filter_map(|edge| match edge.weight() {
@@ -103,7 +100,7 @@ impl PipelineGraph {
             .collect()
     }
 
-    pub(super) fn add_pump(&mut self, pump: PumpModel) -> Result<()> {
+    pub fn add_pump(&mut self, pump: PumpModel) -> Result<()> {
         let pump = Arc::new(pump);
 
         let downstream_node = self.stream_nodes.get(pump.downstream()).ok_or_else(|| {
@@ -140,7 +137,7 @@ impl PipelineGraph {
         })?)
     }
 
-    pub(super) fn add_source_reader(&mut self, source_reader: SourceReaderModel) -> Result<()> {
+    pub fn add_source_reader(&mut self, source_reader: SourceReaderModel) -> Result<()> {
         let dest_stream = source_reader.dest_source_stream();
 
         let upstream_node = self
@@ -161,7 +158,7 @@ impl PipelineGraph {
         Ok(())
     }
 
-    pub(super) fn add_sink_writer(&mut self, sink_writer: SinkWriterModel) -> Result<()> {
+    pub fn add_sink_writer(&mut self, sink_writer: SinkWriterModel) -> Result<()> {
         let from_stream = sink_writer.sink_upstream();
 
         let upstream_node = self.stream_nodes.get(from_stream).ok_or_else(|| {
@@ -180,7 +177,7 @@ impl PipelineGraph {
     }
 
     /// Just for `From<&PipelineGraph> for TaskGraph`
-    pub(crate) fn as_petgraph(&self) -> &DiGraph<StreamNode, Edge> {
+    pub fn as_petgraph(&self) -> &DiGraph<StreamNode, Edge> {
         &self.graph
     }
 }

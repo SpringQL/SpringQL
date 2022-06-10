@@ -1,9 +1,9 @@
 // This file is part of https://github.com/SpringQL/SpringQL which is licensed under MIT OR Apache-2.0. See file LICENSE-MIT or LICENSE-APACHE for full license details.
 
-pub(super) mod collect_subtask;
-pub(super) mod group_aggregate_window_subtask;
-pub(super) mod join_subtask;
-pub(super) mod projection_subtask;
+pub mod collect_subtask;
+pub mod group_aggregate_window_subtask;
+pub mod join_subtask;
+pub mod projection_subtask;
 
 use std::sync::{Arc, Mutex, MutexGuard};
 
@@ -45,7 +45,7 @@ use crate::{
 
 /// Process input row 1-by-1.
 #[derive(Debug)]
-pub(in crate::stream_engine::autonomous_executor) struct QuerySubtask {
+pub struct QuerySubtask {
     expr_resolver: ExprResolver,
 
     projection_subtask: ProjectionSubtask,
@@ -63,7 +63,7 @@ pub(in crate::stream_engine::autonomous_executor) struct QuerySubtask {
 }
 
 #[derive(Clone, Debug, new)]
-pub(in crate::stream_engine::autonomous_executor) struct SqlValues(Vec<SqlValue>);
+pub struct SqlValues(Vec<SqlValue>);
 impl SqlValues {
     /// ```text
     /// column_order = (c2, c3, c1)
@@ -80,11 +80,7 @@ impl SqlValues {
     /// - Tuple fields and column_order have different length.
     /// - Type mismatch between `self.fields` (ordered) and `stream_shape`
     /// - Duplicate column names in `column_order`
-    pub(in crate::stream_engine::autonomous_executor) fn into_row(
-        self,
-        stream_model: Arc<StreamModel>,
-        column_order: Vec<ColumnName>,
-    ) -> Row {
+    pub fn into_row(self, stream_model: Arc<StreamModel>, column_order: Vec<ColumnName>) -> Row {
         assert_eq!(self.0.len(), column_order.len());
 
         let column_values = self.mk_column_values(column_order);
@@ -107,14 +103,13 @@ impl SqlValues {
 }
 
 #[derive(Debug, new)]
-pub(in crate::stream_engine::autonomous_executor) struct QuerySubtaskOut {
-    pub(in crate::stream_engine::autonomous_executor) values_seq: Vec<SqlValues>,
-    pub(in crate::stream_engine::autonomous_executor) in_queue_metrics_update:
-        InQueueMetricsUpdateByTask,
+pub struct QuerySubtaskOut {
+    pub values_seq: Vec<SqlValues>,
+    pub in_queue_metrics_update: InQueueMetricsUpdateByTask,
 }
 
 impl QuerySubtask {
-    pub(in crate::stream_engine::autonomous_executor) fn new(plan: QueryPlan) -> Self {
+    pub fn new(plan: QueryPlan) -> Self {
         let rng =
             Mutex::new(SmallRng::from_rng(rand::thread_rng()).expect("this generally won't fail"));
 
@@ -165,10 +160,7 @@ impl QuerySubtask {
     /// # Failures
     ///
     /// TODO
-    pub(in crate::stream_engine::autonomous_executor) fn run(
-        &self,
-        context: &TaskContext,
-    ) -> Result<Option<QuerySubtaskOut>> {
+    pub fn run(&self, context: &TaskContext) -> Result<Option<QuerySubtaskOut>> {
         match self.run_lower_ops(context) {
             None => Ok(None),
             Some((lower_tuples, in_queue_metrics_update_by_task)) => {
@@ -309,16 +301,12 @@ impl QuerySubtask {
         self.left_collect_subtask.run(context)
     }
 
-    pub(in crate::stream_engine::autonomous_executor) fn get_aggr_window_mut(
-        &self,
-    ) -> Option<MutexGuard<AggrWindow>> {
+    pub fn get_aggr_window_mut(&self) -> Option<MutexGuard<AggrWindow>> {
         self.group_aggr_window_subtask
             .as_ref()
             .map(|subtask| subtask.get_window_mut())
     }
-    pub(in crate::stream_engine::autonomous_executor) fn get_join_window_mut(
-        &self,
-    ) -> Option<MutexGuard<JoinWindow>> {
+    pub fn get_join_window_mut(&self) -> Option<MutexGuard<JoinWindow>> {
         self.join
             .as_ref()
             .map(|(subtask, _)| subtask.get_window_mut())

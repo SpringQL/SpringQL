@@ -7,12 +7,12 @@ use crate::stream_engine::time::{
 
 /// Real-time (wall-clock) stopwatch.
 #[derive(Debug)]
-pub(in crate::stream_engine) struct WallClockStopwatch {
+pub struct WallClockStopwatch {
     start_at: SpringTimestamp,
 }
 
 impl WallClockStopwatch {
-    pub(in crate::stream_engine) fn start() -> Self {
+    pub fn start() -> Self {
         let start_at = SystemTimestamp::now();
         Self { start_at }
     }
@@ -20,7 +20,7 @@ impl WallClockStopwatch {
     /// # Panics
     ///
     /// If current system clock is smaller than start time.
-    pub(in crate::stream_engine) fn stop(&self) -> WallClockDuration {
+    pub fn stop(&self) -> WallClockDuration {
         let stop_at = SystemTimestamp::now();
         assert!(stop_at >= self.start_at);
 

@@ -2,19 +2,18 @@
 
 #![doc = include_str!("stream_engine.md")]
 
-pub(crate) mod command;
-pub(crate) mod time;
-
 mod autonomous_executor;
+pub mod command;
 mod in_memory_queue_repository;
 mod sql_executor;
+pub mod time;
 
 use std::sync::{Arc, Mutex, MutexGuard};
 
 use anyhow::anyhow;
 
 pub use crate::stream_engine::autonomous_executor::SpringValue;
-pub(crate) use autonomous_executor::{
+pub use autonomous_executor::{
     row::{
         value::sql_value::{
             nn_sql_value::NnSqlValue, sql_compare_result::SqlCompareResult, SqlValue,
@@ -35,10 +34,10 @@ use crate::{
 };
 
 #[derive(Clone, Debug)]
-pub(crate) struct EngineMutex(Arc<Mutex<StreamEngine>>);
+pub struct EngineMutex(Arc<Mutex<StreamEngine>>);
 
 impl EngineMutex {
-    pub(crate) fn new(config: &SpringConfig) -> Self {
+    pub fn new(config: &SpringConfig) -> Self {
         let engine = StreamEngine::new(config);
         Self(Arc::new(Mutex::new(engine)))
     }
@@ -46,7 +45,7 @@ impl EngineMutex {
     /// # Failure
     ///
     /// - `SpringError::ThreadPoisoned`
-    pub(crate) fn get(&self) -> Result<MutexGuard<'_, StreamEngine>> {
+    pub fn get(&self) -> Result<MutexGuard<'_, StreamEngine>> {
         self.0
             .lock()
             .map_err(|e| {
@@ -64,25 +63,25 @@ impl EngineMutex {
 /// Stream engine has Access Methods.
 /// External components (sql-processor) call Access Methods to change stream engine's states and get result from it.
 #[derive(Debug)]
-pub(crate) struct StreamEngine {
+pub struct StreamEngine {
     sql_executor: SqlExecutor,
     autonomous_executor: AutonomousExecutor,
 }
 
 impl StreamEngine {
     /// Setup sequence is drawn in a diagram: <https://github.com/SpringQL/SpringQL/issues/100#issuecomment-1101732796>
-    pub(crate) fn new(config: &SpringConfig) -> Self {
+    pub fn new(config: &SpringConfig) -> Self {
         Self {
             sql_executor: SqlExecutor::default(),
             autonomous_executor: AutonomousExecutor::new(config),
         }
     }
 
-    pub(crate) fn current_pipeline(&self) -> &Pipeline {
+    pub fn current_pipeline(&self) -> &Pipeline {
         self.sql_executor.current_pipeline()
     }
 
-    pub(crate) fn alter_pipeline(&mut self, command: AlterPipelineCommand) -> Result<()> {
+    pub fn alter_pipeline(&mut self, command: AlterPipelineCommand) -> Result<()> {
         log::debug!("[StreamEngine] alter_pipeline({:?})", command);
         let pipeline = self.sql_executor.alter_pipeline(command)?;
         self.autonomous_executor.notify_pipeline_update(pipeline)
@@ -97,7 +96,7 @@ impl StreamEngine {
     ///
     /// - `SpringError::Unavailable` when:
     ///   - queue named `queue_name` does not exist.
-    pub(crate) fn pop_in_memory_queue_non_blocking(
+    pub fn pop_in_memory_queue_non_blocking(
         &mut self,
         queue_name: QueueName,
     ) -> Result<Option<Row>> {

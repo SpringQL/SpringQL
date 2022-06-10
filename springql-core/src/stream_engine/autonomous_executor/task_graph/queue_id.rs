@@ -1,7 +1,7 @@
 // This file is part of https://github.com/SpringQL/SpringQL which is licensed under MIT OR Apache-2.0. See file LICENSE-MIT or LICENSE-APACHE for full license details.
 
-pub(in crate::stream_engine::autonomous_executor) mod row_queue_id;
-pub(in crate::stream_engine::autonomous_executor) mod window_queue_id;
+pub mod row_queue_id;
+pub mod window_queue_id;
 
 use crate::{
     pipeline::{PumpInputType, PumpModel, SinkWriterModel, StreamName},
@@ -18,10 +18,7 @@ pub enum QueueId {
 }
 
 impl QueueId {
-    pub(in crate::stream_engine::autonomous_executor) fn from_pump(
-        pump: &PumpModel,
-        upstream: &StreamName,
-    ) -> Self {
+    pub fn from_pump(pump: &PumpModel, upstream: &StreamName) -> Self {
         let name = format!("{}-{}", pump.name(), upstream);
         match pump.input_type() {
             PumpInputType::Row => Self::Row(RowQueueId::new(name)),
@@ -29,7 +26,7 @@ impl QueueId {
         }
     }
 
-    pub(in crate::stream_engine::autonomous_executor) fn from_sink(sink: &SinkWriterModel) -> Self {
+    pub fn from_sink(sink: &SinkWriterModel) -> Self {
         let name = sink.name().to_string();
         Self::Row(RowQueueId::new(name))
     }

@@ -21,7 +21,7 @@ pub enum TaskId {
 impl TaskId {}
 
 impl TaskId {
-    pub(in crate::stream_engine::autonomous_executor) fn from_pump(pump: &PumpModel) -> Self {
+    pub fn from_pump(pump: &PumpModel) -> Self {
         let id = pump.name().to_string();
         Self::Pump {
             id,
@@ -29,19 +29,17 @@ impl TaskId {
         }
     }
 
-    pub(in crate::stream_engine::autonomous_executor) fn from_source(
-        source: &SourceReaderModel,
-    ) -> Self {
+    pub fn from_source(source: &SourceReaderModel) -> Self {
         let id = source.name().to_string();
         Self::Source { id }
     }
 
-    pub(in crate::stream_engine::autonomous_executor) fn from_sink(sink: &SinkWriterModel) -> Self {
+    pub fn from_sink(sink: &SinkWriterModel) -> Self {
         let id = sink.name().to_string();
         Self::Sink { id }
     }
 
-    pub(in crate::stream_engine::autonomous_executor) fn is_window_task(&self) -> bool {
+    pub fn is_window_task(&self) -> bool {
         match self {
             TaskId::Pump { input_type, .. } => *input_type == PumpInputType::Window,
             _ => false,

@@ -95,7 +95,7 @@ pub trait SpringValue: Sized {
 }
 
 /// Rust values which can be packed into NnSqlValue
-pub(crate) trait ToNnSqlValue: Sized {
+pub trait ToNnSqlValue: Sized {
     /// Convert Rust type into strictly-matching SQL type.
     fn into_sql_value(self) -> NnSqlValue;
 }

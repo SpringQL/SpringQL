@@ -12,17 +12,17 @@ use crate::{expr_resolver::expr_label::ValueExprLabel, pipeline::field::ColumnRe
 ///   SLIDING WINDOW ...;
 /// ```
 #[derive(Clone, PartialEq, Debug, new)]
-pub(crate) struct JoinParameter {
-    pub(crate) join_type: JoinType,
+pub struct JoinParameter {
+    pub join_type: JoinType,
 
     /// Tuples from left must have the same shape.
-    pub(crate) left_colrefs: Vec<ColumnReference>,
-    pub(crate) right_colrefs: Vec<ColumnReference>,
+    pub left_colrefs: Vec<ColumnReference>,
+    pub right_colrefs: Vec<ColumnReference>,
 
-    pub(crate) on_expr: ValueExprLabel,
+    pub on_expr: ValueExprLabel,
 }
 
 #[derive(Copy, Clone, Eq, PartialEq, Debug)]
-pub(crate) enum JoinType {
+pub enum JoinType {
     LeftOuter,
 }

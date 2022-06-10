@@ -1,6 +1,6 @@
 // This file is part of https://github.com/SpringQL/SpringQL which is licensed under MIT OR Apache-2.0. See file LICENSE-MIT or LICENSE-APACHE for full license details.
 
-pub(in crate::stream_engine::autonomous_executor) mod purger_worker_thread;
+pub mod purger_worker_thread;
 
 use std::sync::Arc;
 
@@ -13,12 +13,12 @@ use crate::stream_engine::autonomous_executor::{
 
 /// Worker to execute pump and sink tasks.
 #[derive(Debug)]
-pub(super) struct PurgerWorker {
+pub struct PurgerWorker {
     _handle: WorkerHandle,
 }
 
 impl PurgerWorker {
-    pub(super) fn new(
+    pub fn new(
         main_job_lock: Arc<MainJobLock>,
         event_queues: EventQueues,
         coordinators: Coordinators,

@@ -20,13 +20,13 @@ pub struct SinkWriterName(String);
 pub struct ColumnName(String);
 
 #[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, new)]
-pub(crate) struct QueueName(String);
+pub struct QueueName(String);
 
 #[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, new)]
-pub(crate) struct CorrelationAlias(String);
+pub struct CorrelationAlias(String);
 
 #[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, new)]
-pub(crate) struct AttributeName(String);
+pub struct AttributeName(String);
 
 /// Alias to an value expression.
 #[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, new)]
@@ -134,23 +134,23 @@ impl AsRef<str> for AggrAlias {
 }
 
 impl ColumnName {
-    pub(crate) fn arrival_rowtime() -> Self {
+    pub fn arrival_rowtime() -> Self {
         Self::new("ROWTIME".to_string())
     }
 }
 
 impl StreamName {
-    pub(crate) fn virtual_root() -> Self {
+    pub fn virtual_root() -> Self {
         Self::new("__st_virtual_root__".to_string())
     }
 }
 
 impl SinkWriterName {
-    pub(crate) fn net_sink() -> Self {
+    pub fn net_sink() -> Self {
         Self::new("NET_CLIENT_SINK".to_string())
     }
 
-    pub(crate) fn in_memory_queue_sink() -> Self {
+    pub fn in_memory_queue_sink() -> Self {
         Self::new("IN_MEMORY_QUEUE_SERVER_SINK".to_string())
     }
 }

@@ -22,7 +22,7 @@ use crate::{
 };
 
 #[derive(Debug)]
-pub(in crate::stream_engine) struct NetServerSourceReader {
+pub struct NetServerSourceReader {
     my_addr: SocketAddr,
 
     /// FIXME this source reader does not scale

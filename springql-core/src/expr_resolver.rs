@@ -1,7 +1,7 @@
 // This file is part of https://github.com/SpringQL/SpringQL which is licensed under MIT OR Apache-2.0. See file LICENSE-MIT or LICENSE-APACHE for full license details.
 
 pub mod expr_label;
-pub(crate) use expr_label::{AggrExprLabel, ExprLabel, ExprLabelGenerator, ValueExprLabel};
+pub use expr_label::{AggrExprLabel, ExprLabel, ExprLabelGenerator, ValueExprLabel};
 
 use std::collections::HashMap;
 
@@ -36,7 +36,7 @@ impl ExprResolver {
     /// # Returns
     ///
     /// `(instance, value/aggr expr labels in select_list)
-    pub(crate) fn new(select_list: Vec<SelectFieldSyntax>) -> (Self, Vec<ExprLabel>) {
+    pub fn new(select_list: Vec<SelectFieldSyntax>) -> (Self, Vec<ExprLabel>) {
         let mut label_gen = ExprLabelGenerator::default();
         let mut value_expressions = HashMap::new();
         let mut value_aliased_labels = HashMap::new();
@@ -81,7 +81,7 @@ impl ExprResolver {
     /// # Failures
     ///
     /// - `SpringError::Sql` if alias is not in select_list.
-    pub(crate) fn resolve_value_alias(&self, value_alias: ValueAlias) -> Result<ValueExprLabel> {
+    pub fn resolve_value_alias(&self, value_alias: ValueAlias) -> Result<ValueExprLabel> {
         self.value_aliased_labels
             .get(&value_alias)
             .cloned()
@@ -99,7 +99,7 @@ impl ExprResolver {
     ///
     /// - `SpringError::Sql` if alias is not in select_list.
     #[allow(dead_code)]
-    pub(crate) fn resolve_aggr_alias(&self, aggr_alias: AggrAlias) -> Result<AggrExprLabel> {
+    pub fn resolve_aggr_alias(&self, aggr_alias: AggrAlias) -> Result<AggrExprLabel> {
         self.aggr_aliased_labels
             .get(&aggr_alias)
             .cloned()
@@ -114,7 +114,7 @@ impl ExprResolver {
     /// # Panics
     ///
     /// -  `label` is not found
-    pub(crate) fn resolve_aggr_expr(&self, label: AggrExprLabel) -> AggrExpr {
+    pub fn resolve_aggr_expr(&self, label: AggrExprLabel) -> AggrExpr {
         self.aggr_expressions
             .get(&label)
             .cloned()
@@ -122,7 +122,7 @@ impl ExprResolver {
     }
 
     /// Register value expression which is not in select_list
-    pub(crate) fn register_value_expr(&mut self, value_expr: ValueExpr) -> ValueExprLabel {
+    pub fn register_value_expr(&mut self, value_expr: ValueExpr) -> ValueExprLabel {
         let label = self.label_gen.next_value();
         self.value_expressions.insert(label, value_expr);
         label
@@ -132,7 +132,7 @@ impl ExprResolver {
     ///
     /// Register aggregate expression which is not in select_list
     #[allow(dead_code)]
-    pub(crate) fn register_aggr_expr(&mut self, aggr_expr: AggrExpr) -> AggrExprLabel {
+    pub fn register_aggr_expr(&mut self, aggr_expr: AggrExpr) -> AggrExprLabel {
         let label = self.label_gen.next_aggr();
         self.aggr_expressions.insert(label, aggr_expr);
         label
@@ -149,7 +149,7 @@ impl ExprResolver {
     /// - `SpringError::Sql` when:
     ///   - column reference in expression is not found in `tuple`.
     ///   - somehow failed to eval expression.
-    pub(crate) fn eval_value_expr(&self, label: ValueExprLabel, tuple: &Tuple) -> Result<SqlValue> {
+    pub fn eval_value_expr(&self, label: ValueExprLabel, tuple: &Tuple) -> Result<SqlValue> {
         let value_expr = self
             .value_expressions
             .get(&label)
@@ -173,11 +173,7 @@ impl ExprResolver {
     /// - `SpringError::Sql` when:
     ///   - column reference in expression is not found in `tuple`.
     ///   - somehow failed to eval expression.
-    pub(crate) fn eval_aggr_expr_inner(
-        &self,
-        label: AggrExprLabel,
-        tuple: &Tuple,
-    ) -> Result<SqlValue> {
+    pub fn eval_aggr_expr_inner(&self, label: AggrExprLabel, tuple: &Tuple) -> Result<SqlValue> {
         let aggr_expr = self.resolve_aggr_expr(label);
         let value_expr = aggr_expr.aggregated;
         let value_expr_ph2 = value_expr.resolve_colref(tuple)?;

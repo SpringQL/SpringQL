@@ -8,7 +8,7 @@ use crate::{
 
 #[allow(clippy::enum_variant_names)]
 #[derive(Clone, PartialEq, Debug)]
-pub(in crate::sql_processor) enum ParseSuccess {
+pub enum ParseSuccess {
     CreateSourceStream(StreamModel),
     CreateSourceReader(SourceReaderModel),
     CreateStream(StreamModel),
@@ -18,8 +18,8 @@ pub(in crate::sql_processor) enum ParseSuccess {
 }
 
 #[derive(Clone, PartialEq, Debug)]
-pub(in crate::sql_processor) struct CreatePump {
-    pub(in crate::sql_processor) pump_name: PumpName,
-    pub(in crate::sql_processor) select_stream_syntax: SelectStreamSyntax,
-    pub(in crate::sql_processor) insert_plan: InsertPlan,
+pub struct CreatePump {
+    pub pump_name: PumpName,
+    pub select_stream_syntax: SelectStreamSyntax,
+    pub insert_plan: InsertPlan,
 }

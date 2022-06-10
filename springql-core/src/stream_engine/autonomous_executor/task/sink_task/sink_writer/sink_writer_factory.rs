@@ -8,10 +8,10 @@ use crate::{
     },
 };
 
-pub(in crate::stream_engine) struct SinkWriterFactory;
+pub struct SinkWriterFactory;
 
 impl SinkWriterFactory {
-    pub(in crate::stream_engine) fn sink(
+    pub fn sink(
         sink_writer_type: &SinkWriterType,
         options: &Options,
         config: &SpringSinkWriterConfig,

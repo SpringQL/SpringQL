@@ -17,16 +17,14 @@ use crate::{
 
 #[allow(clippy::type_complexity)]
 #[derive(Debug)]
-pub(in crate::stream_engine) struct SourceReaderRepository {
+pub struct SourceReaderRepository {
     config: SpringSourceReaderConfig,
 
     sources: RwLock<HashMap<SourceReaderName, Arc<Mutex<Box<dyn SourceReader>>>>>,
 }
 
 impl SourceReaderRepository {
-    pub(in crate::stream_engine::autonomous_executor) fn new(
-        config: SpringSourceReaderConfig,
-    ) -> Self {
+    pub fn new(config: SpringSourceReaderConfig) -> Self {
         Self {
             config,
             sources: RwLock::default(),
@@ -39,10 +37,7 @@ impl SourceReaderRepository {
     ///
     /// - `SpringError::ForeignIo` when:
     ///   - failed to start subtask.
-    pub(in crate::stream_engine::autonomous_executor) fn register(
-        &self,
-        source_reader: &SourceReaderModel,
-    ) -> Result<()> {
+    pub fn register(&self, source_reader: &SourceReaderModel) -> Result<()> {
         let mut sources = self.sources.write();
 
         if sources.get(source_reader.name()).is_some() {
@@ -66,10 +61,7 @@ impl SourceReaderRepository {
     /// # Panics
     ///
     /// `name` is not registered yet
-    pub(in crate::stream_engine::autonomous_executor) fn get_source_reader(
-        &self,
-        name: &SourceReaderName,
-    ) -> Arc<Mutex<Box<dyn SourceReader>>> {
+    pub fn get_source_reader(&self, name: &SourceReaderName) -> Arc<Mutex<Box<dyn SourceReader>>> {
         self.sources
             .read()
             .get(name)

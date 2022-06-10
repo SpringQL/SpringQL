@@ -21,10 +21,10 @@ use crate::stream_engine::autonomous_executor::{
 const TASK_WAIT_MSEC: u64 = 10;
 
 #[derive(Debug)]
-pub(super) struct TaskWorkerThreadHandler;
+pub struct TaskWorkerThreadHandler;
 
 #[derive(Copy, Clone, Eq, PartialEq, Debug, new)]
-pub(in crate::stream_engine::autonomous_executor) struct TaskWorkerId(u16);
+pub struct TaskWorkerId(u16);
 impl Display for TaskWorkerId {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", self.0)
@@ -32,17 +32,17 @@ impl Display for TaskWorkerId {
 }
 
 #[derive(Debug, new)]
-pub(in crate::stream_engine::autonomous_executor) struct TaskWorkerThreadArg {
-    pub(super) worker_id: TaskWorkerId,
+pub struct TaskWorkerThreadArg {
+    pub worker_id: TaskWorkerId,
     task_executor_lock: Arc<TaskExecutorLock>,
     repos: Arc<Repositories>,
 }
 
 #[derive(Debug)]
-pub(super) struct TaskWorkerLoopState<S: Scheduler> {
-    pub(super) pipeline_derivatives: Option<Arc<PipelineDerivatives>>,
-    pub(super) metrics: Option<Arc<PerformanceMetrics>>,
-    pub(super) scheduler: S,
+pub struct TaskWorkerLoopState<S: Scheduler> {
+    pub pipeline_derivatives: Option<Arc<PipelineDerivatives>>,
+    pub metrics: Option<Arc<PerformanceMetrics>>,
+    pub scheduler: S,
 }
 
 impl<S: Scheduler> WorkerThreadLoopState for TaskWorkerLoopState<S> {
@@ -68,7 +68,7 @@ impl<S: Scheduler> WorkerThreadLoopState for TaskWorkerLoopState<S> {
 }
 
 impl TaskWorkerThreadHandler {
-    pub(super) fn main_loop_cycle<S>(
+    pub fn main_loop_cycle<S>(
         current_state: TaskWorkerLoopState<S>,
         thread_arg: &TaskWorkerThreadArg,
         event_queue: &NonBlockingEventQueue,

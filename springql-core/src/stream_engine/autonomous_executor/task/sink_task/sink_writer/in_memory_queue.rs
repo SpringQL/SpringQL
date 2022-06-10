@@ -10,7 +10,7 @@ use crate::{
 };
 
 #[derive(Debug)]
-pub(in crate::stream_engine) struct InMemoryQueueSinkWriter(QueueName);
+pub struct InMemoryQueueSinkWriter(QueueName);
 
 impl SinkWriter for InMemoryQueueSinkWriter {
     fn start(options: &Options, _config: &SpringSinkWriterConfig) -> Result<Self>

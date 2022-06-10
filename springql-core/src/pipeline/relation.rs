@@ -3,7 +3,7 @@
 mod column;
 mod sql_type;
 
-pub(crate) use column::{ColumnConstraint, ColumnDataType, ColumnDefinition};
-pub(crate) use sql_type::{
+pub use column::{ColumnConstraint, ColumnDataType, ColumnDefinition};
+pub use sql_type::{
     F32LooseType, I64LooseType, NumericComparableType, SqlType, StringComparableLoseType,
 };

@@ -13,7 +13,7 @@ use crate::{
 };
 
 impl StreamName {
-    pub(crate) fn factory(name: &str) -> Self {
+    pub fn factory(name: &str) -> Self {
         Self::new(name.to_string())
     }
 }
@@ -70,7 +70,7 @@ impl<E: ValueExprType> BinaryExpr<E> {
 }
 
 impl ColumnReference {
-    pub(crate) fn factory(stream_name: &str, column_name: &str) -> Self {
+    pub fn factory(stream_name: &str, column_name: &str) -> Self {
         Self::new(
             StreamName::factory(stream_name),
             ColumnName::new(column_name.to_string()),

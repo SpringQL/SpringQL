@@ -41,10 +41,10 @@ use crate::{
 };
 
 #[derive(Debug, Default)]
-pub(super) struct PestParserImpl;
+pub struct PestParserImpl;
 
 impl PestParserImpl {
-    pub(super) fn parse<S: Into<String>>(&self, sql: S) -> Result<ParseSuccess> {
+    pub fn parse<S: Into<String>>(&self, sql: S) -> Result<ParseSuccess> {
         let sql = sql.into();
 
         let pairs: Pairs<Rule> = GeneratedParser::parse(Rule::command, &sql)

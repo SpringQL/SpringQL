@@ -6,26 +6,26 @@ use crate::{
 };
 
 #[derive(Clone, Eq, PartialEq, Debug)]
-pub(in crate::sql_processor) enum ColumnConstraintSyntax {
+pub enum ColumnConstraintSyntax {
     NotNull, // this is treated as data type in pipeline
     Rowtime,
 }
 
 #[derive(Clone, Eq, PartialEq, Debug)]
-pub(in crate::sql_processor) struct OptionSyntax {
-    pub(in crate::sql_processor) option_name: String,
-    pub(in crate::sql_processor) option_value: String,
+pub struct OptionSyntax {
+    pub option_name: String,
+    pub option_value: String,
 }
 
 #[derive(Clone, PartialEq, Debug)]
 pub struct SelectStreamSyntax {
-    pub(in crate::sql_processor) fields: Vec<SelectFieldSyntax>,
-    pub(in crate::sql_processor) from_item: FromItemSyntax,
+    pub fields: Vec<SelectFieldSyntax>,
+    pub from_item: FromItemSyntax,
 
     /// Empty when no GROUP BY clause is supplied.
-    pub(in crate::sql_processor) grouping_elements: Vec<GroupingElementSyntax>,
+    pub grouping_elements: Vec<GroupingElementSyntax>,
 
-    pub(in crate::sql_processor) window_clause: Option<WindowParameter>,
+    pub window_clause: Option<WindowParameter>,
 }
 
 #[derive(Clone, PartialEq, Debug)]
@@ -41,7 +41,7 @@ pub enum SelectFieldSyntax {
 }
 
 #[derive(Clone, PartialEq, Debug)]
-pub(in crate::sql_processor) enum FromItemSyntax {
+pub enum FromItemSyntax {
     StreamVariant(SubFromItemSyntax),
     JoinVariant {
         left: SubFromItemSyntax,
@@ -54,9 +54,9 @@ pub(in crate::sql_processor) enum FromItemSyntax {
 }
 
 #[derive(Clone, PartialEq, Debug)]
-pub(in crate::sql_processor) struct SubFromItemSyntax {
-    pub(in crate::sql_processor) stream_name: StreamName,
-    pub(in crate::sql_processor) alias: Option<CorrelationAlias>,
+pub struct SubFromItemSyntax {
+    pub stream_name: StreamName,
+    pub alias: Option<CorrelationAlias>,
 }
 
 #[derive(Clone, PartialEq, Debug)]
@@ -66,7 +66,7 @@ pub enum GroupingElementSyntax {
 }
 
 #[derive(Clone, Eq, PartialEq, Debug)]
-pub(in crate::sql_processor) enum DurationFunction {
+pub enum DurationFunction {
     Millis,
     Secs,
 }

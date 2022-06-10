@@ -4,7 +4,7 @@ use crate::pipeline::{PumpModel, SinkWriterModel, SourceReaderModel, StreamModel
 
 #[allow(clippy::enum_variant_names)]
 #[derive(Clone, PartialEq, Debug)]
-pub(crate) enum AlterPipelineCommand {
+pub enum AlterPipelineCommand {
     CreateSourceStream(StreamModel),
     CreateSourceReader(SourceReaderModel),
     CreateStream(StreamModel),

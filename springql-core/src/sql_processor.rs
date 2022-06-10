@@ -1,6 +1,6 @@
 // This file is part of https://github.com/SpringQL/SpringQL which is licensed under MIT OR Apache-2.0. See file LICENSE-MIT or LICENSE-APACHE for full license details.
 
-pub(crate) mod sql_parser;
+pub mod sql_parser;
 
 mod query_planner;
 
@@ -21,13 +21,13 @@ use crate::{
 };
 
 #[derive(Debug, Default)]
-pub(crate) struct SqlProcessor(SqlParser);
+pub struct SqlProcessor(SqlParser);
 
 impl SqlProcessor {
     /// # Failures
     ///
     /// - `SpringError::Sql` on syntax and semantics error.
-    pub(crate) fn compile<S: Into<String>>(&self, sql: S, pipeline: &Pipeline) -> Result<Command> {
+    pub fn compile<S: Into<String>>(&self, sql: S, pipeline: &Pipeline) -> Result<Command> {
         let command = match self.0.parse(sql)? {
             ParseSuccess::CreateSourceStream(source_stream_model) => {
                 self.compile_create_source_stream(source_stream_model, pipeline)?

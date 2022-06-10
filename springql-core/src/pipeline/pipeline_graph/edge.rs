@@ -8,7 +8,7 @@ use crate::pipeline::{
 };
 
 #[derive(Clone, Debug)]
-pub(crate) enum Edge {
+pub enum Edge {
     Pump {
         /// A pump can have 2 or more upstreams (on JOIN, for example). Then, graph edges share the same PumpModel.
         pump_model: Arc<PumpModel>,
