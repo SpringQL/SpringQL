@@ -16,7 +16,10 @@ use crate::{
         Options,
     },
     stream_engine::autonomous_executor::{
-        row::foreign_row::{format::json::JsonObject, source_row::json_source_row::JsonSourceRow},
+        row::foreign_row::{
+            format::json::JsonObject,
+            source_row::{json_source_row::JsonSourceRow, SourceRow},
+        },
         task::source_task::source_reader::SourceReader,
     },
 };
@@ -72,7 +75,7 @@ impl SourceReader for NetServerSourceReader {
         })
     }
 
-    fn next_row(&mut self) -> Result<JsonSourceRow> {
+    fn next_row(&mut self) -> Result<SourceRow> {
         let rx = self.rx();
 
         rx.try_recv()
@@ -82,7 +85,7 @@ impl SourceReader for NetServerSourceReader {
             })
             .map(|json| {
                 let json_obj = JsonObject::new(json);
-                JsonSourceRow::from_json(json_obj)
+                SourceRow::Json(JsonSourceRow::from_json(json_obj))
             })
             .map_err(|e| SpringError::ForeignSourceTimeout {
                 source: anyhow::Error::from(e),
@@ -173,15 +176,15 @@ mod tests {
 
         assert_eq!(
             reader.next_row()?,
-            JsonSourceRow::fx_city_temperature_tokyo()
+            SourceRow::Json(JsonSourceRow::fx_city_temperature_tokyo())
         );
         assert_eq!(
             reader.next_row()?,
-            JsonSourceRow::fx_city_temperature_osaka()
+            SourceRow::Json(JsonSourceRow::fx_city_temperature_osaka())
         );
         assert_eq!(
             reader.next_row()?,
-            JsonSourceRow::fx_city_temperature_london()
+            SourceRow::Json(JsonSourceRow::fx_city_temperature_london())
         );
         assert!(matches!(
             reader.next_row().unwrap_err(),

@@ -13,7 +13,7 @@ use crate::{
     api::SpringSourceReaderConfig,
     pipeline::option::{net_options::NetClientOptions, Options},
     stream_engine::autonomous_executor::{
-        row::foreign_row::{format::json::JsonObject, source_row::json_source_row::JsonSourceRow},
+        row::foreign_row::source_row::{source_row_format::SourceRowFormat, SourceRow},
         task::source_task::source_reader::SourceReader,
     },
 };
@@ -62,7 +62,7 @@ impl SourceReader for NetClientSourceReader {
         })
     }
 
-    fn next_row(&mut self) -> Result<JsonSourceRow> {
+    fn next_row(&mut self) -> Result<SourceRow> {
         let mut json_s = String::new();
 
         self.tcp_stream_reader
@@ -86,22 +86,9 @@ impl SourceReader for NetClientSourceReader {
 }
 
 impl NetClientSourceReader {
-    fn parse_resp(&self, json_s: &str) -> Result<JsonSourceRow> {
-        let json_v = serde_json::from_str(json_s)
-            .with_context(|| {
-                format!(
-                    r#"failed to parse message from foreign stream as JSON ("{}")"#,
-                    json_s,
-                )
-            })
-            .map_err(|e| SpringError::ForeignIo {
-                source: e,
-                foreign_info: ForeignInfo::GenericTcp(self.foreign_addr),
-            })?;
-
-        let json_obj = JsonObject::new(json_v);
-
-        Ok(JsonSourceRow::from_json(json_obj))
+    // TODO other formats than JSON
+    fn parse_resp(&self, json_s: &str) -> Result<SourceRow> {
+        SourceRow::from_bytes(SourceRowFormat::Json, json_s.as_bytes())
     }
 }
 
@@ -115,6 +102,7 @@ mod tests {
     use super::*;
     use crate::pipeline::option::options_builder::OptionsBuilder;
     use crate::stream_engine::autonomous_executor::row::foreign_row::format::json::JsonObject;
+    use crate::stream_engine::autonomous_executor::row::foreign_row::source_row::json_source_row::JsonSourceRow;
 
     #[test]
     fn test_source_tcp() -> crate::api::error::Result<()> {
@@ -139,9 +127,18 @@ mod tests {
         let mut subtask =
             NetClientSourceReader::start(&options, &SpringSourceReaderConfig::fx_default())?;
 
-        assert_eq!(subtask.next_row()?, JsonSourceRow::from_json(j2));
-        assert_eq!(subtask.next_row()?, JsonSourceRow::from_json(j3));
-        assert_eq!(subtask.next_row()?, JsonSourceRow::from_json(j1));
+        assert_eq!(
+            subtask.next_row()?,
+            SourceRow::Json(JsonSourceRow::from_json(j2))
+        );
+        assert_eq!(
+            subtask.next_row()?,
+            SourceRow::Json(JsonSourceRow::from_json(j3))
+        );
+        assert_eq!(
+            subtask.next_row()?,
+            SourceRow::Json(JsonSourceRow::from_json(j1))
+        );
         assert!(matches!(
             subtask.next_row().unwrap_err(),
             SpringError::ForeignSourceTimeout { .. }

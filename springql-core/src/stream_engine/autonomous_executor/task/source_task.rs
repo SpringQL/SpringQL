@@ -18,7 +18,7 @@ use crate::{
                 MetricsUpdateByTaskExecution, OutQueueMetricsUpdateByTask, TaskMetricsUpdateByTask,
             },
             repositories::Repositories,
-            row::{foreign_row::source_row::SourceRow, Row},
+            row::Row,
             task::task_context::TaskContext,
             task_graph::{
                 queue_id::{row_queue_id::RowQueueId, window_queue_id::WindowQueueId, QueueId},

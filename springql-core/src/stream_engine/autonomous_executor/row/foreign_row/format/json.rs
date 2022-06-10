@@ -11,7 +11,7 @@ use crate::{
 };
 
 #[derive(Clone, Eq, PartialEq, Debug, new)]
-pub(in crate::stream_engine) struct JsonObject(serde_json::Value);
+pub(crate) struct JsonObject(serde_json::Value);
 
 impl ToString for JsonObject {
     fn to_string(&self) -> String {
@@ -26,6 +26,21 @@ impl From<JsonObject> for serde_json::Value {
 }
 
 impl JsonObject {
+    /// # Failure
+    ///
+    /// - `SpringError::InvalidFormat` when:
+    ///   - `json_s` cannot be parsed as JSON
+    pub(in crate::stream_engine::autonomous_executor) fn parse(json_s: &str) -> Result<Self> {
+        let json_v = serde_json::from_str(json_s)
+            .with_context(|| "failed to parse message from foreign stream as JSON")
+            .map_err(|e| SpringError::InvalidFormat {
+                s: json_s.to_string(),
+                source: e,
+            })?;
+
+        Ok(Self::new(json_v))
+    }
+
     /// # Failure
     ///
     /// - `SpringError::InvalidFormat` when:

@@ -6,7 +6,7 @@ use crate::{
     api::error::Result,
     pipeline::stream_model::StreamModel,
     stream_engine::autonomous_executor::row::{
-        column::stream_column::StreamColumns, foreign_row::{format::json::JsonObject, source_row::SourceRow}, Row,
+        column::stream_column::StreamColumns, foreign_row::format::json::JsonObject, Row,
     },
 };
 
@@ -14,16 +14,19 @@ use crate::{
 ///
 /// Immediately converted into `Row` on stream-engine boundary.
 #[derive(Eq, PartialEq, Debug)]
-pub(in crate::stream_engine) struct JsonSourceRow(JsonObject);
+pub struct JsonSourceRow(JsonObject);
 
 impl JsonSourceRow {
-    pub(in crate::stream_engine) fn from_json(json: JsonObject) -> Self {
+    pub(crate) fn parse(json_s: &str) -> Result<Self> {
+        let json_obj = JsonObject::parse(json_s)?;
+        Ok(Self::from_json(json_obj))
+    }
+
+    pub(crate) fn from_json(json: JsonObject) -> Self {
         Self(json)
     }
-}
 
-impl SourceRow for JsonSourceRow {
-    fn into_row(self, stream_model: Arc<StreamModel>) -> Result<Row> {
+    pub(crate) fn into_row(self, stream_model: Arc<StreamModel>) -> Result<Row> {
         // SourceRow -> JsonObject -> HashMap<ColumnName, SqlValue> -> StreamColumns -> Row
 
         let column_values = self.0.into_column_values()?;
