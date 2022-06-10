@@ -11,7 +11,7 @@ use crate::{
 };
 
 #[derive(Clone, Eq, PartialEq, Debug, new)]
-pub(crate) struct JsonObject(serde_json::Value);
+pub struct JsonObject(serde_json::Value);
 
 impl ToString for JsonObject {
     fn to_string(&self) -> String {

@@ -101,7 +101,7 @@ mod tests {
 
     use super::*;
     use crate::pipeline::OptionsBuilder;
-    use crate::stream_engine::autonomous_executor::row::foreign_row::format::json::JsonObject;
+    use crate::stream_engine::autonomous_executor::row::foreign_row::format::JsonObject;
     use crate::stream_engine::autonomous_executor::row::foreign_row::source_row::json_source_row::JsonSourceRow;
 
     #[test]

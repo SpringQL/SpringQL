@@ -14,7 +14,7 @@ use crate::{
     pipeline::{NetProtocol, NetServerOptions, Options},
     stream_engine::autonomous_executor::{
         row::foreign_row::{
-            format::json::JsonObject,
+            format::JsonObject,
             source_row::{json_source_row::JsonSourceRow, SourceRow},
         },
         task::source_task::source_reader::SourceReader,
