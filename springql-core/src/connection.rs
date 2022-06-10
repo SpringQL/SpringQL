@@ -26,13 +26,13 @@ fn setup_logger() {
 /// 1 stream pipeline has only 1 connection.
 /// In other words, the lifecycle of Connection and internal stream pipeline are the same.
 #[derive(Debug)]
-pub struct Connection {
+pub(crate) struct Connection {
     engine: EngineMutex,
     sql_processor: SqlProcessor,
 }
 
 impl Connection {
-    pub(crate) fn new(config: &SpringConfig) -> Self {
+    pub fn new(config: &SpringConfig) -> Self {
         setup_logger();
 
         let engine = EngineMutex::new(config);
@@ -44,7 +44,7 @@ impl Connection {
         }
     }
 
-    pub(crate) fn command(&self, sql: &str) -> Result<()> {
+    pub fn command(&self, sql: &str) -> Result<()> {
         let mut engine = self.engine.get()?;
 
         let command = self.sql_processor.compile(sql, engine.current_pipeline())?;
@@ -54,7 +54,7 @@ impl Connection {
         }
     }
 
-    pub(crate) fn pop(&self, queue: &str) -> Result<Row> {
+    pub fn pop(&self, queue: &str) -> Result<Row> {
         const SLEEP_MSECS: u64 = 10;
 
         let mut engine = self.engine.get()?;
@@ -70,7 +70,7 @@ impl Connection {
         }
     }
 
-    pub(crate) fn pop_non_blocking(&self, queue: &str) -> Result<Option<Row>> {
+    pub fn pop_non_blocking(&self, queue: &str) -> Result<Option<Row>> {
         let mut engine = self.engine.get()?;
         let sink_row =
             engine.pop_in_memory_queue_non_blocking(QueueName::new(queue.to_string()))?;

@@ -2,18 +2,20 @@
 
 pub mod error;
 mod spring_config;
-use crate::stream_engine::{Row, SqlValue};
 pub use crate::{
     api::{
         error::{Result, SpringError},
         spring_config::*,
         SpringConfig,
     },
-    connection::Connection,
     stream_engine::{
         time::{duration::event_duration::SpringEventDuration, timestamp::SpringTimestamp},
         SpringValue,
     },
+};
+use crate::{
+    connection::Connection,
+    stream_engine::{Row, SqlValue},
 };
 
 /// Pipeline.
