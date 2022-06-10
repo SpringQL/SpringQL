@@ -13,9 +13,7 @@ use crate::{
     api::SpringSinkWriterConfig,
     pipeline::{NetClientOptions, Options},
     stream_engine::{
-        autonomous_executor::{
-            row::foreign_row::JsonObject, task::sink_task::sink_writer::SinkWriter,
-        },
+        autonomous_executor::{row::JsonObject, task::sink_task::sink_writer::SinkWriter},
         Row,
     },
 };
@@ -90,9 +88,7 @@ mod tests {
     use springql_foreign_service::sink::ForeignSink;
 
     use super::*;
-    use crate::{
-        pipeline::OptionsBuilder, stream_engine::autonomous_executor::row::foreign_row::JsonObject,
-    };
+    use crate::{pipeline::OptionsBuilder, stream_engine::autonomous_executor::row::JsonObject};
 
     #[test]
     fn test_sink_writer_tcp() {

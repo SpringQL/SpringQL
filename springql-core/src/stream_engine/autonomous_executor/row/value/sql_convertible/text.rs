@@ -6,7 +6,7 @@ use crate::{
         autonomous_executor::row::value::{
             sql_convertible::ToNnSqlValue, sql_value::NnSqlValue, SpringValue,
         },
-        time::timestamp::SpringTimestamp,
+        time::SpringTimestamp,
     },
 };
 

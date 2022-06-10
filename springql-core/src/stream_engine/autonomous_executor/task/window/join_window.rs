@@ -3,7 +3,7 @@
 use crate::{
     pipeline::{JoinParameter, WindowOperationParameter, WindowParameter},
     stream_engine::autonomous_executor::task::window::{
-        panes::{pane::join_pane::JoinPane, Panes},
+        panes::{JoinPane, Panes},
         watermark::Watermark,
         Window,
     },
@@ -59,13 +59,10 @@ mod tests {
         expr_resolver::ExprResolver,
         expression::ValueExpr,
         pipeline::{ColumnName, ColumnReference, JoinParameter, JoinType, StreamName},
-        sql_processor::sql_parser::SelectFieldSyntax,
+        sql_processor::SelectFieldSyntax,
         stream_engine::{
-            autonomous_executor::task::window::panes::pane::join_pane::JoinDir,
-            time::{
-                duration::{event_duration::SpringEventDuration, SpringDuration},
-                timestamp::SpringTimestamp,
-            },
+            autonomous_executor::task::window::panes::JoinDir,
+            time::{SpringDuration, SpringEventDuration, SpringTimestamp},
             SqlValue, Tuple,
         },
     };

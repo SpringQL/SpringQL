@@ -1,8 +1,10 @@
 // This file is part of https://github.com/SpringQL/SpringQL which is licensed under MIT OR Apache-2.0. See file LICENSE-MIT or LICENSE-APACHE for full license details.
 
-pub mod performance_monitor_worker_thread;
+mod performance_monitor_worker_thread;
 
 mod web_console_reporter;
+
+pub use performance_monitor_worker_thread::PerformanceMonitorWorkerThread;
 
 use std::sync::Arc;
 
@@ -11,10 +13,8 @@ use crate::{
     stream_engine::autonomous_executor::{
         args::{Coordinators, EventQueues},
         main_job_lock::MainJobLock,
-        performance_monitor_worker::performance_monitor_worker_thread::{
-            PerformanceMonitorWorkerThread, PerformanceMonitorWorkerThreadArg,
-        },
-        worker::worker_handle::WorkerHandle,
+        performance_monitor_worker::performance_monitor_worker_thread::PerformanceMonitorWorkerThreadArg,
+        worker::WorkerHandle,
     },
 };
 

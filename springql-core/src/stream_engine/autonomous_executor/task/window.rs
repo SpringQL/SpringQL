@@ -1,20 +1,20 @@
 // This file is part of https://github.com/SpringQL/SpringQL which is licensed under MIT OR Apache-2.0. See file LICENSE-MIT or LICENSE-APACHE for full license details.
 
-pub mod aggregate;
-pub mod join_window;
-pub mod panes;
+mod aggregate;
+mod join_window;
+mod panes;
 
 mod watermark;
+
+pub use aggregate::{AggrWindow, AggregatedAndGroupingValues};
+pub use join_window::JoinWindow;
+pub use panes::{AggrPane, GroupByValues, JoinDir, JoinPane, Pane, Panes};
 
 use crate::{
     expr_resolver::ExprResolver,
     stream_engine::{
         autonomous_executor::{
-            performance_metrics::metrics_update_command::WindowInFlowByWindowTask,
-            task::window::{
-                panes::{pane::Pane, Panes},
-                watermark::Watermark,
-            },
+            performance_metrics::WindowInFlowByWindowTask, task::window::watermark::Watermark,
         },
         Tuple,
     },

@@ -7,12 +7,12 @@ use crate::{
     pipeline::{ColumnName, PipelineGraph, StreamModel},
     stream_engine::{
         autonomous_executor::{
-            performance_metrics::metrics_update_command::OutQueueMetricsUpdateByTask,
+            performance_metrics::OutQueueMetricsUpdateByTask,
             row::Row,
             task::{pump_task::pump_subtask::query_subtask::SqlValues, task_context::TaskContext},
-            task_graph::queue_id::QueueId,
+            task_graph::QueueId,
         },
-        command::insert_plan::InsertPlan,
+        command::InsertPlan,
     },
 };
 

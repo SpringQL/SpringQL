@@ -2,7 +2,7 @@
 
 #![doc = include_str!("stream_engine.md")]
 
-mod autonomous_executor;
+pub mod autonomous_executor;
 pub mod command;
 mod in_memory_queue_repository;
 mod sql_executor;
@@ -13,20 +13,13 @@ use std::sync::{Arc, Mutex, MutexGuard};
 use anyhow::anyhow;
 
 pub use crate::stream_engine::autonomous_executor::SpringValue;
-pub use autonomous_executor::{
-    row::{
-        value::{NnSqlValue, SqlCompareResult, SqlValue},
-        Row,
-    },
-    task::Tuple,
-};
+pub use autonomous_executor::{NnSqlValue, Row, SqlCompareResult, SqlValue, Tuple};
 
 use crate::{
     api::{error::Result, SpringConfig, SpringError},
     pipeline::{Pipeline, QueueName},
     stream_engine::{
-        autonomous_executor::AutonomousExecutor,
-        command::alter_pipeline_command::AlterPipelineCommand,
+        autonomous_executor::AutonomousExecutor, command::AlterPipelineCommand,
         in_memory_queue_repository::InMemoryQueueRepository, sql_executor::SqlExecutor,
     },
 };

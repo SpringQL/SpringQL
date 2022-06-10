@@ -2,7 +2,7 @@
 
 mod in_memory_queue;
 mod net;
-pub mod sink_writer_factory;
+mod sink_writer_factory;
 mod sink_writer_repository;
 
 pub use net::NetSinkWriter;

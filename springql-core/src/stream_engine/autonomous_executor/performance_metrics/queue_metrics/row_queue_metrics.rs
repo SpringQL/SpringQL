@@ -4,7 +4,7 @@ use crate::stream_engine::autonomous_executor::{
     performance_metrics::{
         calculation::floor0, metrics_update_command::MetricsUpdateByTaskExecution,
     },
-    task_graph::queue_id::row_queue_id::RowQueueId,
+    task_graph::RowQueueId,
 };
 
 /// Stock monitor of a row queue (including in-memory queue sink).

@@ -1,11 +1,14 @@
 // This file is part of https://github.com/SpringQL/SpringQL which is licensed under MIT OR Apache-2.0. See file LICENSE-MIT or LICENSE-APACHE for full license details.
 
-pub mod task_executor_lock;
-pub mod task_worker_thread_handler;
-
 mod generic_worker_pool;
 mod scheduler;
 mod source_worker_pool;
+mod task_executor_lock;
+mod task_worker_thread_handler;
+
+pub use task_executor_lock::{
+    TaskExecutionBarrierGuard, TaskExecutionLockGuard, TaskExecutorLock, TaskExecutorLockToken,
+};
 
 use std::sync::Arc;
 

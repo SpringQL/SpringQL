@@ -7,7 +7,7 @@ use std::collections::HashSet;
 use crate::stream_engine::autonomous_executor::{
     performance_metrics::PerformanceMetrics,
     task_executor::scheduler::Scheduler,
-    task_graph::{task_id::TaskId, TaskGraph},
+    task_graph::{TaskGraph, TaskId},
 };
 
 #[derive(Clone, Eq, PartialEq, Hash, Debug)]

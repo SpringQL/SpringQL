@@ -20,9 +20,9 @@ use crate::{
     api::error::Result,
     pipeline::{Edge, PipelineGraph},
     stream_engine::autonomous_executor::{
-        performance_metrics::metrics_update_command::MetricsUpdateByTaskExecution,
+        performance_metrics::MetricsUpdateByTaskExecution,
         task::{pump_task::PumpTask, sink_task::SinkTask},
-        task_graph::task_id::TaskId,
+        task_graph::TaskId,
     },
 };
 

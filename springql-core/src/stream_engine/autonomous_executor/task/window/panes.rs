@@ -1,14 +1,16 @@
 // This file is part of https://github.com/SpringQL/SpringQL which is licensed under MIT OR Apache-2.0. See file LICENSE-MIT or LICENSE-APACHE for full license details.
 
-pub mod pane;
+mod pane;
+
+pub use pane::{AggrPane, AggrPaneInner, GroupByValues, JoinDir, JoinPane, Pane};
 
 use std::cmp::Ordering;
 
 use crate::{
     pipeline::{WindowOperationParameter, WindowParameter},
     stream_engine::{
-        autonomous_executor::task::window::{panes::pane::Pane, watermark::Watermark},
-        time::{duration::SpringDuration, timestamp::SpringTimestamp},
+        autonomous_executor::task::window::watermark::Watermark,
+        time::{SpringDuration, SpringTimestamp},
     },
 };
 
@@ -134,13 +136,13 @@ mod tests {
     use std::str::FromStr;
 
     use crate::{
-        expr_resolver::{expr_label::ExprLabel, ExprResolver},
+        expr_resolver::{ExprLabel, ExprResolver},
         expression::{AggrExpr, ValueExpr},
         pipeline::{AggregateFunctionParameter, AggregateParameter, GroupByLabels},
-        sql_processor::sql_parser::SelectFieldSyntax,
+        sql_processor::SelectFieldSyntax,
         stream_engine::{
-            autonomous_executor::task::window::panes::pane::aggregate_pane::AggrPane,
-            time::duration::event_duration::SpringEventDuration,
+            autonomous_executor::task::window::panes::pane::AggrPane,
+            time::{SpringDuration, SpringEventDuration},
         },
     };
 

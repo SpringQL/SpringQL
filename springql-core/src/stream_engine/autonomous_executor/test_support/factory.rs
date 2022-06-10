@@ -2,22 +2,17 @@
 
 use std::sync::Arc;
 
-use springql_foreign_service::source::{source_input::ForeignSourceInput, ForeignSource};
+use springql_foreign_service::source::{ForeignSource, ForeignSourceInput};
 
 use crate::{
     api::SpringSourceReaderConfig,
     pipeline::{ColumnName, OptionsBuilder, StreamModel, StreamName, StreamShape},
     stream_engine::{
         autonomous_executor::{
-            row::{
-                column::StreamColumns,
-                column_values::ColumnValues,
-                value::{NnSqlValue, SqlValue},
-                Row,
-            },
+            row::{ColumnValues, NnSqlValue, Row, SqlValue, StreamColumns},
             task::{NetClientSourceReader, SourceReader, Tuple},
         },
-        time::timestamp::SpringTimestamp,
+        time::SpringTimestamp,
     },
 };
 

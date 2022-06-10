@@ -13,7 +13,7 @@ use std::fmt::Debug;
 
 use crate::{
     api::error::Result, api::SpringSourceReaderConfig, pipeline::Options,
-    stream_engine::autonomous_executor::row::foreign_row::SourceRow,
+    stream_engine::autonomous_executor::row::SourceRow,
 };
 
 /// Instance of SourceReaderModel.

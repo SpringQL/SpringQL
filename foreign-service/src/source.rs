@@ -1,6 +1,8 @@
 // This file is part of https://github.com/SpringQL/SpringQL which is licensed under MIT OR Apache-2.0. See file LICENSE-MIT or LICENSE-APACHE for full license details.
 
-pub mod source_input;
+mod source_input;
+
+pub use source_input::ForeignSourceInput;
 
 use std::{
     io::Write,
@@ -10,8 +12,6 @@ use std::{
 
 use anyhow::Result;
 use chrono::Duration;
-
-use crate::source::source_input::ForeignSourceInput;
 
 /// Runs as a TCP server and write(2)s foreign rows to socket.
 pub struct ForeignSource {

@@ -1,13 +1,14 @@
 // This file is part of https://github.com/SpringQL/SpringQL which is licensed under MIT OR Apache-2.0. See file LICENSE-MIT or LICENSE-APACHE for full license details.
 
-pub mod query_plan_operation;
+mod query_plan_operation;
+
+pub use query_plan_operation::{
+    CollectOp, GroupAggregateWindowOp, JoinOp, JoinWindowOp, LowerOps, ProjectionOp, UpperOps,
+};
 
 use crate::{
     expr_resolver::ExprResolver,
     pipeline::{PumpInputType, StreamName},
-    stream_engine::command::query_plan::query_plan_operation::{
-        JoinOp, JoinWindowOp, LowerOps, UpperOps,
-    },
 };
 
 /// Query plan from which an executor can do its work deterministically.

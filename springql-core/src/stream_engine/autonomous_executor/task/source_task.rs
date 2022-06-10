@@ -15,19 +15,16 @@ use crate::{
     pipeline::{SourceReaderModel, SourceReaderName, StreamName},
     stream_engine::{
         autonomous_executor::{
-            performance_metrics::metrics_update_command::{
+            performance_metrics::{
                 MetricsUpdateByTaskExecution, OutQueueMetricsUpdateByTask, TaskMetricsUpdateByTask,
             },
             repositories::Repositories,
             row::Row,
             task::task_context::TaskContext,
-            task_graph::{
-                queue_id::{row_queue_id::RowQueueId, window_queue_id::WindowQueueId, QueueId},
-                task_id::TaskId,
-            },
+            task_graph::{QueueId, RowQueueId, TaskId, WindowQueueId},
             AutonomousExecutor,
         },
-        time::duration::wall_clock_duration::wall_clock_stopwatch::WallClockStopwatch,
+        time::WallClockStopwatch,
     },
 };
 

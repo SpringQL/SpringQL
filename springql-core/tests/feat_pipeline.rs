@@ -5,7 +5,7 @@ mod test_support;
 use pretty_assertions::assert_eq;
 use serde_json::json;
 use springql_core::api::*;
-use springql_foreign_service::source::{source_input::ForeignSourceInput, ForeignSource};
+use springql_foreign_service::source::{ForeignSource, ForeignSourceInput};
 use springql_test_logger::setup_test_logger;
 
 use crate::test_support::apply_ddls;

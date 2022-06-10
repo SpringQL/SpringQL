@@ -34,8 +34,8 @@ use crate::{
         },
     },
     stream_engine::{
-        command::insert_plan::InsertPlan,
-        time::duration::{event_duration::SpringEventDuration, SpringDuration},
+        command::InsertPlan,
+        time::{SpringDuration, SpringEventDuration},
         NnSqlValue, SqlValue,
     },
 };

@@ -7,16 +7,11 @@ use std::{
 
 use crate::stream_engine::autonomous_executor::{
     args::{Coordinators, EventQueues},
-    event_queue::{
-        event::{Event, EventTag},
-        non_blocking_event_queue::NonBlockingEventQueue,
-        EventPoll,
-    },
+    event_queue::{Event, EventPoll, EventTag, NonBlockingEventQueue},
     main_job_lock::MainJobLock,
     memory_state_machine::MemoryStateTransition,
     performance_metrics::{
-        metrics_update_command::MetricsUpdateByTaskExecutionOrPurge,
-        performance_metrics_summary::PerformanceMetricsSummary, PerformanceMetrics,
+        MetricsUpdateByTaskExecutionOrPurge, PerformanceMetrics, PerformanceMetricsSummary,
     },
     pipeline_derivatives::PipelineDerivatives,
     worker::worker_handle::WorkerSetupCoordinator,

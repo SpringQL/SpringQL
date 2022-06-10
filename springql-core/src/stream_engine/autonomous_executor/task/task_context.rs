@@ -5,7 +5,7 @@ use std::sync::Arc;
 use crate::stream_engine::autonomous_executor::{
     pipeline_derivatives::PipelineDerivatives,
     repositories::Repositories,
-    task_graph::{queue_id::QueueId, task_id::TaskId},
+    task_graph::{QueueId, TaskId},
 };
 
 /// Holds everything needed for a task execution.

@@ -14,7 +14,7 @@ use crate::{
     },
     stream_engine::{
         autonomous_executor::{
-            performance_metrics::metrics_update_command::WindowInFlowByWindowTask,
+            performance_metrics::WindowInFlowByWindowTask,
             task::{
                 tuple::Tuple,
                 window::{
@@ -23,7 +23,7 @@ use crate::{
                 },
             },
         },
-        time::timestamp::SpringTimestamp,
+        time::SpringTimestamp,
         NnSqlValue, SqlValue,
     },
 };

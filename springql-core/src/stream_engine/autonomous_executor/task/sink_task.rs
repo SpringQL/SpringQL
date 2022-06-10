@@ -12,16 +12,16 @@ use crate::{
     pipeline::{SinkWriterModel, SinkWriterName, StreamName},
     stream_engine::{
         autonomous_executor::{
-            performance_metrics::metrics_update_command::{
+            performance_metrics::{
                 InQueueMetricsUpdateByCollect, InQueueMetricsUpdateByTask,
                 MetricsUpdateByTaskExecution, TaskMetricsUpdateByTask,
             },
             repositories::Repositories,
             row::Row,
             task::task_context::TaskContext,
-            task_graph::{queue_id::QueueId, task_id::TaskId},
+            task_graph::{QueueId, TaskId},
         },
-        time::duration::wall_clock_duration::wall_clock_stopwatch::WallClockStopwatch,
+        time::WallClockStopwatch,
     },
 };
 

@@ -3,7 +3,7 @@
 use crate::{
     pipeline::{PumpName, SinkWriterModel, SourceReaderModel, StreamModel},
     sql_processor::sql_parser::syntax::SelectStreamSyntax,
-    stream_engine::command::insert_plan::InsertPlan,
+    stream_engine::command::InsertPlan,
 };
 
 #[allow(clippy::enum_variant_names)]

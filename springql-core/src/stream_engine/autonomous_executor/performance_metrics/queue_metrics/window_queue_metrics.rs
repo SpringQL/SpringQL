@@ -4,7 +4,7 @@ use crate::stream_engine::autonomous_executor::{
     performance_metrics::{
         calculation::floor0, metrics_update_command::MetricsUpdateByTaskExecution,
     },
-    task_graph::queue_id::window_queue_id::WindowQueueId,
+    task_graph::WindowQueueId,
 };
 
 /// Stock monitor of a window queue.

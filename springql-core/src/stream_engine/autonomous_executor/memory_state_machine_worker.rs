@@ -10,7 +10,7 @@
 //! change their scheduler on Moderate and Severe state.
 //! On Critical state, generic workers are stopped and purger worker cleans all rows and windows.
 
-pub mod memory_state_machine_worker_thread;
+mod memory_state_machine_worker_thread;
 
 use std::sync::Arc;
 
@@ -23,7 +23,7 @@ use crate::{
         memory_state_machine_worker::memory_state_machine_worker_thread::{
             MemoryStateMachineWorkerThread, MemoryStateMachineWorkerThreadArg,
         },
-        worker::worker_handle::WorkerHandle,
+        worker::WorkerHandle,
     },
 };
 

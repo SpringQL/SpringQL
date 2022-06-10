@@ -8,7 +8,7 @@ use crate::{
         query_planner::SelectSyntaxAnalyzer,
         sql_parser::{FromItemSyntax, SubFromItemSyntax},
     },
-    stream_engine::command::query_plan::query_plan_operation::{CollectOp, JoinOp, JoinWindowOp},
+    stream_engine::command::{CollectOp, JoinOp, JoinWindowOp},
 };
 
 impl SelectSyntaxAnalyzer {

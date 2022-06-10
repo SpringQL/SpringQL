@@ -3,10 +3,7 @@
 use crate::{
     api::SpringConfig,
     stream_engine::autonomous_executor::{
-        queue::{
-            row_queue_repository::RowQueueRepository,
-            window_queue_repository::WindowQueueRepository,
-        },
+        queue::{RowQueueRepository, WindowQueueRepository},
         task::{SinkWriterRepository, SourceReaderRepository},
     },
 };

@@ -34,7 +34,7 @@ use std::{cmp::min, collections::HashSet, iter};
 use crate::stream_engine::autonomous_executor::{
     performance_metrics::PerformanceMetrics,
     task_executor::scheduler::{Scheduler, MAX_TASK_SERIES},
-    task_graph::{task_id::TaskId, TaskGraph},
+    task_graph::{TaskGraph, TaskId},
 };
 
 #[derive(Clone, PartialEq, Debug)]

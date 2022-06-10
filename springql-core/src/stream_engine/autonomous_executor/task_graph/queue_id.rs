@@ -1,14 +1,12 @@
 // This file is part of https://github.com/SpringQL/SpringQL which is licensed under MIT OR Apache-2.0. See file LICENSE-MIT or LICENSE-APACHE for full license details.
 
-pub mod row_queue_id;
-pub mod window_queue_id;
+mod row_queue_id;
+mod window_queue_id;
 
-use crate::{
-    pipeline::{PumpInputType, PumpModel, SinkWriterModel, StreamName},
-    stream_engine::autonomous_executor::task_graph::queue_id::{
-        row_queue_id::RowQueueId, window_queue_id::WindowQueueId,
-    },
-};
+pub use row_queue_id::RowQueueId;
+pub use window_queue_id::WindowQueueId;
+
+use crate::pipeline::{PumpInputType, PumpModel, SinkWriterModel, StreamName};
 
 #[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, new)]
 pub enum QueueId {

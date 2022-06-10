@@ -6,10 +6,10 @@ use crate::{
     expr_resolver::ExprResolver,
     pipeline::{JoinParameter, WindowParameter},
     stream_engine::autonomous_executor::{
-        performance_metrics::metrics_update_command::WindowInFlowByWindowTask,
+        performance_metrics::WindowInFlowByWindowTask,
         task::{
             tuple::Tuple,
-            window::{join_window::JoinWindow, panes::pane::join_pane::JoinDir, Window},
+            window::{JoinDir, JoinWindow, Window},
         },
     },
 };

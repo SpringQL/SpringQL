@@ -11,18 +11,18 @@ use crate::{
     pipeline::{PipelineGraph, PumpModel},
     stream_engine::{
         autonomous_executor::{
-            performance_metrics::metrics_update_command::{
+            performance_metrics::{
                 InQueueMetricsUpdateByTask, MetricsUpdateByTaskExecution,
                 OutQueueMetricsUpdateByTask, TaskMetricsUpdateByTask,
             },
             task::{
                 pump_task::pump_subtask::{InsertSubtask, QuerySubtask},
                 task_context::TaskContext,
-                window::{aggregate::AggrWindow, join_window::JoinWindow},
+                window::{AggrWindow, JoinWindow},
             },
-            task_graph::task_id::TaskId,
+            task_graph::TaskId,
         },
-        time::duration::wall_clock_duration::wall_clock_stopwatch::WallClockStopwatch,
+        time::WallClockStopwatch,
     },
 };
 

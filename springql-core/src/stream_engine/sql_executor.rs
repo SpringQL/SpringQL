@@ -7,7 +7,7 @@ use crate::{
     pipeline::{
         Pipeline, PipelineVersion, PumpModel, SinkWriterModel, SourceReaderModel, StreamModel,
     },
-    stream_engine::command::alter_pipeline_command::AlterPipelineCommand,
+    stream_engine::command::AlterPipelineCommand,
 };
 
 /// Executor of SQL.

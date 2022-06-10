@@ -2,13 +2,11 @@
 
 use std::sync::Arc;
 
-use super::{
-    event_queue::{
-        blocking_event_queue::BlockingEventQueue, non_blocking_event_queue::NonBlockingEventQueue,
-    },
+use crate::stream_engine::autonomous_executor::{
+    event_queue::{BlockingEventQueue, NonBlockingEventQueue},
     main_job_lock::MainJobLock,
-    task_executor::task_executor_lock::TaskExecutorLock,
-    worker::worker_handle::{WorkerSetupCoordinator, WorkerStopCoordinator},
+    task_executor::TaskExecutorLock,
+    worker::{WorkerSetupCoordinator, WorkerStopCoordinator},
 };
 
 #[derive(Clone, Debug, new)]

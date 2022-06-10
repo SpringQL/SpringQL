@@ -20,7 +20,7 @@ use ordered_float::OrderedFloat;
 use crate::{
     api::error::{Result, SpringError},
     mem_size::MemSize,
-    stream_engine::time::duration::event_duration::SpringEventDuration,
+    stream_engine::time::SpringEventDuration,
 };
 
 /// SQL-typed value that is efficiently compressed.

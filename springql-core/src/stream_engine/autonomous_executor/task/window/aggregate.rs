@@ -6,11 +6,11 @@ use anyhow::anyhow;
 
 use crate::{
     api::error::{Result, SpringError},
-    expr_resolver::expr_label::{AggrExprLabel, ValueExprLabel},
+    expr_resolver::{AggrExprLabel, ValueExprLabel},
     pipeline::{WindowOperationParameter, WindowParameter},
     stream_engine::{
         autonomous_executor::task::window::{
-            panes::{pane::aggregate_pane::AggrPane, Panes},
+            panes::{AggrPane, Panes},
             watermark::Watermark,
             Window,
         },
@@ -108,19 +108,16 @@ mod tests {
     use std::str::FromStr;
 
     use crate::{
-        expr_resolver::{expr_label::ExprLabel, ExprResolver},
+        expr_resolver::{ExprLabel, ExprResolver},
         expression::{AggrExpr, ValueExpr},
         pipeline::{
             AggrAlias, AggregateFunctionParameter, AggregateParameter, ColumnName, GroupByLabels,
             StreamName,
         },
-        sql_processor::sql_parser::SelectFieldSyntax,
+        sql_processor::SelectFieldSyntax,
         stream_engine::{
             autonomous_executor::task::tuple::Tuple,
-            time::{
-                duration::{event_duration::SpringEventDuration, SpringDuration},
-                timestamp::SpringTimestamp,
-            },
+            time::{SpringDuration, SpringEventDuration, SpringTimestamp},
         },
     };
 

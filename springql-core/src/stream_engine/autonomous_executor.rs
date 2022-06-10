@@ -1,16 +1,8 @@
 // This file is part of https://github.com/SpringQL/SpringQL which is licensed under MIT OR Apache-2.0. See file LICENSE-MIT or LICENSE-APACHE for full license details.
 
-pub use row::SpringValue;
-
-pub mod row;
-pub mod task;
-
-pub mod event_queue;
-
-pub mod args;
-pub mod main_job_lock;
-pub mod worker;
-
+mod args;
+mod event_queue;
+mod main_job_lock;
 mod memory_state_machine;
 mod memory_state_machine_worker;
 mod performance_metrics;
@@ -19,8 +11,24 @@ mod pipeline_derivatives;
 mod purger_worker;
 mod queue;
 mod repositories;
+mod row;
+mod task;
 mod task_executor;
 mod task_graph;
+mod worker;
+
+#[cfg(test)]
+pub mod test_support;
+
+pub use row::SpringValue;
+pub use row::{
+    ColumnValues, JsonObject, NnSqlValue, Row, SourceRow, SqlCompareResult, SqlValue,
+    SqlValueHashKey, StreamColumns,
+};
+pub use task::{
+    NetClientSourceReader, NetServerSourceReader, SinkWriterRepository, SourceReader,
+    SourceReaderRepository, SourceTask, Task, TaskContext, Tuple, Window,
+};
 
 use std::sync::Arc;
 
@@ -32,23 +40,17 @@ use crate::{
     pipeline::Pipeline,
     stream_engine::autonomous_executor::{
         args::{Coordinators, EventQueues, Locks},
-        event_queue::{
-            blocking_event_queue::BlockingEventQueue, event::Event,
-            non_blocking_event_queue::NonBlockingEventQueue,
-        },
+        event_queue::{BlockingEventQueue, Event, NonBlockingEventQueue},
         main_job_lock::MainJobLock,
         memory_state_machine_worker::MemoryStateMachineWorker,
         performance_monitor_worker::PerformanceMonitorWorker,
         pipeline_derivatives::PipelineDerivatives,
-        purger_worker::{purger_worker_thread::PurgerWorkerThreadArg, PurgerWorker},
+        purger_worker::{PurgerWorker, PurgerWorkerThreadArg},
         repositories::Repositories,
-        task_executor::{task_executor_lock::TaskExecutorLock, TaskExecutor},
-        worker::worker_handle::{WorkerSetupCoordinator, WorkerStopCoordinator},
+        task_executor::{TaskExecutor, TaskExecutorLock},
+        worker::{WorkerSetupCoordinator, WorkerStopCoordinator},
     },
 };
-
-#[cfg(test)]
-pub mod test_support;
 
 /// Automatically executes the latest task graph (uniquely deduced from the latest pipeline).
 ///

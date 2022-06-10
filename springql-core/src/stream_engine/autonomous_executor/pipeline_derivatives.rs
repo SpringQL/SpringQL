@@ -10,7 +10,7 @@ use crate::{
     stream_engine::autonomous_executor::{
         pipeline_derivatives::task_repository::TaskRepository,
         task::Task,
-        task_graph::{task_id::TaskId, TaskGraph},
+        task_graph::{TaskGraph, TaskId},
     },
 };
 

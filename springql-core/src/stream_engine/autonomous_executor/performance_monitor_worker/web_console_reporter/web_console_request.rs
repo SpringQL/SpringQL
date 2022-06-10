@@ -3,16 +3,8 @@
 use serde_json::json;
 
 use crate::stream_engine::autonomous_executor::{
-    performance_metrics::{
-        queue_metrics::{RowQueueMetrics, WindowQueueMetrics},
-        task_metrics::TaskMetrics,
-        PerformanceMetrics,
-    },
-    task_graph::{
-        queue_id::{row_queue_id::RowQueueId, window_queue_id::WindowQueueId},
-        task_id::TaskId,
-        TaskGraph,
-    },
+    performance_metrics::{PerformanceMetrics, RowQueueMetrics, TaskMetrics, WindowQueueMetrics},
+    task_graph::{RowQueueId, TaskGraph, TaskId, WindowQueueId},
 };
 
 #[derive(Clone, PartialEq, Debug)]

@@ -23,9 +23,7 @@ where
 mod tests {
     use float_cmp::approx_eq;
 
-    use crate::stream_engine::time::duration::{
-        wall_clock_duration::WallClockDuration, SpringDuration,
-    };
+    use crate::stream_engine::time::{SpringDuration, WallClockDuration};
 
     use super::*;
 

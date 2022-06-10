@@ -7,14 +7,12 @@ use crate::{
     pipeline::StreamName,
     stream_engine::{
         autonomous_executor::{
-            performance_metrics::metrics_update_command::InQueueMetricsUpdateByCollect,
+            performance_metrics::InQueueMetricsUpdateByCollect,
             repositories::Repositories,
             task::{task_context::TaskContext, tuple::Tuple},
-            task_graph::queue_id::{
-                row_queue_id::RowQueueId, window_queue_id::WindowQueueId, QueueId,
-            },
+            task_graph::{QueueId, RowQueueId, WindowQueueId},
         },
-        command::query_plan::query_plan_operation::CollectOp,
+        command::CollectOp,
     },
 };
 

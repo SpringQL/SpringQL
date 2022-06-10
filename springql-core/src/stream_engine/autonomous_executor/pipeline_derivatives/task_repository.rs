@@ -9,7 +9,7 @@ use crate::{
     pipeline::PipelineGraph,
     stream_engine::autonomous_executor::{
         task::{Task, Window},
-        task_graph::task_id::TaskId,
+        task_graph::TaskId,
     },
 };
 

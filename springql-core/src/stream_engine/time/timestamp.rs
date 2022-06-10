@@ -2,7 +2,8 @@
 
 //! Timestamp.
 
-pub mod system_timestamp;
+mod system_timestamp;
+pub use system_timestamp::SystemTimestamp;
 
 use std::{
     ops::{Add, Sub},

@@ -2,11 +2,8 @@
 
 use crate::stream_engine::autonomous_executor::{
     performance_metrics::PerformanceMetrics,
-    task_executor::scheduler::{
-        flow_efficient_scheduler::FlowEfficientScheduler,
-        memory_reducing_scheduler::MemoryReducingScheduler, Scheduler,
-    },
-    task_graph::{task_id::TaskId, TaskGraph},
+    task_executor::scheduler::{FlowEfficientScheduler, MemoryReducingScheduler, Scheduler},
+    task_graph::{TaskGraph, TaskId},
 };
 
 #[derive(Debug)]

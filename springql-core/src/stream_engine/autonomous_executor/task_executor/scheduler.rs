@@ -6,9 +6,13 @@
 //!
 //! A scheduler generates series of TaskId which a GenericWorker executes at a time.
 
-pub mod flow_efficient_scheduler;
-pub mod memory_reducing_scheduler;
-pub mod source_scheduler;
+mod flow_efficient_scheduler;
+mod memory_reducing_scheduler;
+mod source_scheduler;
+
+pub use flow_efficient_scheduler::FlowEfficientScheduler;
+pub use memory_reducing_scheduler::MemoryReducingScheduler;
+pub use source_scheduler::SourceScheduler;
 
 /// Max length of task series a scheduler calculates.
 /// FlowEfficientScheduler does not care this value to achieve _collector-to-stopper_ policy.
@@ -20,7 +24,7 @@ use std::fmt::Debug;
 
 use crate::stream_engine::autonomous_executor::{
     performance_metrics::PerformanceMetrics,
-    task_graph::{task_id::TaskId, TaskGraph},
+    task_graph::{TaskGraph, TaskId},
 };
 
 /// All scheduler implementation must be stateless because MemoryStateMachine replace scheduler implementation

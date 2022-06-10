@@ -2,7 +2,7 @@
 
 use crate::stream_engine::time::{
     duration::{wall_clock_duration::WallClockDuration, SpringDuration},
-    timestamp::{system_timestamp::SystemTimestamp, SpringTimestamp},
+    timestamp::{SpringTimestamp, SystemTimestamp},
 };
 
 /// Real-time (wall-clock) stopwatch.

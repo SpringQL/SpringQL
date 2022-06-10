@@ -18,10 +18,10 @@ use crate::{
     },
     stream_engine::{
         autonomous_executor::row::value::{
-            sql_convertible::{SpringValue, ToNnSqlValue},
-            sql_value::sql_compare_result::SqlCompareResult,
+            sql_convertible::ToNnSqlValue, sql_value::sql_compare_result::SqlCompareResult,
         },
-        time::{duration::event_duration::SpringEventDuration, timestamp::SpringTimestamp},
+        time::{SpringEventDuration, SpringTimestamp},
+        SpringValue,
     },
 };
 

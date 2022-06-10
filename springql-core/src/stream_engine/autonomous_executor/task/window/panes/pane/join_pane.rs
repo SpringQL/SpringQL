@@ -8,10 +8,10 @@ use crate::{
     pipeline::{Field, JoinParameter, JoinType, WindowOperationParameter},
     stream_engine::{
         autonomous_executor::{
-            performance_metrics::metrics_update_command::WindowInFlowByWindowTask,
+            performance_metrics::WindowInFlowByWindowTask,
             task::{tuple::Tuple, window::panes::pane::Pane},
         },
-        time::timestamp::SpringTimestamp,
+        time::SpringTimestamp,
         SqlValue,
     },
 };

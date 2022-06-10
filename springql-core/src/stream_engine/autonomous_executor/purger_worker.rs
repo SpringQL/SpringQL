@@ -1,14 +1,15 @@
 // This file is part of https://github.com/SpringQL/SpringQL which is licensed under MIT OR Apache-2.0. See file LICENSE-MIT or LICENSE-APACHE for full license details.
 
-pub mod purger_worker_thread;
+mod purger_worker_thread;
+
+pub use purger_worker_thread::{PurgerWorkerLoopState, PurgerWorkerThread, PurgerWorkerThreadArg};
 
 use std::sync::Arc;
 
 use crate::stream_engine::autonomous_executor::{
     args::{Coordinators, EventQueues},
     main_job_lock::MainJobLock,
-    purger_worker::purger_worker_thread::{PurgerWorkerThread, PurgerWorkerThreadArg},
-    worker::worker_handle::WorkerHandle,
+    worker::WorkerHandle,
 };
 
 /// Worker to execute pump and sink tasks.

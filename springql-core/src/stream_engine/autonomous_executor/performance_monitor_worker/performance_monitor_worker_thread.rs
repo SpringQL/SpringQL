@@ -7,22 +7,17 @@ use crate::{
     stream_engine::{
         autonomous_executor::{
             event_queue::{
-                event::{BlockingEventTag, Event, EventTag, NonBlockingEventTag},
-                non_blocking_event_queue::NonBlockingEventQueue,
+                BlockingEventTag, Event, EventTag, NonBlockingEventQueue, NonBlockingEventTag,
             },
             memory_state_machine::MemoryStateTransition,
             performance_metrics::{
-                metrics_update_command::MetricsUpdateByTaskExecutionOrPurge,
-                performance_metrics_summary::PerformanceMetricsSummary, PerformanceMetrics,
+                MetricsUpdateByTaskExecutionOrPurge, PerformanceMetrics, PerformanceMetricsSummary,
             },
             performance_monitor_worker::web_console_reporter::WebConsoleReporter,
             pipeline_derivatives::PipelineDerivatives,
-            worker::{
-                worker_handle::WorkerSetupCoordinator,
-                worker_thread::{WorkerThread, WorkerThreadLoopState},
-            },
+            worker::{WorkerSetupCoordinator, WorkerThread, WorkerThreadLoopState},
         },
-        time::duration::{wall_clock_duration::WallClockDuration, SpringDuration},
+        time::{SpringDuration, WallClockDuration},
     },
 };
 

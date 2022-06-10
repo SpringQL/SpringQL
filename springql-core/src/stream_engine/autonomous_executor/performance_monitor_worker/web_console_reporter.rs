@@ -8,7 +8,7 @@ use crate::stream_engine::{
         performance_monitor_worker::web_console_reporter::web_console_request::WebConsoleRequest,
         task_graph::TaskGraph,
     },
-    time::duration::{wall_clock_duration::WallClockDuration, SpringDuration},
+    time::{SpringDuration, WallClockDuration},
 };
 
 /// Reports performance summary to [web-console API](https://github.com/SpringQL/web-console/blob/main/doc/api.md).
@@ -58,8 +58,6 @@ impl WebConsoleReporter {
 #[cfg(test)]
 mod tests {
     use springql_test_logger::setup_test_logger;
-
-    use crate::stream_engine::time::duration::SpringDuration;
 
     use super::*;
 

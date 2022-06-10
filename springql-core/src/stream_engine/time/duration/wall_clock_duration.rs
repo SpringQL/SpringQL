@@ -1,6 +1,8 @@
 // This file is part of https://github.com/SpringQL/SpringQL which is licensed under MIT OR Apache-2.0. See file LICENSE-MIT or LICENSE-APACHE for full license details.
 
-pub mod wall_clock_stopwatch;
+mod wall_clock_stopwatch;
+
+pub use wall_clock_stopwatch::WallClockStopwatch;
 
 use std::{
     ops::{Add, Div, Mul, Sub},

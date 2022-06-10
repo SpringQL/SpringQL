@@ -1,6 +1,6 @@
 // This file is part of https://github.com/SpringQL/SpringQL which is licensed under MIT OR Apache-2.0. See file LICENSE-MIT or LICENSE-APACHE for full license details.
 
-pub mod expr_label;
+mod expr_label;
 pub use expr_label::{AggrExprLabel, ExprLabel, ExprLabelGenerator, ValueExprLabel};
 
 use std::collections::HashMap;
@@ -11,7 +11,7 @@ use crate::{
     api::error::{Result, SpringError},
     expression::{AggrExpr, ValueExpr},
     pipeline::{AggrAlias, ValueAlias},
-    sql_processor::sql_parser::SelectFieldSyntax,
+    sql_processor::SelectFieldSyntax,
     stream_engine::{SqlValue, Tuple},
 };
 
@@ -183,7 +183,7 @@ impl ExprResolver {
 
 #[cfg(test)]
 mod tests {
-    use crate::{expression::ValueExpr, stream_engine::time::timestamp::SpringTimestamp};
+    use crate::{expression::ValueExpr, stream_engine::time::SpringTimestamp};
 
     use super::*;
 

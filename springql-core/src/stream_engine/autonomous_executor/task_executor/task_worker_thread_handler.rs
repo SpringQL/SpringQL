@@ -5,16 +5,14 @@
 use std::{fmt::Display, sync::Arc, thread, time::Duration};
 
 use crate::stream_engine::autonomous_executor::{
-    event_queue::{event::Event, non_blocking_event_queue::NonBlockingEventQueue},
-    performance_metrics::{
-        metrics_update_command::MetricsUpdateByTaskExecutionOrPurge, PerformanceMetrics,
-    },
+    event_queue::{Event, NonBlockingEventQueue},
+    performance_metrics::{MetricsUpdateByTaskExecutionOrPurge, PerformanceMetrics},
     pipeline_derivatives::PipelineDerivatives,
     repositories::Repositories,
     task::TaskContext,
     task_executor::{scheduler::Scheduler, task_executor_lock::TaskExecutorLock},
-    task_graph::task_id::TaskId,
-    worker::worker_thread::WorkerThreadLoopState,
+    task_graph::TaskId,
+    worker::WorkerThreadLoopState,
     AutonomousExecutor,
 };
 

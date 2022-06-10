@@ -2,5 +2,8 @@
 
 //! Worker framework.
 
-pub mod worker_handle;
-pub mod worker_thread;
+mod worker_handle;
+mod worker_thread;
+
+pub use worker_handle::{WorkerHandle, WorkerSetupCoordinator, WorkerStopCoordinator};
+pub use worker_thread::{WorkerThread, WorkerThreadLoopState};

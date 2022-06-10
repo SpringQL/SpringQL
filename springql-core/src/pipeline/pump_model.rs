@@ -13,7 +13,7 @@ pub use window_parameter::WindowParameter;
 
 use crate::{
     pipeline::name::{PumpName, StreamName},
-    stream_engine::command::{insert_plan::InsertPlan, query_plan::QueryPlan},
+    stream_engine::command::{InsertPlan, QueryPlan},
 };
 
 #[derive(Clone, PartialEq, Debug, new)]

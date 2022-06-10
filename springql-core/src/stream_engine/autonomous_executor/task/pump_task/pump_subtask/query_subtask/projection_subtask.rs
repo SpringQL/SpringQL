@@ -2,10 +2,10 @@
 
 use crate::{
     api::error::Result,
-    expr_resolver::{expr_label::ExprLabel, ExprResolver},
+    expr_resolver::{ExprLabel, ExprResolver},
     stream_engine::autonomous_executor::task::{
         pump_task::pump_subtask::query_subtask::SqlValues, tuple::Tuple,
-        window::aggregate::AggregatedAndGroupingValues,
+        window::AggregatedAndGroupingValues,
     },
 };
 

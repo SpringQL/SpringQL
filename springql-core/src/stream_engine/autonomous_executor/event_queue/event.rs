@@ -9,8 +9,7 @@ use std::sync::Arc;
 use crate::stream_engine::autonomous_executor::{
     memory_state_machine::MemoryStateTransition,
     performance_metrics::{
-        metrics_update_command::MetricsUpdateByTaskExecutionOrPurge,
-        performance_metrics_summary::PerformanceMetricsSummary, PerformanceMetrics,
+        MetricsUpdateByTaskExecutionOrPurge, PerformanceMetrics, PerformanceMetricsSummary,
     },
     pipeline_derivatives::PipelineDerivatives,
 };

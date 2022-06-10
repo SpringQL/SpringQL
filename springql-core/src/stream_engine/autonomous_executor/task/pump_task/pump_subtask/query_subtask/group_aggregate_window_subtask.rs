@@ -6,13 +6,10 @@ use crate::{
     expr_resolver::ExprResolver,
     pipeline::{WindowOperationParameter, WindowParameter},
     stream_engine::autonomous_executor::{
-        performance_metrics::metrics_update_command::WindowInFlowByWindowTask,
+        performance_metrics::WindowInFlowByWindowTask,
         task::{
             tuple::Tuple,
-            window::{
-                aggregate::{AggrWindow, AggregatedAndGroupingValues},
-                Window,
-            },
+            window::{AggrWindow, AggregatedAndGroupingValues, Window},
         },
     },
 };

@@ -59,7 +59,7 @@ mod select_syntax_analyzer;
 
 use crate::{
     api::error::Result,
-    expr_resolver::{expr_label::ExprLabel, ExprResolver},
+    expr_resolver::{ExprLabel, ExprResolver},
     pipeline::{
         AggregateParameter, GroupByLabels, Pipeline, WindowOperationParameter, WindowParameter,
     },
@@ -67,9 +67,8 @@ use crate::{
         query_planner::select_syntax_analyzer::SelectSyntaxAnalyzer,
         sql_parser::{GroupingElementSyntax, SelectStreamSyntax},
     },
-    stream_engine::command::query_plan::{
-        query_plan_operation::{GroupAggregateWindowOp, JoinOp, LowerOps, ProjectionOp, UpperOps},
-        QueryPlan,
+    stream_engine::command::{
+        GroupAggregateWindowOp, JoinOp, LowerOps, ProjectionOp, QueryPlan, UpperOps,
     },
 };
 

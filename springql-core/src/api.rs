@@ -9,7 +9,7 @@ pub use crate::{
         SpringConfig,
     },
     stream_engine::{
-        time::{duration::event_duration::SpringEventDuration, timestamp::SpringTimestamp},
+        time::{SpringEventDuration, SpringTimestamp},
         SpringValue,
     },
 };

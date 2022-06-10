@@ -3,11 +3,8 @@
 use std::ops::Add;
 
 use crate::stream_engine::{
-    autonomous_executor::task_graph::{
-        queue_id::{row_queue_id::RowQueueId, window_queue_id::WindowQueueId, QueueId},
-        task_id::TaskId,
-    },
-    time::duration::{wall_clock_duration::WallClockDuration, SpringDuration},
+    autonomous_executor::task_graph::{QueueId, RowQueueId, TaskId, WindowQueueId},
+    time::{SpringDuration, WallClockDuration},
 };
 
 #[derive(Clone, Eq, PartialEq, Debug, new)]

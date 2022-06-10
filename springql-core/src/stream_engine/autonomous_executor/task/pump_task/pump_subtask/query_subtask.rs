@@ -18,10 +18,10 @@ use crate::{
     pipeline::{ColumnName, StreamModel},
     stream_engine::{
         autonomous_executor::{
-            performance_metrics::metrics_update_command::{
+            performance_metrics::{
                 InQueueMetricsUpdateByCollect, InQueueMetricsUpdateByTask, WindowInFlowByWindowTask,
             },
-            row::{column::StreamColumns, column_values::ColumnValues, Row},
+            row::{ColumnValues, Row, StreamColumns},
             task::{
                 pump_task::pump_subtask::query_subtask::{
                     collect_subtask::CollectSubtask,
@@ -30,15 +30,10 @@ use crate::{
                 },
                 task_context::TaskContext,
                 tuple::Tuple,
-                window::{
-                    aggregate::AggrWindow, join_window::JoinWindow, panes::pane::join_pane::JoinDir,
-                },
+                window::{AggrWindow, JoinDir, JoinWindow},
             },
         },
-        command::query_plan::{
-            query_plan_operation::{JoinOp, LowerOps},
-            QueryPlan,
-        },
+        command::{JoinOp, LowerOps, QueryPlan},
         SqlValue,
     },
 };

@@ -8,7 +8,7 @@ use std::{
 use parking_lot::RwLock;
 
 use crate::stream_engine::autonomous_executor::{
-    queue::window_queue::WindowQueue, task_graph::queue_id::window_queue_id::WindowQueueId,
+    queue::window_queue::WindowQueue, task_graph::WindowQueueId,
 };
 
 #[derive(Debug, Default)]

@@ -1,19 +1,19 @@
 // This file is part of https://github.com/SpringQL/SpringQL which is licensed under MIT OR Apache-2.0. See file LICENSE-MIT or LICENSE-APACHE for full license details.
 
-pub mod sql_parser;
-
 mod query_planner;
+mod sql_parser;
+
+pub use sql_parser::{
+    ColumnConstraintSyntax, CreatePump, DurationFunction, FromItemSyntax, GroupingElementSyntax,
+    OptionSyntax, ParseSuccess, PestParserImpl, SelectFieldSyntax, SelectStreamSyntax, SqlParser,
+    SubFromItemSyntax,
+};
 
 use crate::{
     api::error::Result,
     pipeline::{Pipeline, PumpModel, SinkWriterModel, SourceReaderModel, StreamModel},
-    sql_processor::{
-        query_planner::QueryPlanner,
-        sql_parser::{CreatePump, ParseSuccess, SelectStreamSyntax, SqlParser},
-    },
-    stream_engine::command::{
-        alter_pipeline_command::AlterPipelineCommand, query_plan::QueryPlan, Command,
-    },
+    sql_processor::query_planner::QueryPlanner,
+    stream_engine::command::{AlterPipelineCommand, Command, QueryPlan},
 };
 
 #[derive(Debug, Default)]
@@ -129,7 +129,7 @@ mod tests {
             SourceReaderModel, SourceReaderName, SourceReaderType, StreamModel, StreamName,
             StreamShape,
         },
-        stream_engine::command::alter_pipeline_command::AlterPipelineCommand,
+        stream_engine::command::AlterPipelineCommand,
     };
     use pretty_assertions::assert_eq;
 

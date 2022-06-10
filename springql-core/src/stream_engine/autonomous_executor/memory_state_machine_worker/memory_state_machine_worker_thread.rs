@@ -3,22 +3,15 @@
 use std::{sync::Arc, thread, time::Duration};
 
 use crate::stream_engine::autonomous_executor::{
-    event_queue::{
-        event::{Event, EventTag, NonBlockingEventTag},
-        non_blocking_event_queue::NonBlockingEventQueue,
-    },
+    event_queue::{Event, EventTag, NonBlockingEventQueue, NonBlockingEventTag},
     memory_state_machine::{
         MemoryStateMachine, MemoryStateMachineThreshold, MemoryStateTransition,
     },
     performance_metrics::{
-        metrics_update_command::MetricsUpdateByTaskExecutionOrPurge,
-        performance_metrics_summary::PerformanceMetricsSummary, PerformanceMetrics,
+        MetricsUpdateByTaskExecutionOrPurge, PerformanceMetrics, PerformanceMetricsSummary,
     },
     pipeline_derivatives::PipelineDerivatives,
-    worker::{
-        worker_handle::WorkerSetupCoordinator,
-        worker_thread::{WorkerThread, WorkerThreadLoopState},
-    },
+    worker::{WorkerSetupCoordinator, WorkerThread, WorkerThreadLoopState},
 };
 
 /// Runs a worker thread.

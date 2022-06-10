@@ -9,9 +9,7 @@ mod timestamp;
 
 use crate::{
     api::error::{Result, SpringError},
-    stream_engine::time::{
-        duration::event_duration::SpringEventDuration, timestamp::SpringTimestamp,
-    },
+    stream_engine::time::{SpringEventDuration, SpringTimestamp},
 };
 use anyhow::anyhow;
 use std::any::type_name;

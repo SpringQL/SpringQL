@@ -3,8 +3,7 @@
 use std::cmp::max;
 
 use crate::stream_engine::time::{
-    duration::{event_duration::SpringEventDuration, SpringDuration},
-    timestamp::{SpringTimestamp, MIN_TIMESTAMP},
+    SpringDuration, SpringEventDuration, SpringTimestamp, MIN_TIMESTAMP,
 };
 
 /// A watermark is held by each window.
