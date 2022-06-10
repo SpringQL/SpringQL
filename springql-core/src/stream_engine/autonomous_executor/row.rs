@@ -8,7 +8,7 @@ pub(in crate::stream_engine::autonomous_executor) mod column;
 pub(in crate::stream_engine::autonomous_executor) mod column_values;
 pub(in crate::stream_engine) mod foreign_row;
 
-use std::{sync::Arc, vec};
+use std::vec;
 
 use crate::{
     api::error::Result,
@@ -47,21 +47,6 @@ impl Row {
             arrival_rowtime,
             cols,
         }
-    }
-
-    /// # Failure
-    ///
-    /// - `SpringError::InvalidFormat` when:
-    ///   - This input row cannot be converted into row.
-    pub fn from_json_object(
-        json_object: JsonObject,
-        stream_model: Arc<StreamModel>,
-    ) -> Result<Self> {
-        // JsonObject -> HashMap<ColumnName, SqlValue> -> StreamColumns -> Row
-
-        let column_values = json_object.into_column_values()?;
-        let stream_columns = StreamColumns::new(stream_model, column_values)?;
-        Ok(Row::new(stream_columns))
     }
 
     pub fn stream_model(&self) -> &StreamModel {
@@ -138,8 +123,6 @@ impl From<Row> for JsonObject {
 
 #[cfg(test)]
 mod tests {
-    use std::sync::Arc;
-
     use serde_json::json;
 
     use crate::{
@@ -163,15 +146,6 @@ mod tests {
             Row::fx_city_temperature_tokyo(),
             Row::fx_city_temperature_osaka()
         );
-    }
-
-    #[test]
-    fn test_from_json() {
-        let stream = Arc::new(StreamModel::fx_city_temperature());
-        let j = JsonObject::fx_city_temperature_tokyo();
-
-        let r = Row::fx_city_temperature_tokyo();
-        assert_eq!(Row::from_json_object(j, stream).unwrap(), r);
     }
 
     #[test]
