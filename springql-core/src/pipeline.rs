@@ -11,7 +11,7 @@ mod pump_model;
 mod relation;
 mod sink_writer_model;
 mod source_reader_model;
-pub(crate) mod stream_model;
+mod stream_model;
 
 #[cfg(test)]
 pub(crate) mod test_support;
@@ -36,15 +36,13 @@ pub(crate) use relation::{
 };
 pub(crate) use sink_writer_model::{SinkWriterModel, SinkWriterType};
 pub(crate) use source_reader_model::{SourceReaderModel, SourceReaderType};
+pub(crate) use stream_model::{StreamModel, StreamShape};
 
 use std::{collections::HashSet, sync::Arc};
 
 use anyhow::anyhow;
 
-use crate::{
-    api::error::{Result, SpringError},
-    pipeline::stream_model::StreamModel,
-};
+use crate::api::error::{Result, SpringError};
 
 #[derive(Clone, Debug)]
 pub struct Pipeline {

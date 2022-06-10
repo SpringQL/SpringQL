@@ -9,7 +9,7 @@ use anyhow::Context;
 
 use crate::{
     api::{error::Result, SpringError},
-    pipeline::stream_model::StreamModel,
+    pipeline::StreamModel,
     stream_engine::{
         autonomous_executor::row::foreign_row::source_row::{
             json_source_row::JsonSourceRow, source_row_format::SourceRowFormat,

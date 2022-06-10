@@ -16,11 +16,11 @@ use crate::{
         NumericalFunction, UnaryOperator, ValueExpr,
     },
     pipeline::{
-        stream_model::{StreamModel, StreamShape},
         AggrAlias, AggregateFunctionParameter, ColumnConstraint, ColumnDataType, ColumnDefinition,
         ColumnName, ColumnReference, CorrelationAlias, JoinType, OptionsBuilder, PumpName,
         SinkWriterModel, SinkWriterName, SinkWriterType, SourceReaderModel, SourceReaderName,
-        SourceReaderType, SqlType, StreamName, ValueAlias, WindowParameter,
+        SourceReaderType, SqlType, StreamModel, StreamName, StreamShape, ValueAlias,
+        WindowParameter,
     },
     sql_processor::sql_parser::{
         parse_success::{CreatePump, ParseSuccess},

@@ -4,7 +4,7 @@ use std::sync::Arc;
 
 use crate::{
     api::error::Result,
-    pipeline::stream_model::StreamModel,
+    pipeline::StreamModel,
     stream_engine::autonomous_executor::row::{
         column::stream_column::StreamColumns, foreign_row::format::json::JsonObject, Row,
     },

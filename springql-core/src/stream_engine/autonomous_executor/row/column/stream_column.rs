@@ -6,8 +6,7 @@ use anyhow::{anyhow, Context};
 use crate::{
     api::error::{Result, SpringError},
     mem_size::{arc_overhead_size, MemSize},
-    pipeline::ColumnName,
-    pipeline::{stream_model::StreamModel, ColumnDefinition},
+    pipeline::{ColumnDefinition, ColumnName, StreamModel},
     stream_engine::{
         autonomous_executor::row::{column_values::ColumnValues, value::sql_value::SqlValue},
         time::timestamp::SpringTimestamp,

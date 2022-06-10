@@ -13,7 +13,7 @@ use std::vec;
 use crate::{
     api::error::Result,
     mem_size::MemSize,
-    pipeline::{stream_model::StreamModel, ColumnName},
+    pipeline::{ColumnName, StreamModel},
     stream_engine::{
         autonomous_executor::row::{
             column::stream_column::StreamColumns,

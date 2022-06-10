@@ -4,7 +4,7 @@ use std::sync::Arc;
 
 use crate::{
     mem_size::MemSize,
-    pipeline::{stream_model::StreamModel, ColumnName, PipelineGraph},
+    pipeline::{ColumnName, PipelineGraph, StreamModel},
     stream_engine::{
         autonomous_executor::{
             performance_metrics::metrics_update_command::metrics_update_by_task_execution::OutQueueMetricsUpdateByTask,

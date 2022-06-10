@@ -6,10 +6,7 @@ use springql_foreign_service::source::{source_input::ForeignSourceInput, Foreign
 
 use crate::{
     api::SpringSourceReaderConfig,
-    pipeline::{
-        stream_model::{StreamModel, StreamShape},
-        ColumnName, OptionsBuilder, StreamName,
-    },
+    pipeline::{ColumnName, OptionsBuilder, StreamModel, StreamName, StreamShape},
     stream_engine::{
         autonomous_executor::{
             row::{
