@@ -11,7 +11,7 @@ use crate::{
 };
 
 #[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, new)]
-pub(in crate::stream_engine::autonomous_executor) enum QueueId {
+pub enum QueueId {
     /// Sink tasks also have row queue.
     Row(RowQueueId),
     Window(WindowQueueId),

@@ -12,7 +12,7 @@ use crate::{
     api::error::Result,
     pipeline::{Edge, PipelineGraph},
     stream_engine::autonomous_executor::{
-        performance_metrics::metrics_update_command::metrics_update_by_task_execution::MetricsUpdateByTaskExecution,
+        performance_metrics::metrics_update_command::MetricsUpdateByTaskExecution,
         task::{
             pump_task::PumpTask, sink_task::SinkTask, source_task::SourceTask,
             task_context::TaskContext,

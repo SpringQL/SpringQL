@@ -10,7 +10,7 @@ use crate::{
     expr_resolver::ExprResolver,
     stream_engine::{
         autonomous_executor::{
-            performance_metrics::metrics_update_command::metrics_update_by_task_execution::WindowInFlowByWindowTask,
+            performance_metrics::metrics_update_command::WindowInFlowByWindowTask,
             task::window::{
                 panes::{pane::Pane, Panes},
                 watermark::Watermark,

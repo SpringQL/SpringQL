@@ -7,7 +7,7 @@ use crate::{
     pipeline::StreamName,
     stream_engine::{
         autonomous_executor::{
-            performance_metrics::metrics_update_command::metrics_update_by_task_execution::InQueueMetricsUpdateByCollect,
+            performance_metrics::metrics_update_command::InQueueMetricsUpdateByCollect,
             repositories::Repositories,
             task::{task_context::TaskContext, tuple::Tuple},
             task_graph::queue_id::{

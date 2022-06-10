@@ -11,7 +11,7 @@ use crate::stream_engine::autonomous_executor::{
         MemoryStateMachine, MemoryStateMachineThreshold, MemoryStateTransition,
     },
     performance_metrics::{
-        metrics_update_command::metrics_update_by_task_execution::MetricsUpdateByTaskExecutionOrPurge,
+        metrics_update_command::MetricsUpdateByTaskExecutionOrPurge,
         performance_metrics_summary::PerformanceMetricsSummary, PerformanceMetrics,
     },
     pipeline_derivatives::PipelineDerivatives,

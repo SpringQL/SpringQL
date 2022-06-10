@@ -17,7 +17,7 @@ use crate::{
     pipeline::PipelineVersion,
     stream_engine::autonomous_executor::{
         performance_metrics::{
-            metrics_update_command::metrics_update_by_task_execution::MetricsUpdateByTaskExecution,
+            metrics_update_command::MetricsUpdateByTaskExecution,
             queue_metrics::{
                 row_queue_metrics::RowQueueMetrics, window_queue_metrics::WindowQueueMetrics,
             },

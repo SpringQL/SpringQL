@@ -2,8 +2,7 @@
 
 use crate::stream_engine::autonomous_executor::{
     performance_metrics::{
-        calculation::floor0,
-        metrics_update_command::metrics_update_by_task_execution::MetricsUpdateByTaskExecution,
+        calculation::floor0, metrics_update_command::MetricsUpdateByTaskExecution,
     },
     task_graph::queue_id::window_queue_id::WindowQueueId,
 };

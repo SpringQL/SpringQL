@@ -10,7 +10,7 @@ use crate::{
     },
     stream_engine::{
         autonomous_executor::{
-            performance_metrics::metrics_update_command::metrics_update_by_task_execution::{
+            performance_metrics::metrics_update_command::{
                 InQueueMetricsUpdateByCollect, InQueueMetricsUpdateByTask,
                 OutQueueMetricsUpdateByTask, TaskMetricsUpdateByTask, WindowInFlowByWindowTask,
             },
@@ -31,8 +31,7 @@ use crate::{
     stream_engine::{
         autonomous_executor::{
             performance_metrics::{
-                metrics_update_command::metrics_update_by_task_execution::MetricsUpdateByTaskExecution,
-                PerformanceMetrics,
+                metrics_update_command::MetricsUpdateByTaskExecution, PerformanceMetrics,
             },
             task_graph::TaskGraph,
         },

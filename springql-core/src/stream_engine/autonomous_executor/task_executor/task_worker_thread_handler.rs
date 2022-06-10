@@ -7,8 +7,7 @@ use std::{fmt::Display, sync::Arc, thread, time::Duration};
 use crate::stream_engine::autonomous_executor::{
     event_queue::{event::Event, non_blocking_event_queue::NonBlockingEventQueue},
     performance_metrics::{
-        metrics_update_command::metrics_update_by_task_execution::MetricsUpdateByTaskExecutionOrPurge,
-        PerformanceMetrics,
+        metrics_update_command::MetricsUpdateByTaskExecutionOrPurge, PerformanceMetrics,
     },
     pipeline_derivatives::PipelineDerivatives,
     repositories::Repositories,

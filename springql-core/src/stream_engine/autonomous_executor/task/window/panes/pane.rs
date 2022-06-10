@@ -8,7 +8,7 @@ use crate::{
     pipeline::WindowOperationParameter,
     stream_engine::{
         autonomous_executor::{
-            performance_metrics::metrics_update_command::metrics_update_by_task_execution::WindowInFlowByWindowTask,
+            performance_metrics::metrics_update_command::WindowInFlowByWindowTask,
             task::window::watermark::Watermark,
         },
         time::timestamp::SpringTimestamp,

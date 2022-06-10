@@ -11,7 +11,7 @@ use crate::stream_engine::{
 };
 
 #[derive(Clone, Eq, PartialEq, Debug, new)]
-pub(in crate::stream_engine::autonomous_executor) enum MetricsUpdateByTaskExecutionOrPurge {
+pub enum MetricsUpdateByTaskExecutionOrPurge {
     TaskExecution(MetricsUpdateByTaskExecution),
     Purge,
 }
@@ -20,17 +20,17 @@ pub(in crate::stream_engine::autonomous_executor) enum MetricsUpdateByTaskExecut
 ///
 /// Commands only include flow metrics (no stock metrics).
 #[derive(Clone, Eq, PartialEq, Debug, new)]
-pub(in crate::stream_engine::autonomous_executor) struct MetricsUpdateByTaskExecution {
+pub struct MetricsUpdateByTaskExecution {
     task: TaskMetricsUpdateByTask,
     in_queues: Vec<InQueueMetricsUpdateByTask>,
     out_queues: Vec<OutQueueMetricsUpdateByTask>,
 }
 
 impl MetricsUpdateByTaskExecution {
-    pub(in crate::stream_engine::autonomous_executor) fn updated_task(&self) -> &TaskId {
+    pub fn updated_task(&self) -> &TaskId {
         &self.task.task_id
     }
-    pub(in crate::stream_engine::autonomous_executor) fn updated_queues(&self) -> Vec<QueueId> {
+    pub fn updated_queues(&self) -> Vec<QueueId> {
         self.in_queues
             .iter()
             .map(|q| q.queue_id())
@@ -43,34 +43,22 @@ impl MetricsUpdateByTaskExecution {
     /// Note that this is the expected gain on the task execution (not a normal throughput).
     /// Memory-Reducing Schedulers may prioritize tasks with lower result value of this function
     /// because such tasks quickly reduces memory consumption.
-    pub(in crate::stream_engine::autonomous_executor) fn task_gain_bytes_per_sec(&self) -> f32 {
+    pub fn task_gain_bytes_per_sec(&self) -> f32 {
         self.task_gain_bytes() as f32 / self.task_execution_time().as_secs_f32()
     }
 
-    pub(in crate::stream_engine::autonomous_executor) fn row_queue_gain_rows(
-        &self,
-        id: &RowQueueId,
-    ) -> i64 {
+    pub fn row_queue_gain_rows(&self, id: &RowQueueId) -> i64 {
         self.queue_put_rows(&id.clone().into()) as i64 - self.row_queue_used_rows(id) as i64
     }
-    pub(in crate::stream_engine::autonomous_executor) fn row_queue_gain_bytes(
-        &self,
-        id: &RowQueueId,
-    ) -> i64 {
+    pub fn row_queue_gain_bytes(&self, id: &RowQueueId) -> i64 {
         self.queue_put_bytes(&id.clone().into()) as i64 - self.row_queue_used_bytes(id) as i64
     }
 
-    pub(in crate::stream_engine::autonomous_executor) fn window_queue_waiting_gain_rows(
-        &self,
-        id: &WindowQueueId,
-    ) -> i64 {
+    pub fn window_queue_waiting_gain_rows(&self, id: &WindowQueueId) -> i64 {
         self.queue_put_rows(&id.clone().into()) as i64
             - self.window_queue_waiting_dispatched_rows(id) as i64
     }
-    pub(in crate::stream_engine::autonomous_executor) fn window_queue_gain_bytes(
-        &self,
-        id: &WindowQueueId,
-    ) -> i64 {
+    pub fn window_queue_gain_bytes(&self, id: &WindowQueueId) -> i64 {
         self.window_queue_waiting_gain_bytes(id) + self.window_queue_window_gain_bytes(id)
     }
 
@@ -220,21 +208,21 @@ impl MetricsUpdateByTaskExecution {
 }
 
 #[derive(Clone, Eq, PartialEq, Debug, new)]
-pub(in crate::stream_engine::autonomous_executor) struct TaskMetricsUpdateByTask {
+pub struct TaskMetricsUpdateByTask {
     task_id: TaskId,
     execution_time: WallClockDuration,
 }
 
 #[derive(Clone, Eq, PartialEq, Debug)]
-pub(in crate::stream_engine::autonomous_executor) struct InQueueMetricsUpdateByTask {
-    pub(in crate::stream_engine::autonomous_executor) by_collect: InQueueMetricsUpdateByCollect,
+pub struct InQueueMetricsUpdateByTask {
+    pub by_collect: InQueueMetricsUpdateByCollect,
 
     /// WindowInFlowByWindowTask::zero() for window task
-    pub(in crate::stream_engine::autonomous_executor) window_in_flow: WindowInFlowByWindowTask,
+    pub window_in_flow: WindowInFlowByWindowTask,
 }
 
 impl InQueueMetricsUpdateByTask {
-    pub(in crate::stream_engine::autonomous_executor) fn new(
+    pub fn new(
         by_collect: InQueueMetricsUpdateByCollect,
         window_in_flow: Option<WindowInFlowByWindowTask>,
     ) -> Self {
@@ -244,13 +232,13 @@ impl InQueueMetricsUpdateByTask {
         }
     }
 
-    pub(in crate::stream_engine::autonomous_executor) fn queue_id(&self) -> QueueId {
+    pub fn queue_id(&self) -> QueueId {
         self.by_collect.queue_id()
     }
 }
 
 #[derive(Clone, Eq, PartialEq, Debug)]
-pub(in crate::stream_engine::autonomous_executor) enum InQueueMetricsUpdateByCollect {
+pub enum InQueueMetricsUpdateByCollect {
     Row {
         queue_id: RowQueueId,
         rows_used: u64,
@@ -264,7 +252,7 @@ pub(in crate::stream_engine::autonomous_executor) enum InQueueMetricsUpdateByCol
 }
 
 impl InQueueMetricsUpdateByCollect {
-    pub(in crate::stream_engine::autonomous_executor) fn queue_id(&self) -> QueueId {
+    pub fn queue_id(&self) -> QueueId {
         match self {
             Self::Row { queue_id, .. } => queue_id.clone().into(),
             Self::Window { queue_id, .. } => queue_id.clone().into(),
@@ -273,12 +261,12 @@ impl InQueueMetricsUpdateByCollect {
 }
 
 #[derive(Copy, Clone, Eq, PartialEq, Debug, new)]
-pub(in crate::stream_engine::autonomous_executor) struct WindowInFlowByWindowTask {
-    pub(in crate::stream_engine::autonomous_executor) window_gain_bytes_states: i64,
-    pub(in crate::stream_engine::autonomous_executor) window_gain_bytes_rows: i64,
+pub struct WindowInFlowByWindowTask {
+    pub window_gain_bytes_states: i64,
+    pub window_gain_bytes_rows: i64,
 }
 impl WindowInFlowByWindowTask {
-    pub(in crate::stream_engine::autonomous_executor) fn zero() -> Self {
+    pub fn zero() -> Self {
         Self {
             window_gain_bytes_states: 0,
             window_gain_bytes_rows: 0,
@@ -298,7 +286,7 @@ impl Add for WindowInFlowByWindowTask {
 }
 
 #[derive(Clone, Eq, PartialEq, Debug, new)]
-pub(in crate::stream_engine::autonomous_executor) struct OutQueueMetricsUpdateByTask {
+pub struct OutQueueMetricsUpdateByTask {
     queue_id: QueueId,
     rows_put: u64,
     bytes_put: u64,

@@ -7,7 +7,7 @@ use crate::{
     pipeline::{ColumnName, PipelineGraph, StreamModel},
     stream_engine::{
         autonomous_executor::{
-            performance_metrics::metrics_update_command::metrics_update_by_task_execution::OutQueueMetricsUpdateByTask,
+            performance_metrics::metrics_update_command::OutQueueMetricsUpdateByTask,
             row::Row,
             task::{pump_task::pump_subtask::query_subtask::SqlValues, task_context::TaskContext},
             task_graph::queue_id::QueueId,

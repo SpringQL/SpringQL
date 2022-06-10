@@ -5,7 +5,7 @@ use std::fmt::Display;
 use crate::pipeline::{Edge, PumpInputType, PumpModel, SinkWriterModel, SourceReaderModel};
 
 #[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
-pub(in crate::stream_engine::autonomous_executor) enum TaskId {
+pub enum TaskId {
     Source {
         id: String,
     },

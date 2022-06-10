@@ -11,7 +11,7 @@ use crate::stream_engine::time::duration::SpringDuration;
 
 /// Real-time (wall-clock) duration.
 #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Debug)]
-pub(in crate::stream_engine) struct WallClockDuration(Duration);
+pub struct WallClockDuration(Duration);
 
 impl SpringDuration for WallClockDuration {
     fn as_std(&self) -> &Duration {

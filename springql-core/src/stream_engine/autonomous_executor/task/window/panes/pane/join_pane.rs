@@ -8,7 +8,7 @@ use crate::{
     pipeline::{Field, JoinParameter, JoinType, WindowOperationParameter},
     stream_engine::{
         autonomous_executor::{
-            performance_metrics::metrics_update_command::metrics_update_by_task_execution::WindowInFlowByWindowTask,
+            performance_metrics::metrics_update_command::WindowInFlowByWindowTask,
             task::{tuple::Tuple, window::panes::pane::Pane},
         },
         time::timestamp::SpringTimestamp,
