@@ -3,12 +3,10 @@
 use anyhow::{anyhow, Context};
 
 use crate::{
-    error::{Result, SpringError},
-    pipeline::relation::sql_type::SqlType,
+    api::error::{Result, SpringError},
+    pipeline::relation::{column::column_definition::ColumnDefinition, sql_type::SqlType},
     pipeline::{name::ColumnName, relation::column::column_constraint::ColumnConstraint},
 };
-
-use crate::pipeline::relation::column::column_definition::ColumnDefinition;
 
 #[derive(Clone, Eq, PartialEq, Debug)]
 pub(crate) struct StreamShape {
@@ -19,7 +17,7 @@ pub(crate) struct StreamShape {
 impl StreamShape {
     /// # Failure
     ///
-    /// - [SpringError::Sql](crate::error::SpringError::Sql) when:
+    /// - `SpringError::Sql` when:
     ///   - ROWTIME column in `cols` is not a `TIMESTAMP NOT NULL` type.
     ///   - 2 or more column have ROWTIME constraints
     pub(in crate) fn new(cols: Vec<ColumnDefinition>) -> Result<Self> {

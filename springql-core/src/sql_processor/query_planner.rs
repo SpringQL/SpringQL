@@ -58,7 +58,7 @@
 mod select_syntax_analyzer;
 
 use crate::{
-    error::Result,
+    api::error::Result,
     expr_resolver::{expr_label::ExprLabel, ExprResolver},
     pipeline::{
         pump_model::{
@@ -70,15 +70,15 @@ use crate::{
         },
         Pipeline,
     },
+    sql_processor::{
+        query_planner::select_syntax_analyzer::SelectSyntaxAnalyzer,
+        sql_parser::syntax::{GroupingElementSyntax, SelectStreamSyntax},
+    },
     stream_engine::command::query_plan::{
         query_plan_operation::{GroupAggregateWindowOp, JoinOp, LowerOps, ProjectionOp, UpperOps},
         QueryPlan,
     },
 };
-
-use self::select_syntax_analyzer::SelectSyntaxAnalyzer;
-
-use super::sql_parser::syntax::{GroupingElementSyntax, SelectStreamSyntax};
 
 #[derive(Debug)]
 pub(crate) struct QueryPlanner {

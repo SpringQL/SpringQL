@@ -1,7 +1,7 @@
 // This file is part of https://github.com/SpringQL/SpringQL which is licensed under MIT OR Apache-2.0. See file LICENSE-MIT or LICENSE-APACHE for full license details.
 
 use crate::{
-    error::{Result, SpringError},
+    api::error::{Result, SpringError},
     mem_size::MemSize,
     pipeline::field::{field_name::ColumnReference, Field},
     stream_engine::{autonomous_executor::row::Row, time::timestamp::SpringTimestamp, SqlValue},

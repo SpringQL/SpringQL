@@ -1,22 +1,29 @@
 // This file is part of https://github.com/SpringQL/SpringQL which is licensed under MIT OR Apache-2.0. See file LICENSE-MIT or LICENSE-APACHE for full license details.
 
-use std::mem::size_of;
-use std::ops::{Add, Mul};
-use std::{fmt::Display, hash::Hash};
+use std::{
+    fmt::Display,
+    hash::Hash,
+    mem::size_of,
+    ops::{Add, Mul},
+};
 
-use super::sql_compare_result::SqlCompareResult;
-use crate::error::{Result, SpringError};
-use crate::mem_size::MemSize;
-use crate::pipeline::relation::sql_type::{
-    self, NumericComparableType, SqlType, StringComparableLoseType,
-};
-use crate::stream_engine::autonomous_executor::row::value::sql_convertible::{
-    SpringValue, ToNnSqlValue,
-};
-use crate::stream_engine::time::duration::event_duration::SpringEventDuration;
-use crate::stream_engine::time::timestamp::SpringTimestamp;
 use anyhow::anyhow;
 use ordered_float::OrderedFloat;
+
+use crate::{
+    api::error::{Result, SpringError},
+    mem_size::MemSize,
+    pipeline::relation::sql_type::{
+        self, NumericComparableType, SqlType, StringComparableLoseType,
+    },
+    stream_engine::{
+        autonomous_executor::row::value::{
+            sql_convertible::{SpringValue, ToNnSqlValue},
+            sql_value::sql_compare_result::SqlCompareResult,
+        },
+        time::{duration::event_duration::SpringEventDuration, timestamp::SpringTimestamp},
+    },
+};
 
 /// NOT NULL value.
 #[derive(Clone, Debug)]
@@ -161,7 +168,7 @@ impl NnSqlValue {
     ///
     /// # Failures
     ///
-    /// - [SpringError::Sql](crate::error::SpringError::Sql) when:
+    /// - `SpringError::Sql` when:
     ///   - Any value of `T` cannot be typed as this SqlValue's SqlType (E.g. `T = i64`, `SqlType = SmallInt`).
     pub fn unpack<T>(&self) -> Result<T>
     where
@@ -203,7 +210,7 @@ impl NnSqlValue {
     ///
     /// # Failures
     ///
-    /// - [SpringError::Sql](crate::error::SpringError::Sql) when:
+    /// - `SpringError::Sql` when:
     ///   - Value cannot be converted to `typ`.
     pub(crate) fn try_convert(&self, typ: &SqlType) -> Result<NnSqlValue> {
         match typ {

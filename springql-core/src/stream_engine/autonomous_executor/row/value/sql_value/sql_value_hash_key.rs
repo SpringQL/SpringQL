@@ -3,7 +3,7 @@
 use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
 
-use super::SqlValue;
+use crate::stream_engine::autonomous_executor::row::value::sql_value::SqlValue;
 
 /// `Eq + Hash` hash key used for hash algorithms.
 #[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]

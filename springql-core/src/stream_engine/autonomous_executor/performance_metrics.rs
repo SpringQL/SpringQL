@@ -13,23 +13,28 @@ use std::collections::HashMap;
 
 use parking_lot::{RwLock, RwLockReadGuard, RwLockWriteGuard};
 
-use crate::pipeline::pipeline_version::PipelineVersion;
-
-use self::{
-    metrics_update_command::metrics_update_by_task_execution::MetricsUpdateByTaskExecution,
-    queue_metrics::{row_queue_metrics::RowQueueMetrics, window_queue_metrics::WindowQueueMetrics},
-    task_metrics::TaskMetrics,
-};
-use super::task_graph::{
-    queue_id::{row_queue_id::RowQueueId, window_queue_id::WindowQueueId, QueueId},
-    task_id::TaskId,
-    TaskGraph,
+use crate::{
+    pipeline::pipeline_version::PipelineVersion,
+    stream_engine::autonomous_executor::{
+        performance_metrics::{
+            metrics_update_command::metrics_update_by_task_execution::MetricsUpdateByTaskExecution,
+            queue_metrics::{
+                row_queue_metrics::RowQueueMetrics, window_queue_metrics::WindowQueueMetrics,
+            },
+            task_metrics::TaskMetrics,
+        },
+        task_graph::{
+            queue_id::{row_queue_id::RowQueueId, window_queue_id::WindowQueueId, QueueId},
+            task_id::TaskId,
+            TaskGraph,
+        },
+    },
 };
 
 /// Performance metrics of task execution. It has the same lifetime as a TaskGraph (i.e. a Pipeline).
 ///
-/// It is monitored by [PerformanceMonitorWorker](crate::stream_processor::autonomous_executor::worker::performance_monitor_worker::PerformanceMonitoRworker),
-/// and it is updated by [TaskExecutor](crate::stream_processor::autonomous_executor::task_executor::TaskExecutor).
+/// It is monitored by `PerformanceMonitorWorker`,
+/// and it is updated by `TaskExecutor`.
 ///
 /// `PerformanceMonitorWorker` does not frequently read from `RwLock<*Metrics>`, and schedulers in `TaskExecutor` are not expected to
 /// execute consequent tasks (sharing the same queue as input or output) by different workers at the same time.

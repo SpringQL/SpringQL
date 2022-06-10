@@ -43,15 +43,6 @@ SpringQL is an open-source stream processor working with low and hard-limited wo
 
   SpringQL helps you reduce data size by filtering, aggregation, and projection.
 
-## How to use SpringQL?
-
-You can use SpringQL currently in 2 ways:
-
-1. **Embedded mode**: Link `libspringql` from your application binary and call API functions using a client library for each programming language.
-2. **Embedded mode (Rust)**: Almost the same as normal embedded mode but you statically link to `springql-core` crate from your Rust application.
-
-**IPC mode** will be also planned. Multiple applications communicate with `springqld` daemon process so that they can share the same pipeline (stream processing definition).
-
 ## Documentation
 
 Read <https://SpringQL.github.io/> for installation guide, tutorials, and references.

@@ -5,10 +5,9 @@ use crate::{
         name::PumpName, sink_writer_model::SinkWriterModel, source_reader_model::SourceReaderModel,
         stream_model::StreamModel,
     },
+    sql_processor::sql_parser::syntax::SelectStreamSyntax,
     stream_engine::command::insert_plan::InsertPlan,
 };
-
-use super::syntax::SelectStreamSyntax;
 
 #[allow(clippy::enum_variant_names)]
 #[derive(Clone, PartialEq, Debug)]

@@ -1,11 +1,14 @@
 // This file is part of https://github.com/SpringQL/SpringQL which is licensed under MIT OR Apache-2.0. See file LICENSE-MIT or LICENSE-APACHE for full license details.
 
 use crate::{
-    error::Result,
-    stream_engine::autonomous_executor::row::value::sql_value::nn_sql_value::NnSqlValue,
+    api::error::Result,
+    stream_engine::{
+        autonomous_executor::row::value::{
+            sql_convertible::ToNnSqlValue, sql_value::nn_sql_value::NnSqlValue,
+        },
+        SpringValue,
+    },
 };
-
-use super::{SpringValue, ToNnSqlValue};
 
 impl SpringValue for Vec<u8> {
     fn try_from_blob(v: &[u8]) -> Result<Self> {

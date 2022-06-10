@@ -9,17 +9,16 @@ pub(super) mod task_context;
 pub(super) mod window;
 
 use crate::{
-    error::Result,
+    api::error::Result,
     pipeline::pipeline_graph::{edge::Edge, PipelineGraph},
-};
-
-use self::{
-    pump_task::PumpTask, sink_task::SinkTask, source_task::SourceTask, task_context::TaskContext,
-};
-
-use super::{
-    performance_metrics::metrics_update_command::metrics_update_by_task_execution::MetricsUpdateByTaskExecution,
-    task_graph::task_id::TaskId,
+    stream_engine::autonomous_executor::{
+        performance_metrics::metrics_update_command::metrics_update_by_task_execution::MetricsUpdateByTaskExecution,
+        task::{
+            pump_task::PumpTask, sink_task::SinkTask, source_task::SourceTask,
+            task_context::TaskContext,
+        },
+        task_graph::task_id::TaskId,
+    },
 };
 
 #[derive(Debug)]

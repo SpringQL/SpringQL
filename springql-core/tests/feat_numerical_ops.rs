@@ -5,10 +5,11 @@ mod test_support;
 use float_cmp::approx_eq;
 use pretty_assertions::assert_eq;
 use serde_json::json;
-use springql_core::low_level_rs::*;
-use springql_foreign_service::sink::ForeignSink;
-use springql_foreign_service::source::source_input::ForeignSourceInput;
-use springql_foreign_service::source::ForeignSource;
+use springql_core::api::*;
+use springql_foreign_service::{
+    sink::ForeignSink,
+    source::{source_input::ForeignSourceInput, ForeignSource},
+};
 use springql_test_logger::setup_test_logger;
 
 use crate::test_support::{apply_ddls, drain_from_sink};
@@ -72,7 +73,7 @@ fn test_feat_add_mul_integer() {
         ),
     ];
 
-    let _pipeline = apply_ddls(&ddls, spring_config_default());
+    let _pipeline = apply_ddls(&ddls, SpringConfig::default());
     test_source.start(ForeignSourceInput::new_fifo_batch(source_input));
     let sink_received = drain_from_sink(&test_sink);
     let r = sink_received.get(0).unwrap();
@@ -140,7 +141,7 @@ fn test_feat_add_mul_float() {
         ),
     ];
 
-    let _pipeline = apply_ddls(&ddls, spring_config_default());
+    let _pipeline = apply_ddls(&ddls, SpringConfig::default());
     test_source.start(ForeignSourceInput::new_fifo_batch(source_input));
     let sink_received = drain_from_sink(&test_sink);
     let r = sink_received.get(0).unwrap();

@@ -1,15 +1,18 @@
 // This file is part of https://github.com/SpringQL/SpringQL which is licensed under MIT OR Apache-2.0. See file LICENSE-MIT or LICENSE-APACHE for full license details.
 
-use super::format::json::JsonObject;
-use crate::error::Result;
-use crate::pipeline::name::StreamName;
-use crate::stream_engine::autonomous_executor::row::{value::sql_value::SqlValue, Row};
+use crate::{
+    api::error::Result,
+    pipeline::name::StreamName,
+    stream_engine::autonomous_executor::row::{
+        foreign_row::format::json::JsonObject, value::sql_value::SqlValue, Row,
+    },
+};
 
 /// Output row into foreign systems (retrieved by SinkWriter).
 ///
 /// Immediately converted from Row on stream-engine boundary.
 #[derive(PartialEq, Debug)]
-pub(crate) struct SinkRow(Row);
+pub struct SinkRow(Row);
 
 impl From<SinkRow> for JsonObject {
     fn from(sink_row: SinkRow) -> Self {
@@ -32,7 +35,7 @@ impl From<Row> for SinkRow {
 impl SinkRow {
     /// # Failure
     ///
-    /// - [SpringError::Sql](crate::error::SpringError::Sql) when:
+    /// - `SpringError::Sql` when:
     ///   - Column index out of range
     pub(crate) fn get_by_index(&self, i_col: usize) -> Result<&SqlValue> {
         self.0.get_by_index(i_col)
@@ -45,7 +48,7 @@ impl SinkRow {
 
 #[cfg(test)]
 mod tests {
-    use chrono::Duration;
+    use crate::time::Duration;
     use serde_json::json;
 
     use crate::{

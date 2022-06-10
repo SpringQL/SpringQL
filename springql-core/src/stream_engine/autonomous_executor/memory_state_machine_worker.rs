@@ -4,7 +4,7 @@
 //! State transition occurs when task executor's memory usage cross the threshold.
 //! Threshold is calculated from memory usage upper limit configuration.
 //!
-//! ![Memory state machine](https://raw.githubusercontent.com/SpringQL/SpringQL.github.io/main/static/img/memory-state-machine-and-effect.svg)
+//! ![Memory state machine](https://raw.githubusercontent.com/SpringQL/SpringQL/main/springql-core/doc/img/memory-state-machine-and-effect.drawio.svg)
 //!
 //! `TransitMemoryState` event is published on state transition and generic workers are supposed to
 //! change their scheduler on Moderate and Severe state.
@@ -14,17 +14,17 @@ pub(in crate::stream_engine::autonomous_executor) mod memory_state_machine_worke
 
 use std::sync::Arc;
 
-use crate::low_level_rs::SpringMemoryConfig;
-
-use self::memory_state_machine_worker_thread::{
-    MemoryStateMachineWorkerThread, MemoryStateMachineWorkerThreadArg,
-};
-
-use super::{
-    args::{Coordinators, EventQueues},
-    main_job_lock::MainJobLock,
-    memory_state_machine::MemoryStateMachineThreshold,
-    worker::worker_handle::WorkerHandle,
+use crate::{
+    api::SpringMemoryConfig,
+    stream_engine::autonomous_executor::{
+        args::{Coordinators, EventQueues},
+        main_job_lock::MainJobLock,
+        memory_state_machine::MemoryStateMachineThreshold,
+        memory_state_machine_worker::memory_state_machine_worker_thread::{
+            MemoryStateMachineWorkerThread, MemoryStateMachineWorkerThreadArg,
+        },
+        worker::worker_handle::WorkerHandle,
+    },
 };
 
 #[derive(Debug)]

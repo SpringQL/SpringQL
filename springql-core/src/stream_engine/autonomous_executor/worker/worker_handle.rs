@@ -9,14 +9,13 @@ use std::{
 use parking_lot::{Mutex, MutexGuard};
 
 use crate::{
-    low_level_rs::SpringConfig,
+    api::SpringConfig,
     stream_engine::autonomous_executor::{
         args::{Coordinators, EventQueues},
         main_job_lock::MainJobLock,
+        worker::worker_thread::WorkerThread,
     },
 };
-
-use super::worker_thread::WorkerThread;
 
 /// Handler to run worker thread.
 #[derive(Debug)]

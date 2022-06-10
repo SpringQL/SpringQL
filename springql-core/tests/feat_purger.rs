@@ -7,10 +7,11 @@ use std::time::Duration;
 
 use log::LevelFilter;
 use serde_json::json;
-use springql_core::low_level_rs::*;
-use springql_foreign_service::sink::ForeignSink;
-use springql_foreign_service::source::source_input::ForeignSourceInput;
-use springql_foreign_service::source::ForeignSource;
+use springql_core::api::*;
+use springql_foreign_service::{
+    sink::ForeignSink,
+    source::{source_input::ForeignSourceInput, ForeignSource},
+};
 use springql_test_logger::setup_test_logger_with_level;
 
 use crate::test_support::*;

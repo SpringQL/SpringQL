@@ -2,14 +2,20 @@
 
 use std::sync::{Mutex, MutexGuard};
 
-use crate::expr_resolver::ExprResolver;
-use crate::pipeline::pump_model::window_operation_parameter::join_parameter::JoinParameter;
-use crate::pipeline::pump_model::window_parameter::WindowParameter;
-use crate::stream_engine::autonomous_executor::performance_metrics::metrics_update_command::metrics_update_by_task_execution::WindowInFlowByWindowTask;
-use crate::stream_engine::autonomous_executor::task::tuple::Tuple;
-use crate::stream_engine::autonomous_executor::task::window::Window;
-use crate::stream_engine::autonomous_executor::task::window::join_window::JoinWindow;
-use crate::stream_engine::autonomous_executor::task::window::panes::pane::join_pane::JoinDir;
+use crate::{
+    expr_resolver::ExprResolver,
+    pipeline::pump_model::{
+        window_operation_parameter::join_parameter::JoinParameter,
+        window_parameter::WindowParameter,
+    },
+    stream_engine::autonomous_executor::{
+        performance_metrics::metrics_update_command::metrics_update_by_task_execution::WindowInFlowByWindowTask,
+        task::{
+            tuple::Tuple,
+            window::{join_window::JoinWindow, panes::pane::join_pane::JoinDir, Window},
+        },
+    },
+};
 
 #[derive(Debug)]
 pub(in crate::stream_engine::autonomous_executor) struct JoinSubtask(Mutex<JoinWindow>);

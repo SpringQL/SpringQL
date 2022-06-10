@@ -3,7 +3,7 @@
 use anyhow::Context;
 
 use crate::{
-    error::{Result, SpringError},
+    api::error::{Result, SpringError},
     pipeline::name::ColumnName,
     stream_engine::autonomous_executor::row::{
         column_values::ColumnValues, value::sql_value::SqlValue,
@@ -28,7 +28,7 @@ impl From<JsonObject> for serde_json::Value {
 impl JsonObject {
     /// # Failure
     ///
-    /// - [SpringError::InvalidFormat](crate::error::SpringError::InvalidFormat) when:
+    /// - `SpringError::InvalidFormat` when:
     ///   - Internal JSON cannot be mapped to SQL type (nested, for example).
     ///
     /// # TODO

@@ -2,7 +2,7 @@
 
 use std::cmp::Ordering;
 
-/// Comparison result of two [SqlValue](crate::SqlValue)s.
+/// Comparison result of two `SqlValue`s.
 #[derive(Clone, Eq, PartialEq, Hash, Debug)]
 pub(crate) enum SqlCompareResult {
     /// v1 = v2

@@ -3,13 +3,16 @@
 pub(in crate::stream_engine::autonomous_executor) mod row_queue_id;
 pub(in crate::stream_engine::autonomous_executor) mod window_queue_id;
 
-use crate::pipeline::{
-    name::StreamName,
-    pump_model::{pump_input_type::PumpInputType, PumpModel},
-    sink_writer_model::SinkWriterModel,
+use crate::{
+    pipeline::{
+        name::StreamName,
+        pump_model::{pump_input_type::PumpInputType, PumpModel},
+        sink_writer_model::SinkWriterModel,
+    },
+    stream_engine::autonomous_executor::task_graph::queue_id::{
+        row_queue_id::RowQueueId, window_queue_id::WindowQueueId,
+    },
 };
-
-use self::{row_queue_id::RowQueueId, window_queue_id::WindowQueueId};
 
 #[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, new)]
 pub(in crate::stream_engine::autonomous_executor) enum QueueId {

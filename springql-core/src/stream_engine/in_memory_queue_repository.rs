@@ -2,15 +2,19 @@
 
 mod in_memory_queue;
 
+use std::{
+    collections::HashMap,
+    sync::{Arc, Mutex, MutexGuard},
+};
+
 use anyhow::anyhow;
 use once_cell::sync::Lazy;
 
-use crate::error::{Result, SpringError};
-use crate::pipeline::name::QueueName;
-use std::collections::HashMap;
-use std::sync::{Arc, Mutex, MutexGuard};
-
-use self::in_memory_queue::InMemoryQueue;
+use crate::{
+    api::error::{Result, SpringError},
+    pipeline::name::QueueName,
+    stream_engine::in_memory_queue_repository::in_memory_queue::InMemoryQueue,
+};
 
 static INSTANCE: Lazy<Arc<InMemoryQueueRepository>> =
     Lazy::new(|| Arc::new(InMemoryQueueRepository::empty()));
@@ -32,7 +36,7 @@ impl InMemoryQueueRepository {
 
     /// # Failure
     ///
-    /// - [SpringError::Unavailable](crate::error::SpringError::Unavailable) when:
+    /// - `SpringError::Unavailable` when:
     ///   - queue named `queue_name` does not exist.
     pub(in crate::stream_engine) fn get(
         &self,
@@ -49,7 +53,7 @@ impl InMemoryQueueRepository {
 
     /// # Failure
     ///
-    /// - [SpringError::Sql](crate::error::SpringError::Sql) when:
+    /// - `SpringError::Sql` when:
     ///   - queue named `queue_name` already exists.
     pub(in crate::stream_engine) fn create(&self, queue_name: QueueName) -> Result<()> {
         let r = self

@@ -2,11 +2,11 @@
 
 use serde::Deserialize;
 
-use crate::error::{Result, SpringError};
+use crate::api::error::{Result, SpringError};
 
 /// Default configuration.
 ///
-/// Default key-values are overwritten by `overwrite_config` parameter in `spring_open()`.
+/// Default key-values are overwritten by `overwrite_config_toml` parameter in `SpringConfig::new()`.
 const SPRING_CONFIG_DEFAULT: &str = r#"
 [worker]
 # Number of generic worker threads. Generic worker threads deal with internal and sink tasks.
@@ -59,30 +59,6 @@ net_connect_timeout_msec = 1_000
 net_write_timeout_msec = 100
 "#;
 
-/// Returns default configuration.
-pub fn spring_config_default() -> SpringConfig {
-    SpringConfig::new("").expect("default configuration must be valid")
-}
-
-/// Configuration by TOML format string.
-///
-/// This function is intended to be called from FFI.
-/// Rust clients can use `SpringConfig::from_toml()` instead.
-///
-/// # Parameters
-///
-/// - `overwrite_config_toml`: TOML format configuration to overwrite default. See `SPRING_CONFIG_DEFAULT` in [spring_config.rs](https://github.com/SpringQL/SpringQL/tree/main/springql-core/src/api/low_level_rs/spring_config.rs) for full-set default configuration.
-///
-/// # Failures
-///
-/// - [SpringError::InvalidConfig](crate::error::SpringError::InvalidConfig) when:
-///   - `overwrite_config_toml` includes invalid key and/or value.
-/// - [SpringError::InvalidFormat](crate::error::SpringError::InvalidFormat) when:
-///   - `overwrite_config_toml` is not valid as TOML.
-pub fn spring_config_toml(overwrite_config_toml: &str) -> Result<SpringConfig> {
-    SpringConfig::new(overwrite_config_toml)
-}
-
 /// Top-level config.
 #[allow(missing_docs)]
 #[derive(Clone, Eq, PartialEq, Debug, Deserialize)]
@@ -96,18 +72,18 @@ pub struct SpringConfig {
 
 impl Default for SpringConfig {
     fn default() -> Self {
-        spring_config_default()
+        Self::new("").expect("default configuration must be valid")
     }
 }
 
 impl SpringConfig {
     /// # Failures
     ///
-    /// - [SpringError::InvalidConfig](crate::error::SpringError::InvalidConfig) when:
+    /// - [SpringError::InvalidConfig](crate::api::error::SpringError::InvalidConfig) when:
     ///   - `overwrite_config_toml` includes invalid key and/or value.
-    /// - [SpringError::InvalidFormat](crate::error::SpringError::InvalidFormat) when:
+    /// - [SpringError::InvalidFormat](crate::api::error::SpringError::InvalidFormat) when:
     ///   - `overwrite_config_toml` is not valid as TOML.
-    pub(crate) fn new(overwrite_config_toml: &str) -> Result<Self> {
+    pub fn new(overwrite_config_toml: &str) -> Result<Self> {
         let default_conf = config::Config::builder()
             .add_source(config::File::from_str(
                 SPRING_CONFIG_DEFAULT,

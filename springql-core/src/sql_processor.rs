@@ -4,17 +4,20 @@ pub(crate) mod sql_parser;
 
 mod query_planner;
 
-use self::{
-    query_planner::QueryPlanner,
-    sql_parser::{parse_success::CreatePump, syntax::SelectStreamSyntax, SqlParser},
-};
 use crate::{
-    error::Result,
+    api::error::Result,
     pipeline::{
         pump_model::PumpModel, sink_writer_model::SinkWriterModel,
         source_reader_model::SourceReaderModel, stream_model::StreamModel, Pipeline,
     },
-    sql_processor::sql_parser::parse_success::ParseSuccess,
+    sql_processor::{
+        query_planner::QueryPlanner,
+        sql_parser::{
+            parse_success::{CreatePump, ParseSuccess},
+            syntax::SelectStreamSyntax,
+            SqlParser,
+        },
+    },
     stream_engine::command::{
         alter_pipeline_command::AlterPipelineCommand, query_plan::QueryPlan, Command,
     },
@@ -26,7 +29,7 @@ pub(crate) struct SqlProcessor(SqlParser);
 impl SqlProcessor {
     /// # Failures
     ///
-    /// - [SpringError::Sql](crate::error::SpringError::Sql) on syntax and semantics error.
+    /// - `SpringError::Sql` on syntax and semantics error.
     pub(crate) fn compile<S: Into<String>>(&self, sql: S, pipeline: &Pipeline) -> Result<Command> {
         let command = match self.0.parse(sql)? {
             ParseSuccess::CreateSourceStream(source_stream_model) => {

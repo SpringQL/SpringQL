@@ -14,7 +14,7 @@ impl GroupByLabels {
     }
 }
 
-/// TODO [support complex expression with aggregations](https://gh01.base.toyota-tokyo.tech/SpringQL-internal/SpringQL/issues/152)
+/// TODO `support complex expression with aggregations`
 ///
 /// ```sql
 /// SELECT group_by, aggr_expr.func(aggr_expr.aggregated)

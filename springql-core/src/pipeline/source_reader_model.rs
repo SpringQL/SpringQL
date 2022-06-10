@@ -2,11 +2,10 @@
 
 pub(crate) mod source_reader_type;
 
-use self::source_reader_type::SourceReaderType;
-
-use super::{
+use crate::pipeline::{
     name::{SourceReaderName, StreamName},
     option::Options,
+    source_reader_model::source_reader_type::SourceReaderType,
 };
 
 #[derive(Clone, PartialEq, Eq, Debug, new)]

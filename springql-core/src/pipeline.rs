@@ -16,15 +16,17 @@ pub(crate) mod stream_model;
 #[cfg(test)]
 pub(crate) mod test_support;
 
-use anyhow::anyhow;
 use std::{collections::HashSet, sync::Arc};
 
-use crate::error::{Result, SpringError};
+use anyhow::anyhow;
 
-use self::{
-    name::StreamName, pipeline_graph::PipelineGraph, pipeline_version::PipelineVersion,
-    pump_model::PumpModel, sink_writer_model::SinkWriterModel,
-    source_reader_model::SourceReaderModel, stream_model::StreamModel,
+use crate::{
+    api::error::{Result, SpringError},
+    pipeline::{
+        name::StreamName, pipeline_graph::PipelineGraph, pipeline_version::PipelineVersion,
+        pump_model::PumpModel, sink_writer_model::SinkWriterModel,
+        source_reader_model::SourceReaderModel, stream_model::StreamModel,
+    },
 };
 
 #[derive(Clone, Debug)]
@@ -53,7 +55,7 @@ impl Pipeline {
 
     /// # Failure
     ///
-    /// - [SpringError::Sql](crate::error::SpringError::Sql) when:
+    /// - `SpringError::Sql` when:
     ///   - Stream is not registered in pipeline
     pub(super) fn get_stream(&self, stream: &StreamName) -> Result<Arc<StreamModel>> {
         self.graph.get_stream(stream)
@@ -61,7 +63,7 @@ impl Pipeline {
 
     /// # Failure
     ///
-    /// - [SpringError::Sql](crate::error::SpringError::Sql) when:
+    /// - `SpringError::Sql` when:
     ///   - Name of pump is already used in the same pipeline
     ///   - Name of upstream stream is not found in pipeline
     ///   - Name of downstream stream is not found in pipeline
@@ -73,7 +75,7 @@ impl Pipeline {
 
     /// # Failure
     ///
-    /// - [SpringError::Sql](crate::error::SpringError::Sql) when:
+    /// - `SpringError::Sql` when:
     ///   - Name of stream is already used in the same pipeline
     pub(super) fn add_stream(&mut self, stream: Arc<StreamModel>) -> Result<()> {
         self.update_version();
@@ -105,7 +107,7 @@ impl Pipeline {
 
     /// # Failure
     ///
-    /// - [SpringError::Sql](crate::error::SpringError::Sql) when:
+    /// - `SpringError::Sql` when:
     ///   - Name is already used in the same pipeline
     fn register_name(&mut self, name: &str) -> Result<()> {
         if !self.object_names.insert(name.to_string()) {

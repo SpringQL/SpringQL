@@ -2,7 +2,7 @@
 
 //! A task graph is a DAG where nodes are `TaskId`s and edges are `QueueId`s.
 //!
-//! ![Task graph concept diagram](https://raw.githubusercontent.com/SpringQL/SpringQL.github.io/main/static/img/pipeline-and-task-graph.svg)
+//! ![Task graph concept diagram](https://raw.githubusercontent.com/SpringQL/SpringQL/main/springql-core/doc/img/pipeline-and-task-graph.drawio.svg)
 //!
 //! A scheduler generates series of TaskId which a GenericWorker executes at a time.
 
@@ -16,10 +16,12 @@ pub(in crate::stream_engine::autonomous_executor) mod source_scheduler;
 /// Too long series may badly affect on scheduler change (e.g. memory state change from severe to moderate).
 const MAX_TASK_SERIES: u16 = 20;
 
-use crate::stream_engine::autonomous_executor::performance_metrics::PerformanceMetrics;
-use crate::stream_engine::autonomous_executor::task_graph::task_id::TaskId;
-use crate::stream_engine::autonomous_executor::task_graph::TaskGraph;
 use std::fmt::Debug;
+
+use crate::stream_engine::autonomous_executor::{
+    performance_metrics::PerformanceMetrics,
+    task_graph::{task_id::TaskId, TaskGraph},
+};
 
 /// All scheduler implementation must be stateless because MemoryStateMachine replace scheduler implementation
 /// dynamically.

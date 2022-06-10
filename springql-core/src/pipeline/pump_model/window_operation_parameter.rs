@@ -3,7 +3,9 @@
 pub(crate) mod aggregate;
 pub(crate) mod join_parameter;
 
-use self::{aggregate::AggregateParameter, join_parameter::JoinParameter};
+use crate::pipeline::pump_model::window_operation_parameter::{
+    aggregate::AggregateParameter, join_parameter::JoinParameter,
+};
 
 /// Window operation parameters
 #[derive(Clone, PartialEq, Debug)]

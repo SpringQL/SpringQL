@@ -4,13 +4,14 @@ mod task_repository;
 
 use std::sync::Arc;
 
-use self::task_repository::TaskRepository;
-use crate::pipeline::Pipeline;
-use crate::{error::Result, pipeline::pipeline_version::PipelineVersion};
-
-use super::{
-    task::Task,
-    task_graph::{task_id::TaskId, TaskGraph},
+use crate::{
+    api::error::Result,
+    pipeline::{pipeline_version::PipelineVersion, Pipeline},
+    stream_engine::autonomous_executor::{
+        pipeline_derivatives::task_repository::TaskRepository,
+        task::Task,
+        task_graph::{task_id::TaskId, TaskGraph},
+    },
 };
 
 /// Pipeline, and task graph and tasks generated from the pipeline.
@@ -52,7 +53,7 @@ impl PipelineDerivatives {
 
     /// # Failure
     ///
-    /// - [SpringError::Sql](crate::error::SpringError::Sql) when:
+    /// - `SpringError::Sql` when:
     ///   - TaskId is not found in task graph.
     pub(in crate::stream_engine::autonomous_executor) fn get_task(
         &self,

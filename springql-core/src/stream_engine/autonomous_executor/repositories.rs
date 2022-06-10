@@ -1,14 +1,16 @@
 // This file is part of https://github.com/SpringQL/SpringQL which is licensed under MIT OR Apache-2.0. See file LICENSE-MIT or LICENSE-APACHE for full license details.
 
-use crate::low_level_rs::SpringConfig;
-
-use super::{
-    queue::{
-        row_queue_repository::RowQueueRepository, window_queue_repository::WindowQueueRepository,
-    },
-    task::{
-        sink_task::sink_writer::sink_writer_repository::SinkWriterRepository,
-        source_task::source_reader::source_reader_repository::SourceReaderRepository,
+use crate::{
+    api::SpringConfig,
+    stream_engine::autonomous_executor::{
+        queue::{
+            row_queue_repository::RowQueueRepository,
+            window_queue_repository::WindowQueueRepository,
+        },
+        task::{
+            sink_task::sink_writer::sink_writer_repository::SinkWriterRepository,
+            source_task::source_reader::source_reader_repository::SourceReaderRepository,
+        },
     },
 };
 

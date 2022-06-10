@@ -7,11 +7,11 @@ use std::{cell::RefCell, sync::Arc};
 use crate::stream_engine::autonomous_executor::{
     args::{Coordinators, EventQueues, Locks},
     repositories::Repositories,
+    task_executor::{
+        source_worker_pool::source_worker::SourceWorker,
+        task_worker_thread_handler::{TaskWorkerId, TaskWorkerThreadArg},
+    },
 };
-
-use self::source_worker::SourceWorker;
-
-use super::task_worker_thread_handler::{TaskWorkerId, TaskWorkerThreadArg};
 
 /// Workers to execute pump and sink tasks.
 #[derive(Debug)]

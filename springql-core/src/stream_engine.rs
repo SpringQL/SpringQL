@@ -2,8 +2,6 @@
 
 #![doc = include_str!("stream_engine.md")]
 
-pub use autonomous_executor::SpringValue;
-
 pub(crate) mod command;
 pub(crate) mod time;
 
@@ -11,6 +9,11 @@ mod autonomous_executor;
 mod in_memory_queue_repository;
 mod sql_executor;
 
+use std::sync::{Arc, Mutex, MutexGuard};
+
+use anyhow::anyhow;
+
+pub use crate::stream_engine::autonomous_executor::SpringValue;
 pub(crate) use autonomous_executor::{
     row::value::sql_value::{
         nn_sql_value::NnSqlValue, sql_compare_result::SqlCompareResult, SqlValue,
@@ -20,15 +23,39 @@ pub(crate) use autonomous_executor::{
 };
 
 use crate::{
-    error::Result,
-    low_level_rs::SpringConfig,
+    api::{error::Result, SpringConfig, SpringError},
     pipeline::{name::QueueName, Pipeline},
+    stream_engine::{
+        autonomous_executor::AutonomousExecutor,
+        command::alter_pipeline_command::AlterPipelineCommand,
+        in_memory_queue_repository::InMemoryQueueRepository, sql_executor::SqlExecutor,
+    },
 };
 
-use self::{
-    autonomous_executor::AutonomousExecutor, command::alter_pipeline_command::AlterPipelineCommand,
-    in_memory_queue_repository::InMemoryQueueRepository, sql_executor::SqlExecutor,
-};
+#[derive(Clone, Debug)]
+pub(crate) struct EngineMutex(Arc<Mutex<StreamEngine>>);
+
+impl EngineMutex {
+    pub(crate) fn new(config: &SpringConfig) -> Self {
+        let engine = StreamEngine::new(config);
+        Self(Arc::new(Mutex::new(engine)))
+    }
+
+    /// # Failure
+    ///
+    /// - `SpringError::ThreadPoisoned`
+    pub(crate) fn get(&self) -> Result<MutexGuard<'_, StreamEngine>> {
+        self.0
+            .lock()
+            .map_err(|e| {
+                anyhow!(
+                    "another thread sharing the same stream-engine got panic: {:?}",
+                    e
+                )
+            })
+            .map_err(SpringError::SpringQlCoreIo)
+    }
+}
 
 /// Stream engine has SQL executor and autonomous executor inside.
 ///
@@ -66,7 +93,7 @@ impl StreamEngine {
     ///
     /// # Failure
     ///
-    /// - [SpringError::Unavailable](crate::error::SpringError::Unavailable) when:
+    /// - `SpringError::Unavailable` when:
     ///   - queue named `queue_name` does not exist.
     pub(crate) fn pop_in_memory_queue_non_blocking(
         &mut self,

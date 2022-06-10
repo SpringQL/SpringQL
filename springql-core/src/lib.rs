@@ -6,13 +6,14 @@
 #[macro_use]
 extern crate derive_new;
 
+pub(crate) mod connection;
 pub(crate) mod expr_resolver;
 pub(crate) mod expression;
 pub(crate) mod mem_size;
 pub(crate) mod pipeline;
 pub(crate) mod sql_processor;
 pub(crate) mod stream_engine;
+pub(crate) mod time;
 
-mod api;
-
-pub use api::*;
+/// public API for SpringQL
+pub mod api;

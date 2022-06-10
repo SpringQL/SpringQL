@@ -9,7 +9,15 @@ pub(crate) mod operator;
 use anyhow::anyhow;
 
 use crate::{
-    error::{Result, SpringError},
+    api::error::{Result, SpringError},
+    expression::{
+        boolean_expression::{
+            comparison_function::ComparisonFunction, logical_function::LogicalFunction,
+            numerical_function::NumericalFunction, BinaryExpr,
+        },
+        function_call::FunctionCall,
+        operator::UnaryOperator,
+    },
     pipeline::{
         field::field_name::ColumnReference,
         pump_model::window_operation_parameter::aggregate::AggregateFunctionParameter,
@@ -18,15 +26,6 @@ use crate::{
         time::duration::{event_duration::SpringEventDuration, SpringDuration},
         NnSqlValue, SqlCompareResult, SqlValue, Tuple,
     },
-};
-
-use self::{
-    boolean_expression::{
-        comparison_function::ComparisonFunction, logical_function::LogicalFunction,
-        numerical_function::NumericalFunction, BinaryExpr,
-    },
-    function_call::FunctionCall,
-    operator::UnaryOperator,
 };
 
 pub(crate) trait ValueExprType {}
@@ -240,7 +239,7 @@ impl ValueExprPh2 {
                 SqlValue::NotNull(NnSqlValue::Timestamp(ts)),
                 SqlValue::NotNull(NnSqlValue::Duration(resolution)),
             ) => {
-                let ts_floor = ts.floor(resolution.to_chrono());
+                let ts_floor = ts.floor(resolution.to_duration());
                 Ok(SqlValue::NotNull(NnSqlValue::Timestamp(ts_floor)))
             }
             _ => Err(SpringError::Sql(anyhow!(

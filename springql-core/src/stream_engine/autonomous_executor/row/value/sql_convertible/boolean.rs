@@ -1,11 +1,12 @@
 // This file is part of https://github.com/SpringQL/SpringQL which is licensed under MIT OR Apache-2.0. See file LICENSE-MIT or LICENSE-APACHE for full license details.
 
 use crate::{
-    error::Result,
-    stream_engine::autonomous_executor::row::value::sql_value::nn_sql_value::NnSqlValue,
+    api::error::Result,
+    stream_engine::autonomous_executor::row::value::{
+        sql_convertible::{SpringValue, ToNnSqlValue},
+        sql_value::nn_sql_value::NnSqlValue,
+    },
 };
-
-use super::{SpringValue, ToNnSqlValue};
 
 impl SpringValue for bool {
     fn try_from_bool(v: &bool) -> Result<Self> {

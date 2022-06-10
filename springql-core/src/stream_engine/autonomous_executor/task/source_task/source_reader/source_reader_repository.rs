@@ -8,13 +8,13 @@ use std::{
 use parking_lot::RwLock;
 
 use crate::{
-    error::Result,
-    low_level_rs::SpringSourceReaderConfig,
+    api::error::Result,
+    api::SpringSourceReaderConfig,
     pipeline::{name::SourceReaderName, source_reader_model::SourceReaderModel},
-    stream_engine::autonomous_executor::task::source_task::source_reader::source_reader_factory::SourceReaderFactory,
+    stream_engine::autonomous_executor::task::source_task::source_reader::{
+        source_reader_factory::SourceReaderFactory, SourceReader,
+    },
 };
-
-use super::SourceReader;
 
 #[allow(clippy::type_complexity)]
 #[derive(Debug)]
@@ -38,7 +38,7 @@ impl SourceReaderRepository {
     ///
     /// # Failures
     ///
-    /// - [SpringError::ForeignIo](crate::error::SpringError::ForeignIo) when:
+    /// - `SpringError::ForeignIo` when:
     ///   - failed to start subtask.
     pub(in crate::stream_engine::autonomous_executor) fn register(
         &self,

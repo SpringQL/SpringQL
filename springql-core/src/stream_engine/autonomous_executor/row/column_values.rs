@@ -1,7 +1,7 @@
 // This file is part of https://github.com/SpringQL/SpringQL which is licensed under MIT OR Apache-2.0. See file LICENSE-MIT or LICENSE-APACHE for full license details.
 
 use crate::{
-    error::{Result, SpringError},
+    api::error::{Result, SpringError},
     pipeline::name::ColumnName,
 };
 
@@ -9,7 +9,7 @@ use std::collections::HashMap;
 
 use anyhow::{anyhow, Context};
 
-use super::value::sql_value::SqlValue;
+use crate::stream_engine::autonomous_executor::row::value::sql_value::SqlValue;
 
 #[derive(Clone, Debug, Default)]
 pub(in crate::stream_engine::autonomous_executor) struct ColumnValues(
@@ -19,7 +19,7 @@ pub(in crate::stream_engine::autonomous_executor) struct ColumnValues(
 impl ColumnValues {
     /// # Failure
     ///
-    /// - [SpringError::Sql](crate::error::SpringError::Sql) when:
+    /// - `SpringError::Sql` when:
     ///   - `k` is already inserted.
     pub(in crate::stream_engine::autonomous_executor) fn insert(
         &mut self,
@@ -38,7 +38,7 @@ impl ColumnValues {
 
     /// # Failure
     ///
-    /// - [SpringError::Sql](crate::error::SpringError::Sql) when:
+    /// - `SpringError::Sql` when:
     ///   - `k` does not included.
     pub(in crate::stream_engine::autonomous_executor) fn remove(
         &mut self,

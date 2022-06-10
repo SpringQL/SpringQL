@@ -8,7 +8,7 @@ use crate::stream_engine::autonomous_executor::row::Row;
 ///
 /// Window queue has complicated structure, compared to row queue.
 ///
-/// ![Window queue](https://raw.githubusercontent.com/SpringQL/SpringQL.github.io/main/static/img/window-queue.svg)
+/// ![Window queue](https://raw.githubusercontent.com/SpringQL/SpringQL/main/springql-core/doc/img/window-queue.drawio.svg)
 #[derive(Debug, Default)]
 pub(in crate::stream_engine::autonomous_executor) struct WindowQueue {
     waiting_q: Mutex<VecDeque<Row>>,

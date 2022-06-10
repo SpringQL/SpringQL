@@ -15,13 +15,14 @@ use crate::stream_engine::autonomous_executor::{
         performance_metrics_summary::PerformanceMetricsSummary, PerformanceMetrics,
     },
     pipeline_derivatives::PipelineDerivatives,
-    task_executor::task_worker_thread_handler::{
-        TaskWorkerLoopState, TaskWorkerThreadArg, TaskWorkerThreadHandler,
+    task_executor::{
+        generic_worker_pool::generic_worker::generic_worker_thread::generic_worker_scheduler::GenericWorkerScheduler,
+        task_worker_thread_handler::{
+            TaskWorkerLoopState, TaskWorkerThreadArg, TaskWorkerThreadHandler,
+        },
     },
     worker::{worker_handle::WorkerSetupCoordinator, worker_thread::WorkerThread},
 };
-
-use self::generic_worker_scheduler::GenericWorkerScheduler;
 
 /// Runs a worker thread.
 #[derive(Debug)]

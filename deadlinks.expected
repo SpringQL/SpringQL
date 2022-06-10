@@ -1,0 +1,6 @@
+Found invalid urls in api/struct.SpringEventDuration.html:
+	Unexpected HTTP status fetching https://docs.rs/pest/pest/trait.RuleType.html: Not Found
+	Unexpected HTTP status fetching https://docs.rs/pest/src/pest/lib.rs.html#103: Not Found
+Found invalid urls in api/struct.SpringTimestamp.html:
+	Unexpected HTTP status fetching https://docs.rs/pest/pest/trait.RuleType.html: Not Found
+	Unexpected HTTP status fetching https://docs.rs/pest/src/pest/lib.rs.html#103: Not Found

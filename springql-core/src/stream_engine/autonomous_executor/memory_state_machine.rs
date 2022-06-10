@@ -1,8 +1,8 @@
 // This file is part of https://github.com/SpringQL/SpringQL which is licensed under MIT OR Apache-2.0. See file LICENSE-MIT or LICENSE-APACHE for full license details.
 
-//! ![Memory state machine](https://raw.githubusercontent.com/SpringQL/SpringQL.github.io/main/static/img/memory-state-machine-and-effect.svg)
+//! ![Memory state machine](https://raw.githubusercontent.com/SpringQL/SpringQL/main/springql-core/doc/img/memory-state-machine-and-effect.drawio.svg)
 
-use crate::low_level_rs::SpringMemoryConfig;
+use crate::api::SpringMemoryConfig;
 
 #[derive(Debug)]
 pub(in crate::stream_engine::autonomous_executor) struct MemoryStateMachine {

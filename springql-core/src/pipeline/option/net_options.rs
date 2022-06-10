@@ -4,9 +4,10 @@ use std::net::IpAddr;
 
 use anyhow::Context;
 
-use crate::error::{Result, SpringError};
-
-use super::Options;
+use crate::{
+    api::error::{Result, SpringError},
+    pipeline::option::Options,
+};
 
 #[derive(Clone, Eq, PartialEq, Debug)]
 pub(crate) enum NetProtocol {

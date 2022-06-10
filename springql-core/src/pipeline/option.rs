@@ -5,12 +5,14 @@ pub(crate) mod options_builder;
 pub(crate) mod in_memory_queue_options;
 pub(crate) mod net_options;
 
-use crate::error::{Result, SpringError};
-use anyhow::Context;
-
 use std::collections::HashMap;
 
-use self::options_builder::OptionsBuilder;
+use anyhow::Context;
+
+use crate::{
+    api::error::{Result, SpringError},
+    pipeline::option::options_builder::OptionsBuilder,
+};
 
 /// Options in CREATE statement.
 #[derive(Clone, Eq, PartialEq, Debug)]
@@ -19,7 +21,7 @@ pub(crate) struct Options(HashMap<String, String>);
 impl Options {
     /// # Failure
     ///
-    /// - [SpringError::InvalidOption](crate SpringError::InvalidOption) when:
+    /// - `SpringError::InvalidOption` when:
     ///   - key is not found in this Options.
     pub(crate) fn get<V, F>(&self, key: &str, value_parser: F) -> Result<V>
     where

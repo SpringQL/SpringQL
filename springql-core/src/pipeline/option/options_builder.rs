@@ -2,7 +2,7 @@
 
 use std::collections::HashMap;
 
-use super::Options;
+use crate::pipeline::option::Options;
 
 #[derive(Default, Debug)]
 pub(crate) struct OptionsBuilder(HashMap<String, String>);

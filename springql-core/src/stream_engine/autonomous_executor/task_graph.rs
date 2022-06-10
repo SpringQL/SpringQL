@@ -7,7 +7,7 @@
 //!
 //! # Task graph concept diagram
 //!
-//! ![Task graph concept diagram](https://raw.githubusercontent.com/SpringQL/SpringQL.github.io/main/static/img/pipeline-and-task-graph.svg)
+//! ![Task graph concept diagram](https://raw.githubusercontent.com/SpringQL/SpringQL/main/springql-core/doc/img/pipeline-and-task-graph.drawio.svg)
 
 pub(super) mod queue_id;
 pub(super) mod task_id;
@@ -18,14 +18,15 @@ use std::collections::HashMap;
 
 use petgraph::graph::{DiGraph, NodeIndex};
 
-use crate::pipeline::{
-    name::StreamName, pipeline_graph::edge::Edge, pipeline_version::PipelineVersion, Pipeline,
-};
-
-use self::{
-    edge_ref::MyEdgeRef,
-    queue_id::{row_queue_id::RowQueueId, window_queue_id::WindowQueueId, QueueId},
-    task_id::TaskId,
+use crate::{
+    pipeline::{
+        name::StreamName, pipeline_graph::edge::Edge, pipeline_version::PipelineVersion, Pipeline,
+    },
+    stream_engine::autonomous_executor::task_graph::{
+        edge_ref::MyEdgeRef,
+        queue_id::{row_queue_id::RowQueueId, window_queue_id::WindowQueueId, QueueId},
+        task_id::TaskId,
+    },
 };
 
 #[derive(Clone, Debug, new)]
