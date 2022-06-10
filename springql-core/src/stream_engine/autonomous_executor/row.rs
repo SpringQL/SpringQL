@@ -19,6 +19,7 @@ use crate::{
     stream_engine::{
         autonomous_executor::row::{
             column::stream_column::StreamColumns,
+            foreign_row::format::json::JsonObject,
             value::sql_value::{nn_sql_value::NnSqlValue, SqlValue},
         },
         time::timestamp::{system_timestamp::SystemTimestamp, SpringTimestamp},
@@ -114,8 +115,26 @@ impl MemSize for Row {
     }
 }
 
+impl From<Row> for JsonObject {
+    fn from(row: Row) -> Self {
+        let map = row
+            .into_iter()
+            .map(|(col, val)| (col.to_string(), serde_json::Value::from(val)))
+            .collect::<serde_json::Map<String, serde_json::Value>>();
+        let v = serde_json::Value::from(map);
+        JsonObject::new(v)
+    }
+}
+
 #[cfg(test)]
 mod tests {
+    use serde_json::json;
+
+    use crate::{
+        stream_engine::autonomous_executor::row::foreign_row::format::json::JsonObject,
+        time::Duration,
+    };
+
     use super::*;
 
     #[test]
@@ -132,5 +151,35 @@ mod tests {
             Row::fx_city_temperature_tokyo(),
             Row::fx_city_temperature_osaka()
         );
+    }
+
+    #[test]
+    fn test_into_json() {
+        let row = Row::fx_city_temperature_tokyo();
+
+        let json = JsonObject::new(json!({
+            "ts": SpringTimestamp::fx_ts1().to_string(),
+            "city": "Tokyo",
+            "temperature": 21
+        }));
+
+        assert_eq!(JsonObject::from(row), json);
+    }
+
+    #[test]
+    fn test_from_row_arrival_rowtime() {
+        let row = Row::fx_no_promoted_rowtime();
+        let f_row = SinkRow::from(row);
+        let f_json = JsonObject::from(f_row);
+        let mut f_colvals = f_json.into_column_values().unwrap();
+        let f_rowtime_sql_value = f_colvals.remove(&ColumnName::arrival_rowtime()).unwrap();
+
+        if let SqlValue::NotNull(f_rowtime_nn_sql_value) = f_rowtime_sql_value {
+            let f_rowtime: SpringTimestamp = f_rowtime_nn_sql_value.unpack().unwrap();
+            assert!(SystemTimestamp::now() - Duration::seconds(1) < f_rowtime);
+            assert!(f_rowtime < SystemTimestamp::now() + Duration::seconds(1));
+        } else {
+            unreachable!()
+        };
     }
 }
