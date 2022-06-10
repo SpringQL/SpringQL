@@ -1,0 +1,6 @@
+coverage:
+  status:
+    project:
+      default:
+        # Pass CI check even when the coverage degrades
+        informational: true
