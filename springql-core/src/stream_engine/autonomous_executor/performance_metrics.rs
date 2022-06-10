@@ -18,9 +18,7 @@ use crate::{
     stream_engine::autonomous_executor::{
         performance_metrics::{
             metrics_update_command::MetricsUpdateByTaskExecution,
-            queue_metrics::{
-                row_queue_metrics::RowQueueMetrics, window_queue_metrics::WindowQueueMetrics,
-            },
+            queue_metrics::{RowQueueMetrics, WindowQueueMetrics},
             task_metrics::TaskMetrics,
         },
         task_graph::{

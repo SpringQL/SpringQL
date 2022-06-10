@@ -9,7 +9,7 @@ use crate::stream_engine::autonomous_executor::{
 
 /// Stock monitor of a window queue.
 #[derive(Clone, Eq, PartialEq, Debug, Default)]
-pub(in crate::stream_engine::autonomous_executor) struct WindowQueueMetrics {
+pub struct WindowQueueMetrics {
     /// might be negative value if `dispatched` event is subscribed earlier than `put` event.
     rows_waiting: i64,
     /// ditto
@@ -17,7 +17,7 @@ pub(in crate::stream_engine::autonomous_executor) struct WindowQueueMetrics {
 }
 
 impl WindowQueueMetrics {
-    pub(in crate::stream_engine::autonomous_executor::performance_metrics) fn update_by_task_execution(
+    pub fn update_by_task_execution(
         &mut self,
         id: &WindowQueueId,
         command: &MetricsUpdateByTaskExecution,
@@ -26,20 +26,18 @@ impl WindowQueueMetrics {
         self.bytes += command.window_queue_gain_bytes(id);
     }
 
-    pub(in crate::stream_engine::autonomous_executor::performance_metrics) fn update_by_purge(
-        &mut self,
-    ) {
+    pub fn update_by_purge(&mut self) {
         self.rows_waiting = 0;
         self.bytes = 0;
     }
 
     /// Current number of rows in the queue.
-    pub(in crate::stream_engine::autonomous_executor) fn rows_waiting(&self) -> u64 {
+    pub fn rows_waiting(&self) -> u64 {
         floor0(self.rows_waiting)
     }
 
     /// Current bytes consumed in the queue.
-    pub(in crate::stream_engine::autonomous_executor) fn bytes(&self) -> u64 {
+    pub fn bytes(&self) -> u64 {
         floor0(self.bytes)
     }
 }

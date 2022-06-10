@@ -4,9 +4,7 @@ use serde_json::json;
 
 use crate::stream_engine::autonomous_executor::{
     performance_metrics::{
-        queue_metrics::{
-            row_queue_metrics::RowQueueMetrics, window_queue_metrics::WindowQueueMetrics,
-        },
+        queue_metrics::{RowQueueMetrics, WindowQueueMetrics},
         task_metrics::TaskMetrics,
         PerformanceMetrics,
     },
