@@ -6,7 +6,7 @@ use crate::{
     api::{error::Result, SpringConfig},
     pipeline::name::QueueName,
     sql_processor::SqlProcessor,
-    stream_engine::{command::Command, EngineMutex, SinkRow},
+    stream_engine::{command::Command, EngineMutex, Row},
 };
 
 fn setup_logger() {
@@ -26,7 +26,7 @@ fn setup_logger() {
 /// 1 stream pipeline has only 1 connection.
 /// In other words, the lifecycle of Connection and internal stream pipeline are the same.
 #[derive(Debug)]
-pub struct Connection {
+pub(crate) struct Connection {
     engine: EngineMutex,
     sql_processor: SqlProcessor,
 }
@@ -54,7 +54,7 @@ impl Connection {
         }
     }
 
-    pub fn pop(&self, queue: &str) -> Result<SinkRow> {
+    pub fn pop(&self, queue: &str) -> Result<Row> {
         const SLEEP_MSECS: u64 = 10;
 
         let mut engine = self.engine.get()?;
@@ -70,7 +70,7 @@ impl Connection {
         }
     }
 
-    pub fn pop_non_blocking(&self, queue: &str) -> Result<Option<SinkRow>> {
+    pub fn pop_non_blocking(&self, queue: &str) -> Result<Option<Row>> {
         let mut engine = self.engine.get()?;
         let sink_row =
             engine.pop_in_memory_queue_non_blocking(QueueName::new(queue.to_string()))?;

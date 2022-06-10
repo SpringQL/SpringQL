@@ -18,7 +18,7 @@ use crate::{
                 MetricsUpdateByTaskExecution, TaskMetricsUpdateByTask,
             },
             repositories::Repositories,
-            row::{foreign_row::sink_row::SinkRow, Row},
+            row::Row,
             task::task_context::TaskContext,
             task_graph::{queue_id::QueueId, task_id::TaskId},
         },
@@ -111,8 +111,6 @@ impl SinkTask {
     }
 
     fn emit(&self, row: Row, context: &TaskContext) -> Result<()> {
-        let f_row = SinkRow::from(row);
-
         let sink_writer = context
             .repos()
             .sink_writer_repository()
@@ -121,7 +119,7 @@ impl SinkTask {
         sink_writer
             .lock()
             .expect("other worker threads sharing the same sink subtask must not get panic")
-            .send_row(f_row)?;
+            .send_row(row)?;
 
         Ok(())
     }
