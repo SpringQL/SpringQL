@@ -4,7 +4,7 @@
 
 mod field;
 mod name;
-pub(crate) mod option;
+mod option;
 pub(crate) mod pipeline_graph;
 pub(crate) mod pipeline_version;
 pub(crate) mod pump_model;
@@ -21,6 +21,10 @@ pub(crate) use name::{
     AggrAlias, ColumnName, CorrelationAlias, PumpName, QueueName, SinkWriterName, SourceReaderName,
     StreamName, ValueAlias,
 };
+pub(crate) use option::{
+    InMemoryQueueOptions, NetClientOptions, NetProtocol, NetServerOptions, Options, OptionsBuilder,
+};
+
 use std::{collections::HashSet, sync::Arc};
 
 use anyhow::anyhow;

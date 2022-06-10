@@ -132,12 +132,11 @@ mod tests {
     use super::*;
     use crate::{
         pipeline::{
-            option::OptionsBuilder,
             pipeline_version::PipelineVersion,
             sink_writer_model::{SinkWriterModel, SinkWriterType},
             source_reader_model::{SourceReaderModel, SourceReaderType},
             stream_model::{StreamModel, StreamShape},
-            SinkWriterName, SourceReaderName, StreamName,
+            OptionsBuilder, SinkWriterName, SourceReaderName, StreamName,
         },
         stream_engine::command::alter_pipeline_command::AlterPipelineCommand,
     };

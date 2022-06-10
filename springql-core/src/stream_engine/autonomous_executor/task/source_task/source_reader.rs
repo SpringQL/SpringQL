@@ -8,7 +8,7 @@ pub(in crate::stream_engine::autonomous_executor) mod source_reader_repository;
 use std::fmt::Debug;
 
 use crate::{
-    api::error::Result, api::SpringSourceReaderConfig, pipeline::option::Options,
+    api::error::Result, api::SpringSourceReaderConfig, pipeline::Options,
     stream_engine::autonomous_executor::row::foreign_row::source_row::SourceRow,
 };
 

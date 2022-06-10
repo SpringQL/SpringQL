@@ -9,7 +9,8 @@ use std::fmt::Debug;
 
 use crate::{
     api::{error::Result, SpringSinkWriterConfig},
-    pipeline::option::Options, stream_engine::Row,
+    pipeline::Options,
+    stream_engine::Row,
 };
 
 /// Instance of SinkWriterModel.

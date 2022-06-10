@@ -2,7 +2,7 @@
 
 use crate::{
     api::{error::Result, SpringSinkWriterConfig},
-    pipeline::{option::Options, sink_writer_model::SinkWriterType},
+    pipeline::{sink_writer_model::SinkWriterType, Options},
     stream_engine::autonomous_executor::task::sink_task::sink_writer::{
         in_memory_queue::InMemoryQueueSinkWriter, net::NetSinkWriter, SinkWriter,
     },

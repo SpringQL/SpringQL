@@ -11,7 +11,7 @@ use std::{
 use crate::{
     api::error::{foreign_info::ForeignInfo, Result, SpringError},
     api::SpringSourceReaderConfig,
-    pipeline::option::{NetProtocol, NetServerOptions, Options},
+    pipeline::{NetProtocol, NetServerOptions, Options},
     stream_engine::autonomous_executor::{
         row::foreign_row::{
             format::json::JsonObject,
@@ -134,7 +134,7 @@ mod tests {
     use super::*;
     use crate::{
         api::SpringSinkWriterConfig,
-        pipeline::option::OptionsBuilder,
+        pipeline::OptionsBuilder,
         stream_engine::{
             autonomous_executor::task::sink_task::sink_writer::{net::NetSinkWriter, SinkWriter},
             Row,
