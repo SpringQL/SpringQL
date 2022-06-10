@@ -17,7 +17,8 @@ use crate::{
                 OutQueueMetricsUpdateByTask, TaskMetricsUpdateByTask, WindowInFlowByWindowTask,
             },
             row::{
-                column::stream_column::StreamColumns, foreign_row::format::json::JsonObject, Row,
+                column::stream_column::StreamColumns, foreign_row::format::json::JsonObject,
+                foreign_row::source_row::json_source_row::JsonSourceRow, Row,
             },
             task::tuple::Tuple,
             task_graph::{
@@ -35,7 +36,6 @@ use crate::{
                 metrics_update_command::metrics_update_by_task_execution::MetricsUpdateByTaskExecution,
                 PerformanceMetrics,
             },
-            row::foreign_row::source_row::SourceRow,
             task_graph::TaskGraph,
         },
         time::timestamp::SpringTimestamp,
@@ -104,7 +104,7 @@ impl JsonObject {
     }
 }
 
-impl SourceRow {
+impl JsonSourceRow {
     pub(in crate::stream_engine) fn fx_city_temperature_tokyo() -> Self {
         Self::from_json(JsonObject::fx_city_temperature_tokyo())
     }
