@@ -29,7 +29,7 @@ impl SourceRow {
     ///
     /// - `SpringError::InvalidFormat` when:
     ///   - `bytes` cannot be parsed as the `format`
-    pub(crate) fn from_bytes(format: SourceRowFormat, bytes: &[u8]) -> Result<Self> {
+    pub fn from_bytes(format: SourceRowFormat, bytes: &[u8]) -> Result<Self> {
         match format {
             SourceRowFormat::Json => {
                 let json_s = std::str::from_utf8(bytes)
@@ -48,7 +48,7 @@ impl SourceRow {
     ///
     /// - `SpringError::InvalidFormat` when:
     ///   - This source row cannot be converted into row.
-    pub(crate) fn into_row(self, stream_model: Arc<StreamModel>) -> Result<Row> {
+    pub fn into_row(self, stream_model: Arc<StreamModel>) -> Result<Row> {
         match self {
             SourceRow::Json(json_source_row) => json_source_row.into_row(stream_model),
         }

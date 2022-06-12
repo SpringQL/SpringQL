@@ -28,7 +28,7 @@ impl JsonObject {
     ///
     /// - `SpringError::InvalidFormat` when:
     ///   - `json_s` cannot be parsed as JSON
-    pub(in crate::stream_engine::autonomous_executor) fn parse(json_s: &str) -> Result<Self> {
+    pub fn parse(json_s: &str) -> Result<Self> {
         let json_v = serde_json::from_str(json_s)
             .with_context(|| "failed to parse message from foreign stream as JSON")
             .map_err(|e| SpringError::InvalidFormat {

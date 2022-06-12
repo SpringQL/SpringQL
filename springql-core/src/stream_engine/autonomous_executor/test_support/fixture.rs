@@ -94,7 +94,7 @@ impl JsonObject {
 }
 
 impl JsonSourceRow {
-    pub(in crate::stream_engine) fn fx_city_temperature_tokyo() -> Self {
+    pub fn fx_city_temperature_tokyo() -> Self {
         Self::from_json(JsonObject::fx_city_temperature_tokyo())
     }
     pub fn fx_city_temperature_osaka() -> Self {
