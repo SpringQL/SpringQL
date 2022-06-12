@@ -12,37 +12,15 @@ use pest::{iterators::Pairs, Parser};
 use crate::{
     api::error::{Result, SpringError},
     expression::{
-        boolean_expression::{
-            comparison_function::ComparisonFunction, logical_function::LogicalFunction,
-            numerical_function::NumericalFunction, BinaryExpr,
-        },
-        function_call::FunctionCall,
-        operator::{BinaryOperator, UnaryOperator},
-        AggrExpr, ValueExpr,
+        AggrExpr, BinaryExpr, BinaryOperator, ComparisonFunction, FunctionCall, LogicalFunction,
+        NumericalFunction, UnaryOperator, ValueExpr,
     },
     pipeline::{
-        field::field_name::ColumnReference,
-        name::{
-            AggrAlias, ColumnName, CorrelationAlias, PumpName, SinkWriterName, SourceReaderName,
-            StreamName, ValueAlias,
-        },
-        option::options_builder::OptionsBuilder,
-        pump_model::{
-            window_operation_parameter::{
-                aggregate::AggregateFunctionParameter, join_parameter::JoinType,
-            },
-            window_parameter::WindowParameter,
-        },
-        relation::{
-            column::{
-                column_constraint::ColumnConstraint, column_data_type::ColumnDataType,
-                column_definition::ColumnDefinition,
-            },
-            sql_type::SqlType,
-        },
-        sink_writer_model::{sink_writer_type::SinkWriterType, SinkWriterModel},
-        source_reader_model::{source_reader_type::SourceReaderType, SourceReaderModel},
-        stream_model::{stream_shape::StreamShape, StreamModel},
+        AggrAlias, AggregateFunctionParameter, ColumnConstraint, ColumnDataType, ColumnDefinition,
+        ColumnName, ColumnReference, CorrelationAlias, JoinType, OptionsBuilder, PumpName,
+        SinkWriterModel, SinkWriterName, SinkWriterType, SourceReaderModel, SourceReaderName,
+        SourceReaderType, SqlType, StreamModel, StreamName, StreamShape, ValueAlias,
+        WindowParameter,
     },
     sql_processor::sql_parser::{
         parse_success::{CreatePump, ParseSuccess},
@@ -56,17 +34,17 @@ use crate::{
         },
     },
     stream_engine::{
-        command::insert_plan::InsertPlan,
-        time::duration::{event_duration::SpringEventDuration, SpringDuration},
+        command::InsertPlan,
+        time::{SpringDuration, SpringEventDuration},
         NnSqlValue, SqlValue,
     },
 };
 
 #[derive(Debug, Default)]
-pub(super) struct PestParserImpl;
+pub struct PestParserImpl;
 
 impl PestParserImpl {
-    pub(super) fn parse<S: Into<String>>(&self, sql: S) -> Result<ParseSuccess> {
+    pub fn parse<S: Into<String>>(&self, sql: S) -> Result<ParseSuccess> {
         let sql = sql.into();
 
         let pairs: Pairs<Rule> = GeneratedParser::parse(Rule::command, &sql)

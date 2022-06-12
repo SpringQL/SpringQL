@@ -4,10 +4,10 @@ use crate::stream_engine::time::timestamp::SpringTimestamp;
 
 /// Wall-clock timestamp from system clock.
 #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, new)]
-pub(crate) struct SystemTimestamp;
+pub struct SystemTimestamp;
 
 impl SystemTimestamp {
-    pub(crate) fn now() -> SpringTimestamp {
+    pub fn now() -> SpringTimestamp {
         let t = crate::time::NaiveDateTime::utc_now();
         SpringTimestamp::new(t)
     }

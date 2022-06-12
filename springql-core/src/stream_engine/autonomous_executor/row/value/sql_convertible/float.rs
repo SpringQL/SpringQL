@@ -5,7 +5,7 @@ use ordered_float::OrderedFloat;
 use crate::{
     api::error::Result,
     stream_engine::autonomous_executor::row::value::{
-        sql_convertible::ToNnSqlValue, sql_value::nn_sql_value::NnSqlValue, SpringValue,
+        sql_convertible::ToNnSqlValue, sql_value::NnSqlValue, SpringValue,
     },
 };
 
@@ -37,8 +37,7 @@ mod tests_f32 {
 
     use super::*;
     use crate::{
-        api::error::Result,
-        stream_engine::autonomous_executor::row::value::sql_value::nn_sql_value::NnSqlValue,
+        api::error::Result, stream_engine::autonomous_executor::row::value::sql_value::NnSqlValue,
     };
 
     #[test]

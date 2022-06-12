@@ -7,7 +7,7 @@ use serde_json::json;
 use springql_core::api::{error::Result, *};
 use springql_foreign_service::{
     sink::ForeignSink,
-    source::{source_input::ForeignSourceInput, ForeignSource},
+    source::{ForeignSource, ForeignSourceInput},
 };
 use springql_test_logger::setup_test_logger;
 

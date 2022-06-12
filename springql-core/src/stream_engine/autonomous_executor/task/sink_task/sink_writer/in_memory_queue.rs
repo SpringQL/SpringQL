@@ -2,10 +2,7 @@
 
 use crate::{
     api::{error::Result, SpringSinkWriterConfig},
-    pipeline::{
-        name::QueueName,
-        option::{in_memory_queue_options::InMemoryQueueOptions, Options},
-    },
+    pipeline::{InMemoryQueueOptions, Options, QueueName},
     stream_engine::{
         autonomous_executor::task::sink_task::sink_writer::SinkWriter,
         in_memory_queue_repository::InMemoryQueueRepository, Row,
@@ -13,7 +10,7 @@ use crate::{
 };
 
 #[derive(Debug)]
-pub(in crate::stream_engine) struct InMemoryQueueSinkWriter(QueueName);
+pub struct InMemoryQueueSinkWriter(QueueName);
 
 impl SinkWriter for InMemoryQueueSinkWriter {
     fn start(options: &Options, _config: &SpringSinkWriterConfig) -> Result<Self>

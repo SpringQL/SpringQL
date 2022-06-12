@@ -2,6 +2,6 @@
 
 /// Column with data type.
 #[derive(Clone, Eq, PartialEq, Hash, Debug, new)]
-pub(crate) enum ColumnConstraint {
+pub enum ColumnConstraint {
     Rowtime,
 }

@@ -12,7 +12,7 @@ use once_cell::sync::Lazy;
 
 use crate::{
     api::error::{Result, SpringError},
-    pipeline::name::QueueName,
+    pipeline::QueueName,
     stream_engine::in_memory_queue_repository::in_memory_queue::InMemoryQueue,
 };
 
@@ -21,7 +21,7 @@ static INSTANCE: Lazy<Arc<InMemoryQueueRepository>> =
 
 /// Singleton
 #[derive(Debug)]
-pub(in crate::stream_engine) struct InMemoryQueueRepository(
+pub struct InMemoryQueueRepository(
     Mutex<HashMap<QueueName, Arc<InMemoryQueue>>>, // TODO faster (lock-free?) queue
 );
 
@@ -30,7 +30,7 @@ impl InMemoryQueueRepository {
         Self(Mutex::new(HashMap::new()))
     }
 
-    pub(in crate::stream_engine) fn instance() -> Arc<Self> {
+    pub fn instance() -> Arc<Self> {
         INSTANCE.clone()
     }
 
@@ -38,10 +38,7 @@ impl InMemoryQueueRepository {
     ///
     /// - `SpringError::Unavailable` when:
     ///   - queue named `queue_name` does not exist.
-    pub(in crate::stream_engine) fn get(
-        &self,
-        queue_name: &QueueName,
-    ) -> Result<Arc<InMemoryQueue>> {
+    pub fn get(&self, queue_name: &QueueName) -> Result<Arc<InMemoryQueue>> {
         self.lock()
             .get(queue_name)
             .cloned()
@@ -55,7 +52,7 @@ impl InMemoryQueueRepository {
     ///
     /// - `SpringError::Sql` when:
     ///   - queue named `queue_name` already exists.
-    pub(in crate::stream_engine) fn create(&self, queue_name: QueueName) -> Result<()> {
+    pub fn create(&self, queue_name: QueueName) -> Result<()> {
         let r = self
             .lock()
             .insert(queue_name.clone(), Arc::new(InMemoryQueue::default()));

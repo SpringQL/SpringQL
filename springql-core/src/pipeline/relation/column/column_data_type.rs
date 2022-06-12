@@ -4,22 +4,22 @@ use crate::{pipeline::name::ColumnName, pipeline::relation::sql_type::SqlType};
 
 /// Column with data type.
 #[derive(Clone, Eq, PartialEq, Hash, Debug, new)]
-pub(crate) struct ColumnDataType {
+pub struct ColumnDataType {
     column: ColumnName,
     sql_type: SqlType,
     nullable: bool,
 }
 
 impl ColumnDataType {
-    pub(crate) fn column_name(&self) -> &ColumnName {
+    pub fn column_name(&self) -> &ColumnName {
         &self.column
     }
 
-    pub(crate) fn sql_type(&self) -> &SqlType {
+    pub fn sql_type(&self) -> &SqlType {
         &self.sql_type
     }
 
-    pub(crate) fn nullable(&self) -> bool {
+    pub fn nullable(&self) -> bool {
         self.nullable
     }
 }

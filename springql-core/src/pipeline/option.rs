@@ -1,29 +1,29 @@
 // This file is part of https://github.com/SpringQL/SpringQL which is licensed under MIT OR Apache-2.0. See file LICENSE-MIT or LICENSE-APACHE for full license details.
 
-pub(crate) mod options_builder;
+mod in_memory_queue_options;
+mod net_options;
+mod options_builder;
 
-pub(crate) mod in_memory_queue_options;
-pub(crate) mod net_options;
+pub use in_memory_queue_options::InMemoryQueueOptions;
+pub use net_options::{NetClientOptions, NetProtocol, NetServerOptions};
+pub use options_builder::OptionsBuilder;
 
 use std::collections::HashMap;
 
 use anyhow::Context;
 
-use crate::{
-    api::error::{Result, SpringError},
-    pipeline::option::options_builder::OptionsBuilder,
-};
+use crate::api::error::{Result, SpringError};
 
 /// Options in CREATE statement.
 #[derive(Clone, Eq, PartialEq, Debug)]
-pub(crate) struct Options(HashMap<String, String>);
+pub struct Options(HashMap<String, String>);
 
 impl Options {
     /// # Failure
     ///
     /// - `SpringError::InvalidOption` when:
     ///   - key is not found in this Options.
-    pub(crate) fn get<V, F>(&self, key: &str, value_parser: F) -> Result<V>
+    pub fn get<V, F>(&self, key: &str, value_parser: F) -> Result<V>
     where
         F: FnOnce(&String) -> std::result::Result<V, anyhow::Error>,
     {

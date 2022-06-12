@@ -6,7 +6,7 @@ pub mod foreign_info;
 
 use thiserror::Error;
 
-use crate::{api::error::foreign_info::ForeignInfo, pipeline::name::StreamName};
+use crate::{api::error::foreign_info::ForeignInfo, pipeline::StreamName};
 
 /// Result type
 pub type Result<T> = std::result::Result<T, SpringError>;

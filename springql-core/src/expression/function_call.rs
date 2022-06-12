@@ -3,7 +3,7 @@
 use crate::expression::ValueExprType;
 
 #[derive(Clone, PartialEq, Hash, Debug)]
-pub(crate) enum FunctionCall<E>
+pub enum FunctionCall<E>
 where
     E: ValueExprType,
 {

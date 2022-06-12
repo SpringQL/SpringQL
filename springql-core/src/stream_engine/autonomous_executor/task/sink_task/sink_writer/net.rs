@@ -11,17 +11,15 @@ use anyhow::Context;
 use crate::{
     api::error::{foreign_info::ForeignInfo, Result, SpringError},
     api::SpringSinkWriterConfig,
-    pipeline::option::{net_options::NetClientOptions, Options},
+    pipeline::{NetClientOptions, Options},
     stream_engine::{
-        autonomous_executor::{
-            row::foreign_row::format::json::JsonObject, task::sink_task::sink_writer::SinkWriter,
-        },
+        autonomous_executor::{row::JsonObject, task::sink_task::sink_writer::SinkWriter},
         Row,
     },
 };
 
 #[derive(Debug)]
-pub(in crate::stream_engine) struct NetSinkWriter {
+pub struct NetSinkWriter {
     foreign_addr: SocketAddr,
     tcp_stream_writer: BufWriter<TcpStream>, // TODO UDP
 }
@@ -90,10 +88,7 @@ mod tests {
     use springql_foreign_service::sink::ForeignSink;
 
     use super::*;
-    use crate::{
-        pipeline::option::options_builder::OptionsBuilder,
-        stream_engine::autonomous_executor::row::foreign_row::format::json::JsonObject,
-    };
+    use crate::{pipeline::OptionsBuilder, stream_engine::autonomous_executor::row::JsonObject};
 
     #[test]
     fn test_sink_writer_tcp() {

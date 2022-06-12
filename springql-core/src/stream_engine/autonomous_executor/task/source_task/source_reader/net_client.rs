@@ -11,15 +11,15 @@ use anyhow::Context;
 use crate::{
     api::error::{foreign_info::ForeignInfo, Result, SpringError},
     api::SpringSourceReaderConfig,
-    pipeline::option::{net_options::NetClientOptions, Options},
+    pipeline::{NetClientOptions, Options},
     stream_engine::autonomous_executor::{
-        row::foreign_row::source_row::{source_row_format::SourceRowFormat, SourceRow},
+        row::{SourceRow, SourceRowFormat},
         task::source_task::source_reader::SourceReader,
     },
 };
 
 #[derive(Debug)]
-pub(in crate::stream_engine) struct NetClientSourceReader {
+pub struct NetClientSourceReader {
     foreign_addr: SocketAddr,
     tcp_stream_reader: BufReader<TcpStream>, // TODO UDP
 }
@@ -96,13 +96,13 @@ impl NetClientSourceReader {}
 
 #[cfg(test)]
 mod tests {
-    use springql_foreign_service::source::source_input::ForeignSourceInput;
     use springql_foreign_service::source::ForeignSource;
+    use springql_foreign_service::source::ForeignSourceInput;
 
     use super::*;
-    use crate::pipeline::option::options_builder::OptionsBuilder;
-    use crate::stream_engine::autonomous_executor::row::foreign_row::format::json::JsonObject;
-    use crate::stream_engine::autonomous_executor::row::foreign_row::source_row::json_source_row::JsonSourceRow;
+    use crate::pipeline::OptionsBuilder;
+    use crate::stream_engine::autonomous_executor::row::JsonObject;
+    use crate::stream_engine::autonomous_executor::row::JsonSourceRow;
 
     #[test]
     fn test_source_tcp() -> crate::api::error::Result<()> {

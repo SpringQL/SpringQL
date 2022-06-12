@@ -5,7 +5,7 @@ use std::sync::Arc;
 use crate::pipeline::{name::StreamName, stream_model::StreamModel};
 
 #[derive(Clone, Eq, PartialEq, Debug)]
-pub(crate) enum StreamNode {
+pub enum StreamNode {
     Stream(Arc<StreamModel>),
     VirtualRoot,
     VirtualLeaf { parent_sink_stream: StreamName },

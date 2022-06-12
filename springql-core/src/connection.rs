@@ -4,7 +4,7 @@ use std::{sync::Once, thread, time::Duration};
 
 use crate::{
     api::{error::Result, SpringConfig},
-    pipeline::name::QueueName,
+    pipeline::QueueName,
     sql_processor::SqlProcessor,
     stream_engine::{command::Command, EngineMutex, Row},
 };
@@ -26,7 +26,7 @@ fn setup_logger() {
 /// 1 stream pipeline has only 1 connection.
 /// In other words, the lifecycle of Connection and internal stream pipeline are the same.
 #[derive(Debug)]
-pub(crate) struct Connection {
+pub struct Connection {
     engine: EngineMutex,
     sql_processor: SqlProcessor,
 }

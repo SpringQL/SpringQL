@@ -1,34 +1,29 @@
 // This file is part of https://github.com/SpringQL/SpringQL which is licensed under MIT OR Apache-2.0. See file LICENSE-MIT or LICENSE-APACHE for full license details.
 
-pub use value::SpringValue;
+mod column;
+mod column_values;
+mod foreign_row;
+mod value;
 
-pub(crate) mod value;
-
-pub(in crate::stream_engine::autonomous_executor) mod column;
-pub(in crate::stream_engine::autonomous_executor) mod column_values;
-pub(in crate::stream_engine) mod foreign_row;
+pub use column::StreamColumns;
+pub use column_values::ColumnValues;
+pub use foreign_row::{JsonObject, JsonSourceRow, SourceRow, SourceRowFormat};
+pub use value::{NnSqlValue, SpringValue, SqlCompareResult, SqlValue, SqlValueHashKey};
 
 use std::vec;
 
 use crate::{
     api::error::Result,
     mem_size::MemSize,
-    pipeline::{name::ColumnName, stream_model::StreamModel},
-    stream_engine::{
-        autonomous_executor::row::{
-            column::stream_column::StreamColumns,
-            foreign_row::format::json::JsonObject,
-            value::sql_value::{nn_sql_value::NnSqlValue, SqlValue},
-        },
-        time::timestamp::{system_timestamp::SystemTimestamp, SpringTimestamp},
-    },
+    pipeline::{ColumnName, StreamModel},
+    stream_engine::time::{SpringTimestamp, SystemTimestamp},
 };
 
 /// - Mandatory `rowtime()`, either from `cols` or `arrival_rowtime`.
 /// - PartialEq by all columns (NULL prevents Eq).
 /// - PartialOrd by timestamp.
 #[derive(Clone, PartialEq, Debug)]
-pub(crate) struct Row {
+pub struct Row {
     arrival_rowtime: Option<SpringTimestamp>,
 
     /// Columns
@@ -36,7 +31,7 @@ pub(crate) struct Row {
 }
 
 impl Row {
-    pub(crate) fn new(cols: StreamColumns) -> Self {
+    pub fn new(cols: StreamColumns) -> Self {
         let arrival_rowtime = if cols.promoted_rowtime().is_some() {
             None
         } else {
@@ -125,10 +120,7 @@ impl From<Row> for JsonObject {
 mod tests {
     use serde_json::json;
 
-    use crate::{
-        stream_engine::autonomous_executor::row::foreign_row::format::json::JsonObject,
-        time::Duration,
-    };
+    use crate::{stream_engine::autonomous_executor::row::foreign_row::JsonObject, time::Duration};
 
     use super::*;
 

@@ -4,14 +4,12 @@ use anyhow::Context;
 
 use crate::{
     api::error::{Result, SpringError},
-    pipeline::name::ColumnName,
-    stream_engine::autonomous_executor::row::{
-        column_values::ColumnValues, value::sql_value::SqlValue,
-    },
+    pipeline::ColumnName,
+    stream_engine::autonomous_executor::row::{column_values::ColumnValues, value::SqlValue},
 };
 
 #[derive(Clone, Eq, PartialEq, Debug, new)]
-pub(crate) struct JsonObject(serde_json::Value);
+pub struct JsonObject(serde_json::Value);
 
 impl ToString for JsonObject {
     fn to_string(&self) -> String {
@@ -30,7 +28,7 @@ impl JsonObject {
     ///
     /// - `SpringError::InvalidFormat` when:
     ///   - `json_s` cannot be parsed as JSON
-    pub(in crate::stream_engine::autonomous_executor) fn parse(json_s: &str) -> Result<Self> {
+    pub fn parse(json_s: &str) -> Result<Self> {
         let json_v = serde_json::from_str(json_s)
             .with_context(|| "failed to parse message from foreign stream as JSON")
             .map_err(|e| SpringError::InvalidFormat {
@@ -49,9 +47,7 @@ impl JsonObject {
     /// # TODO
     ///
     /// See stream.options to more intelligently parse JSON. <https://docs.sqlstream.com/sql-reference-guide/create-statements/createforeignstream/#parsing-json>
-    pub(in crate::stream_engine::autonomous_executor) fn into_column_values(
-        self,
-    ) -> Result<ColumnValues> {
+    pub fn into_column_values(self) -> Result<ColumnValues> {
         let json_object = self.0;
 
         let top_object = json_object

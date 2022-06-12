@@ -2,7 +2,8 @@
 
 //! Timestamp.
 
-pub(crate) mod system_timestamp;
+mod system_timestamp;
+pub use system_timestamp::SystemTimestamp;
 
 use std::{
     ops::{Add, Sub},
@@ -19,7 +20,7 @@ use crate::{
 };
 
 /// The minimum possible `Timestamp`.
-pub(crate) const MIN_TIMESTAMP: SpringTimestamp = SpringTimestamp(MIN_DATETIME);
+pub const MIN_TIMESTAMP: SpringTimestamp = SpringTimestamp(MIN_DATETIME);
 
 /// Timestamp in UTC. Serializable.
 #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Serialize, Deserialize, new)]
@@ -33,7 +34,7 @@ impl MemSize for SpringTimestamp {
 
 impl SpringTimestamp {
     /// Note: `2262-04-11T23:47:16.854775804` is the maximum possible timestamp because it uses nano-sec unixtime internally.
-    pub(crate) fn floor(&self, resolution: Duration) -> SpringTimestamp {
+    pub fn floor(&self, resolution: Duration) -> SpringTimestamp {
         let ts_nano = self.0.timestamp_nanos();
         let resolution_nano = resolution.num_nanoseconds().expect("no overflow");
         assert!(resolution_nano > 0);
@@ -50,7 +51,7 @@ impl SpringTimestamp {
     }
 
     /// Note: `2262-04-11T23:47:16.854775804` is the maximum possible timestamp because it uses nano-sec unixtime internally.
-    pub(crate) fn ceil(&self, resolution: Duration) -> SpringTimestamp {
+    pub fn ceil(&self, resolution: Duration) -> SpringTimestamp {
         let floor = self.floor(resolution);
         if &floor == self {
             floor

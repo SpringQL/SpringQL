@@ -2,31 +2,27 @@
 
 use std::sync::Arc;
 
-use super::{
-    event_queue::{
-        blocking_event_queue::BlockingEventQueue, non_blocking_event_queue::NonBlockingEventQueue,
-    },
+use crate::stream_engine::autonomous_executor::{
+    event_queue::{BlockingEventQueue, NonBlockingEventQueue},
     main_job_lock::MainJobLock,
-    task_executor::task_executor_lock::TaskExecutorLock,
-    worker::worker_handle::{WorkerSetupCoordinator, WorkerStopCoordinator},
+    task_executor::TaskExecutorLock,
+    worker::{WorkerSetupCoordinator, WorkerStopCoordinator},
 };
 
 #[derive(Clone, Debug, new)]
-pub(in crate::stream_engine::autonomous_executor) struct Locks {
-    pub(in crate::stream_engine::autonomous_executor) main_job_lock: Arc<MainJobLock>,
-    pub(in crate::stream_engine::autonomous_executor) task_executor_lock: Arc<TaskExecutorLock>,
+pub struct Locks {
+    pub main_job_lock: Arc<MainJobLock>,
+    pub task_executor_lock: Arc<TaskExecutorLock>,
 }
 
 #[derive(Clone, Debug, new)]
-pub(in crate::stream_engine::autonomous_executor) struct EventQueues {
-    pub(in crate::stream_engine::autonomous_executor) blocking: Arc<BlockingEventQueue>,
-    pub(in crate::stream_engine::autonomous_executor) non_blocking: Arc<NonBlockingEventQueue>,
+pub struct EventQueues {
+    pub blocking: Arc<BlockingEventQueue>,
+    pub non_blocking: Arc<NonBlockingEventQueue>,
 }
 
 #[derive(Clone, Debug, new)]
-pub(in crate::stream_engine::autonomous_executor) struct Coordinators {
-    pub(in crate::stream_engine::autonomous_executor) worker_setup_coordinator:
-        Arc<WorkerSetupCoordinator>,
-    pub(in crate::stream_engine::autonomous_executor) worker_stop_coordinator:
-        Arc<WorkerStopCoordinator>,
+pub struct Coordinators {
+    pub worker_setup_coordinator: Arc<WorkerSetupCoordinator>,
+    pub worker_stop_coordinator: Arc<WorkerStopCoordinator>,
 }

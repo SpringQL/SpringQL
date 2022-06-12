@@ -6,11 +6,10 @@ use anyhow::{anyhow, Context};
 use crate::{
     api::error::{Result, SpringError},
     mem_size::{arc_overhead_size, MemSize},
-    pipeline::name::ColumnName,
-    pipeline::{relation::column::column_definition::ColumnDefinition, stream_model::StreamModel},
+    pipeline::{ColumnDefinition, ColumnName, StreamModel},
     stream_engine::{
-        autonomous_executor::row::{column_values::ColumnValues, value::sql_value::SqlValue},
-        time::timestamp::SpringTimestamp,
+        autonomous_executor::row::{column_values::ColumnValues, value::SqlValue},
+        time::SpringTimestamp,
     },
 };
 
@@ -18,7 +17,7 @@ use crate::{
 ///
 /// Should keep as small size as possible because all Row has this inside.
 #[derive(Clone, PartialEq, Debug)]
-pub(crate) struct StreamColumns {
+pub struct StreamColumns {
     stream_model: Arc<StreamModel>,
 
     /// sorted to the same order as `stream_shape.columns()`.
@@ -41,10 +40,7 @@ impl StreamColumns {
     /// - `SpringError::Sql` when:
     ///   - `column_values` lacks any of `stream.columns()`.
     ///   - Type mismatch (and failed to convert type) with `stream_shape` and `column_values`.
-    pub(in crate::stream_engine::autonomous_executor) fn new(
-        stream_model: Arc<StreamModel>,
-        mut column_values: ColumnValues,
-    ) -> Result<Self> {
+    pub fn new(stream_model: Arc<StreamModel>, mut column_values: ColumnValues) -> Result<Self> {
         let values = stream_model
             .shape()
             .columns()
@@ -61,13 +57,11 @@ impl StreamColumns {
         })
     }
 
-    pub(in crate::stream_engine::autonomous_executor) fn stream_model(&self) -> &StreamModel {
+    pub fn stream_model(&self) -> &StreamModel {
         &self.stream_model
     }
 
-    pub(in crate::stream_engine::autonomous_executor) fn promoted_rowtime(
-        &self,
-    ) -> Option<SpringTimestamp> {
+    pub fn promoted_rowtime(&self) -> Option<SpringTimestamp> {
         let rowtime_col = self.stream_model.shape().promoted_rowtime()?;
         let rowtime_sql_value = self
             .get_by_column_name(rowtime_col)
@@ -83,10 +77,7 @@ impl StreamColumns {
     ///
     /// - `SpringError::Sql` when:
     ///   - Column index out of range
-    pub(in crate::stream_engine::autonomous_executor) fn get_by_index(
-        &self,
-        i_col: usize,
-    ) -> Result<&SqlValue> {
+    pub fn get_by_index(&self, i_col: usize) -> Result<&SqlValue> {
         self.values
             .get(i_col)
             .context("column index out of range")
@@ -97,10 +88,7 @@ impl StreamColumns {
     ///
     /// - `SpringError::Sql` when:
     ///   - No column named `column_name` is found from this stream.
-    pub(in crate::stream_engine::autonomous_executor) fn get_by_column_name(
-        &self,
-        column_name: &ColumnName,
-    ) -> Result<&SqlValue> {
+    pub fn get_by_column_name(&self, column_name: &ColumnName) -> Result<&SqlValue> {
         let pos = self
             .stream_model
             .shape()
@@ -172,8 +160,7 @@ impl IntoIterator for StreamColumns {
 #[cfg(test)]
 mod tests {
     use crate::stream_engine::{
-        autonomous_executor::row::value::sql_value::nn_sql_value::NnSqlValue,
-        time::timestamp::SpringTimestamp,
+        autonomous_executor::row::value::NnSqlValue, time::SpringTimestamp,
     };
 
     use super::*;

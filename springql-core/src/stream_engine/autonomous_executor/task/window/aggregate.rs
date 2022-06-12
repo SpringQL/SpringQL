@@ -6,13 +6,11 @@ use anyhow::anyhow;
 
 use crate::{
     api::error::{Result, SpringError},
-    expr_resolver::expr_label::{AggrExprLabel, ValueExprLabel},
-    pipeline::pump_model::{
-        window_operation_parameter::WindowOperationParameter, window_parameter::WindowParameter,
-    },
+    expr_resolver::{AggrExprLabel, ValueExprLabel},
+    pipeline::{WindowOperationParameter, WindowParameter},
     stream_engine::{
         autonomous_executor::task::window::{
-            panes::{pane::aggregate_pane::AggrPane, Panes},
+            panes::{AggrPane, Panes},
             watermark::Watermark,
             Window,
         },
@@ -25,12 +23,12 @@ use crate::{
 ///
 /// Projection operation for SELECT with aggregate completes with this instance (without Tuple).
 #[derive(Clone, PartialEq, Debug, Default)]
-pub(in crate::stream_engine::autonomous_executor) struct AggregatedAndGroupingValues {
+pub struct AggregatedAndGroupingValues {
     aggr: HashMap<AggrExprLabel, SqlValue>,
     group_by: HashMap<ValueExprLabel, SqlValue>,
 }
 impl AggregatedAndGroupingValues {
-    pub(in crate::stream_engine::autonomous_executor) fn new(
+    pub fn new(
         aggregates: Vec<(AggrExprLabel, SqlValue)>,
         group_bys: Vec<(ValueExprLabel, SqlValue)>,
     ) -> Self {
@@ -44,10 +42,7 @@ impl AggregatedAndGroupingValues {
     ///
     /// - `SpringError::Sql` when:
     ///   - `label` is not included in aggregation result
-    pub(in crate::stream_engine::autonomous_executor) fn get_aggregated_value(
-        &self,
-        label: &AggrExprLabel,
-    ) -> Result<&SqlValue> {
+    pub fn get_aggregated_value(&self, label: &AggrExprLabel) -> Result<&SqlValue> {
         self.aggr
             .get(label)
             .ok_or_else(|| SpringError::Sql(anyhow!("aggregate label not found: {:?}", label)))
@@ -57,10 +52,7 @@ impl AggregatedAndGroupingValues {
     ///
     /// - `SpringError::Sql` when:
     ///   - `label` is not included in aggregation result
-    pub(in crate::stream_engine::autonomous_executor) fn get_group_by_value(
-        &self,
-        label: &ValueExprLabel,
-    ) -> Result<&SqlValue> {
+    pub fn get_group_by_value(&self, label: &ValueExprLabel) -> Result<&SqlValue> {
         self.group_by
             .get(label)
             .ok_or_else(|| SpringError::Sql(anyhow!("GROUP BY label not found: {:?}", label)))
@@ -68,7 +60,7 @@ impl AggregatedAndGroupingValues {
 }
 
 #[derive(Debug)]
-pub(in crate::stream_engine::autonomous_executor) struct AggrWindow {
+pub struct AggrWindow {
     watermark: Watermark,
     panes: Panes<AggrPane>,
 }
@@ -98,10 +90,7 @@ impl Window for AggrWindow {
 }
 
 impl AggrWindow {
-    pub(in crate::stream_engine::autonomous_executor) fn new(
-        window_param: WindowParameter,
-        op_param: WindowOperationParameter,
-    ) -> Self {
+    pub fn new(window_param: WindowParameter, op_param: WindowOperationParameter) -> Self {
         let watermark = Watermark::new(window_param.allowed_delay());
         Self {
             watermark,
@@ -119,21 +108,16 @@ mod tests {
     use std::str::FromStr;
 
     use crate::{
-        expr_resolver::{expr_label::ExprLabel, ExprResolver},
+        expr_resolver::{ExprLabel, ExprResolver},
         expression::{AggrExpr, ValueExpr},
         pipeline::{
-            name::{AggrAlias, ColumnName, StreamName},
-            pump_model::window_operation_parameter::aggregate::{
-                AggregateFunctionParameter, AggregateParameter, GroupByLabels,
-            },
+            AggrAlias, AggregateFunctionParameter, AggregateParameter, ColumnName, GroupByLabels,
+            StreamName,
         },
-        sql_processor::sql_parser::syntax::SelectFieldSyntax,
+        sql_processor::SelectFieldSyntax,
         stream_engine::{
             autonomous_executor::task::tuple::Tuple,
-            time::{
-                duration::{event_duration::SpringEventDuration, SpringDuration},
-                timestamp::SpringTimestamp,
-            },
+            time::{SpringDuration, SpringEventDuration, SpringTimestamp},
         },
     };
 

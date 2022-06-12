@@ -1,8 +1,12 @@
 // This file is part of https://github.com/SpringQL/SpringQL which is licensed under MIT OR Apache-2.0. See file LICENSE-MIT or LICENSE-APACHE for full license details.
 
-pub(crate) mod nn_sql_value;
-pub(crate) mod sql_compare_result;
-pub(in crate::stream_engine::autonomous_executor) mod sql_value_hash_key;
+mod nn_sql_value;
+mod sql_compare_result;
+mod sql_value_hash_key;
+
+pub use nn_sql_value::NnSqlValue;
+pub use sql_compare_result::SqlCompareResult;
+pub use sql_value_hash_key::SqlValueHashKey;
 
 use std::{
     fmt::Display,
@@ -16,12 +20,7 @@ use ordered_float::OrderedFloat;
 use crate::{
     api::error::{Result, SpringError},
     mem_size::MemSize,
-    stream_engine::{
-        autonomous_executor::row::value::sql_value::{
-            nn_sql_value::NnSqlValue, sql_compare_result::SqlCompareResult,
-        },
-        time::duration::event_duration::SpringEventDuration,
-    },
+    stream_engine::time::SpringEventDuration,
 };
 
 /// SQL-typed value that is efficiently compressed.
@@ -63,7 +62,7 @@ use crate::{
 ///
 /// See: `test_sql_value_example()`.
 #[derive(Clone, Debug)]
-pub(crate) enum SqlValue {
+pub enum SqlValue {
     /// NULL value.
     Null,
     /// NOT NULL value.
@@ -134,7 +133,7 @@ impl SqlValue {
     ///
     /// - `SpringError::Sql` when:
     ///   - this SqlValue cannot be evaluated as SQL BOOLEAN
-    pub(crate) fn to_bool(&self) -> Result<bool> {
+    pub fn to_bool(&self) -> Result<bool> {
         match self {
             SqlValue::Null => Ok(false), // NULL is always evaluated as FALSE
             SqlValue::NotNull(nn_sql_value) => match nn_sql_value {
@@ -153,7 +152,7 @@ impl SqlValue {
     ///
     /// - `SpringError::Sql` when:
     ///   - this SqlValue cannot be evaluated as SQL BIGINT
-    pub(crate) fn to_i64(&self) -> Result<i64> {
+    pub fn to_i64(&self) -> Result<i64> {
         match self {
             SqlValue::Null => Err(SpringError::Sql(anyhow!(
                 "NULL cannot be evaluated as BIGINT",
@@ -168,7 +167,7 @@ impl SqlValue {
     ///
     /// - `SpringError::Sql` when:
     ///   - this SqlValue cannot be evaluated as event duration
-    pub(crate) fn to_event_duration(&self) -> Result<SpringEventDuration> {
+    pub fn to_event_duration(&self) -> Result<SpringEventDuration> {
         match self {
             SqlValue::Null => Err(SpringError::Sql(anyhow!(
                 "NULL cannot be evaluated as event duration",
@@ -246,7 +245,7 @@ impl Mul for SqlValue {
 
 #[cfg(test)]
 impl SqlValue {
-    pub(in crate::stream_engine) fn unwrap(self) -> NnSqlValue {
+    pub fn unwrap(self) -> NnSqlValue {
         if let SqlValue::NotNull(v) = self {
             v
         } else {

@@ -11,21 +11,15 @@ use std::{
 use crate::{
     api::error::{foreign_info::ForeignInfo, Result, SpringError},
     api::SpringSourceReaderConfig,
-    pipeline::option::{
-        net_options::{NetProtocol, NetServerOptions},
-        Options,
-    },
+    pipeline::{NetProtocol, NetServerOptions, Options},
     stream_engine::autonomous_executor::{
-        row::foreign_row::{
-            format::json::JsonObject,
-            source_row::{json_source_row::JsonSourceRow, SourceRow},
-        },
+        row::{JsonObject, JsonSourceRow, SourceRow},
         task::source_task::source_reader::SourceReader,
     },
 };
 
 #[derive(Debug)]
-pub(in crate::stream_engine) struct NetServerSourceReader {
+pub struct NetServerSourceReader {
     my_addr: SocketAddr,
 
     /// FIXME this source reader does not scale
@@ -137,13 +131,12 @@ mod tests {
     use super::*;
     use crate::{
         api::SpringSinkWriterConfig,
-        pipeline::option::options_builder::OptionsBuilder,
+        pipeline::OptionsBuilder,
         stream_engine::{
-            autonomous_executor::task::sink_task::sink_writer::{net::NetSinkWriter, SinkWriter},
+            autonomous_executor::task::sink_task::{NetSinkWriter, SinkWriter},
             Row,
         },
     };
-
     fn ephemeral_port() -> u16 {
         let addr = TcpListener::bind("127.0.0.1:0").unwrap();
         addr.local_addr().unwrap().port()

@@ -5,14 +5,14 @@ use std::{
     ops::{Add, Mul, Sub},
 };
 
-pub(super) fn next_avg<T>(current_avg: T, current_n: u64, next_val: T) -> T
+pub fn next_avg<T>(current_avg: T, current_n: u64, next_val: T) -> T
 where
     T: Add<T, Output = T> + Sub<T, Output = T> + Mul<f32, Output = T> + Copy,
 {
     current_avg + (next_val - current_avg) * (1.0 / ((current_n + 1) as f32))
 }
 
-pub(super) fn floor0<T>(v: T) -> u64
+pub fn floor0<T>(v: T) -> u64
 where
     T: Into<i64>,
 {
@@ -23,9 +23,7 @@ where
 mod tests {
     use float_cmp::approx_eq;
 
-    use crate::stream_engine::time::duration::{
-        wall_clock_duration::WallClockDuration, SpringDuration,
-    };
+    use crate::stream_engine::time::{SpringDuration, WallClockDuration};
 
     use super::*;
 

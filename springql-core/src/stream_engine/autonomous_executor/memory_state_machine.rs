@@ -5,15 +5,13 @@
 use crate::api::SpringMemoryConfig;
 
 #[derive(Debug)]
-pub(in crate::stream_engine::autonomous_executor) struct MemoryStateMachine {
+pub struct MemoryStateMachine {
     threshold: MemoryStateMachineThreshold,
     state: MemoryState,
 }
 
 impl MemoryStateMachine {
-    pub(in crate::stream_engine::autonomous_executor) fn new(
-        threshold: MemoryStateMachineThreshold,
-    ) -> Self {
+    pub fn new(threshold: MemoryStateMachineThreshold) -> Self {
         Self {
             threshold,
             state: MemoryState::Moderate,
@@ -23,7 +21,7 @@ impl MemoryStateMachine {
     /// # Returns
     ///
     /// `Some` if `memory_usage_bytes` exceeds a threshold and internal state has been changed.
-    pub(in crate::stream_engine::autonomous_executor) fn update_memory_usage(
+    pub fn update_memory_usage(
         &mut self,
         memory_usage_bytes: u64,
     ) -> Option<MemoryStateTransition> {
@@ -65,14 +63,14 @@ impl MemoryStateMachine {
 }
 
 #[derive(Copy, Clone, Eq, PartialEq, Hash, Debug)]
-pub(in crate::stream_engine::autonomous_executor) enum MemoryState {
+pub enum MemoryState {
     Moderate,
     Severe,
     Critical,
 }
 
 #[derive(Copy, Clone, Eq, PartialEq, Hash, Debug)]
-pub(in crate::stream_engine::autonomous_executor) struct MemoryStateTransition {
+pub struct MemoryStateTransition {
     from_state: MemoryState,
     to_state: MemoryState,
 }
@@ -80,10 +78,7 @@ impl MemoryStateTransition {
     /// # Panics
     ///
     /// On undefined state transition.
-    pub(in crate::stream_engine::autonomous_executor) fn new(
-        from_state: MemoryState,
-        to_state: MemoryState,
-    ) -> Self {
+    pub fn new(from_state: MemoryState, to_state: MemoryState) -> Self {
         assert_ne!(from_state, to_state);
         assert!(
             !(from_state == MemoryState::Moderate && to_state == MemoryState::Critical),
@@ -101,13 +96,13 @@ impl MemoryStateTransition {
     }
 
     #[allow(clippy::wrong_self_convention)]
-    pub(in crate::stream_engine::autonomous_executor) fn to_state(&self) -> MemoryState {
+    pub fn to_state(&self) -> MemoryState {
         self.to_state
     }
 }
 
 #[derive(Copy, Clone, Eq, PartialEq, Hash, Debug)]
-pub(in crate::stream_engine::autonomous_executor) struct MemoryStateMachineThreshold {
+pub struct MemoryStateMachineThreshold {
     upper_limit_bytes: u64,
 
     moderate_to_severe_bytes: u64,

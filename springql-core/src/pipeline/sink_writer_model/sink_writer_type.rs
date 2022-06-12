@@ -3,7 +3,7 @@
 use crate::pipeline::name::SinkWriterName;
 
 #[derive(Clone, Eq, PartialEq, Debug)]
-pub(crate) enum SinkWriterType {
+pub enum SinkWriterType {
     Net,
     InMemoryQueue,
 }

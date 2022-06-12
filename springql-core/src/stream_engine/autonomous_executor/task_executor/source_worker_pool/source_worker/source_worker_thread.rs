@@ -3,28 +3,24 @@
 use std::sync::Arc;
 
 use crate::stream_engine::autonomous_executor::{
-    event_queue::{
-        event::{BlockingEventTag, EventTag, NonBlockingEventTag},
-        non_blocking_event_queue::NonBlockingEventQueue,
-    },
+    event_queue::{BlockingEventTag, EventTag, NonBlockingEventQueue, NonBlockingEventTag},
     memory_state_machine::MemoryStateTransition,
     performance_metrics::{
-        metrics_update_command::metrics_update_by_task_execution::MetricsUpdateByTaskExecutionOrPurge,
-        performance_metrics_summary::PerformanceMetricsSummary, PerformanceMetrics,
+        MetricsUpdateByTaskExecutionOrPurge, PerformanceMetrics, PerformanceMetricsSummary,
     },
     pipeline_derivatives::PipelineDerivatives,
     task_executor::{
-        scheduler::source_scheduler::SourceScheduler,
+        scheduler::SourceScheduler,
         task_worker_thread_handler::{
             TaskWorkerLoopState, TaskWorkerThreadArg, TaskWorkerThreadHandler,
         },
     },
-    worker::{worker_handle::WorkerSetupCoordinator, worker_thread::WorkerThread},
+    worker::{WorkerSetupCoordinator, WorkerThread},
 };
 
 /// Runs a worker thread.
 #[derive(Debug)]
-pub(super) struct SourceWorkerThread;
+pub struct SourceWorkerThread;
 
 impl WorkerThread for SourceWorkerThread {
     const THREAD_NAME: &'static str = "SourceWorker";
