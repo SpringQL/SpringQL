@@ -418,4 +418,14 @@ mod tests {
 
         Ok(())
     }
+
+    #[test]
+    fn test_unpack_blob() {
+        assert_eq!(
+            NnSqlValue::Blob(b"hello".to_vec())
+                .unpack::<Vec<u8>>()
+                .unwrap(),
+            b"hello".to_vec()
+        );
+    }
 }
