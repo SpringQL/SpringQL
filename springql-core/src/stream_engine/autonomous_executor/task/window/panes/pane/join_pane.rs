@@ -5,31 +5,25 @@ use std::str::FromStr;
 use crate::{
     expr_resolver::ExprResolver,
     mem_size::MemSize,
-    pipeline::{
-        field::Field,
-        pump_model::window_operation_parameter::{
-            join_parameter::{JoinParameter, JoinType},
-            WindowOperationParameter,
-        },
-    },
+    pipeline::{Field, JoinParameter, JoinType, WindowOperationParameter},
     stream_engine::{
         autonomous_executor::{
-            performance_metrics::metrics_update_command::metrics_update_by_task_execution::WindowInFlowByWindowTask,
+            performance_metrics::WindowInFlowByWindowTask,
             task::{tuple::Tuple, window::panes::pane::Pane},
         },
-        time::timestamp::SpringTimestamp,
+        time::SpringTimestamp,
         SqlValue,
     },
 };
 
 #[derive(Copy, Clone, Eq, PartialEq, Hash, Debug)]
-pub(in crate::stream_engine::autonomous_executor) enum JoinDir {
+pub enum JoinDir {
     Left,
     Right,
 }
 
 #[derive(Debug)]
-pub(in crate::stream_engine::autonomous_executor) struct JoinPane {
+pub struct JoinPane {
     open_at: SpringTimestamp,
     close_at: SpringTimestamp,
 

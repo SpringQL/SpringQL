@@ -3,8 +3,8 @@
 use crate::{
     api::error::{Result, SpringError},
     mem_size::MemSize,
-    pipeline::field::{field_name::ColumnReference, Field},
-    stream_engine::{autonomous_executor::row::Row, time::timestamp::SpringTimestamp, SqlValue},
+    pipeline::{ColumnReference, Field},
+    stream_engine::{autonomous_executor::row::Row, time::SpringTimestamp, SqlValue},
 };
 use anyhow::anyhow;
 
@@ -16,7 +16,7 @@ use anyhow::anyhow;
 ///
 /// Unlike rows, tuples may have not only stream's columns but also fields derived from expressions.
 #[derive(Clone, PartialEq, Debug, new)]
-pub(crate) struct Tuple {
+pub struct Tuple {
     /// Either be an event-time or a process-time.
     /// If a row this tuple is constructed from has a ROWTIME column, `rowtime` has duplicate value with one of `fields`.
     rowtime: SpringTimestamp,
@@ -33,7 +33,7 @@ impl MemSize for Tuple {
 }
 
 impl Tuple {
-    pub(in crate::stream_engine::autonomous_executor) fn from_row(row: Row) -> Self {
+    pub fn from_row(row: Row) -> Self {
         let rowtime = row.rowtime();
 
         let stream_name = row.stream_model().name().clone();
@@ -48,14 +48,14 @@ impl Tuple {
         Self { rowtime, fields }
     }
 
-    pub(in crate::stream_engine::autonomous_executor) fn rowtime(&self) -> &SpringTimestamp {
+    pub fn rowtime(&self) -> &SpringTimestamp {
         &self.rowtime
     }
 
     /// # Failures
     ///
     /// `SpringError::Sql` if `column_reference` does not match any field.
-    pub(crate) fn get_value(&self, column_reference: &ColumnReference) -> Result<SqlValue> {
+    pub fn get_value(&self, column_reference: &ColumnReference) -> Result<SqlValue> {
         let sql_value = self.fields.iter().find_map(|field| {
             let colref = field.name();
             (colref == column_reference).then(|| field.sql_value().clone())
@@ -66,7 +66,7 @@ impl Tuple {
     }
 
     /// Left rowtime is used for joined tuple.
-    pub(in crate::stream_engine::autonomous_executor) fn join(self, right: Self) -> Tuple {
+    pub fn join(self, right: Self) -> Tuple {
         let rowtime = self.rowtime;
 
         let mut new_fields = self.fields;
@@ -81,7 +81,7 @@ impl Tuple {
 
 #[cfg(test)]
 mod tests {
-    use crate::expression::{operator::UnaryOperator, ValueExpr};
+    use crate::expression::{UnaryOperator, ValueExpr};
 
     use super::*;
 

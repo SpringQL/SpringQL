@@ -1,6 +1,10 @@
 // This file is part of https://github.com/SpringQL/SpringQL which is licensed under MIT OR Apache-2.0. See file LICENSE-MIT or LICENSE-APACHE for full license details.
 
-pub(in crate::stream_engine::autonomous_executor) mod source_reader;
+mod source_reader;
+
+pub use source_reader::{
+    NetClientSourceReader, NetServerSourceReader, SourceReader, SourceReaderRepository,
+};
 
 use std::fmt::Debug;
 use std::sync::Arc;
@@ -8,37 +12,31 @@ use std::sync::Arc;
 use crate::{
     api::error::Result,
     mem_size::MemSize,
-    pipeline::{
-        name::{SourceReaderName, StreamName},
-        source_reader_model::SourceReaderModel,
-    },
+    pipeline::{SourceReaderModel, SourceReaderName, StreamName},
     stream_engine::{
         autonomous_executor::{
-            performance_metrics::metrics_update_command::metrics_update_by_task_execution::{
+            performance_metrics::{
                 MetricsUpdateByTaskExecution, OutQueueMetricsUpdateByTask, TaskMetricsUpdateByTask,
             },
             repositories::Repositories,
             row::Row,
             task::task_context::TaskContext,
-            task_graph::{
-                queue_id::{row_queue_id::RowQueueId, window_queue_id::WindowQueueId, QueueId},
-                task_id::TaskId,
-            },
+            task_graph::{QueueId, RowQueueId, TaskId, WindowQueueId},
             AutonomousExecutor,
         },
-        time::duration::wall_clock_duration::wall_clock_stopwatch::WallClockStopwatch,
+        time::WallClockStopwatch,
     },
 };
 
 #[derive(Debug)]
-pub(crate) struct SourceTask {
+pub struct SourceTask {
     id: TaskId,
     source_reader_name: SourceReaderName,
     source_stream_name: StreamName,
 }
 
 impl SourceTask {
-    pub(in crate::stream_engine) fn new(source_reader: &SourceReaderModel) -> Self {
+    pub fn new(source_reader: &SourceReaderModel) -> Self {
         let id = TaskId::from_source(source_reader);
         Self {
             id,
@@ -47,14 +45,11 @@ impl SourceTask {
         }
     }
 
-    pub(in crate::stream_engine::autonomous_executor) fn id(&self) -> &TaskId {
+    pub fn id(&self) -> &TaskId {
         &self.id
     }
 
-    pub(in crate::stream_engine::autonomous_executor) fn run(
-        &self,
-        context: &TaskContext,
-    ) -> Result<MetricsUpdateByTaskExecution> {
+    pub fn run(&self, context: &TaskContext) -> Result<MetricsUpdateByTaskExecution> {
         let stopwatch = WallClockStopwatch::start();
 
         let out_queue_metrics_seq = match self.collect_next(context) {

@@ -11,18 +11,15 @@ use std::{
 use crate::{
     api::error::{foreign_info::ForeignInfo, Result, SpringError},
     api::SpringSourceReaderConfig,
-    pipeline::option::{
-        net_options::{NetProtocol, NetServerOptions},
-        Options,
-    },
+    pipeline::{NetProtocol, NetServerOptions, Options},
     stream_engine::autonomous_executor::{
-        row::foreign_row::{format::json::JsonObject, source_row::SourceRow},
+        row::{JsonObject, JsonSourceRow, SourceRow},
         task::source_task::source_reader::SourceReader,
     },
 };
 
 #[derive(Debug)]
-pub(in crate::stream_engine) struct NetServerSourceReader {
+pub struct NetServerSourceReader {
     my_addr: SocketAddr,
 
     /// FIXME this source reader does not scale
@@ -82,7 +79,7 @@ impl SourceReader for NetServerSourceReader {
             })
             .map(|json| {
                 let json_obj = JsonObject::new(json);
-                SourceRow::from_json(json_obj)
+                SourceRow::Json(JsonSourceRow::from_json(json_obj))
             })
             .map_err(|e| SpringError::ForeignSourceTimeout {
                 source: anyhow::Error::from(e),
@@ -134,13 +131,12 @@ mod tests {
     use super::*;
     use crate::{
         api::SpringSinkWriterConfig,
-        pipeline::option::options_builder::OptionsBuilder,
+        pipeline::OptionsBuilder,
         stream_engine::{
-            autonomous_executor::task::sink_task::sink_writer::{net::NetSinkWriter, SinkWriter},
-            SinkRow,
+            autonomous_executor::task::sink_task::{NetSinkWriter, SinkWriter},
+            Row,
         },
     };
-
     fn ephemeral_port() -> u16 {
         let addr = TcpListener::bind("127.0.0.1:0").unwrap();
         addr.local_addr().unwrap().port()
@@ -167,19 +163,22 @@ mod tests {
 
         let mut writer = tcp_writer(port);
 
-        writer
-            .send_row(SinkRow::fx_city_temperature_tokyo())
-            .unwrap();
-        writer
-            .send_row(SinkRow::fx_city_temperature_osaka())
-            .unwrap();
-        writer
-            .send_row(SinkRow::fx_city_temperature_london())
-            .unwrap();
+        writer.send_row(Row::fx_city_temperature_tokyo()).unwrap();
+        writer.send_row(Row::fx_city_temperature_osaka()).unwrap();
+        writer.send_row(Row::fx_city_temperature_london()).unwrap();
 
-        assert_eq!(reader.next_row()?, SourceRow::fx_city_temperature_tokyo());
-        assert_eq!(reader.next_row()?, SourceRow::fx_city_temperature_osaka());
-        assert_eq!(reader.next_row()?, SourceRow::fx_city_temperature_london());
+        assert_eq!(
+            reader.next_row()?,
+            SourceRow::Json(JsonSourceRow::fx_city_temperature_tokyo())
+        );
+        assert_eq!(
+            reader.next_row()?,
+            SourceRow::Json(JsonSourceRow::fx_city_temperature_osaka())
+        );
+        assert_eq!(
+            reader.next_row()?,
+            SourceRow::Json(JsonSourceRow::fx_city_temperature_london())
+        );
         assert!(matches!(
             reader.next_row().unwrap_err(),
             SpringError::ForeignSourceTimeout { .. }

@@ -8,7 +8,7 @@
 ///   - Loose types: values can be typed as 1 specific Rust type.
 ///     - SQL types: corresponds to an SQL type.
 #[derive(Clone, Eq, PartialEq, Hash, Debug)]
-pub(crate) enum SqlType {
+pub enum SqlType {
     /// Numeric types
     NumericComparable(NumericComparableType),
 

@@ -42,7 +42,7 @@ use rand::{
 use crate::stream_engine::autonomous_executor::{
     performance_metrics::PerformanceMetrics,
     task_executor::scheduler::Scheduler,
-    task_graph::{task_id::TaskId, TaskGraph},
+    task_graph::{TaskGraph, TaskId},
 };
 
 /// A generator task is one of:
@@ -82,7 +82,7 @@ struct Stopper {
 }
 
 #[derive(Debug, Default)]
-pub(in crate::stream_engine::autonomous_executor) struct FlowEfficientScheduler {
+pub struct FlowEfficientScheduler {
     rng: RefCell<ThreadRng>,
 }
 

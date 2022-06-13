@@ -2,22 +2,18 @@
 
 use crate::{
     expression::{
-        boolean_expression::{
-            comparison_function::ComparisonFunction, logical_function::LogicalFunction,
-            numerical_function::NumericalFunction, BinaryExpr,
-        },
-        operator::UnaryOperator,
+        BinaryExpr, ComparisonFunction, LogicalFunction, NumericalFunction, UnaryOperator,
         ValueExpr, ValueExprType,
     },
     pipeline::{
-        field::field_name::ColumnReference,
+        field::ColumnReference,
         name::{ColumnName, StreamName},
     },
     stream_engine::SqlValue,
 };
 
 impl StreamName {
-    pub(crate) fn factory(name: &str) -> Self {
+    pub fn factory(name: &str) -> Self {
         Self::new(name.to_string())
     }
 }
@@ -74,7 +70,7 @@ impl<E: ValueExprType> BinaryExpr<E> {
 }
 
 impl ColumnReference {
-    pub(crate) fn factory(stream_name: &str, column_name: &str) -> Self {
+    pub fn factory(stream_name: &str, column_name: &str) -> Self {
         Self::new(
             StreamName::factory(stream_name),
             ColumnName::new(column_name.to_string()),

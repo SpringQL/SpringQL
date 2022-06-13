@@ -7,22 +7,17 @@ use crate::{
     stream_engine::{
         autonomous_executor::{
             event_queue::{
-                event::{BlockingEventTag, Event, EventTag, NonBlockingEventTag},
-                non_blocking_event_queue::NonBlockingEventQueue,
+                BlockingEventTag, Event, EventTag, NonBlockingEventQueue, NonBlockingEventTag,
             },
             memory_state_machine::MemoryStateTransition,
             performance_metrics::{
-                metrics_update_command::metrics_update_by_task_execution::MetricsUpdateByTaskExecutionOrPurge,
-                performance_metrics_summary::PerformanceMetricsSummary, PerformanceMetrics,
+                MetricsUpdateByTaskExecutionOrPurge, PerformanceMetrics, PerformanceMetricsSummary,
             },
             performance_monitor_worker::web_console_reporter::WebConsoleReporter,
             pipeline_derivatives::PipelineDerivatives,
-            worker::{
-                worker_handle::WorkerSetupCoordinator,
-                worker_thread::{WorkerThread, WorkerThreadLoopState},
-            },
+            worker::{WorkerSetupCoordinator, WorkerThread, WorkerThreadLoopState},
         },
-        time::duration::{wall_clock_duration::WallClockDuration, SpringDuration},
+        time::{SpringDuration, WallClockDuration},
     },
 };
 
@@ -30,10 +25,10 @@ const CLOCK_MSEC: u64 = 10;
 
 /// Runs a worker thread.
 #[derive(Debug)]
-pub(super) struct PerformanceMonitorWorkerThread;
+pub struct PerformanceMonitorWorkerThread;
 
 #[derive(Debug)]
-pub(in crate::stream_engine::autonomous_executor) struct PerformanceMonitorWorkerThreadArg {
+pub struct PerformanceMonitorWorkerThreadArg {
     config: SpringConfig,
     web_console_reporter: WebConsoleReporter,
 }
@@ -53,7 +48,7 @@ impl From<&SpringConfig> for PerformanceMonitorWorkerThreadArg {
 }
 
 #[derive(Debug)]
-pub(super) struct PerformanceMonitorWorkerLoopState {
+pub struct PerformanceMonitorWorkerLoopState {
     pipeline_derivatives: Option<Arc<PipelineDerivatives>>,
     metrics: Option<Arc<PerformanceMetrics>>,
     countdown_metrics_summary_msec: i32,

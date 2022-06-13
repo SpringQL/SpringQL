@@ -13,14 +13,10 @@ use parking_lot::{RwLock, RwLockReadGuard, RwLockWriteGuard};
 /// This lock is to assure for workers to safely execute tasks while acquiring TaskExecuteLockGuard,
 /// while it also gives PipelineUpdateLockGuard to autonomous_executor to dominate task executor and safely update pipeline.
 #[derive(Debug, Default)]
-pub(in crate::stream_engine::autonomous_executor) struct TaskExecutorLock(
-    RwLock<TaskExecutorLockToken>,
-);
+pub struct TaskExecutorLock(RwLock<TaskExecutorLockToken>);
 
 impl TaskExecutorLock {
-    pub(in crate::stream_engine::autonomous_executor) fn task_execution_barrier(
-        &self,
-    ) -> TaskExecutionBarrierGuard {
+    pub fn task_execution_barrier(&self) -> TaskExecutionBarrierGuard {
         let write_lock = self.0.write();
         TaskExecutionBarrierGuard(write_lock)
     }
@@ -28,9 +24,7 @@ impl TaskExecutorLock {
     /// # Returns
     ///
     /// Ok on successful lock, Err on write lock.
-    pub(in crate::stream_engine::autonomous_executor) fn try_task_execution(
-        &self,
-    ) -> Result<TaskExecutionLockGuard, anyhow::Error> {
+    pub fn try_task_execution(&self) -> Result<TaskExecutionLockGuard, anyhow::Error> {
         self.0
             .try_read()
             .map(TaskExecutionLockGuard)
@@ -39,14 +33,10 @@ impl TaskExecutorLock {
 }
 
 #[derive(Debug, Default)]
-pub(in crate::stream_engine::autonomous_executor) struct TaskExecutorLockToken;
+pub struct TaskExecutorLockToken;
 
 #[derive(Debug)]
-pub(in crate::stream_engine::autonomous_executor) struct TaskExecutionBarrierGuard<'a>(
-    RwLockWriteGuard<'a, TaskExecutorLockToken>,
-);
+pub struct TaskExecutionBarrierGuard<'a>(RwLockWriteGuard<'a, TaskExecutorLockToken>);
 
 #[derive(Debug)]
-pub(in crate::stream_engine::autonomous_executor) struct TaskExecutionLockGuard<'a>(
-    RwLockReadGuard<'a, TaskExecutorLockToken>,
-);
+pub struct TaskExecutionLockGuard<'a>(RwLockReadGuard<'a, TaskExecutorLockToken>);

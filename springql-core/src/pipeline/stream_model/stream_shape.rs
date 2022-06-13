@@ -4,12 +4,12 @@ use anyhow::{anyhow, Context};
 
 use crate::{
     api::error::{Result, SpringError},
-    pipeline::relation::{column::column_definition::ColumnDefinition, sql_type::SqlType},
-    pipeline::{name::ColumnName, relation::column::column_constraint::ColumnConstraint},
+    pipeline::name::ColumnName,
+    pipeline::relation::{ColumnConstraint, ColumnDefinition, SqlType},
 };
 
 #[derive(Clone, Eq, PartialEq, Debug)]
-pub(crate) struct StreamShape {
+pub struct StreamShape {
     cols: Vec<ColumnDefinition>,
     promoted_rowtime: Option<ColumnName>,
 }
@@ -20,7 +20,7 @@ impl StreamShape {
     /// - `SpringError::Sql` when:
     ///   - ROWTIME column in `cols` is not a `TIMESTAMP NOT NULL` type.
     ///   - 2 or more column have ROWTIME constraints
-    pub(in crate) fn new(cols: Vec<ColumnDefinition>) -> Result<Self> {
+    pub fn new(cols: Vec<ColumnDefinition>) -> Result<Self> {
         let promoted_rowtime = Self::extract_promoted_rowtime(&cols)?;
 
         let _ = if let Some(rowtime_col) = &promoted_rowtime {
@@ -35,15 +35,15 @@ impl StreamShape {
         })
     }
 
-    pub(crate) fn promoted_rowtime(&self) -> Option<&ColumnName> {
+    pub fn promoted_rowtime(&self) -> Option<&ColumnName> {
         self.promoted_rowtime.as_ref()
     }
 
-    pub(crate) fn columns(&self) -> &[ColumnDefinition] {
+    pub fn columns(&self) -> &[ColumnDefinition] {
         &self.cols
     }
 
-    pub(crate) fn column_names(&self) -> Vec<ColumnName> {
+    pub fn column_names(&self) -> Vec<ColumnName> {
         self.cols.iter().map(|c| c.column_name()).cloned().collect()
     }
 
@@ -108,7 +108,7 @@ impl StreamShape {
 
 #[cfg(test)]
 mod tests {
-    use crate::pipeline::relation::column::column_data_type::ColumnDataType;
+    use crate::pipeline::relation::ColumnDataType;
 
     use super::*;
 

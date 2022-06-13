@@ -6,7 +6,7 @@ use crate::{request_body::PostTaskGraphBody, WebConsoleMock};
 
 #[derive(Default)]
 pub struct WebConsoleMockBuilder {
-    pub(crate) cb_post_pipeline: Option<Arc<dyn Fn(PostTaskGraphBody) + Sync + Send>>,
+    pub cb_post_pipeline: Option<Arc<dyn Fn(PostTaskGraphBody) + Sync + Send>>,
 }
 
 impl WebConsoleMockBuilder {

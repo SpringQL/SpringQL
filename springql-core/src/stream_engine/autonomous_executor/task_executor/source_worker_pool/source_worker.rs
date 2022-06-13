@@ -1,6 +1,6 @@
 // This file is part of https://github.com/SpringQL/SpringQL which is licensed under MIT OR Apache-2.0. See file LICENSE-MIT or LICENSE-APACHE for full license details.
 
-pub(in crate::stream_engine::autonomous_executor) mod source_worker_thread;
+mod source_worker_thread;
 
 use std::sync::Arc;
 
@@ -11,17 +11,17 @@ use crate::stream_engine::autonomous_executor::{
         source_worker_pool::source_worker::source_worker_thread::SourceWorkerThread,
         task_worker_thread_handler::TaskWorkerThreadArg,
     },
-    worker::worker_handle::WorkerHandle,
+    worker::WorkerHandle,
 };
 
 /// Worker to execute pump and sink tasks.
 #[derive(Debug)]
-pub(super) struct SourceWorker {
+pub struct SourceWorker {
     _handle: WorkerHandle,
 }
 
 impl SourceWorker {
-    pub(super) fn new(
+    pub fn new(
         main_job_lock: Arc<MainJobLock>,
         event_queues: EventQueues,
         coordinators: Coordinators,

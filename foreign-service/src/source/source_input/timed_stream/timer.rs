@@ -3,7 +3,7 @@
 use chrono::{DateTime, Duration, Utc};
 
 #[derive(Eq, PartialEq, Debug)]
-pub(super) struct Timer {
+pub struct Timer {
     real_initial_datetime: DateTime<Utc>,
     elapsed: Duration,
 
@@ -11,7 +11,7 @@ pub(super) struct Timer {
 }
 
 impl Timer {
-    pub(super) fn new(virt_initial_datetime: DateTime<Utc>) -> Self {
+    pub fn new(virt_initial_datetime: DateTime<Utc>) -> Self {
         let real_initial_datetime = Utc::now();
         let elapsed = Duration::seconds(0);
         Timer {
@@ -21,7 +21,7 @@ impl Timer {
         }
     }
 
-    pub(super) fn virt_current_datetime(&mut self) -> DateTime<Utc> {
+    pub fn virt_current_datetime(&mut self) -> DateTime<Utc> {
         self.update_clock();
         self.virt_initial_datetime + self.elapsed
     }

@@ -9,14 +9,13 @@ use std::sync::Arc;
 use crate::stream_engine::autonomous_executor::{
     memory_state_machine::MemoryStateTransition,
     performance_metrics::{
-        metrics_update_command::metrics_update_by_task_execution::MetricsUpdateByTaskExecutionOrPurge,
-        performance_metrics_summary::PerformanceMetricsSummary, PerformanceMetrics,
+        MetricsUpdateByTaskExecutionOrPurge, PerformanceMetrics, PerformanceMetricsSummary,
     },
     pipeline_derivatives::PipelineDerivatives,
 };
 
 #[derive(Clone, Debug)]
-pub(in crate::stream_engine::autonomous_executor) enum Event {
+pub enum Event {
     UpdatePipeline {
         pipeline_derivatives: Arc<PipelineDerivatives>,
     },
@@ -35,18 +34,18 @@ pub(in crate::stream_engine::autonomous_executor) enum Event {
 }
 
 #[derive(Copy, Clone, Eq, PartialEq, Hash, Debug)]
-pub(in crate::stream_engine::autonomous_executor) enum EventTag {
+pub enum EventTag {
     Blocking(BlockingEventTag),
     NonBlocking(NonBlockingEventTag),
 }
 
 #[derive(Copy, Clone, Eq, PartialEq, Hash, Debug)]
-pub(in crate::stream_engine::autonomous_executor) enum BlockingEventTag {
+pub enum BlockingEventTag {
     UpdatePipeline,
 }
 
 #[derive(Copy, Clone, Eq, PartialEq, Hash, Debug)]
-pub(in crate::stream_engine::autonomous_executor) enum NonBlockingEventTag {
+pub enum NonBlockingEventTag {
     ReplacePerformanceMetrics,
     IncrementalUpdateMetrics,
     ReportMetricsSummary,

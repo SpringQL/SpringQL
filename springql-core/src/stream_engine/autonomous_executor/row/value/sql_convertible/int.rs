@@ -5,7 +5,7 @@ use anyhow::Context;
 use crate::{
     api::error::{Result, SpringError},
     stream_engine::autonomous_executor::row::value::{
-        sql_convertible::ToNnSqlValue, sql_value::nn_sql_value::NnSqlValue, SpringValue,
+        sql_convertible::ToNnSqlValue, sql_value::NnSqlValue, SpringValue,
     },
 };
 
@@ -87,8 +87,7 @@ impl ToNnSqlValue for i64 {
 #[cfg(test)]
 mod tests_i32 {
     use crate::{
-        api::error::Result,
-        stream_engine::autonomous_executor::row::value::sql_value::nn_sql_value::NnSqlValue,
+        api::error::Result, stream_engine::autonomous_executor::row::value::sql_value::NnSqlValue,
     };
 
     #[test]

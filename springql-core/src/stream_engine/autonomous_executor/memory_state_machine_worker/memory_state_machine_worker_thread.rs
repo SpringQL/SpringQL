@@ -3,36 +3,29 @@
 use std::{sync::Arc, thread, time::Duration};
 
 use crate::stream_engine::autonomous_executor::{
-    event_queue::{
-        event::{Event, EventTag, NonBlockingEventTag},
-        non_blocking_event_queue::NonBlockingEventQueue,
-    },
+    event_queue::{Event, EventTag, NonBlockingEventQueue, NonBlockingEventTag},
     memory_state_machine::{
         MemoryStateMachine, MemoryStateMachineThreshold, MemoryStateTransition,
     },
     performance_metrics::{
-        metrics_update_command::metrics_update_by_task_execution::MetricsUpdateByTaskExecutionOrPurge,
-        performance_metrics_summary::PerformanceMetricsSummary, PerformanceMetrics,
+        MetricsUpdateByTaskExecutionOrPurge, PerformanceMetrics, PerformanceMetricsSummary,
     },
     pipeline_derivatives::PipelineDerivatives,
-    worker::{
-        worker_handle::WorkerSetupCoordinator,
-        worker_thread::{WorkerThread, WorkerThreadLoopState},
-    },
+    worker::{WorkerSetupCoordinator, WorkerThread, WorkerThreadLoopState},
 };
 
 /// Runs a worker thread.
 #[derive(Debug)]
-pub(super) struct MemoryStateMachineWorkerThread;
+pub struct MemoryStateMachineWorkerThread;
 
 #[derive(Debug, new)]
-pub(in crate::stream_engine::autonomous_executor) struct MemoryStateMachineWorkerThreadArg {
+pub struct MemoryStateMachineWorkerThreadArg {
     threshold: MemoryStateMachineThreshold,
     memory_state_transition_interval_msec: u32,
 }
 
 #[derive(Debug)]
-pub(super) struct MemoryStateMachineWorkerLoopState {
+pub struct MemoryStateMachineWorkerLoopState {
     memory_state_machine: MemoryStateMachine,
 }
 

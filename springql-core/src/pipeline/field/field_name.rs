@@ -9,9 +9,9 @@ use crate::{
 ///
 /// Note that this never point to other expressions like `1 + 1 AS a`.
 #[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, new)]
-pub(crate) struct ColumnReference {
-    pub(crate) stream_name: StreamName,
-    pub(crate) column_name: ColumnName,
+pub struct ColumnReference {
+    pub stream_name: StreamName,
+    pub column_name: ColumnName,
 }
 
 impl MemSize for ColumnReference {

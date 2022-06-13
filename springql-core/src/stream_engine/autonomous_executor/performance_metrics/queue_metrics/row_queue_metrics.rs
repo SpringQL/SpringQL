@@ -2,15 +2,14 @@
 
 use crate::stream_engine::autonomous_executor::{
     performance_metrics::{
-        calculation::floor0,
-        metrics_update_command::metrics_update_by_task_execution::MetricsUpdateByTaskExecution,
+        calculation::floor0, metrics_update_command::MetricsUpdateByTaskExecution,
     },
-    task_graph::queue_id::row_queue_id::RowQueueId,
+    task_graph::RowQueueId,
 };
 
 /// Stock monitor of a row queue (including in-memory queue sink).
 #[derive(Clone, Eq, PartialEq, Debug, Default)]
-pub(in crate::stream_engine::autonomous_executor) struct RowQueueMetrics {
+pub struct RowQueueMetrics {
     /// might be negative value if `used` event is subscribed earlier than `put` event.
     rows: i64,
     /// ditto
@@ -18,7 +17,7 @@ pub(in crate::stream_engine::autonomous_executor) struct RowQueueMetrics {
 }
 
 impl RowQueueMetrics {
-    pub(in crate::stream_engine::autonomous_executor) fn update_by_task_execution(
+    pub fn update_by_task_execution(
         &mut self,
         id: &RowQueueId,
         command: &MetricsUpdateByTaskExecution,
@@ -27,18 +26,18 @@ impl RowQueueMetrics {
         self.bytes += command.row_queue_gain_bytes(id);
     }
 
-    pub(in crate::stream_engine::autonomous_executor) fn update_by_purge(&mut self) {
+    pub fn update_by_purge(&mut self) {
         self.rows = 0;
         self.bytes = 0;
     }
 
     /// Current number of rows in the queue.
-    pub(in crate::stream_engine::autonomous_executor) fn rows(&self) -> u64 {
+    pub fn rows(&self) -> u64 {
         floor0(self.rows)
     }
 
     /// Current bytes consumed in the queue.
-    pub(in crate::stream_engine::autonomous_executor) fn bytes(&self) -> u64 {
+    pub fn bytes(&self) -> u64 {
         floor0(self.bytes)
     }
 }

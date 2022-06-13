@@ -11,15 +11,15 @@ use anyhow::Context;
 use crate::{
     api::error::{foreign_info::ForeignInfo, Result, SpringError},
     api::SpringSinkWriterConfig,
-    pipeline::option::{net_options::NetClientOptions, Options},
-    stream_engine::autonomous_executor::{
-        row::foreign_row::{format::json::JsonObject, sink_row::SinkRow},
-        task::sink_task::sink_writer::SinkWriter,
+    pipeline::{NetClientOptions, Options},
+    stream_engine::{
+        autonomous_executor::{row::JsonObject, task::sink_task::sink_writer::SinkWriter},
+        Row,
     },
 };
 
 #[derive(Debug)]
-pub(in crate::stream_engine) struct NetSinkWriter {
+pub struct NetSinkWriter {
     foreign_addr: SocketAddr,
     tcp_stream_writer: BufWriter<TcpStream>, // TODO UDP
 }
@@ -58,7 +58,7 @@ impl SinkWriter for NetSinkWriter {
         })
     }
 
-    fn send_row(&mut self, row: SinkRow) -> Result<()> {
+    fn send_row(&mut self, row: Row) -> Result<()> {
         let mut json_s = JsonObject::from(row).to_string();
         json_s.push('\n');
 
@@ -88,10 +88,7 @@ mod tests {
     use springql_foreign_service::sink::ForeignSink;
 
     use super::*;
-    use crate::{
-        pipeline::option::options_builder::OptionsBuilder,
-        stream_engine::autonomous_executor::row::foreign_row::format::json::JsonObject,
-    };
+    use crate::{pipeline::OptionsBuilder, stream_engine::autonomous_executor::row::JsonObject};
 
     #[test]
     fn test_sink_writer_tcp() {
@@ -107,13 +104,13 @@ mod tests {
             NetSinkWriter::start(&options, &SpringSinkWriterConfig::fx_default()).unwrap();
 
         sink_writer
-            .send_row(SinkRow::fx_city_temperature_tokyo())
+            .send_row(Row::fx_city_temperature_tokyo())
             .unwrap();
         sink_writer
-            .send_row(SinkRow::fx_city_temperature_osaka())
+            .send_row(Row::fx_city_temperature_osaka())
             .unwrap();
         sink_writer
-            .send_row(SinkRow::fx_city_temperature_london())
+            .send_row(Row::fx_city_temperature_london())
             .unwrap();
 
         const TIMEOUT: Duration = Duration::from_secs(1);

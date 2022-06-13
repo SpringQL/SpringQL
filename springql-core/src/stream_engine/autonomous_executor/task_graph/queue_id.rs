@@ -1,31 +1,22 @@
 // This file is part of https://github.com/SpringQL/SpringQL which is licensed under MIT OR Apache-2.0. See file LICENSE-MIT or LICENSE-APACHE for full license details.
 
-pub(in crate::stream_engine::autonomous_executor) mod row_queue_id;
-pub(in crate::stream_engine::autonomous_executor) mod window_queue_id;
+mod row_queue_id;
+mod window_queue_id;
 
-use crate::{
-    pipeline::{
-        name::StreamName,
-        pump_model::{pump_input_type::PumpInputType, PumpModel},
-        sink_writer_model::SinkWriterModel,
-    },
-    stream_engine::autonomous_executor::task_graph::queue_id::{
-        row_queue_id::RowQueueId, window_queue_id::WindowQueueId,
-    },
-};
+pub use row_queue_id::RowQueueId;
+pub use window_queue_id::WindowQueueId;
+
+use crate::pipeline::{PumpInputType, PumpModel, SinkWriterModel, StreamName};
 
 #[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, new)]
-pub(in crate::stream_engine::autonomous_executor) enum QueueId {
+pub enum QueueId {
     /// Sink tasks also have row queue.
     Row(RowQueueId),
     Window(WindowQueueId),
 }
 
 impl QueueId {
-    pub(in crate::stream_engine::autonomous_executor) fn from_pump(
-        pump: &PumpModel,
-        upstream: &StreamName,
-    ) -> Self {
+    pub fn from_pump(pump: &PumpModel, upstream: &StreamName) -> Self {
         let name = format!("{}-{}", pump.name(), upstream);
         match pump.input_type() {
             PumpInputType::Row => Self::Row(RowQueueId::new(name)),
@@ -33,7 +24,7 @@ impl QueueId {
         }
     }
 
-    pub(in crate::stream_engine::autonomous_executor) fn from_sink(sink: &SinkWriterModel) -> Self {
+    pub fn from_sink(sink: &SinkWriterModel) -> Self {
         let name = sink.name().to_string();
         Self::Row(RowQueueId::new(name))
     }

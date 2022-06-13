@@ -6,8 +6,8 @@ use crate::{
 };
 
 #[derive(Clone, Eq, PartialEq, Debug)]
-pub(crate) struct InMemoryQueueOptions {
-    pub(crate) queue_name: QueueName,
+pub struct InMemoryQueueOptions {
+    pub queue_name: QueueName,
 }
 
 impl TryFrom<&Options> for InMemoryQueueOptions {

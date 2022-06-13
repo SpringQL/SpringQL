@@ -1,33 +1,28 @@
 // This file is part of https://github.com/SpringQL/SpringQL which is licensed under MIT OR Apache-2.0. See file LICENSE-MIT or LICENSE-APACHE for full license details.
 
-pub(in crate::stream_engine::autonomous_executor) mod performance_metrics_summary;
-
-pub(in crate::stream_engine::autonomous_executor) mod queue_metrics;
-pub(in crate::stream_engine::autonomous_executor) mod task_metrics;
-
-pub(in crate::stream_engine::autonomous_executor) mod metrics_update_command;
-
 mod calculation;
+mod metrics_update_command;
+mod performance_metrics_summary;
+mod queue_metrics;
+mod task_metrics;
+
+pub use metrics_update_command::{
+    InQueueMetricsUpdateByCollect, InQueueMetricsUpdateByTask, MetricsUpdateByTaskExecution,
+    MetricsUpdateByTaskExecutionOrPurge, OutQueueMetricsUpdateByTask, TaskMetricsUpdateByTask,
+    WindowInFlowByWindowTask,
+};
+pub use performance_metrics_summary::PerformanceMetricsSummary;
+pub use queue_metrics::{RowQueueMetrics, WindowQueueMetrics};
+pub use task_metrics::TaskMetrics;
 
 use std::collections::HashMap;
 
 use parking_lot::{RwLock, RwLockReadGuard, RwLockWriteGuard};
 
 use crate::{
-    pipeline::pipeline_version::PipelineVersion,
-    stream_engine::autonomous_executor::{
-        performance_metrics::{
-            metrics_update_command::metrics_update_by_task_execution::MetricsUpdateByTaskExecution,
-            queue_metrics::{
-                row_queue_metrics::RowQueueMetrics, window_queue_metrics::WindowQueueMetrics,
-            },
-            task_metrics::TaskMetrics,
-        },
-        task_graph::{
-            queue_id::{row_queue_id::RowQueueId, window_queue_id::WindowQueueId, QueueId},
-            task_id::TaskId,
-            TaskGraph,
-        },
+    pipeline::PipelineVersion,
+    stream_engine::autonomous_executor::task_graph::{
+        QueueId, RowQueueId, TaskGraph, TaskId, WindowQueueId,
     },
 };
 
@@ -48,7 +43,7 @@ use crate::{
 /// Number of rows and bytes are stock value and they might be negative value temporarily.
 /// In such cases, stock getters in PerformanceMetrics return 0.
 #[derive(Debug)]
-pub(super) struct PerformanceMetrics {
+pub struct PerformanceMetrics {
     /// From which version this metrics constructed
     pipeline_version: PipelineVersion,
 
@@ -87,7 +82,7 @@ impl PerformanceMetrics {
         }
     }
 
-    pub(super) fn from_task_graph(graph: &TaskGraph) -> Self {
+    pub fn from_task_graph(graph: &TaskGraph) -> Self {
         Self::new(
             *graph.pipeline_version(),
             graph.tasks(),
@@ -96,11 +91,11 @@ impl PerformanceMetrics {
         )
     }
 
-    pub(super) fn pipeline_version(&self) -> &PipelineVersion {
+    pub fn pipeline_version(&self) -> &PipelineVersion {
         &self.pipeline_version
     }
 
-    pub(super) fn update_by_task_execution(&self, command: &MetricsUpdateByTaskExecution) {
+    pub fn update_by_task_execution(&self, command: &MetricsUpdateByTaskExecution) {
         let task_id = command.updated_task();
         let mut task_metrics = self.get_task_write(task_id);
         task_metrics.update_by_task_execution(command);
@@ -120,7 +115,7 @@ impl PerformanceMetrics {
             })
     }
 
-    pub(super) fn update_by_purge(&self) {
+    pub fn update_by_purge(&self) {
         for row_queue_id in self.row_queues.keys() {
             let mut row_queue_metrics = self.get_row_queue_write(row_queue_id);
             row_queue_metrics.update_by_purge();
@@ -132,7 +127,7 @@ impl PerformanceMetrics {
         }
     }
 
-    pub(super) fn rows_for_task_input(&self, queue_id: &QueueId) -> u64 {
+    pub fn rows_for_task_input(&self, queue_id: &QueueId) -> u64 {
         match queue_id {
             QueueId::Row(id) => {
                 let q = self.get_row_queue_read(id);
@@ -145,12 +140,12 @@ impl PerformanceMetrics {
         }
     }
 
-    pub(super) fn avg_gain_bytes_per_sec(&self, task_id: &TaskId) -> f32 {
+    pub fn avg_gain_bytes_per_sec(&self, task_id: &TaskId) -> f32 {
         let t = self.get_task_read(task_id);
         t.avg_gain_bytes_per_sec()
     }
 
-    pub(super) fn get_window_queues(
+    pub fn get_window_queues(
         &self,
     ) -> Vec<(&WindowQueueId, RwLockReadGuard<'_, WindowQueueMetrics>)> {
         self.window_queues
@@ -159,16 +154,14 @@ impl PerformanceMetrics {
             .collect()
     }
 
-    pub(super) fn get_row_queues(
-        &self,
-    ) -> Vec<(&RowQueueId, RwLockReadGuard<'_, RowQueueMetrics>)> {
+    pub fn get_row_queues(&self) -> Vec<(&RowQueueId, RwLockReadGuard<'_, RowQueueMetrics>)> {
         self.row_queues
             .iter()
             .map(|(id, q)| (id, q.read()))
             .collect()
     }
 
-    pub(super) fn get_tasks(&self) -> Vec<(&TaskId, RwLockReadGuard<'_, TaskMetrics>)> {
+    pub fn get_tasks(&self) -> Vec<(&TaskId, RwLockReadGuard<'_, TaskMetrics>)> {
         self.tasks.iter().map(|(id, t)| (id, t.read())).collect()
     }
 

@@ -1,26 +1,26 @@
 // This file is part of https://github.com/SpringQL/SpringQL which is licensed under MIT OR Apache-2.0. See file LICENSE-MIT or LICENSE-APACHE for full license details.
 
-pub(in crate::stream_engine::autonomous_executor) mod aggregate;
-pub(in crate::stream_engine::autonomous_executor) mod join_window;
-pub(in crate::stream_engine::autonomous_executor) mod panes;
+mod aggregate;
+mod join_window;
+mod panes;
 
 mod watermark;
+
+pub use aggregate::{AggrWindow, AggregatedAndGroupingValues};
+pub use join_window::JoinWindow;
+pub use panes::{AggrPane, GroupByValues, JoinDir, JoinPane, Pane, Panes};
 
 use crate::{
     expr_resolver::ExprResolver,
     stream_engine::{
         autonomous_executor::{
-            performance_metrics::metrics_update_command::metrics_update_by_task_execution::WindowInFlowByWindowTask,
-            task::window::{
-                panes::{pane::Pane, Panes},
-                watermark::Watermark,
-            },
+            performance_metrics::WindowInFlowByWindowTask, task::window::watermark::Watermark,
         },
         Tuple,
     },
 };
 
-pub(in crate::stream_engine::autonomous_executor) trait Window {
+pub trait Window {
     type Pane: Pane;
 
     fn watermark(&self) -> &Watermark;

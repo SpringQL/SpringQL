@@ -1,7 +1,7 @@
 // This file is part of https://github.com/SpringQL/SpringQL which is licensed under MIT OR Apache-2.0. See file LICENSE-MIT or LICENSE-APACHE for full license details.
 
 #[derive(Clone, Eq, PartialEq, Debug)]
-pub(crate) enum SourceReaderType {
+pub enum SourceReaderType {
     NetClient,
     NetServer,
 }

@@ -2,16 +2,16 @@
 
 use crate::{
     api::{error::Result, SpringSourceReaderConfig},
-    pipeline::{option::Options, source_reader_model::source_reader_type::SourceReaderType},
+    pipeline::{Options, SourceReaderType},
     stream_engine::autonomous_executor::task::source_task::source_reader::{
         net_client::NetClientSourceReader, net_server::NetServerSourceReader, SourceReader,
     },
 };
 
-pub(in crate::stream_engine::autonomous_executor) struct SourceReaderFactory;
+pub struct SourceReaderFactory;
 
 impl SourceReaderFactory {
-    pub(in crate::stream_engine::autonomous_executor) fn source(
+    pub fn source(
         source_reader_type: &SourceReaderType,
         options: &Options,
         config: &SpringSourceReaderConfig,

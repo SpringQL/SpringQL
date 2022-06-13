@@ -2,13 +2,13 @@
 
 // TODO more generic avg
 #[derive(Debug, Default)]
-pub(in crate::stream_engine::autonomous_executor) struct AvgState {
+pub struct AvgState {
     current_avg: f32,
     current_n: u64,
 }
 
 impl AvgState {
-    pub(in crate::stream_engine::autonomous_executor) fn next<V>(&mut self, next_val: V)
+    pub fn next<V>(&mut self, next_val: V)
     where
         V: Into<f32>,
     {
@@ -20,7 +20,7 @@ impl AvgState {
         self.current_n = next_n;
     }
 
-    pub(in crate::stream_engine::autonomous_executor) fn finalize(self) -> f32 {
+    pub fn finalize(self) -> f32 {
         self.current_avg.round()
     }
 }
