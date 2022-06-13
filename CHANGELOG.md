@@ -15,7 +15,12 @@ All other sections are for end-users.
 - Implicit `ptime` column (processing time) for streams without `ROWTIME` keyword (event time) ([#195](https://github.com/SpringQL/SpringQL/pull/195))
 - `BLOB` type ([#187](https://github.com/SpringQL/SpringQL/pull/187))
 
-### For developers
+### Changed
+
+- add crate `springql` ([#193](https://github.com/SpringQL/SpringQL/pull/193))
+  - re-export `springql-core` API from `springql`
+
+### For developpers
 
 - Add deny lint option for `rustdoc::broken_intra_doc_links` ([#185](https://github.com/SpringQL/SpringQL/pull/185))
 - Refactor : Hide detail module structure ([#177](https://github.com/SpringQL/SpringQL/pull/177))
