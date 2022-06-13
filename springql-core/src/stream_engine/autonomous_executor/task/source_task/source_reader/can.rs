@@ -7,12 +7,12 @@ use serde_json::json;
 use socketcan::{CANFrame, CANSocket, ShouldRetry};
 
 use crate::{
-    error::{foreign_info::ForeignInfo, Result, SpringError},
-    low_level_rs::SpringSourceReaderConfig,
-    pipeline::option::{can_options::CANOptions, Options},
-    stream_engine::autonomous_executor::row::foreign_row::{
-        format::json::JsonObject, source_row::SourceRow,
+    api::{
+        error::{foreign_info::ForeignInfo, Result},
+        SpringError, SpringSourceReaderConfig,
     },
+    pipeline::Options,
+    stream_engine::autonomous_executor::SourceRow,
 };
 
 use super::SourceReader;
@@ -49,8 +49,8 @@ pub(in crate::stream_engine) struct CANSourceReader {
 impl SourceReader for CANSourceReader {
     /// # Failure
     ///
-    /// - [SpringError::ForeignIo](crate::error::SpringError::ForeignIo)
-    /// - [SpringError::InvalidOption](crate::error::SpringError::InvalidOption)
+    /// - `SpringError::ForeignIo`
+    /// - `SpringError::InvalidOption`
     fn start(options: &Options, config: &SpringSourceReaderConfig) -> Result<Self> {
         let options = CANOptions::try_from(options)?;
 
@@ -90,7 +90,7 @@ impl SourceReader for CANSourceReader {
 
     /// # Failure
     ///
-    /// - [SpringError::ForeignIo](crate::error::SpringError::ForeignIo) when:
+    /// - SpringError::ForeignIo` when:
     ///   - receiving an error CAN frame
     fn next_row(&mut self) -> Result<SourceRow> {
         let frame = self.can_socket.read_frame().map_err(|io_err| {
@@ -160,10 +160,7 @@ impl CANSourceReader {
 mod tests {
     use std::sync::Arc;
 
-    use crate::pipeline::{
-        name::StreamName,
-        stream_model::{stream_shape::StreamShape, StreamModel},
-    };
+    use crate::pipeline::{StreamModel, StreamName, StreamShape};
 
     use super::*;
 
@@ -186,7 +183,7 @@ mod tests {
         let can_data_len: i16 = row.get_by_index(1).unwrap().unwrap().unpack().unwrap();
         assert_eq!(can_data_len as usize, can_data.len());
 
-        let can_data_big_endian: u64 = row.get_by_index(2).unwrap().unwrap().unpack().unwrap();
-        assert_eq!(can_data_big_endian, 0x01);
+        let got_can_data: Vec<u8> = row.get_by_index(2).unwrap().unwrap().unpack().unwrap();
+        assert_eq!(got_can_data, can_data);
     }
 }
