@@ -44,6 +44,9 @@ pub enum NnSqlValue {
     /// TEXT
     Text(String),
 
+    /// BLOB
+    Blob(Vec<u8>),
+
     /// BOOLEAN
     Boolean(bool),
 
@@ -64,6 +67,7 @@ impl MemSize for NnSqlValue {
             NnSqlValue::Float(_) => size_of::<f32>(),
 
             NnSqlValue::Text(s) => s.capacity(),
+            NnSqlValue::Blob(v) => v.capacity(),
 
             NnSqlValue::Boolean(_) => size_of::<bool>(),
 
@@ -89,7 +93,7 @@ impl MemSize for NnSqlValue {
 ///
 /// does not work properly with closures which capture &mut environments.
 macro_rules! for_all_loose_types {
-    ( $nn_sql_value:expr, $closure_i64:expr, $closure_ordered_float:expr, $closure_string:expr, $closure_bool:expr, $closure_timestamp:expr, $closure_duration:expr ) => {{
+    ( $nn_sql_value:expr, $closure_i64:expr, $closure_ordered_float:expr, $closure_string:expr, $closure_blob:expr, $closure_bool:expr, $closure_timestamp:expr, $closure_duration:expr ) => {{
         match &$nn_sql_value {
             NnSqlValue::SmallInt(_) | NnSqlValue::Integer(_) | NnSqlValue::BigInt(_) => {
                 let v = $nn_sql_value.unpack::<i64>().unwrap();
@@ -100,6 +104,7 @@ macro_rules! for_all_loose_types {
                 $closure_ordered_float(OrderedFloat(v))
             }
             NnSqlValue::Text(s) => $closure_string(s.to_string()),
+            NnSqlValue::Blob(v) => $closure_blob(v.to_owned()),
             NnSqlValue::Boolean(b) => $closure_bool(b.clone()),
             NnSqlValue::Timestamp(t) => $closure_timestamp(*t),
             NnSqlValue::Duration(d) => $closure_duration(*d),
@@ -129,6 +134,9 @@ impl Hash for NnSqlValue {
             |s: String| {
                 s.hash(state);
             },
+            |v: Vec<u8>| {
+                v.hash(state);
+            },
             |b: bool| { b.hash(state) },
             |t: SpringTimestamp| { t.hash(state) },
             |d: SpringEventDuration| { d.hash(state) }
@@ -143,6 +151,7 @@ impl Display for NnSqlValue {
             |i: i64| i.to_string(),
             |f: OrderedFloat<f32>| f.to_string(),
             |s: String| format!(r#""{}""#, s),
+            |v: Vec<u8>| format!("{:?}", v),
             |b: bool| (if b { "TRUE" } else { "FALSE" }).to_string(),
             |t: SpringTimestamp| t.to_string(),
             |d: SpringEventDuration| d.to_string()
@@ -171,6 +180,7 @@ impl NnSqlValue {
             NnSqlValue::BigInt(i64_) => T::try_from_i64(i64_),
             NnSqlValue::Float(f32_) => T::try_from_f32(f32_),
             NnSqlValue::Text(string) => T::try_from_string(string),
+            NnSqlValue::Blob(blob) => T::try_from_blob(blob),
             NnSqlValue::Boolean(b) => T::try_from_bool(b),
             NnSqlValue::Timestamp(t) => T::try_from_timestamp(t),
             NnSqlValue::Duration(d) => T::try_from_duration(d),
@@ -185,6 +195,7 @@ impl NnSqlValue {
             NnSqlValue::BigInt(_) => SqlType::big_int(),
             NnSqlValue::Float(_) => SqlType::float(),
             NnSqlValue::Text(_) => SqlType::text(),
+            NnSqlValue::Blob(_) => SqlType::blob(),
             NnSqlValue::Boolean(_) => SqlType::boolean(),
             NnSqlValue::Timestamp(_) => SqlType::timestamp(),
             NnSqlValue::Duration(_) => SqlType::duration(),
@@ -218,6 +229,7 @@ impl NnSqlValue {
                     self.unpack::<String>().map(|v| v.into_sql_value())
                 }
             },
+            SqlType::BinaryComparable => self.unpack::<Vec<u8>>().map(|v| v.into_sql_value()),
             SqlType::BooleanComparable => self.unpack::<bool>().map(|v| v.into_sql_value()),
             SqlType::TimestampComparable => {
                 self.unpack::<SpringTimestamp>().map(|v| v.into_sql_value())
@@ -286,6 +298,7 @@ impl NnSqlValue {
             NnSqlValue::BigInt(v) => Ok(Self::BigInt(-v)),
             NnSqlValue::Float(v) => Ok(Self::Float(-v)),
             NnSqlValue::Text(_)
+            | NnSqlValue::Blob(_)
             | NnSqlValue::Boolean(_)
             | NnSqlValue::Timestamp(_)
             | NnSqlValue::Duration(_) => Err(SpringError::Sql(anyhow!("{} cannot negate", self))),
@@ -306,6 +319,7 @@ impl From<NnSqlValue> for serde_json::Value {
             NnSqlValue::Duration(_) => {
                 unimplemented!("never appear in stream definition (just an intermediate type)")
             }
+            NnSqlValue::Blob(_) => unimplemented!("cannot convert BLOB data into JSON"),
         }
     }
 }
@@ -403,5 +417,15 @@ mod tests {
         );
 
         Ok(())
+    }
+
+    #[test]
+    fn test_unpack_blob() {
+        assert_eq!(
+            NnSqlValue::Blob(b"hello".to_vec())
+                .unpack::<Vec<u8>>()
+                .unwrap(),
+            b"hello".to_vec()
+        );
     }
 }
