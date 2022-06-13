@@ -18,10 +18,10 @@ Both SQL executor and autonomous executor instance run at a main thread, while a
 
 ## Entities inside Stream Engine
 
-![Entities inside Stream Engine](https://raw.githubusercontent.com/SpringQL/SpringQL.github.io/main/static/img/stream-engine-architecture-entity.svg)
+![Entities inside Stream Engine](https://raw.githubusercontent.com/SpringQL/SpringQL/main/springql-core/doc/img/stream-engine-architecture-entity.drawio.svg)
 
 ## Communication between entities
 
 Workers in AutonomousExecutor interact via EventQueue (Choreography-based Saga pattern).
 
-![Communication between entities](https://raw.githubusercontent.com/SpringQL/SpringQL.github.io/main/static/img/stream-engine-architecture-communication.svg)
+![Communication between entities](https://raw.githubusercontent.com/SpringQL/SpringQL/main/springql-core/doc/img/stream-engine-architecture-communication.drawio.svg)

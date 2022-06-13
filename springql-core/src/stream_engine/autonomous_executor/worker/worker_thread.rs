@@ -7,27 +7,18 @@ use std::{
 
 use crate::stream_engine::autonomous_executor::{
     args::{Coordinators, EventQueues},
-    event_queue::EventPoll,
+    event_queue::{Event, EventPoll, EventTag, NonBlockingEventQueue},
     main_job_lock::MainJobLock,
     memory_state_machine::MemoryStateTransition,
     performance_metrics::{
-        metrics_update_command::metrics_update_by_task_execution::MetricsUpdateByTaskExecutionOrPurge,
-        performance_metrics_summary::PerformanceMetricsSummary, PerformanceMetrics,
-    },
-};
-
-use crate::stream_engine::autonomous_executor::{
-    event_queue::{
-        event::{Event, EventTag},
-        non_blocking_event_queue::NonBlockingEventQueue,
+        MetricsUpdateByTaskExecutionOrPurge, PerformanceMetrics, PerformanceMetricsSummary,
     },
     pipeline_derivatives::PipelineDerivatives,
+    worker::worker_handle::WorkerSetupCoordinator,
 };
 
-use super::worker_handle::WorkerSetupCoordinator;
-
 /// State updated by loop cycles and event handlers.
-pub(in crate::stream_engine::autonomous_executor) trait WorkerThreadLoopState {
+pub trait WorkerThreadLoopState {
     /// Supposed to be same type as `WorkerThread::ThreadArg`.
     ///
     /// Use `()` if no arg needed.
@@ -43,7 +34,7 @@ pub(in crate::stream_engine::autonomous_executor) trait WorkerThreadLoopState {
     fn is_integral(&self) -> bool;
 }
 
-pub(in crate::stream_engine::autonomous_executor) trait WorkerThread {
+pub trait WorkerThread {
     const THREAD_NAME: &'static str;
 
     /// Immutable argument to pass to `main_loop_cycle`.

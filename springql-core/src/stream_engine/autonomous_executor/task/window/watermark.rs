@@ -3,8 +3,7 @@
 use std::cmp::max;
 
 use crate::stream_engine::time::{
-    duration::{event_duration::SpringEventDuration, SpringDuration},
-    timestamp::{SpringTimestamp, MIN_TIMESTAMP},
+    SpringDuration, SpringEventDuration, SpringTimestamp, MIN_TIMESTAMP,
 };
 
 /// A watermark is held by each window.
@@ -13,24 +12,24 @@ use crate::stream_engine::time::{
 /// watermark = max(ROWTIME) - allowed_delay
 /// ```
 #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Debug)]
-pub(in crate::stream_engine::autonomous_executor) struct Watermark {
+pub struct Watermark {
     max_rowtime: SpringTimestamp,
     allowed_delay: SpringEventDuration,
 }
 
 impl Watermark {
-    pub(in crate::stream_engine::autonomous_executor) fn new(allowed_delay: SpringEventDuration) -> Self {
+    pub fn new(allowed_delay: SpringEventDuration) -> Self {
         Self {
-            max_rowtime: MIN_TIMESTAMP + allowed_delay.to_chrono(), // to avoid overflow
+            max_rowtime: MIN_TIMESTAMP + allowed_delay.to_duration(), // to avoid overflow
             allowed_delay,
         }
     }
 
-    pub(in crate::stream_engine::autonomous_executor) fn as_timestamp(&self) -> SpringTimestamp {
-        self.max_rowtime - self.allowed_delay.to_chrono()
+    pub fn as_timestamp(&self) -> SpringTimestamp {
+        self.max_rowtime - self.allowed_delay.to_duration()
     }
 
-    pub(in crate::stream_engine::autonomous_executor) fn update(&mut self, rowtime: SpringTimestamp) {
+    pub fn update(&mut self, rowtime: SpringTimestamp) {
         self.max_rowtime = max(rowtime, self.max_rowtime);
     }
 }

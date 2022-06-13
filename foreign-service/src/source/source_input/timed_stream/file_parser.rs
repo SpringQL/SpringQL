@@ -3,10 +3,10 @@
 use anyhow::Result;
 use std::{fs::File, path::Path};
 
-use super::file_type::FileType;
+use crate::source::source_input::timed_stream::file_type::FileType;
 
 #[derive(Debug)]
-pub(super) enum FileParser {
+pub enum FileParser {
     /// Fields are parsed as the following priority:
     ///
     /// 1. number
@@ -15,7 +15,7 @@ pub(super) enum FileParser {
 }
 
 impl FileParser {
-    pub(super) fn new<P: AsRef<Path>>(file_type: FileType, file_path: P) -> Result<Self> {
+    pub fn new<P: AsRef<Path>>(file_type: FileType, file_path: P) -> Result<Self> {
         match file_type {
             FileType::Tsv => {
                 let reader = csv::ReaderBuilder::new()

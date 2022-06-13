@@ -2,22 +2,26 @@
 
 mod in_memory_queue;
 
+use std::{
+    collections::HashMap,
+    sync::{Arc, Mutex, MutexGuard},
+};
+
 use anyhow::anyhow;
 use once_cell::sync::Lazy;
 
-use crate::error::{Result, SpringError};
-use crate::pipeline::name::QueueName;
-use std::collections::HashMap;
-use std::sync::{Arc, Mutex, MutexGuard};
-
-use self::in_memory_queue::InMemoryQueue;
+use crate::{
+    api::error::{Result, SpringError},
+    pipeline::QueueName,
+    stream_engine::in_memory_queue_repository::in_memory_queue::InMemoryQueue,
+};
 
 static INSTANCE: Lazy<Arc<InMemoryQueueRepository>> =
     Lazy::new(|| Arc::new(InMemoryQueueRepository::empty()));
 
 /// Singleton
 #[derive(Debug)]
-pub(in crate::stream_engine) struct InMemoryQueueRepository(
+pub struct InMemoryQueueRepository(
     Mutex<HashMap<QueueName, Arc<InMemoryQueue>>>, // TODO faster (lock-free?) queue
 );
 
@@ -26,18 +30,15 @@ impl InMemoryQueueRepository {
         Self(Mutex::new(HashMap::new()))
     }
 
-    pub(in crate::stream_engine) fn instance() -> Arc<Self> {
+    pub fn instance() -> Arc<Self> {
         INSTANCE.clone()
     }
 
     /// # Failure
     ///
-    /// - [SpringError::Unavailable](crate::error::SpringError::Unavailable) when:
+    /// - `SpringError::Unavailable` when:
     ///   - queue named `queue_name` does not exist.
-    pub(in crate::stream_engine) fn get(
-        &self,
-        queue_name: &QueueName,
-    ) -> Result<Arc<InMemoryQueue>> {
+    pub fn get(&self, queue_name: &QueueName) -> Result<Arc<InMemoryQueue>> {
         self.lock()
             .get(queue_name)
             .cloned()
@@ -49,9 +50,9 @@ impl InMemoryQueueRepository {
 
     /// # Failure
     ///
-    /// - [SpringError::Sql](crate::error::SpringError::Sql) when:
+    /// - `SpringError::Sql` when:
     ///   - queue named `queue_name` already exists.
-    pub(in crate::stream_engine) fn create(&self, queue_name: QueueName) -> Result<()> {
+    pub fn create(&self, queue_name: QueueName) -> Result<()> {
         let r = self
             .lock()
             .insert(queue_name.clone(), Arc::new(InMemoryQueue::default()));

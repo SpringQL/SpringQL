@@ -2,15 +2,12 @@
 
 use std::time::Duration;
 
-use springql_core::{
-    high_level_rs::SpringPipelineHL,
-    low_level_rs::{spring_command, spring_open, SpringConfig, SpringPipeline},
-};
+use springql_core::{api::SpringConfig, api::SpringPipeline};
 use springql_foreign_service::sink::ForeignSink;
 
 #[allow(dead_code)]
-pub(crate) fn apply_ddls(ddls: &[String], config: SpringConfig) -> SpringPipelineHL {
-    let pipeline = SpringPipelineHL::new(&config).unwrap();
+pub fn apply_ddls(ddls: &[String], config: SpringConfig) -> SpringPipeline {
+    let pipeline = SpringPipeline::new(&config).unwrap();
     for ddl in ddls {
         pipeline.command(ddl).unwrap();
     }
@@ -18,16 +15,7 @@ pub(crate) fn apply_ddls(ddls: &[String], config: SpringConfig) -> SpringPipelin
 }
 
 #[allow(dead_code)]
-pub(crate) fn apply_ddls_low_level(ddls: &[String], config: SpringConfig) -> SpringPipeline {
-    let pipeline = spring_open(&config).unwrap();
-    for ddl in ddls {
-        spring_command(&pipeline, ddl).unwrap();
-    }
-    pipeline
-}
-
-#[allow(dead_code)]
-pub(crate) fn drain_from_sink(sink: &ForeignSink) -> Vec<serde_json::Value> {
+pub fn drain_from_sink(sink: &ForeignSink) -> Vec<serde_json::Value> {
     let mut received = Vec::new();
     while let Some(v) = sink.try_receive(Duration::from_secs(1)) {
         received.push(v);

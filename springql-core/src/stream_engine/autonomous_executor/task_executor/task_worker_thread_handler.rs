@@ -5,28 +5,24 @@
 use std::{fmt::Display, sync::Arc, thread, time::Duration};
 
 use crate::stream_engine::autonomous_executor::{
-    event_queue::{event::Event, non_blocking_event_queue::NonBlockingEventQueue},
-    performance_metrics::{
-        metrics_update_command::metrics_update_by_task_execution::MetricsUpdateByTaskExecutionOrPurge,
-        PerformanceMetrics,
-    },
+    event_queue::{Event, NonBlockingEventQueue},
+    performance_metrics::{MetricsUpdateByTaskExecutionOrPurge, PerformanceMetrics},
     pipeline_derivatives::PipelineDerivatives,
     repositories::Repositories,
-    task::task_context::TaskContext,
-    task_graph::task_id::TaskId,
-    worker::worker_thread::WorkerThreadLoopState,
+    task::TaskContext,
+    task_executor::{scheduler::Scheduler, task_executor_lock::TaskExecutorLock},
+    task_graph::TaskId,
+    worker::WorkerThreadLoopState,
     AutonomousExecutor,
 };
-
-use super::{scheduler::Scheduler, task_executor_lock::TaskExecutorLock};
 
 const TASK_WAIT_MSEC: u64 = 10;
 
 #[derive(Debug)]
-pub(super) struct TaskWorkerThreadHandler;
+pub struct TaskWorkerThreadHandler;
 
 #[derive(Copy, Clone, Eq, PartialEq, Debug, new)]
-pub(in crate::stream_engine::autonomous_executor) struct TaskWorkerId(u16);
+pub struct TaskWorkerId(u16);
 impl Display for TaskWorkerId {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", self.0)
@@ -34,17 +30,17 @@ impl Display for TaskWorkerId {
 }
 
 #[derive(Debug, new)]
-pub(in crate::stream_engine::autonomous_executor) struct TaskWorkerThreadArg {
-    pub(super) worker_id: TaskWorkerId,
+pub struct TaskWorkerThreadArg {
+    pub worker_id: TaskWorkerId,
     task_executor_lock: Arc<TaskExecutorLock>,
     repos: Arc<Repositories>,
 }
 
 #[derive(Debug)]
-pub(super) struct TaskWorkerLoopState<S: Scheduler> {
-    pub(super) pipeline_derivatives: Option<Arc<PipelineDerivatives>>,
-    pub(super) metrics: Option<Arc<PerformanceMetrics>>,
-    pub(super) scheduler: S,
+pub struct TaskWorkerLoopState<S: Scheduler> {
+    pub pipeline_derivatives: Option<Arc<PipelineDerivatives>>,
+    pub metrics: Option<Arc<PerformanceMetrics>>,
+    pub scheduler: S,
 }
 
 impl<S: Scheduler> WorkerThreadLoopState for TaskWorkerLoopState<S> {
@@ -70,7 +66,7 @@ impl<S: Scheduler> WorkerThreadLoopState for TaskWorkerLoopState<S> {
 }
 
 impl TaskWorkerThreadHandler {
-    pub(super) fn main_loop_cycle<S>(
+    pub fn main_loop_cycle<S>(
         current_state: TaskWorkerLoopState<S>,
         thread_arg: &TaskWorkerThreadArg,
         event_queue: &NonBlockingEventQueue,

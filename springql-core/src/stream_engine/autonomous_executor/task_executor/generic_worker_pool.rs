@@ -1,21 +1,21 @@
 // This file is part of https://github.com/SpringQL/SpringQL which is licensed under MIT OR Apache-2.0. See file LICENSE-MIT or LICENSE-APACHE for full license details.
 
-pub(super) mod generic_worker;
+mod generic_worker;
 
 use std::{cell::RefCell, sync::Arc};
 
 use crate::stream_engine::autonomous_executor::{
     args::{Coordinators, EventQueues, Locks},
     repositories::Repositories,
+    task_executor::{
+        generic_worker_pool::generic_worker::GenericWorker,
+        task_worker_thread_handler::{TaskWorkerId, TaskWorkerThreadArg},
+    },
 };
-
-use self::generic_worker::GenericWorker;
-
-use super::task_worker_thread_handler::{TaskWorkerId, TaskWorkerThreadArg};
 
 /// Workers to execute pump and sink tasks.
 #[derive(Debug)]
-pub(super) struct GenericWorkerPool {
+pub struct GenericWorkerPool {
     /// Worker pool gets interruption from task executor on, for example, pipeline update.
     /// Since worker pool holder cannot always be mutable, worker pool is better to have mutability for each worker.
     ///
@@ -25,7 +25,7 @@ pub(super) struct GenericWorkerPool {
 }
 
 impl GenericWorkerPool {
-    pub(super) fn new(
+    pub fn new(
         n_worker_threads: u16,
         locks: Locks,
         event_queues: EventQueues,

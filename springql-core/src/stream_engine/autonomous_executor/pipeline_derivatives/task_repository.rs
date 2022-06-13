@@ -5,25 +5,25 @@ use std::{borrow::BorrowMut, collections::HashMap, sync::Arc};
 use anyhow::anyhow;
 
 use crate::{
-    error::{Result, SpringError},
-    pipeline::pipeline_graph::PipelineGraph,
+    api::error::{Result, SpringError},
+    pipeline::PipelineGraph,
     stream_engine::autonomous_executor::{
-        task::{window::Window, Task},
-        task_graph::task_id::TaskId,
+        task::{Task, Window},
+        task_graph::TaskId,
     },
 };
 
 #[derive(Debug, Default)]
-pub(in crate::stream_engine::autonomous_executor) struct TaskRepository {
+pub struct TaskRepository {
     repo: HashMap<TaskId, Arc<Task>>,
 }
 
 impl TaskRepository {
     /// # Failure
     ///
-    /// - [SpringError::Sql](crate::error::SpringError::Sql) when:
+    /// - `SpringError::Sql` when:
     ///   - TaskId is not found in task repo.
-    pub(super) fn get(&self, task_id: &TaskId) -> Result<Arc<Task>> {
+    pub fn get(&self, task_id: &TaskId) -> Result<Arc<Task>> {
         self.repo
             .get(task_id)
             .ok_or_else(|| {
@@ -32,7 +32,7 @@ impl TaskRepository {
             .map(|t| t.clone())
     }
 
-    pub(in crate::stream_engine::autonomous_executor) fn purge_windows(&self) {
+    pub fn purge_windows(&self) {
         for task in self.repo.values() {
             if let Task::Pump(pump_task) = task.as_ref() {
                 if let Some(mut w) = pump_task.get_join_window_mut() {

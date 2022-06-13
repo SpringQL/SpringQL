@@ -5,20 +5,20 @@ use std::{
     sync::{mpsc, Mutex, MutexGuard},
 };
 
-use super::{
+use crate::stream_engine::autonomous_executor::event_queue::{
     event::{Event, EventTag},
     EventPoll,
 };
 
 /// Event queue (message broker) for Choreography-based Saga pattern.
 #[derive(Debug, Default)]
-pub(in crate::stream_engine::autonomous_executor) struct BlockingEventQueue {
+pub struct BlockingEventQueue {
     subscribers_by_tag: Mutex<HashMap<EventTag, Subscribers>>,
 }
 
 impl BlockingEventQueue {
     /// Publish an event to queue (blocking). This function returns after all subscribers subscribe the event.
-    pub(in crate::stream_engine::autonomous_executor) fn publish_blocking(&self, event: Event) {
+    pub fn publish_blocking(&self, event: Event) {
         let tag = EventTag::from(&event);
 
         let subscribers_by_tag = self.lock();
@@ -32,10 +32,7 @@ impl BlockingEventQueue {
     /// Subscribe to an event tag and get event polling target.
     ///
     /// A worker need to call this method just 1 time if it needs an event tag.
-    pub(in crate::stream_engine::autonomous_executor) fn subscribe(
-        &self,
-        tag: EventTag,
-    ) -> EventPoll {
+    pub fn subscribe(&self, tag: EventTag) -> EventPoll {
         let (sender, receiver) = mpsc::sync_channel(0); // rendezvous channel
         let event_push = EventPush::new(sender);
         let event_poll = EventPoll::new(receiver);

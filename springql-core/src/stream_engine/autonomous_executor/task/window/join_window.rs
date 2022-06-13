@@ -1,18 +1,16 @@
 // This file is part of https://github.com/SpringQL/SpringQL which is licensed under MIT OR Apache-2.0. See file LICENSE-MIT or LICENSE-APACHE for full license details.
 
-use crate::pipeline::pump_model::{
-    window_operation_parameter::{join_parameter::JoinParameter, WindowOperationParameter},
-    window_parameter::WindowParameter,
-};
-
-use super::{
-    panes::{pane::join_pane::JoinPane, Panes},
-    watermark::Watermark,
-    Window,
+use crate::{
+    pipeline::{JoinParameter, WindowOperationParameter, WindowParameter},
+    stream_engine::autonomous_executor::task::window::{
+        panes::{JoinPane, Panes},
+        watermark::Watermark,
+        Window,
+    },
 };
 
 #[derive(Debug)]
-pub(in crate::stream_engine::autonomous_executor) struct JoinWindow {
+pub struct JoinWindow {
     watermark: Watermark,
     panes: Panes<JoinPane>,
 }
@@ -42,10 +40,7 @@ impl Window for JoinWindow {
 }
 
 impl JoinWindow {
-    pub(in crate::stream_engine::autonomous_executor) fn new(
-        window_param: WindowParameter,
-        join_param: JoinParameter,
-    ) -> Self {
+    pub fn new(window_param: WindowParameter, join_param: JoinParameter) -> Self {
         let watermark = Watermark::new(window_param.allowed_delay());
         Self {
             watermark,
@@ -63,18 +58,11 @@ mod tests {
     use crate::{
         expr_resolver::ExprResolver,
         expression::ValueExpr,
-        pipeline::{
-            field::field_name::ColumnReference,
-            name::{ColumnName, StreamName},
-            pump_model::window_operation_parameter::join_parameter::{JoinParameter, JoinType},
-        },
-        sql_processor::sql_parser::syntax::SelectFieldSyntax,
+        pipeline::{ColumnName, ColumnReference, JoinParameter, JoinType, StreamName},
+        sql_processor::SelectFieldSyntax,
         stream_engine::{
-            autonomous_executor::task::window::panes::pane::join_pane::JoinDir,
-            time::{
-                duration::{event_duration::SpringEventDuration, SpringDuration},
-                timestamp::SpringTimestamp,
-            },
+            autonomous_executor::task::window::panes::JoinDir,
+            time::{SpringDuration, SpringEventDuration, SpringTimestamp},
             SqlValue, Tuple,
         },
     };
@@ -91,7 +79,10 @@ mod tests {
             .get_value(&ColumnReference::fx_trade_timestamp())
             .unwrap()
             .unwrap();
-        assert_eq!(timestamp.unpack::<SpringTimestamp>().unwrap(), expected_timestamp);
+        assert_eq!(
+            timestamp.unpack::<SpringTimestamp>().unwrap(),
+            expected_timestamp
+        );
 
         let amount = tuple
             .get_value(&ColumnReference::fx_trade_amount())

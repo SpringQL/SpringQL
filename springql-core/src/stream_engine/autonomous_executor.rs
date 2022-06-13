@@ -1,16 +1,8 @@
 // This file is part of https://github.com/SpringQL/SpringQL which is licensed under MIT OR Apache-2.0. See file LICENSE-MIT or LICENSE-APACHE for full license details.
 
-pub use row::SpringValue;
-
-pub(crate) mod row;
-pub(crate) mod task;
-
-pub(in crate::stream_engine) mod event_queue;
-
-pub(in crate::stream_engine::autonomous_executor) mod args;
-pub(in crate::stream_engine::autonomous_executor) mod main_job_lock;
-pub(in crate::stream_engine::autonomous_executor) mod worker;
-
+mod args;
+mod event_queue;
+mod main_job_lock;
 mod memory_state_machine;
 mod memory_state_machine_worker;
 mod performance_metrics;
@@ -19,34 +11,46 @@ mod pipeline_derivatives;
 mod purger_worker;
 mod queue;
 mod repositories;
+mod row;
+mod task;
 mod task_executor;
 mod task_graph;
-
-use crate::error::{Result, SpringError};
-use crate::low_level_rs::SpringConfig;
-use crate::pipeline::Pipeline;
-use crate::stream_engine::autonomous_executor::args::{Coordinators, EventQueues, Locks};
-use crate::stream_engine::autonomous_executor::main_job_lock::MainJobLock;
-use crate::stream_engine::autonomous_executor::worker::worker_handle::WorkerSetupCoordinator;
-use std::sync::Arc;
-
-pub(crate) use row::SinkRow;
-
-use self::event_queue::blocking_event_queue::BlockingEventQueue;
-use self::event_queue::non_blocking_event_queue::NonBlockingEventQueue;
-use self::memory_state_machine_worker::MemoryStateMachineWorker;
-use self::purger_worker::purger_worker_thread::PurgerWorkerThreadArg;
-use self::purger_worker::PurgerWorker;
-use self::repositories::Repositories;
-use self::task_executor::task_executor_lock::TaskExecutorLock;
-use self::worker::worker_handle::WorkerStopCoordinator;
-use self::{
-    event_queue::event::Event, performance_monitor_worker::PerformanceMonitorWorker,
-    pipeline_derivatives::PipelineDerivatives, task_executor::TaskExecutor,
-};
+mod worker;
 
 #[cfg(test)]
-pub(super) mod test_support;
+pub mod test_support;
+
+pub use row::SpringValue;
+pub use row::{
+    ColumnValues, JsonObject, NnSqlValue, Row, SourceRow, SqlCompareResult, SqlValue,
+    SqlValueHashKey, StreamColumns,
+};
+pub use task::{
+    NetClientSourceReader, NetServerSourceReader, SinkWriterRepository, SourceReader,
+    SourceReaderRepository, SourceTask, Task, TaskContext, Tuple, Window,
+};
+
+use std::sync::Arc;
+
+use crate::{
+    api::{
+        error::{Result, SpringError},
+        SpringConfig,
+    },
+    pipeline::Pipeline,
+    stream_engine::autonomous_executor::{
+        args::{Coordinators, EventQueues, Locks},
+        event_queue::{BlockingEventQueue, Event, NonBlockingEventQueue},
+        main_job_lock::MainJobLock,
+        memory_state_machine_worker::MemoryStateMachineWorker,
+        performance_monitor_worker::PerformanceMonitorWorker,
+        pipeline_derivatives::PipelineDerivatives,
+        purger_worker::{PurgerWorker, PurgerWorkerThreadArg},
+        repositories::Repositories,
+        task_executor::{TaskExecutor, TaskExecutorLock},
+        worker::{WorkerSetupCoordinator, WorkerStopCoordinator},
+    },
+};
 
 /// Automatically executes the latest task graph (uniquely deduced from the latest pipeline).
 ///
@@ -54,7 +58,7 @@ pub(super) mod test_support;
 ///
 /// All interface methods are called from main thread, while `new()` spawns worker threads.
 #[derive(Debug)]
-pub(in crate::stream_engine) struct AutonomousExecutor {
+pub struct AutonomousExecutor {
     b_event_queue: Arc<BlockingEventQueue>,
 
     main_job_lock: Arc<MainJobLock>,
@@ -67,7 +71,7 @@ pub(in crate::stream_engine) struct AutonomousExecutor {
 }
 
 impl AutonomousExecutor {
-    pub(in crate::stream_engine) fn new(config: &SpringConfig) -> Self {
+    pub fn new(config: &SpringConfig) -> Self {
         let repos = Arc::new(Repositories::new(config));
         let locks = Locks::new(
             Arc::new(MainJobLock::default()),
@@ -123,10 +127,7 @@ impl AutonomousExecutor {
         }
     }
 
-    pub(in crate::stream_engine) fn notify_pipeline_update(
-        &self,
-        pipeline: Pipeline,
-    ) -> Result<()> {
+    pub fn notify_pipeline_update(&self, pipeline: Pipeline) -> Result<()> {
         let main_job_lock = &self.main_job_lock;
         let lock = main_job_lock.main_job_barrier();
 

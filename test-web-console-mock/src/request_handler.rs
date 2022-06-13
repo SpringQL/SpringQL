@@ -7,26 +7,26 @@ use simple_server::{Builder, Request, ResponseResult, StatusCode};
 use crate::request_body::PostTaskGraphBody;
 
 #[derive(Debug)]
-pub(super) struct RequestHandler {
+pub struct RequestHandler {
     request: Request<Vec<u8>>,
     response: Builder,
 }
 
 impl RequestHandler {
-    pub(super) fn new(request: Request<Vec<u8>>, response: Builder) -> Self {
+    pub fn new(request: Request<Vec<u8>>, response: Builder) -> Self {
         Self { request, response }
     }
 
-    pub(super) fn get_health(&mut self) -> ResponseResult {
+    pub fn get_health(&mut self) -> ResponseResult {
         Ok(self.response.body("ok".as_bytes().to_vec())?)
     }
 
-    pub(super) fn not_found(&mut self) -> ResponseResult {
+    pub fn not_found(&mut self) -> ResponseResult {
         self.response.status(StatusCode::NOT_FOUND);
         Ok(self.response.body("404 Not found".as_bytes().to_vec())?)
     }
 
-    pub(super) fn post_task_graph(
+    pub fn post_task_graph(
         &mut self,
         callback: Option<Arc<dyn Fn(PostTaskGraphBody) + Sync + Send>>,
     ) -> ResponseResult {

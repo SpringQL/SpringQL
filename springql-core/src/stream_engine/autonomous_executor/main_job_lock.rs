@@ -8,15 +8,13 @@ use parking_lot::{RwLock, RwLockReadGuard, RwLockWriteGuard};
 ///
 /// This lock is to assure for workers to safely execute tasks while acquiring MainJobLockGuard,
 /// while it also gives MainJobBarrierGuard for publishers of strongly-consistent events to block main jobs in other worker threads.
-/// 
+///
 /// See [sequence diagram](https://github.com/SpringQL/SpringQL/issues/100#issuecomment-1101732796) to understand the strongly-consistent events flow.
 #[derive(Debug, Default)]
-pub(in crate::stream_engine::autonomous_executor) struct MainJobLock(RwLock<MainJobLockToken>);
+pub struct MainJobLock(RwLock<MainJobLockToken>);
 
 impl MainJobLock {
-    pub(in crate::stream_engine::autonomous_executor) fn main_job_barrier(
-        &self,
-    ) -> MainJobBarrierGuard {
+    pub fn main_job_barrier(&self) -> MainJobBarrierGuard {
         let write_lock = self.0.write();
         MainJobBarrierGuard(write_lock)
     }
@@ -24,9 +22,7 @@ impl MainJobLock {
     /// # Returns
     ///
     /// Ok on successful lock, Err on write lock.
-    pub(in crate::stream_engine::autonomous_executor) fn try_main_job(
-        &self,
-    ) -> Result<MainJobLockGuard, anyhow::Error> {
+    pub fn try_main_job(&self) -> Result<MainJobLockGuard, anyhow::Error> {
         self.0
             .try_read()
             .map(MainJobLockGuard)
@@ -35,14 +31,10 @@ impl MainJobLock {
 }
 
 #[derive(Debug, Default)]
-pub(in crate::stream_engine::autonomous_executor) struct MainJobLockToken;
+pub struct MainJobLockToken;
 
 #[derive(Debug)]
-pub(in crate::stream_engine::autonomous_executor) struct MainJobBarrierGuard<'a>(
-    RwLockWriteGuard<'a, MainJobLockToken>,
-);
+pub struct MainJobBarrierGuard<'a>(RwLockWriteGuard<'a, MainJobLockToken>);
 
 #[derive(Debug)]
-pub(in crate::stream_engine::autonomous_executor) struct MainJobLockGuard<'a>(
-    RwLockReadGuard<'a, MainJobLockToken>,
-);
+pub struct MainJobLockGuard<'a>(RwLockReadGuard<'a, MainJobLockToken>);

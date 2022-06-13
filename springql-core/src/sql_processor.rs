@@ -1,33 +1,29 @@
 // This file is part of https://github.com/SpringQL/SpringQL which is licensed under MIT OR Apache-2.0. See file LICENSE-MIT or LICENSE-APACHE for full license details.
 
-pub(crate) mod sql_parser;
-
 mod query_planner;
+mod sql_parser;
 
-use self::{
-    query_planner::QueryPlanner,
-    sql_parser::{parse_success::CreatePump, syntax::SelectStreamSyntax, SqlParser},
+pub use sql_parser::{
+    ColumnConstraintSyntax, CreatePump, DurationFunction, FromItemSyntax, GroupingElementSyntax,
+    OptionSyntax, ParseSuccess, PestParserImpl, SelectFieldSyntax, SelectStreamSyntax, SqlParser,
+    SubFromItemSyntax,
 };
+
 use crate::{
-    error::Result,
-    pipeline::{
-        pump_model::PumpModel, sink_writer_model::SinkWriterModel,
-        source_reader_model::SourceReaderModel, stream_model::StreamModel, Pipeline,
-    },
-    sql_processor::sql_parser::parse_success::ParseSuccess,
-    stream_engine::command::{
-        alter_pipeline_command::AlterPipelineCommand, query_plan::QueryPlan, Command,
-    },
+    api::error::Result,
+    pipeline::{Pipeline, PumpModel, SinkWriterModel, SourceReaderModel, StreamModel},
+    sql_processor::query_planner::QueryPlanner,
+    stream_engine::command::{AlterPipelineCommand, Command, QueryPlan},
 };
 
 #[derive(Debug, Default)]
-pub(crate) struct SqlProcessor(SqlParser);
+pub struct SqlProcessor(SqlParser);
 
 impl SqlProcessor {
     /// # Failures
     ///
-    /// - [SpringError::Sql](crate::error::SpringError::Sql) on syntax and semantics error.
-    pub(crate) fn compile<S: Into<String>>(&self, sql: S, pipeline: &Pipeline) -> Result<Command> {
+    /// - `SpringError::Sql` on syntax and semantics error.
+    pub fn compile<S: Into<String>>(&self, sql: S, pipeline: &Pipeline) -> Result<Command> {
         let command = match self.0.parse(sql)? {
             ParseSuccess::CreateSourceStream(source_stream_model) => {
                 self.compile_create_source_stream(source_stream_model, pipeline)?
@@ -129,14 +125,11 @@ mod tests {
     use super::*;
     use crate::{
         pipeline::{
-            name::{SinkWriterName, SourceReaderName, StreamName},
-            option::options_builder::OptionsBuilder,
-            pipeline_version::PipelineVersion,
-            sink_writer_model::{sink_writer_type::SinkWriterType, SinkWriterModel},
-            source_reader_model::{source_reader_type::SourceReaderType, SourceReaderModel},
-            stream_model::{stream_shape::StreamShape, StreamModel},
+            OptionsBuilder, PipelineVersion, SinkWriterModel, SinkWriterName, SinkWriterType,
+            SourceReaderModel, SourceReaderName, SourceReaderType, StreamModel, StreamName,
+            StreamShape,
         },
-        stream_engine::command::alter_pipeline_command::AlterPipelineCommand,
+        stream_engine::command::AlterPipelineCommand,
     };
     use pretty_assertions::assert_eq;
 

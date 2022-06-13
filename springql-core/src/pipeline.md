@@ -9,4 +9,4 @@ Omit _Task Graph_ here. A pipeline has:
 - Sink Writer
 - Pump
 
-![Pipeline concept diagram](https://raw.githubusercontent.com/SpringQL/SpringQL.github.io/main/static/img/pipeline-and-task-graph.svg)
+![Pipeline concept diagram](https://raw.githubusercontent.com/SpringQL/SpringQL/main/springql-core/doc/img/pipeline-and-task-graph.drawio.svg)

@@ -1,31 +1,39 @@
 // This file is part of https://github.com/SpringQL/SpringQL which is licensed under MIT OR Apache-2.0. See file LICENSE-MIT or LICENSE-APACHE for full license details.
 
-pub(in crate::stream_engine::autonomous_executor) mod sink_writer;
+mod sink_writer;
+
+pub use sink_writer::{NetSinkWriter, SinkWriter, SinkWriterRepository};
 
 use std::sync::Arc;
 
-use super::task_context::TaskContext;
-use crate::error::Result;
-use crate::mem_size::MemSize;
-use crate::pipeline::name::{SinkWriterName, StreamName};
-use crate::pipeline::sink_writer_model::SinkWriterModel;
-use crate::stream_engine::autonomous_executor::performance_metrics::metrics_update_command::metrics_update_by_task_execution::{MetricsUpdateByTaskExecution, TaskMetricsUpdateByTask, InQueueMetricsUpdateByTask, InQueueMetricsUpdateByCollect};
-use crate::stream_engine::autonomous_executor::repositories::Repositories;
-use crate::stream_engine::autonomous_executor::row::foreign_row::sink_row::SinkRow;
-use crate::stream_engine::autonomous_executor::row::Row;
-use crate::stream_engine::autonomous_executor::task_graph::queue_id::QueueId;
-use crate::stream_engine::autonomous_executor::task_graph::task_id::TaskId;
-use crate::stream_engine::time::duration::wall_clock_duration::wall_clock_stopwatch::WallClockStopwatch;
+use crate::{
+    api::error::Result,
+    mem_size::MemSize,
+    pipeline::{SinkWriterModel, SinkWriterName, StreamName},
+    stream_engine::{
+        autonomous_executor::{
+            performance_metrics::{
+                InQueueMetricsUpdateByCollect, InQueueMetricsUpdateByTask,
+                MetricsUpdateByTaskExecution, TaskMetricsUpdateByTask,
+            },
+            repositories::Repositories,
+            row::Row,
+            task::task_context::TaskContext,
+            task_graph::{QueueId, TaskId},
+        },
+        time::WallClockStopwatch,
+    },
+};
 
 #[derive(Debug)]
-pub(crate) struct SinkTask {
+pub struct SinkTask {
     id: TaskId,
     upstream: StreamName,
     sink_writer_name: SinkWriterName,
 }
 
 impl SinkTask {
-    pub(in crate::stream_engine) fn new(sink_writer: &SinkWriterModel) -> Self {
+    pub fn new(sink_writer: &SinkWriterModel) -> Self {
         let id = TaskId::from_sink(sink_writer);
         Self {
             id,
@@ -34,14 +42,11 @@ impl SinkTask {
         }
     }
 
-    pub(in crate::stream_engine::autonomous_executor) fn id(&self) -> &TaskId {
+    pub fn id(&self) -> &TaskId {
         &self.id
     }
 
-    pub(in crate::stream_engine::autonomous_executor) fn run(
-        &self,
-        context: &TaskContext,
-    ) -> Result<MetricsUpdateByTaskExecution> {
+    pub fn run(&self, context: &TaskContext) -> Result<MetricsUpdateByTaskExecution> {
         let stopwatch = WallClockStopwatch::start();
 
         let repos = context.repos();
@@ -102,8 +107,6 @@ impl SinkTask {
     }
 
     fn emit(&self, row: Row, context: &TaskContext) -> Result<()> {
-        let f_row = SinkRow::from(row);
-
         let sink_writer = context
             .repos()
             .sink_writer_repository()
@@ -112,7 +115,7 @@ impl SinkTask {
         sink_writer
             .lock()
             .expect("other worker threads sharing the same sink subtask must not get panic")
-            .send_row(f_row)?;
+            .send_row(row)?;
 
         Ok(())
     }

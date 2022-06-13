@@ -3,21 +3,23 @@
 mod web_console_request;
 
 use crate::stream_engine::{
-    autonomous_executor::{performance_metrics::PerformanceMetrics, task_graph::TaskGraph},
-    time::duration::{wall_clock_duration::WallClockDuration, SpringDuration},
+    autonomous_executor::{
+        performance_metrics::PerformanceMetrics,
+        performance_monitor_worker::web_console_reporter::web_console_request::WebConsoleRequest,
+        task_graph::TaskGraph,
+    },
+    time::{SpringDuration, WallClockDuration},
 };
-
-use self::web_console_request::WebConsoleRequest;
 
 /// Reports performance summary to [web-console API](https://github.com/SpringQL/web-console/blob/main/doc/api.md).
 #[derive(Debug)]
-pub(super) struct WebConsoleReporter {
+pub struct WebConsoleReporter {
     url: String,
     client: reqwest::blocking::Client,
 }
 
 impl WebConsoleReporter {
-    pub(super) fn new(host: &str, port: u16, timeout: WallClockDuration) -> Self {
+    pub fn new(host: &str, port: u16, timeout: WallClockDuration) -> Self {
         let client = reqwest::blocking::Client::builder()
             .timeout(Some(*timeout.as_std()))
             .build()
@@ -28,7 +30,7 @@ impl WebConsoleReporter {
         Self { url, client }
     }
 
-    pub(super) fn report(&self, metrics: &PerformanceMetrics, graph: &TaskGraph) {
+    pub fn report(&self, metrics: &PerformanceMetrics, graph: &TaskGraph) {
         let request = WebConsoleRequest::from_metrics(metrics, graph);
 
         let res = self.client.post(&self.url).json(&request.to_json()).send();
@@ -56,8 +58,6 @@ impl WebConsoleReporter {
 #[cfg(test)]
 mod tests {
     use springql_test_logger::setup_test_logger;
-
-    use crate::stream_engine::time::duration::SpringDuration;
 
     use super::*;
 

@@ -4,7 +4,7 @@ use crate::expression::ValueExprType;
 
 /// Comparison function and its operands
 #[derive(Clone, PartialEq, Hash, Debug)]
-pub(crate) enum ComparisonFunction<E>
+pub enum ComparisonFunction<E>
 where
     E: ValueExprType,
 {

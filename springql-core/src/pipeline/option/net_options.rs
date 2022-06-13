@@ -4,20 +4,21 @@ use std::net::IpAddr;
 
 use anyhow::Context;
 
-use crate::error::{Result, SpringError};
-
-use super::Options;
+use crate::{
+    api::error::{Result, SpringError},
+    pipeline::option::Options,
+};
 
 #[derive(Clone, Eq, PartialEq, Debug)]
-pub(crate) enum NetProtocol {
+pub enum NetProtocol {
     Tcp,
 }
 
 #[derive(Clone, Eq, PartialEq, Debug)]
-pub(crate) struct NetClientOptions {
-    pub(crate) protocol: NetProtocol,
-    pub(crate) remote_host: IpAddr,
-    pub(crate) remote_port: u16,
+pub struct NetClientOptions {
+    pub protocol: NetProtocol,
+    pub remote_host: IpAddr,
+    pub remote_port: u16,
 }
 
 impl TryFrom<&Options> for NetClientOptions {
@@ -41,9 +42,9 @@ impl TryFrom<&Options> for NetClientOptions {
 }
 
 #[derive(Clone, Eq, PartialEq, Debug)]
-pub(crate) struct NetServerOptions {
-    pub(crate) protocol: NetProtocol,
-    pub(crate) port: u16,
+pub struct NetServerOptions {
+    pub protocol: NetProtocol,
+    pub port: u16,
 }
 
 impl TryFrom<&Options> for NetServerOptions {

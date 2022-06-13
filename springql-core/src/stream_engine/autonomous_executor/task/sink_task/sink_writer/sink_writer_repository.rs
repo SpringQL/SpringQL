@@ -7,26 +7,24 @@ use std::{
 
 use parking_lot::RwLock;
 
-use crate::{error::Result, pipeline::name::SinkWriterName};
 use crate::{
-    low_level_rs::SpringSinkWriterConfig, pipeline::sink_writer_model::SinkWriterModel,
-    stream_engine::autonomous_executor::task::sink_task::sink_writer::sink_writer_factory::SinkWriterFactory,
+    api::{error::Result, SpringSinkWriterConfig},
+    pipeline::{SinkWriterModel, SinkWriterName},
+    stream_engine::autonomous_executor::task::sink_task::sink_writer::{
+        sink_writer_factory::SinkWriterFactory, SinkWriter,
+    },
 };
-
-use super::SinkWriter;
 
 #[allow(clippy::type_complexity)]
 #[derive(Debug)]
-pub(in crate::stream_engine) struct SinkWriterRepository {
+pub struct SinkWriterRepository {
     config: SpringSinkWriterConfig,
 
     sinks: RwLock<HashMap<SinkWriterName, Arc<Mutex<Box<dyn SinkWriter>>>>>,
 }
 
 impl SinkWriterRepository {
-    pub(in crate::stream_engine::autonomous_executor) fn new(
-        config: SpringSinkWriterConfig,
-    ) -> Self {
+    pub fn new(config: SpringSinkWriterConfig) -> Self {
         Self {
             config,
             sinks: RwLock::default(),
@@ -37,12 +35,9 @@ impl SinkWriterRepository {
     ///
     /// # Failures
     ///
-    /// - [SpringError::ForeignIo](crate::error::SpringError::ForeignIo) when:
+    /// - `SpringError::ForeignIo` when:
     ///   - failed to start subtask.
-    pub(in crate::stream_engine::autonomous_executor) fn register(
-        &self,
-        sink_writer: &SinkWriterModel,
-    ) -> Result<()> {
+    pub fn register(&self, sink_writer: &SinkWriterModel) -> Result<()> {
         let mut sinks = self.sinks.write();
 
         if sinks.get(sink_writer.name()).is_some() {
@@ -66,10 +61,7 @@ impl SinkWriterRepository {
     /// # Panics
     ///
     /// `name` is not registered yet
-    pub(in crate::stream_engine::autonomous_executor) fn get_sink_writer(
-        &self,
-        name: &SinkWriterName,
-    ) -> Arc<Mutex<Box<dyn SinkWriter>>> {
+    pub fn get_sink_writer(&self, name: &SinkWriterName) -> Arc<Mutex<Box<dyn SinkWriter>>> {
         self.sinks
             .read()
             .get(name)

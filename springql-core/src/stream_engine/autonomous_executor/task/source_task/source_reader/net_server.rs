@@ -9,21 +9,17 @@ use std::{
 };
 
 use crate::{
-    error::{foreign_info::ForeignInfo, Result, SpringError},
-    low_level_rs::SpringSourceReaderConfig,
-    pipeline::option::{
-        net_options::{NetProtocol, NetServerOptions},
-        Options,
-    },
-    stream_engine::autonomous_executor::row::foreign_row::{
-        format::json::JsonObject, source_row::SourceRow,
+    api::error::{foreign_info::ForeignInfo, Result, SpringError},
+    api::SpringSourceReaderConfig,
+    pipeline::{NetProtocol, NetServerOptions, Options},
+    stream_engine::autonomous_executor::{
+        row::{JsonObject, JsonSourceRow, SourceRow},
+        task::source_task::source_reader::SourceReader,
     },
 };
 
-use super::SourceReader;
-
 #[derive(Debug)]
-pub(in crate::stream_engine) struct NetServerSourceReader {
+pub struct NetServerSourceReader {
     my_addr: SocketAddr,
 
     /// FIXME this source reader does not scale
@@ -35,8 +31,8 @@ pub(in crate::stream_engine) struct NetServerSourceReader {
 impl SourceReader for NetServerSourceReader {
     /// # Failure
     ///
-    /// - [SpringError::ForeignIo](crate::error::SpringError::ForeignIo)
-    /// - [SpringError::InvalidOption](crate::error::SpringError::InvalidOption)
+    /// - `SpringError::ForeignIo`
+    /// - `SpringError::InvalidOption`
     fn start(options: &Options, config: &SpringSourceReaderConfig) -> Result<Self> {
         let options = NetServerOptions::try_from(options)?;
         assert!(
@@ -83,7 +79,7 @@ impl SourceReader for NetServerSourceReader {
             })
             .map(|json| {
                 let json_obj = JsonObject::new(json);
-                SourceRow::from_json(json_obj)
+                SourceRow::Json(JsonSourceRow::from_json(json_obj))
             })
             .map_err(|e| SpringError::ForeignSourceTimeout {
                 source: anyhow::Error::from(e),
@@ -133,12 +129,14 @@ impl NetServerSourceReader {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::low_level_rs::SpringSinkWriterConfig;
-    use crate::pipeline::option::options_builder::OptionsBuilder;
-    use crate::stream_engine::autonomous_executor::task::sink_task::sink_writer::net::NetSinkWriter;
-    use crate::stream_engine::autonomous_executor::task::sink_task::sink_writer::SinkWriter;
-    use crate::stream_engine::SinkRow;
-
+    use crate::{
+        api::SpringSinkWriterConfig,
+        pipeline::OptionsBuilder,
+        stream_engine::{
+            autonomous_executor::task::sink_task::{NetSinkWriter, SinkWriter},
+            Row,
+        },
+    };
     fn ephemeral_port() -> u16 {
         let addr = TcpListener::bind("127.0.0.1:0").unwrap();
         addr.local_addr().unwrap().port()
@@ -154,7 +152,7 @@ mod tests {
     }
 
     #[test]
-    fn test_source_tcp() -> crate::error::Result<()> {
+    fn test_source_tcp() -> crate::api::error::Result<()> {
         let port = ephemeral_port();
         let options = OptionsBuilder::default()
             .add("PROTOCOL", "TCP")
@@ -165,19 +163,22 @@ mod tests {
 
         let mut writer = tcp_writer(port);
 
-        writer
-            .send_row(SinkRow::fx_city_temperature_tokyo())
-            .unwrap();
-        writer
-            .send_row(SinkRow::fx_city_temperature_osaka())
-            .unwrap();
-        writer
-            .send_row(SinkRow::fx_city_temperature_london())
-            .unwrap();
+        writer.send_row(Row::fx_city_temperature_tokyo()).unwrap();
+        writer.send_row(Row::fx_city_temperature_osaka()).unwrap();
+        writer.send_row(Row::fx_city_temperature_london()).unwrap();
 
-        assert_eq!(reader.next_row()?, SourceRow::fx_city_temperature_tokyo());
-        assert_eq!(reader.next_row()?, SourceRow::fx_city_temperature_osaka());
-        assert_eq!(reader.next_row()?, SourceRow::fx_city_temperature_london());
+        assert_eq!(
+            reader.next_row()?,
+            SourceRow::Json(JsonSourceRow::fx_city_temperature_tokyo())
+        );
+        assert_eq!(
+            reader.next_row()?,
+            SourceRow::Json(JsonSourceRow::fx_city_temperature_osaka())
+        );
+        assert_eq!(
+            reader.next_row()?,
+            SourceRow::Json(JsonSourceRow::fx_city_temperature_london())
+        );
         assert!(matches!(
             reader.next_row().unwrap_err(),
             SpringError::ForeignSourceTimeout { .. }

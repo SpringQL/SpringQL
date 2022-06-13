@@ -58,41 +58,33 @@
 mod select_syntax_analyzer;
 
 use crate::{
-    error::Result,
-    expr_resolver::{expr_label::ExprLabel, ExprResolver},
+    api::error::Result,
+    expr_resolver::{ExprLabel, ExprResolver},
     pipeline::{
-        pump_model::{
-            window_operation_parameter::{
-                aggregate::{AggregateParameter, GroupByLabels},
-                WindowOperationParameter,
-            },
-            window_parameter::WindowParameter,
-        },
-        Pipeline,
+        AggregateParameter, GroupByLabels, Pipeline, WindowOperationParameter, WindowParameter,
     },
-    stream_engine::command::query_plan::{
-        query_plan_operation::{GroupAggregateWindowOp, JoinOp, LowerOps, ProjectionOp, UpperOps},
-        QueryPlan,
+    sql_processor::{
+        query_planner::select_syntax_analyzer::SelectSyntaxAnalyzer,
+        sql_parser::{GroupingElementSyntax, SelectStreamSyntax},
+    },
+    stream_engine::command::{
+        GroupAggregateWindowOp, JoinOp, LowerOps, ProjectionOp, QueryPlan, UpperOps,
     },
 };
 
-use self::select_syntax_analyzer::SelectSyntaxAnalyzer;
-
-use super::sql_parser::syntax::{GroupingElementSyntax, SelectStreamSyntax};
-
 #[derive(Debug)]
-pub(crate) struct QueryPlanner {
+pub struct QueryPlanner {
     analyzer: SelectSyntaxAnalyzer,
 }
 
 impl QueryPlanner {
-    pub(in crate::sql_processor) fn new(select_stream_syntax: SelectStreamSyntax) -> Self {
+    pub fn new(select_stream_syntax: SelectStreamSyntax) -> Self {
         Self {
             analyzer: SelectSyntaxAnalyzer::new(select_stream_syntax),
         }
     }
 
-    pub(crate) fn plan(self, pipeline: &Pipeline) -> Result<QueryPlan> {
+    pub fn plan(self, pipeline: &Pipeline) -> Result<QueryPlan> {
         let (mut expr_resolver, labels_select_list) =
             ExprResolver::new(self.analyzer.select_list().to_vec());
         let projection = ProjectionOp {

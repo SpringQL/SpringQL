@@ -2,15 +2,12 @@
 
 use crate::stream_engine::autonomous_executor::{
     performance_metrics::PerformanceMetrics,
-    task_executor::scheduler::{
-        flow_efficient_scheduler::FlowEfficientScheduler,
-        memory_reducing_scheduler::MemoryReducingScheduler, Scheduler,
-    },
-    task_graph::{task_id::TaskId, TaskGraph},
+    task_executor::scheduler::{FlowEfficientScheduler, MemoryReducingScheduler, Scheduler},
+    task_graph::{TaskGraph, TaskId},
 };
 
 #[derive(Debug)]
-pub(in crate::stream_engine::autonomous_executor) enum GenericWorkerScheduler {
+pub enum GenericWorkerScheduler {
     FlowEfficient(FlowEfficientScheduler),
     MemoryReducing(MemoryReducingScheduler),
 }
@@ -22,10 +19,10 @@ impl Default for GenericWorkerScheduler {
 }
 
 impl GenericWorkerScheduler {
-    pub(in crate::stream_engine::autonomous_executor) fn flow_efficient_scheduler() -> Self {
+    pub fn flow_efficient_scheduler() -> Self {
         Self::FlowEfficient(FlowEfficientScheduler::default())
     }
-    pub(in crate::stream_engine::autonomous_executor) fn memory_reducing_scheduler() -> Self {
+    pub fn memory_reducing_scheduler() -> Self {
         Self::MemoryReducing(MemoryReducingScheduler::default())
     }
 }

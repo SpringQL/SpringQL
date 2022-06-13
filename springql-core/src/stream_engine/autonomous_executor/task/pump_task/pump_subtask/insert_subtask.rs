@@ -2,20 +2,22 @@
 
 use std::sync::Arc;
 
-use crate::mem_size::MemSize;
-use crate::pipeline::name::ColumnName;
-use crate::pipeline::pipeline_graph::PipelineGraph;
-use crate::pipeline::stream_model::StreamModel;
-use crate::stream_engine::autonomous_executor::performance_metrics::metrics_update_command::metrics_update_by_task_execution::OutQueueMetricsUpdateByTask;
-use crate::stream_engine::autonomous_executor::row::Row;
-use crate::stream_engine::autonomous_executor::task::task_context::TaskContext;
-use crate::stream_engine::autonomous_executor::task_graph::queue_id::QueueId;
-use crate::stream_engine::command::insert_plan::InsertPlan;
-
-use super::query_subtask::SqlValues;
+use crate::{
+    mem_size::MemSize,
+    pipeline::{ColumnName, PipelineGraph, StreamModel},
+    stream_engine::{
+        autonomous_executor::{
+            performance_metrics::OutQueueMetricsUpdateByTask,
+            row::Row,
+            task::{pump_task::pump_subtask::query_subtask::SqlValues, task_context::TaskContext},
+            task_graph::QueueId,
+        },
+        command::InsertPlan,
+    },
+};
 
 #[derive(Debug)]
-pub(in crate::stream_engine::autonomous_executor) struct InsertSubtask {
+pub struct InsertSubtask {
     into_stream: Arc<StreamModel>,
 
     /// INSERT INTO stream (c2, c3, c1) -- this one!
@@ -23,19 +25,15 @@ pub(in crate::stream_engine::autonomous_executor) struct InsertSubtask {
 }
 
 #[derive(Debug, new)]
-pub(in crate::stream_engine::autonomous_executor) struct InsertSubtaskOut {
-    pub(in crate::stream_engine::autonomous_executor) out_queues_metrics_update:
-        Vec<OutQueueMetricsUpdateByTask>,
+pub struct InsertSubtaskOut {
+    pub out_queues_metrics_update: Vec<OutQueueMetricsUpdateByTask>,
 }
 
 impl InsertSubtask {
     /// # Panics
     ///
     /// `plan` has invalid stream name
-    pub(in crate::stream_engine::autonomous_executor) fn new(
-        plan: &InsertPlan,
-        pipeline_graph: &PipelineGraph,
-    ) -> Self {
+    pub fn new(plan: &InsertPlan, pipeline_graph: &PipelineGraph) -> Self {
         let into_stream = pipeline_graph
             .get_stream(plan.stream())
             .expect("plan has invalid stream name");
@@ -45,11 +43,7 @@ impl InsertSubtask {
         }
     }
 
-    pub(in crate::stream_engine::autonomous_executor) fn run(
-        &self,
-        values_seq: Vec<SqlValues>,
-        context: &TaskContext,
-    ) -> InsertSubtaskOut {
+    pub fn run(&self, values_seq: Vec<SqlValues>, context: &TaskContext) -> InsertSubtaskOut {
         if values_seq.is_empty() {
             InsertSubtaskOut::new(vec![])
         } else {

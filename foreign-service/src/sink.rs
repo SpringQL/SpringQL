@@ -1,11 +1,14 @@
 // This file is part of https://github.com/SpringQL/SpringQL which is licensed under MIT OR Apache-2.0. See file LICENSE-MIT or LICENSE-APACHE for full license details.
 
+use std::{
+    io::{BufRead, BufReader},
+    net::{IpAddr, Shutdown, SocketAddr, TcpListener, TcpStream},
+    sync::mpsc,
+    thread,
+    time::Duration,
+};
+
 use anyhow::Result;
-use std::io::{BufRead, BufReader};
-use std::net::{IpAddr, Shutdown, SocketAddr, TcpListener, TcpStream};
-use std::sync::mpsc;
-use std::thread;
-use std::time::Duration;
 
 /// TCP server to receive JSON text, and returns serialized one.
 pub struct ForeignSink {

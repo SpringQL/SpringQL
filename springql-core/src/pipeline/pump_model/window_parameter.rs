@@ -1,10 +1,10 @@
 // This file is part of https://github.com/SpringQL/SpringQL which is licensed under MIT OR Apache-2.0. See file LICENSE-MIT or LICENSE-APACHE for full license details.
 
-use crate::stream_engine::time::duration::event_duration::SpringEventDuration;
+use crate::stream_engine::time::SpringEventDuration;
 
 /// Window parameters
 #[derive(Clone, Eq, PartialEq, Debug)]
-pub(crate) enum WindowParameter {
+pub enum WindowParameter {
     /// Time-based sliding window
     ///
     /// ```text
@@ -42,21 +42,21 @@ pub(crate) enum WindowParameter {
 }
 
 impl WindowParameter {
-    pub(crate) fn length(&self) -> SpringEventDuration {
+    pub fn length(&self) -> SpringEventDuration {
         match self {
             WindowParameter::TimedSlidingWindow { length, .. } => *length,
             WindowParameter::TimedFixedWindow { length, .. } => *length,
         }
     }
 
-    pub(crate) fn period(&self) -> SpringEventDuration {
+    pub fn period(&self) -> SpringEventDuration {
         match self {
             WindowParameter::TimedSlidingWindow { period, .. } => *period,
             WindowParameter::TimedFixedWindow { length, .. } => *length,
         }
     }
 
-    pub(crate) fn allowed_delay(&self) -> SpringEventDuration {
+    pub fn allowed_delay(&self) -> SpringEventDuration {
         match self {
             WindowParameter::TimedSlidingWindow { allowed_delay, .. } => *allowed_delay,
             WindowParameter::TimedFixedWindow { allowed_delay, .. } => *allowed_delay,

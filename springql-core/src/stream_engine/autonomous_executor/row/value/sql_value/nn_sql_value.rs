@@ -1,26 +1,33 @@
 // This file is part of https://github.com/SpringQL/SpringQL which is licensed under MIT OR Apache-2.0. See file LICENSE-MIT or LICENSE-APACHE for full license details.
 
-use std::mem::size_of;
-use std::ops::{Add, Mul};
-use std::{fmt::Display, hash::Hash};
+use std::{
+    fmt::Display,
+    hash::Hash,
+    mem::size_of,
+    ops::{Add, Mul},
+};
 
-use super::sql_compare_result::SqlCompareResult;
-use crate::error::{Result, SpringError};
-use crate::mem_size::MemSize;
-use crate::pipeline::relation::sql_type::{
-    self, NumericComparableType, SqlType, StringComparableLoseType,
-};
-use crate::stream_engine::autonomous_executor::row::value::sql_convertible::{
-    SpringValue, ToNnSqlValue,
-};
-use crate::stream_engine::time::duration::event_duration::SpringEventDuration;
-use crate::stream_engine::time::timestamp::SpringTimestamp;
 use anyhow::anyhow;
 use ordered_float::OrderedFloat;
 
+use crate::{
+    api::error::{Result, SpringError},
+    mem_size::MemSize,
+    pipeline::{
+        F32LooseType, I64LooseType, NumericComparableType, SqlType, StringComparableLoseType,
+    },
+    stream_engine::{
+        autonomous_executor::row::value::{
+            sql_convertible::ToNnSqlValue, sql_value::sql_compare_result::SqlCompareResult,
+        },
+        time::{SpringEventDuration, SpringTimestamp},
+        SpringValue,
+    },
+};
+
 /// NOT NULL value.
 #[derive(Clone, Debug)]
-pub(crate) enum NnSqlValue {
+pub enum NnSqlValue {
     /// SMALLINT
     SmallInt(i16),
     /// INTEGER
@@ -152,7 +159,7 @@ impl NnSqlValue {
     ///
     /// # Failures
     ///
-    /// - [SpringError::Sql](crate::error::SpringError::Sql) when:
+    /// - `SpringError::Sql` when:
     ///   - Any value of `T` cannot be typed as this SqlValue's SqlType (E.g. `T = i64`, `SqlType = SmallInt`).
     pub fn unpack<T>(&self) -> Result<T>
     where
@@ -171,7 +178,7 @@ impl NnSqlValue {
     }
 
     /// SqlType of this value
-    pub(crate) fn sql_type(&self) -> SqlType {
+    pub fn sql_type(&self) -> SqlType {
         match self {
             NnSqlValue::SmallInt(_) => SqlType::small_int(),
             NnSqlValue::Integer(_) => SqlType::integer(),
@@ -192,26 +199,18 @@ impl NnSqlValue {
     ///
     /// # Failures
     ///
-    /// - [SpringError::Sql](crate::error::SpringError::Sql) when:
+    /// - `SpringError::Sql` when:
     ///   - Value cannot be converted to `typ`.
-    pub(crate) fn try_convert(&self, typ: &SqlType) -> Result<NnSqlValue> {
+    pub fn try_convert(&self, typ: &SqlType) -> Result<NnSqlValue> {
         match typ {
             SqlType::NumericComparable(n) => match n {
                 NumericComparableType::I64Loose(i) => match i {
-                    sql_type::I64LooseType::SmallInt => {
-                        self.unpack::<i16>().map(|v| v.into_sql_value())
-                    }
-                    sql_type::I64LooseType::Integer => {
-                        self.unpack::<i32>().map(|v| v.into_sql_value())
-                    }
-                    sql_type::I64LooseType::BigInt => {
-                        self.unpack::<i64>().map(|v| v.into_sql_value())
-                    }
+                    I64LooseType::SmallInt => self.unpack::<i16>().map(|v| v.into_sql_value()),
+                    I64LooseType::Integer => self.unpack::<i32>().map(|v| v.into_sql_value()),
+                    I64LooseType::BigInt => self.unpack::<i64>().map(|v| v.into_sql_value()),
                 },
                 NumericComparableType::F32Loose(f) => match f {
-                    sql_type::F32LooseType::Float => {
-                        self.unpack::<f32>().map(|v| v.into_sql_value())
-                    }
+                    F32LooseType::Float => self.unpack::<f32>().map(|v| v.into_sql_value()),
                 },
             },
             SqlType::StringComparableLoose(s) => match s {
@@ -220,14 +219,16 @@ impl NnSqlValue {
                 }
             },
             SqlType::BooleanComparable => self.unpack::<bool>().map(|v| v.into_sql_value()),
-            SqlType::TimestampComparable => self.unpack::<SpringTimestamp>().map(|v| v.into_sql_value()),
-            SqlType::DurationComparable => {
-                self.unpack::<SpringEventDuration>().map(|v| v.into_sql_value())
+            SqlType::TimestampComparable => {
+                self.unpack::<SpringTimestamp>().map(|v| v.into_sql_value())
             }
+            SqlType::DurationComparable => self
+                .unpack::<SpringEventDuration>()
+                .map(|v| v.into_sql_value()),
         }
     }
 
-    pub(super) fn sql_compare(&self, other: &Self) -> Result<SqlCompareResult> {
+    pub fn sql_compare(&self, other: &Self) -> Result<SqlCompareResult> {
         match (self.sql_type(), other.sql_type()) {
             (SqlType::NumericComparable(ref self_n), SqlType::NumericComparable(ref other_n)) => {
                 match (self_n, other_n) {
@@ -260,7 +261,10 @@ impl NnSqlValue {
                 Ok(SqlCompareResult::from(self_b.cmp(&other_b)))
             }
             (SqlType::TimestampComparable, SqlType::TimestampComparable) => {
-                let (self_t, other_t) = (self.unpack::<SpringTimestamp>()?, other.unpack::<SpringTimestamp>()?);
+                let (self_t, other_t) = (
+                    self.unpack::<SpringTimestamp>()?,
+                    other.unpack::<SpringTimestamp>()?,
+                );
                 Ok(SqlCompareResult::from(self_t.cmp(&other_t)))
             }
             (_, _) => Err(SpringError::Sql(anyhow!(
@@ -275,7 +279,7 @@ impl NnSqlValue {
     ///
     /// - `SpringError::Sql` when:
     ///   - inner value cannot negate
-    pub(crate) fn negate(self) -> Result<Self> {
+    pub fn negate(self) -> Result<Self> {
         match self {
             NnSqlValue::SmallInt(v) => Ok(Self::SmallInt(-v)),
             NnSqlValue::Integer(v) => Ok(Self::Integer(-v)),

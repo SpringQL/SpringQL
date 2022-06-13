@@ -1,53 +1,56 @@
 // This file is part of https://github.com/SpringQL/SpringQL which is licensed under MIT OR Apache-2.0. See file LICENSE-MIT or LICENSE-APACHE for full license details.
 
+mod json_source_row;
+mod source_row_format;
+
+pub use json_source_row::JsonSourceRow;
+pub use source_row_format::SourceRowFormat;
+
 use std::sync::Arc;
 
-use crate::{
-    error::Result,
-    pipeline::stream_model::StreamModel,
-    stream_engine::autonomous_executor::row::{column::stream_column::StreamColumns, Row},
-};
+use anyhow::Context;
 
-use super::format::json::JsonObject;
+use crate::{
+    api::{error::Result, SpringError},
+    pipeline::StreamModel,
+    stream_engine::Row,
+};
 
 /// Input row from foreign sources (retrieved from SourceReader).
 ///
-/// Immediately converted into Row on stream-engine boundary.
+/// Immediately converted into `Row` on stream-engine boundary.
 #[derive(Eq, PartialEq, Debug)]
-pub(in crate::stream_engine) struct SourceRow(JsonObject);
+pub enum SourceRow {
+    Json(JsonSourceRow),
+}
 
 impl SourceRow {
-    pub(in crate::stream_engine) fn from_json(json: JsonObject) -> Self {
-        Self(json)
+    /// # Failure
+    ///
+    /// - `SpringError::InvalidFormat` when:
+    ///   - `bytes` cannot be parsed as the `format`
+    pub fn from_bytes(format: SourceRowFormat, bytes: &[u8]) -> Result<Self> {
+        match format {
+            SourceRowFormat::Json => {
+                let json_s = std::str::from_utf8(bytes)
+                    .context("failed to parse bytes into UTF-8")
+                    .map_err(|e| SpringError::InvalidFormat {
+                        s: "(binary data)".to_string(),
+                        source: e,
+                    })?;
+                let json_source_row = JsonSourceRow::parse(json_s)?;
+                Ok(Self::Json(json_source_row))
+            }
+        }
     }
 
     /// # Failure
     ///
-    /// - [SpringError::InvalidFormat](crate::error::SpringError::InvalidFormat) when:
-    ///   - This input row cannot be converted into row.
-    pub(in crate::stream_engine::autonomous_executor) fn into_row(
-        self,
-        stream_model: Arc<StreamModel>,
-    ) -> Result<Row> {
-        // SourceRow -> JsonObject -> HashMap<ColumnName, SqlValue> -> StreamColumns -> Row
-
-        let column_values = self.0.into_column_values()?;
-        let stream_columns = StreamColumns::new(stream_model, column_values)?;
-        Ok(Row::new(stream_columns))
-    }
-}
-
-#[cfg(test)]
-mod tests {
-
-    use super::*;
-
-    #[test]
-    fn test_json_into_row() {
-        let stream = Arc::new(StreamModel::fx_city_temperature());
-
-        let fr = SourceRow::fx_city_temperature_tokyo();
-        let r = Row::fx_city_temperature_tokyo();
-        assert_eq!(fr.into_row(stream).unwrap(), r);
+    /// - `SpringError::InvalidFormat` when:
+    ///   - This source row cannot be converted into row.
+    pub fn into_row(self, stream_model: Arc<StreamModel>) -> Result<Row> {
+        match self {
+            SourceRow::Json(json_source_row) => json_source_row.into_row(stream_model),
+        }
     }
 }

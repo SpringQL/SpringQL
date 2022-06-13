@@ -3,28 +3,18 @@
 use serde_json::json;
 
 use crate::stream_engine::autonomous_executor::{
-    performance_metrics::{
-        queue_metrics::{
-            row_queue_metrics::RowQueueMetrics, window_queue_metrics::WindowQueueMetrics,
-        },
-        task_metrics::TaskMetrics,
-        PerformanceMetrics,
-    },
-    task_graph::{
-        queue_id::{row_queue_id::RowQueueId, window_queue_id::WindowQueueId},
-        task_id::TaskId,
-        TaskGraph,
-    },
+    performance_metrics::{PerformanceMetrics, RowQueueMetrics, TaskMetrics, WindowQueueMetrics},
+    task_graph::{RowQueueId, TaskGraph, TaskId, WindowQueueId},
 };
 
 #[derive(Clone, PartialEq, Debug)]
-pub(super) struct WebConsoleRequest {
+pub struct WebConsoleRequest {
     tasks: Vec<TaskRequest>,
     queues: Vec<QueueRequest>,
 }
 
 impl WebConsoleRequest {
-    pub(super) fn from_metrics(metrics: &PerformanceMetrics, graph: &TaskGraph) -> Self {
+    pub fn from_metrics(metrics: &PerformanceMetrics, graph: &TaskGraph) -> Self {
         let tasks = metrics
             .get_tasks()
             .iter()
@@ -48,7 +38,7 @@ impl WebConsoleRequest {
 }
 
 impl WebConsoleRequest {
-    pub(super) fn to_json(&self) -> serde_json::Value {
+    pub fn to_json(&self) -> serde_json::Value {
         json!(
             {
                 "tasks": self.tasks.iter().map(TaskRequest::to_json).collect::<Vec<_>>(),
@@ -185,7 +175,7 @@ impl QueueInnerRequest {
 
 #[cfg(test)]
 mod tests {
-    use crate::pipeline::pipeline_version::PipelineVersion;
+    use crate::pipeline::PipelineVersion;
 
     use super::*;
     use pretty_assertions::assert_eq;

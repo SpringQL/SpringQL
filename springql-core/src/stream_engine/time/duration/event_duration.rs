@@ -7,9 +7,7 @@ use std::{
     time::Duration,
 };
 
-use crate::mem_size::MemSize;
-
-use super::SpringDuration;
+use crate::{mem_size::MemSize, stream_engine::time::duration::SpringDuration};
 
 /// Event-time duration.
 #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]

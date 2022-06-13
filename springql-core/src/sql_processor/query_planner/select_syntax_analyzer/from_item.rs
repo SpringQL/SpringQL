@@ -1,20 +1,18 @@
 // This file is part of https://github.com/SpringQL/SpringQL which is licensed under MIT OR Apache-2.0. See file LICENSE-MIT or LICENSE-APACHE for full license details.
 
-use super::SelectSyntaxAnalyzer;
 use crate::{
-    error::Result,
+    api::error::Result,
     expr_resolver::ExprResolver,
-    pipeline::{pump_model::window_operation_parameter::join_parameter::JoinParameter, Pipeline},
-    sql_processor::sql_parser::syntax::{FromItemSyntax, SubFromItemSyntax},
-    stream_engine::command::query_plan::query_plan_operation::{CollectOp, JoinOp, JoinWindowOp},
+    pipeline::{JoinParameter, Pipeline},
+    sql_processor::{
+        query_planner::SelectSyntaxAnalyzer,
+        sql_parser::{FromItemSyntax, SubFromItemSyntax},
+    },
+    stream_engine::command::{CollectOp, JoinOp, JoinWindowOp},
 };
 
 impl SelectSyntaxAnalyzer {
-    pub(in super::super) fn join_op(
-        &self,
-        expr_resolver: &mut ExprResolver,
-        pipeline: &Pipeline,
-    ) -> Result<JoinOp> {
+    pub fn join_op(&self, expr_resolver: &mut ExprResolver, pipeline: &Pipeline) -> Result<JoinOp> {
         match self.select_syntax.from_item.clone() {
             FromItemSyntax::StreamVariant(sub_from_item) => {
                 let collect_op = Self::sub_from_item_to_collect_op(sub_from_item);

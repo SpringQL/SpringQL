@@ -2,7 +2,7 @@
 
 #[allow(clippy::upper_case_acronyms)]
 #[derive(Clone, Eq, PartialEq, Debug)]
-pub(crate) enum SourceReaderType {
+pub enum SourceReaderType {
     NetClient,
     NetServer,
     CAN,

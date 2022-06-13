@@ -2,30 +2,29 @@
 
 //! Timestamp.
 
-pub(crate) mod system_timestamp;
-
-use anyhow::Context;
-use chrono::{naive::MIN_DATETIME, DateTime, Duration, NaiveDateTime};
-use serde::{Deserialize, Serialize};
+mod system_timestamp;
+pub use system_timestamp::SystemTimestamp;
 
 use std::{
     ops::{Add, Sub},
     str::FromStr,
 };
 
+use anyhow::Context;
+use serde::{Deserialize, Serialize};
+
 use crate::{
-    error::{Result, SpringError},
+    api::error::{Result, SpringError},
     mem_size::{chrono_naive_date_time_overhead_size, MemSize},
+    time::{DateTime, Duration, NaiveDateTime, MIN_DATETIME},
 };
 
 /// The minimum possible `Timestamp`.
-pub(crate) const MIN_TIMESTAMP: SpringTimestamp = SpringTimestamp(MIN_DATETIME);
-
-const FORMAT: &str = "%Y-%m-%d %H:%M:%S%.9f";
+pub const MIN_TIMESTAMP: SpringTimestamp = SpringTimestamp(MIN_DATETIME);
 
 /// Timestamp in UTC. Serializable.
 #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Serialize, Deserialize, new)]
-pub struct SpringTimestamp(#[serde(with = "datetime_format")] NaiveDateTime);
+pub struct SpringTimestamp(NaiveDateTime);
 
 impl MemSize for SpringTimestamp {
     fn mem_size(&self) -> usize {
@@ -35,7 +34,7 @@ impl MemSize for SpringTimestamp {
 
 impl SpringTimestamp {
     /// Note: `2262-04-11T23:47:16.854775804` is the maximum possible timestamp because it uses nano-sec unixtime internally.
-    pub(crate) fn floor(&self, resolution: Duration) -> SpringTimestamp {
+    pub fn floor(&self, resolution: Duration) -> SpringTimestamp {
         let ts_nano = self.0.timestamp_nanos();
         let resolution_nano = resolution.num_nanoseconds().expect("no overflow");
         assert!(resolution_nano > 0);
@@ -52,7 +51,7 @@ impl SpringTimestamp {
     }
 
     /// Note: `2262-04-11T23:47:16.854775804` is the maximum possible timestamp because it uses nano-sec unixtime internally.
-    pub(crate) fn ceil(&self, resolution: Duration) -> SpringTimestamp {
+    pub fn ceil(&self, resolution: Duration) -> SpringTimestamp {
         let floor = self.floor(resolution);
         if &floor == self {
             floor
@@ -62,7 +61,7 @@ impl SpringTimestamp {
     }
 
     fn try_parse_original(s: &str) -> Result<Self> {
-        let ndt = NaiveDateTime::parse_from_str(s, FORMAT)
+        let ndt = NaiveDateTime::parse_from_str(s)
             .with_context(|| format!("failed to parse timestamp: {}", s))
             .map_err(|e| SpringError::InvalidFormat {
                 s: s.to_string(),
@@ -92,7 +91,7 @@ impl FromStr for SpringTimestamp {
 
 impl ToString for SpringTimestamp {
     fn to_string(&self) -> String {
-        self.0.format(FORMAT).to_string()
+        self.0.format()
     }
 }
 
@@ -119,33 +118,10 @@ impl Sub<SpringTimestamp> for SpringTimestamp {
     }
 }
 
-/// See: <https://serde.rs/custom-date-format.html>
-mod datetime_format {
-    use super::FORMAT;
-    use chrono::NaiveDateTime;
-    use serde::{self, Deserialize, Deserializer, Serializer};
-
-    pub fn serialize<S>(date: &NaiveDateTime, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        let s = format!("{}", date.format(FORMAT));
-        serializer.serialize_str(&s)
-    }
-
-    pub fn deserialize<'de, D>(deserializer: D) -> Result<NaiveDateTime, D::Error>
-    where
-        D: Deserializer<'de>,
-    {
-        let s = String::deserialize(deserializer)?;
-        NaiveDateTime::parse_from_str(&s, FORMAT).map_err(serde::de::Error::custom)
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::error::Result;
+    use crate::api::error::Result;
     use pretty_assertions::assert_eq;
 
     #[test]

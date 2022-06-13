@@ -1,19 +1,18 @@
 // This file is part of https://github.com/SpringQL/SpringQL which is licensed under MIT OR Apache-2.0. See file LICENSE-MIT or LICENSE-APACHE for full license details.
 
-use crate::error::Result;
-use crate::low_level_rs::SpringSourceReaderConfig;
-use crate::pipeline::option::Options;
-use crate::pipeline::source_reader_model::source_reader_type::SourceReaderType;
-use crate::stream_engine::autonomous_executor::task::source_task::source_reader::can::CANSourceReader;
-use crate::stream_engine::autonomous_executor::task::source_task::source_reader::SourceReader;
+use crate::{
+    api::{error::Result, SpringSourceReaderConfig},
+    pipeline::{Options, SourceReaderType},
+    stream_engine::autonomous_executor::task::source_task::source_reader::{
+        can::CANSourceReader, net_client::NetClientSourceReader, net_server::NetServerSourceReader,
+        SourceReader,
+    },
+};
 
-use super::net_client::NetClientSourceReader;
-use super::net_server::NetServerSourceReader;
-
-pub(in crate::stream_engine::autonomous_executor) struct SourceReaderFactory;
+pub struct SourceReaderFactory;
 
 impl SourceReaderFactory {
-    pub(in crate::stream_engine::autonomous_executor) fn source(
+    pub fn source(
         source_reader_type: &SourceReaderType,
         options: &Options,
         config: &SpringSourceReaderConfig,

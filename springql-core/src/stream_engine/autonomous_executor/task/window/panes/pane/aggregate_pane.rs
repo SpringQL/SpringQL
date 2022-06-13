@@ -7,28 +7,29 @@ use std::collections::HashMap;
 use ordered_float::OrderedFloat;
 
 use crate::{
-    error::Result,
+    api::error::Result,
     expr_resolver::ExprResolver,
-    pipeline::pump_model::window_operation_parameter::{
-        aggregate::{AggregateFunctionParameter, AggregateParameter, GroupByLabels},
-        WindowOperationParameter,
+    pipeline::{
+        AggregateFunctionParameter, AggregateParameter, GroupByLabels, WindowOperationParameter,
     },
     stream_engine::{
         autonomous_executor::{
-            performance_metrics::metrics_update_command::metrics_update_by_task_execution::WindowInFlowByWindowTask,
-            task::{tuple::Tuple, window::aggregate::AggregatedAndGroupingValues},
+            performance_metrics::WindowInFlowByWindowTask,
+            task::{
+                tuple::Tuple,
+                window::{
+                    aggregate::AggregatedAndGroupingValues,
+                    panes::pane::{aggregate_pane::aggregate_state::AvgState, Pane},
+                },
+            },
         },
-        time::timestamp::SpringTimestamp,
+        time::SpringTimestamp,
         NnSqlValue, SqlValue,
     },
 };
 
-use self::aggregate_state::AvgState;
-
-use super::Pane;
-
 #[derive(Debug)]
-pub(in crate::stream_engine::autonomous_executor) struct AggrPane {
+pub struct AggrPane {
     open_at: SpringTimestamp,
     close_at: SpringTimestamp,
 
@@ -150,14 +151,14 @@ impl Pane for AggrPane {
 }
 
 #[derive(Debug)]
-pub(in crate::stream_engine::autonomous_executor) enum AggrPaneInner {
+pub enum AggrPaneInner {
     Avg {
         states: HashMap<GroupByValues, AvgState>,
     },
 }
 
 #[derive(Clone, PartialEq, Eq, Hash, Debug)]
-pub(in crate::stream_engine::autonomous_executor) struct GroupByValues(
+pub struct GroupByValues(
     /// TODO support NULL in GROUP BY elements
     Vec<NnSqlValue>,
 );
@@ -186,7 +187,7 @@ impl GroupByValues {
         Ok(Self(values))
     }
 
-    pub(in crate::stream_engine::autonomous_executor) fn into_sql_values(self) -> Vec<SqlValue> {
+    pub fn into_sql_values(self) -> Vec<SqlValue> {
         self.0.into_iter().map(SqlValue::NotNull).collect()
     }
 }

@@ -4,11 +4,11 @@ mod test_support;
 
 use pretty_assertions::assert_eq;
 use serde_json::json;
-use springql_core::error::Result;
-use springql_core::low_level_rs::*;
-use springql_foreign_service::sink::ForeignSink;
-use springql_foreign_service::source::source_input::ForeignSourceInput;
-use springql_foreign_service::source::ForeignSource;
+use springql_core::api::{error::Result, *};
+use springql_foreign_service::{
+    sink::ForeignSink,
+    source::{ForeignSource, ForeignSourceInput},
+};
 use springql_test_logger::setup_test_logger;
 
 use crate::test_support::*;
@@ -44,7 +44,7 @@ fn run_and_drain(
     test_source: ForeignSource,
     test_sink: &ForeignSink,
 ) -> Vec<serde_json::Value> {
-    let _pipeline = apply_ddls(ddls, spring_config_default());
+    let _pipeline = apply_ddls(ddls, SpringConfig::default());
     test_source.start(source_input);
     drain_from_sink(test_sink)
 }

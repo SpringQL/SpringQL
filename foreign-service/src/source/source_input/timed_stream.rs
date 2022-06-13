@@ -5,10 +5,14 @@ pub mod file_type;
 mod file_parser;
 mod timer;
 
-use self::{file_parser::FileParser, file_type::FileType, timer::Timer};
+use std::{path::Path, thread, time::Duration};
+
 use anyhow::{Context, Result};
 use chrono::{DateTime, FixedOffset};
-use std::{path::Path, thread, time::Duration};
+
+use crate::source::source_input::timed_stream::{
+    file_parser::FileParser, file_type::FileType, timer::Timer,
+};
 
 const SLEEP_DURATION: Duration = Duration::from_micros(10);
 

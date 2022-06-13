@@ -1,26 +1,32 @@
 // This file is part of https://github.com/SpringQL/SpringQL which is licensed under MIT OR Apache-2.0. See file LICENSE-MIT or LICENSE-APACHE for full license details.
 
+mod aggregate_pane;
+mod join_pane;
+
+pub use aggregate_pane::{AggrPane, AggrPaneInner, GroupByValues};
+pub use join_pane::{JoinDir, JoinPane};
+
 use crate::{
     expr_resolver::ExprResolver,
-    pipeline::pump_model::window_operation_parameter::WindowOperationParameter,
+    pipeline::WindowOperationParameter,
     stream_engine::{
         autonomous_executor::{
-            performance_metrics::metrics_update_command::metrics_update_by_task_execution::WindowInFlowByWindowTask,
-            task::window::watermark::Watermark,
+            performance_metrics::WindowInFlowByWindowTask, task::window::watermark::Watermark,
         },
-        time::timestamp::SpringTimestamp,
+        time::SpringTimestamp,
         Tuple,
     },
 };
 
-pub(in crate::stream_engine::autonomous_executor) mod aggregate_pane;
-pub(in crate::stream_engine::autonomous_executor) mod join_pane;
-
-pub(in crate::stream_engine::autonomous_executor) trait Pane {
+pub trait Pane {
     type CloseOut;
     type DispatchArg: Clone;
 
-    fn new(open_at: SpringTimestamp, close_at: SpringTimestamp, param: WindowOperationParameter) -> Self;
+    fn new(
+        open_at: SpringTimestamp,
+        close_at: SpringTimestamp,
+        param: WindowOperationParameter,
+    ) -> Self;
 
     fn open_at(&self) -> SpringTimestamp;
     fn close_at(&self) -> SpringTimestamp;

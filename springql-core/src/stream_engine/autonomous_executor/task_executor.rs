@@ -1,22 +1,29 @@
 // This file is part of https://github.com/SpringQL/SpringQL which is licensed under MIT OR Apache-2.0. See file LICENSE-MIT or LICENSE-APACHE for full license details.
 
-pub(in crate::stream_engine::autonomous_executor) mod task_executor_lock;
-pub(in crate::stream_engine::autonomous_executor) mod task_worker_thread_handler;
-
 mod generic_worker_pool;
 mod scheduler;
 mod source_worker_pool;
+mod task_executor_lock;
+mod task_worker_thread_handler;
 
-use crate::{error::Result, low_level_rs::SpringConfig};
+pub use task_executor_lock::{
+    TaskExecutionBarrierGuard, TaskExecutionLockGuard, TaskExecutorLock, TaskExecutorLockToken,
+};
+
 use std::sync::Arc;
 
-use self::{generic_worker_pool::GenericWorkerPool, source_worker_pool::SourceWorkerPool};
-use super::{
-    args::{Coordinators, EventQueues, Locks},
-    main_job_lock::MainJobBarrierGuard,
-    pipeline_derivatives::PipelineDerivatives,
-    repositories::Repositories,
-    task_graph::TaskGraph,
+use crate::{
+    api::{error::Result, SpringConfig},
+    stream_engine::autonomous_executor::{
+        args::{Coordinators, EventQueues, Locks},
+        main_job_lock::MainJobBarrierGuard,
+        pipeline_derivatives::PipelineDerivatives,
+        repositories::Repositories,
+        task_executor::{
+            generic_worker_pool::GenericWorkerPool, source_worker_pool::SourceWorkerPool,
+        },
+        task_graph::TaskGraph,
+    },
 };
 
 /// Task executor executes task graph's dataflow by internal worker threads.
@@ -24,7 +31,7 @@ use super::{
 ///
 /// All interface methods are called from main thread, while `new()` spawns worker threads.
 #[derive(Debug)]
-pub(in crate::stream_engine) struct TaskExecutor {
+pub struct TaskExecutor {
     repos: Arc<Repositories>,
 
     _generic_worker_pool: GenericWorkerPool,
@@ -32,7 +39,7 @@ pub(in crate::stream_engine) struct TaskExecutor {
 }
 
 impl TaskExecutor {
-    pub(in crate::stream_engine::autonomous_executor) fn new(
+    pub fn new(
         config: &SpringConfig,
         repos: Arc<Repositories>,
         locks: Locks,
@@ -60,7 +67,7 @@ impl TaskExecutor {
     }
 
     /// Update workers' internal current pipeline.
-    pub(in crate::stream_engine::autonomous_executor) fn update_pipeline(
+    pub fn update_pipeline(
         &self,
         _lock_guard: &MainJobBarrierGuard,
         pipeline_derivatives: Arc<PipelineDerivatives>,
@@ -85,11 +92,7 @@ impl TaskExecutor {
     }
 
     /// Stop all source tasks and executes pump tasks and sink tasks to finish all rows remaining in queues.
-    pub(in crate::stream_engine::autonomous_executor) fn cleanup(
-        &self,
-        _lock_guard: &MainJobBarrierGuard,
-        task_graph: &TaskGraph,
-    ) {
+    pub fn cleanup(&self, _lock_guard: &MainJobBarrierGuard, task_graph: &TaskGraph) {
         // TODO do not just remove rows in queues. Do the things in doc comment.
 
         self.repos

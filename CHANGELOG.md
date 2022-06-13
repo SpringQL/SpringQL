@@ -10,6 +10,41 @@ All other sections are for end-users.
 <!-- markdownlint-disable MD024 -->
 ## [Unreleased]
 
+### For developpers
+
+- Add deny lint option for `rustdoc::broken_intra_doc_links` ([#185](https://github.com/SpringQL/SpringQL/pull/185))
+- Refactor : Hide detail module structure ([#177](https://github.com/SpringQL/SpringQL/pull/177))
+  - Make private to internal modules
+  - When publishing members outside the module, we recommend re-export(`pub use`) rather than `pub(crate)`
+
+## [v0.12.0]
+
+### Changed
+
+- Remove `spring_config_default()` ([#182](https://github.com/SpringQL/SpringQL/pull/182))
+  - You may use `SpringConfig::default()` instead
+
+### Fixed
+
+- Fixed some broken links in rustdoc ([#183](https://github.com/SpringQL/SpringQL/pull/183))
+
+## [v0.11.0]
+
+### Changed
+
+- re organize public API ([#169](https://github.com/SpringQL/SpringQL/pull/169))
+  - public mod `api` and hide `high_level_rs`
+    - high level APIs are exported from `springql_core::api`
+  - remove low level API
+  - rename `SpringPipelineHL` to `SpringPipeline`
+  - rename `SpringRowHL` to `SpringRow`
+
+### For Developers
+
+- CI : add ignore for known deadlink ([#175](https://github.com/SpringQL/SpringQL/pull/157))
+- Temporally turn off the security advisory RUSTSEC-2020-0071 ([#174](https://github.com/SpringQL/SpringQL/pull/174))
+- Refactor : introduce wrapping to `chrono` types ([[#172](https://github.com/SpringQL/SpringQL/pull/172))
+
 ## [v0.10.0]
 
 ### Added
@@ -148,8 +183,10 @@ All other sections are for end-users.
 [Semantic Versioning]: https://semver.org/
 
 <!-- Versions -->
-[Unreleased]: https://github.com/SpringQL/SpringQL/compare/v0.10.0...HEAD
+[Unreleased]: https://github.com/SpringQL/SpringQL/compare/v0.12.0...HEAD
 [Released]: https://github.com/SpringQL/SpringQL/releases
+[v0.11.0]: https://github.com/SpringQL/SpringQL/compare/v0.11.0...v0.12.0
+[v0.11.0]: https://github.com/SpringQL/SpringQL/compare/v0.10.0...v0.11.0
 [v0.10.0]: https://github.com/SpringQL/SpringQL/compare/v0.9.0...v0.10.0
 [v0.9.0]: https://github.com/SpringQL/SpringQL/compare/v0.8.0...v0.9.0
 [v0.8.0]: https://github.com/SpringQL/SpringQL/compare/v0.7.1...v0.8.0

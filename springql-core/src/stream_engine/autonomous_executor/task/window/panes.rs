@@ -1,22 +1,21 @@
 // This file is part of https://github.com/SpringQL/SpringQL which is licensed under MIT OR Apache-2.0. See file LICENSE-MIT or LICENSE-APACHE for full license details.
 
-pub(in crate::stream_engine::autonomous_executor) mod pane;
+mod pane;
+
+pub use pane::{AggrPane, AggrPaneInner, GroupByValues, JoinDir, JoinPane, Pane};
 
 use std::cmp::Ordering;
 
 use crate::{
-    pipeline::pump_model::{
-        window_operation_parameter::WindowOperationParameter, window_parameter::WindowParameter,
+    pipeline::{WindowOperationParameter, WindowParameter},
+    stream_engine::{
+        autonomous_executor::task::window::watermark::Watermark,
+        time::{SpringDuration, SpringTimestamp},
     },
-    stream_engine::time::{duration::SpringDuration, timestamp::SpringTimestamp},
 };
 
-use self::pane::Pane;
-
-use super::watermark::Watermark;
-
 #[derive(Debug)]
-pub(in crate::stream_engine::autonomous_executor) struct Panes<P>
+pub struct Panes<P>
 where
     P: Pane,
 {
@@ -33,7 +32,7 @@ impl<P> Panes<P>
 where
     P: Pane,
 {
-    pub(super) fn new(window_param: WindowParameter, op_param: WindowOperationParameter) -> Self {
+    pub fn new(window_param: WindowParameter, op_param: WindowOperationParameter) -> Self {
         Self {
             panes: vec![],
             window_param,
@@ -45,10 +44,7 @@ where
     /// Then, return all panes to get a tuple with the `rowtime`.
     ///
     /// Caller must assure rowtime is not smaller than watermark.
-    pub(super) fn panes_to_dispatch(
-        &mut self,
-        rowtime: SpringTimestamp,
-    ) -> impl Iterator<Item = &mut P> {
+    pub fn panes_to_dispatch(&mut self, rowtime: SpringTimestamp) -> impl Iterator<Item = &mut P> {
         self.generate_panes_if_not_exist(rowtime);
 
         self.panes
@@ -56,7 +52,7 @@ where
             .filter(move |pane| pane.is_acceptable(&rowtime))
     }
 
-    pub(super) fn remove_panes_to_close(&mut self, watermark: &Watermark) -> Vec<P> {
+    pub fn remove_panes_to_close(&mut self, watermark: &Watermark) -> Vec<P> {
         let mut panes_to_close = vec![];
 
         let mut idx = 0;
@@ -74,7 +70,7 @@ where
         panes_to_close
     }
 
-    pub(super) fn purge(&mut self) {
+    pub fn purge(&mut self) {
         self.panes.clear()
     }
 
@@ -108,29 +104,29 @@ where
         let mut ret = vec![];
 
         let leftmost_open_at = {
-            let l = (rowtime - self.window_param.length().to_chrono())
-                .ceil(self.window_param.period().to_chrono());
+            let l = (rowtime - self.window_param.length().to_duration())
+                .ceil(self.window_param.period().to_duration());
 
             // edge case
-            if l == rowtime - self.window_param.length().to_chrono() {
-                l + self.window_param.period().to_chrono()
+            if l == rowtime - self.window_param.length().to_duration() {
+                l + self.window_param.period().to_duration()
             } else {
                 l
             }
         };
-        let rightmost_open_at = rowtime.floor(self.window_param.period().to_chrono());
+        let rightmost_open_at = rowtime.floor(self.window_param.period().to_duration());
 
         let mut open_at = leftmost_open_at;
         while open_at <= rightmost_open_at {
             ret.push(open_at);
-            open_at = open_at + self.window_param.period().to_chrono();
+            open_at = open_at + self.window_param.period().to_duration();
         }
 
         ret
     }
 
     fn generate_pane(&self, open_at: SpringTimestamp) -> P {
-        let close_at = open_at + self.window_param.length().to_chrono();
+        let close_at = open_at + self.window_param.length().to_duration();
         P::new(open_at, close_at, self.op_param.clone())
     }
 }
@@ -140,15 +136,13 @@ mod tests {
     use std::str::FromStr;
 
     use crate::{
-        expr_resolver::{expr_label::ExprLabel, ExprResolver},
+        expr_resolver::{ExprLabel, ExprResolver},
         expression::{AggrExpr, ValueExpr},
-        pipeline::pump_model::window_operation_parameter::aggregate::{
-            AggregateFunctionParameter, AggregateParameter, GroupByLabels,
-        },
-        sql_processor::sql_parser::syntax::SelectFieldSyntax,
+        pipeline::{AggregateFunctionParameter, AggregateParameter, GroupByLabels},
+        sql_processor::SelectFieldSyntax,
         stream_engine::{
-            autonomous_executor::task::window::panes::pane::aggregate_pane::AggrPane,
-            time::duration::event_duration::SpringEventDuration,
+            autonomous_executor::task::window::panes::pane::AggrPane,
+            time::{SpringDuration, SpringEventDuration},
         },
     };
 
