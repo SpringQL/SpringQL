@@ -1,0 +1,18 @@
+[package]
+name = "springql"
+version = "0.12.0"
+
+authors = ["Sho Nakatani <lay.sakura@gmail.com>"]
+license = "MIT OR Apache-2.0"
+
+edition = "2021"
+
+categories = ["embedded"]
+description = "SpringQL: Open-source stream processor for IoT devices and in-vehicle computers"
+documentation = "https://springql.github.io/"
+keywords = ["springql", "stream-processing"] # up to 5 keywords, each keyword should have <= 20 chars
+readme = "../README.md"
+repository = "https://github.com/SpringQL/SpringQL"
+
+[dependencies]
+springql-core = {path="../springql-core"}
