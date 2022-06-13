@@ -319,6 +319,7 @@ impl From<NnSqlValue> for serde_json::Value {
             NnSqlValue::Duration(_) => {
                 unimplemented!("never appear in stream definition (just an intermediate type)")
             }
+            NnSqlValue::Blob(_) => unimplemented!("cannot convert BLOB data into JSON"),
         }
     }
 }

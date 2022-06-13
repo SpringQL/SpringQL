@@ -2,11 +2,9 @@
 
 use crate::{
     api::error::Result,
-    stream_engine::{
-        autonomous_executor::row::value::{
-            sql_convertible::ToNnSqlValue, sql_value::nn_sql_value::NnSqlValue,
-        },
-        SpringValue,
+    stream_engine::autonomous_executor::row::value::{
+        sql_convertible::{SpringValue, ToNnSqlValue},
+        sql_value::NnSqlValue,
     },
 };
 
