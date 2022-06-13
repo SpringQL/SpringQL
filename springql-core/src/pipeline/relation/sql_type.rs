@@ -15,6 +15,9 @@ pub enum SqlType {
     /// String types
     StringComparableLoose(StringComparableLoseType),
 
+    /// Binary types
+    BinaryComparable,
+
     /// Boolean types
     BooleanComparable,
 
@@ -47,6 +50,11 @@ impl SqlType {
     /// Constructor of Text
     pub fn text() -> SqlType {
         SqlType::StringComparableLoose(StringComparableLoseType::Text)
+    }
+
+    /// Constructor of Blob
+    pub fn blob() -> SqlType {
+        SqlType::BinaryComparable
     }
 
     /// Constructor of Boolean

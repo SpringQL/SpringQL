@@ -1,5 +1,6 @@
 // This file is part of https://github.com/SpringQL/SpringQL which is licensed under MIT OR Apache-2.0. See file LICENSE-MIT or LICENSE-APACHE for full license details.
 
+mod blob;
 mod boolean;
 mod event_duration;
 mod float;
@@ -56,6 +57,14 @@ pub trait SpringValue: Sized {
     ///   - the type implementing SqlConvertible is not convertible from String
     fn try_from_string(_: &str) -> Result<Self> {
         Self::default_err("String")
+    }
+
+    /// # Failures
+    ///
+    /// - `SpringError::Sql` when:
+    ///   - the type implementing SqlConvertible is not convertible from Vec<u8>
+    fn try_from_blob(_: &[u8]) -> Result<Self> {
+        Self::default_err("Vec<u8>")
     }
 
     /// # Failures
