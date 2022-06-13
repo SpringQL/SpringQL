@@ -11,8 +11,8 @@ use crate::stream_engine::autonomous_executor::performance_metrics::PerformanceM
 /// - changes task scheduler
 /// - launches purger
 #[derive(Clone, Eq, PartialEq, Debug)]
-pub(in crate::stream_engine::autonomous_executor) struct PerformanceMetricsSummary {
-    pub(in crate::stream_engine::autonomous_executor) queue_total_bytes: u64,
+pub struct PerformanceMetricsSummary {
+    pub queue_total_bytes: u64,
 }
 
 impl From<&PerformanceMetrics> for PerformanceMetricsSummary {

@@ -1,14 +1,17 @@
 // This file is part of https://github.com/SpringQL/SpringQL which is licensed under MIT OR Apache-2.0. See file LICENSE-MIT or LICENSE-APACHE for full license details.
 
-pub(crate) mod event_duration;
-pub(crate) mod wall_clock_duration;
+mod event_duration;
+mod wall_clock_duration;
+
+pub use event_duration::SpringEventDuration;
+pub use wall_clock_duration::{WallClockDuration, WallClockStopwatch};
 
 use std::time::Duration as StdDuration;
 
 use crate::time::Duration;
 
 /// Duration based on event-time or process-time.
-pub(crate) trait SpringDuration {
+pub trait SpringDuration {
     fn as_std(&self) -> &StdDuration;
     fn from_std(duration: StdDuration) -> Self;
 

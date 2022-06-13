@@ -3,32 +3,25 @@
 use std::{sync::Arc, thread, time::Duration};
 
 use crate::stream_engine::autonomous_executor::{
-    event_queue::{
-        event::{BlockingEventTag, Event, EventTag, NonBlockingEventTag},
-        non_blocking_event_queue::NonBlockingEventQueue,
-    },
+    event_queue::{BlockingEventTag, Event, EventTag, NonBlockingEventQueue, NonBlockingEventTag},
     memory_state_machine::{MemoryState, MemoryStateTransition},
     performance_metrics::{
-        metrics_update_command::metrics_update_by_task_execution::MetricsUpdateByTaskExecutionOrPurge,
-        performance_metrics_summary::PerformanceMetricsSummary, PerformanceMetrics,
+        MetricsUpdateByTaskExecutionOrPurge, PerformanceMetrics, PerformanceMetricsSummary,
     },
     pipeline_derivatives::PipelineDerivatives,
     repositories::Repositories,
-    task_executor::task_executor_lock::TaskExecutorLock,
-    worker::{
-        worker_handle::WorkerSetupCoordinator,
-        worker_thread::{WorkerThread, WorkerThreadLoopState},
-    },
+    task_executor::TaskExecutorLock,
+    worker::{WorkerSetupCoordinator, WorkerThread, WorkerThreadLoopState},
 };
 
 #[derive(Debug, new)]
-pub(in crate::stream_engine::autonomous_executor) struct PurgerWorkerThreadArg {
+pub struct PurgerWorkerThreadArg {
     repos: Arc<Repositories>,
     task_executor_lock: Arc<TaskExecutorLock>,
 }
 
 #[derive(Debug)]
-pub(super) struct PurgerWorkerLoopState {
+pub struct PurgerWorkerLoopState {
     pipeline_derivatives: Option<Arc<PipelineDerivatives>>,
 }
 impl WorkerThreadLoopState for PurgerWorkerLoopState {
@@ -50,7 +43,7 @@ impl WorkerThreadLoopState for PurgerWorkerLoopState {
 
 /// Runs a worker thread.
 #[derive(Debug)]
-pub(super) struct PurgerWorkerThread;
+pub struct PurgerWorkerThread;
 
 impl WorkerThread for PurgerWorkerThread {
     const THREAD_NAME: &'static str = "PurgerWorker";

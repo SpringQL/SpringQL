@@ -2,15 +2,10 @@
 
 use std::fmt::Display;
 
-use crate::pipeline::{
-    pipeline_graph::edge::Edge,
-    pump_model::{pump_input_type::PumpInputType, PumpModel},
-    sink_writer_model::SinkWriterModel,
-    source_reader_model::SourceReaderModel,
-};
+use crate::pipeline::{Edge, PumpInputType, PumpModel, SinkWriterModel, SourceReaderModel};
 
 #[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
-pub(in crate::stream_engine::autonomous_executor) enum TaskId {
+pub enum TaskId {
     Source {
         id: String,
     },
@@ -26,7 +21,7 @@ pub(in crate::stream_engine::autonomous_executor) enum TaskId {
 impl TaskId {}
 
 impl TaskId {
-    pub(in crate::stream_engine::autonomous_executor) fn from_pump(pump: &PumpModel) -> Self {
+    pub fn from_pump(pump: &PumpModel) -> Self {
         let id = pump.name().to_string();
         Self::Pump {
             id,
@@ -34,19 +29,17 @@ impl TaskId {
         }
     }
 
-    pub(in crate::stream_engine::autonomous_executor) fn from_source(
-        source: &SourceReaderModel,
-    ) -> Self {
+    pub fn from_source(source: &SourceReaderModel) -> Self {
         let id = source.name().to_string();
         Self::Source { id }
     }
 
-    pub(in crate::stream_engine::autonomous_executor) fn from_sink(sink: &SinkWriterModel) -> Self {
+    pub fn from_sink(sink: &SinkWriterModel) -> Self {
         let id = sink.name().to_string();
         Self::Sink { id }
     }
 
-    pub(in crate::stream_engine::autonomous_executor) fn is_window_task(&self) -> bool {
+    pub fn is_window_task(&self) -> bool {
         match self {
             TaskId::Pump { input_type, .. } => *input_type == PumpInputType::Window,
             _ => false,

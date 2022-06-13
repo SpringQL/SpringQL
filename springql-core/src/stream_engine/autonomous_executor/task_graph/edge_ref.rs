@@ -6,17 +6,17 @@ use petgraph::graph::NodeIndex;
 /// only constructed via `edge_references()`
 /// traversal.
 #[derive(Clone, Eq, PartialEq, Hash, Debug, new)]
-pub(super) struct MyEdgeRef {
+pub struct MyEdgeRef {
     source: NodeIndex,
     target: NodeIndex,
 }
 
 impl MyEdgeRef {
-    pub(super) fn source(&self) -> NodeIndex {
+    pub fn source(&self) -> NodeIndex {
         self.source
     }
 
-    pub(super) fn target(&self) -> NodeIndex {
+    pub fn target(&self) -> NodeIndex {
         self.target
     }
 }

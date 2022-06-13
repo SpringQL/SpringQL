@@ -9,34 +9,31 @@
 //!
 //! ![Task graph concept diagram](https://raw.githubusercontent.com/SpringQL/SpringQL/main/springql-core/doc/img/pipeline-and-task-graph.drawio.svg)
 
-pub(super) mod queue_id;
-pub(super) mod task_id;
+mod queue_id;
+mod task_id;
 
 mod edge_ref;
+
+pub use queue_id::{QueueId, RowQueueId, WindowQueueId};
+pub use task_id::TaskId;
 
 use std::collections::HashMap;
 
 use petgraph::graph::{DiGraph, NodeIndex};
 
 use crate::{
-    pipeline::{
-        name::StreamName, pipeline_graph::edge::Edge, pipeline_version::PipelineVersion, Pipeline,
-    },
-    stream_engine::autonomous_executor::task_graph::{
-        edge_ref::MyEdgeRef,
-        queue_id::{row_queue_id::RowQueueId, window_queue_id::WindowQueueId, QueueId},
-        task_id::TaskId,
-    },
+    pipeline::{Edge, Pipeline, PipelineVersion, StreamName},
+    stream_engine::autonomous_executor::task_graph::edge_ref::MyEdgeRef,
 };
 
 #[derive(Clone, Debug, new)]
-pub(super) struct QueueIdWithUpstream {
+pub struct QueueIdWithUpstream {
     queue_id: QueueId,
     upstream: StreamName, // FIXME avoid mixing pipeline and task graph objects. It leads to [#86](https://github.com/SpringQL/SpringQL/pull/86)
 }
 
 #[derive(Debug)]
-pub(super) struct TaskGraph {
+pub struct TaskGraph {
     /// From which version this graph constructed
     pipeline_version: PipelineVersion,
 
@@ -46,7 +43,7 @@ pub(super) struct TaskGraph {
 }
 
 impl TaskGraph {
-    pub(super) fn new(pipeline_version: PipelineVersion) -> Self {
+    pub fn new(pipeline_version: PipelineVersion) -> Self {
         Self {
             pipeline_version,
             g: DiGraph::default(),
@@ -55,11 +52,11 @@ impl TaskGraph {
         }
     }
 
-    pub(super) fn pipeline_version(&self) -> &PipelineVersion {
+    pub fn pipeline_version(&self) -> &PipelineVersion {
         &self.pipeline_version
     }
 
-    pub(super) fn upstream_task(&self, queue_id: &QueueId) -> TaskId {
+    pub fn upstream_task(&self, queue_id: &QueueId) -> TaskId {
         let edge = self.find_edge(queue_id);
         let source = edge.source();
         self.g
@@ -68,7 +65,7 @@ impl TaskGraph {
             .clone()
     }
 
-    pub(super) fn downstream_task(&self, queue_id: &QueueId) -> TaskId {
+    pub fn downstream_task(&self, queue_id: &QueueId) -> TaskId {
         let edge = self.find_edge(queue_id);
         let target = edge.target();
         self.g
@@ -77,7 +74,7 @@ impl TaskGraph {
             .clone()
     }
 
-    pub(super) fn input_queues(&self, task_id: &TaskId) -> Vec<QueueId> {
+    pub fn input_queues(&self, task_id: &TaskId) -> Vec<QueueId> {
         let i = self.find_node(task_id);
         self.g
             .edges_directed(i, petgraph::EdgeDirection::Incoming)
@@ -86,7 +83,7 @@ impl TaskGraph {
             .cloned()
             .collect()
     }
-    pub(super) fn output_queues(&self, task_id: &TaskId) -> Vec<QueueId> {
+    pub fn output_queues(&self, task_id: &TaskId) -> Vec<QueueId> {
         let i = self.find_node(task_id);
         self.g
             .edges_directed(i, petgraph::EdgeDirection::Outgoing)
@@ -100,7 +97,7 @@ impl TaskGraph {
     ///
     /// `None` if `task_id` does not have incoming edge (queue) from `upstream`.
     /// This may happen when `task_id` and `upstream` come from different versions of pipeline.
-    pub(super) fn input_queue(&self, task_id: &TaskId, upstream: &StreamName) -> Option<QueueId> {
+    pub fn input_queue(&self, task_id: &TaskId, upstream: &StreamName) -> Option<QueueId> {
         let i = self.find_node(task_id);
         self.g
             .edges_directed(i, petgraph::EdgeDirection::Incoming)
@@ -112,18 +109,18 @@ impl TaskGraph {
             })
     }
 
-    pub(super) fn downstream_tasks(&self, task_id: &TaskId) -> Vec<TaskId> {
+    pub fn downstream_tasks(&self, task_id: &TaskId) -> Vec<TaskId> {
         self.output_queues(task_id)
             .iter()
             .map(|q| self.downstream_task(q))
             .collect()
     }
 
-    pub(super) fn tasks(&self) -> Vec<TaskId> {
+    pub fn tasks(&self) -> Vec<TaskId> {
         self.g.node_weights().cloned().collect()
     }
 
-    pub(super) fn source_tasks(&self) -> Vec<TaskId> {
+    pub fn source_tasks(&self) -> Vec<TaskId> {
         self.tasks()
             .iter()
             .filter(|t| matches!(t, TaskId::Source { .. }))
@@ -131,7 +128,7 @@ impl TaskGraph {
             .collect()
     }
 
-    pub(super) fn window_tasks(&self) -> Vec<TaskId> {
+    pub fn window_tasks(&self) -> Vec<TaskId> {
         self.tasks()
             .iter()
             .filter(|t| t.is_window_task())
@@ -139,7 +136,7 @@ impl TaskGraph {
             .collect()
     }
 
-    pub(super) fn row_queues(&self) -> Vec<RowQueueId> {
+    pub fn row_queues(&self) -> Vec<RowQueueId> {
         self.g
             .edge_weights()
             .filter_map(|queue_id| {
@@ -152,7 +149,7 @@ impl TaskGraph {
             .collect()
     }
 
-    pub(super) fn window_queues(&self) -> Vec<WindowQueueId> {
+    pub fn window_queues(&self) -> Vec<WindowQueueId> {
         self.g
             .edge_weights()
             .filter_map(|queue_id| {
@@ -165,7 +162,7 @@ impl TaskGraph {
             .collect()
     }
 
-    pub(super) fn add_task(&mut self, task_id: TaskId) {
+    pub fn add_task(&mut self, task_id: TaskId) {
         let i = self.g.add_node(task_id.clone());
         let _ = self.task_id_node_map.insert(task_id, i);
     }
@@ -173,12 +170,7 @@ impl TaskGraph {
     /// # Panics
     ///
     /// `source` or `target` task is not added in the graph.
-    pub(super) fn add_queue(
-        &mut self,
-        queue_id: QueueIdWithUpstream,
-        source: TaskId,
-        target: TaskId,
-    ) {
+    pub fn add_queue(&mut self, queue_id: QueueIdWithUpstream, source: TaskId, target: TaskId) {
         let source = self.find_node(&source);
         let target = self.find_node(&target);
         let _ = self.g.add_edge(source, target, queue_id.clone());

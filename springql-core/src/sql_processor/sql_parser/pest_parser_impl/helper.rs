@@ -11,8 +11,8 @@ use crate::{
 };
 
 #[derive(Clone, Eq, PartialEq, Hash, Debug)]
-pub(super) struct FnParseParams<'a> {
-    pub(super) sql: &'a str,
+pub struct FnParseParams<'a> {
+    pub sql: &'a str,
 
     /// Collected from Pairs.
     ///
@@ -20,10 +20,10 @@ pub(super) struct FnParseParams<'a> {
     /// An AST node who has multiple children can call parse_self!() / parse_leaf_string!() macro twice or more.
     /// But Pairs::next() takes this field's ownership so it fails in 2nd macro call.
     /// On the other hand, VecDeque::pop_front() just borrows this field and returns ownership of Pair.
-    pub(super) children_pairs: VecDeque<Pair<'a, Rule>>,
+    pub children_pairs: VecDeque<Pair<'a, Rule>>,
 
     /// Used for leaves.
-    pub(super) self_string: String,
+    pub self_string: String,
 }
 
 /// Parse the next child term as `child_term` by `child_parser`.
@@ -38,7 +38,7 @@ pub(super) struct FnParseParams<'a> {
 ///   - When no child term left.
 ///   - When the next child term does not match $child_term.
 ///   - Raises Err from `child_parser` as-is.
-pub(super) fn parse_child<T, ChildRet>(
+pub fn parse_child<T, ChildRet>(
     params: &mut FnParseParams,
     child_term: Rule,
     child_parser: impl Fn(FnParseParams) -> Result<ChildRet>,
@@ -89,7 +89,7 @@ pub(super) fn parse_child<T, ChildRet>(
 ///
 /// # Failures
 /// Raises Err from `child_parser` as-is.
-pub(super) fn try_parse_child<T, ChildRet>(
+pub fn try_parse_child<T, ChildRet>(
     params: &mut FnParseParams,
     child_term: Rule,
     child_parser: impl Fn(FnParseParams) -> Result<ChildRet>,
@@ -121,7 +121,7 @@ pub(super) fn try_parse_child<T, ChildRet>(
 ///
 /// # Failures
 /// Raises Err from `child_parser` as-is.
-pub(super) fn parse_child_seq<T, ChildRet>(
+pub fn parse_child_seq<T, ChildRet>(
     params: &mut FnParseParams,
     child_term: Rule,
     child_parser: &impl Fn(FnParseParams) -> Result<ChildRet>,
@@ -134,6 +134,6 @@ pub(super) fn parse_child_seq<T, ChildRet>(
     Ok(children)
 }
 
-pub(super) fn self_as_str<'a>(params: &'a mut FnParseParams) -> &'a str {
+pub fn self_as_str<'a>(params: &'a mut FnParseParams) -> &'a str {
     params.self_string.as_str()
 }

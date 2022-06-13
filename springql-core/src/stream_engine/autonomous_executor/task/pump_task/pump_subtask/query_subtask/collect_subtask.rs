@@ -4,29 +4,25 @@ use std::sync::Arc;
 
 use crate::{
     mem_size::MemSize,
-    pipeline::name::StreamName,
+    pipeline::StreamName,
     stream_engine::{
         autonomous_executor::{
-            performance_metrics::metrics_update_command::metrics_update_by_task_execution::InQueueMetricsUpdateByCollect,
+            performance_metrics::InQueueMetricsUpdateByCollect,
             repositories::Repositories,
             task::{task_context::TaskContext, tuple::Tuple},
-            task_graph::queue_id::{
-                row_queue_id::RowQueueId, window_queue_id::WindowQueueId, QueueId,
-            },
+            task_graph::{QueueId, RowQueueId, WindowQueueId},
         },
-        command::query_plan::query_plan_operation::CollectOp,
+        command::CollectOp,
     },
 };
 
 #[derive(Debug)]
-pub(in crate::stream_engine::autonomous_executor) struct CollectSubtask {
+pub struct CollectSubtask {
     upstream: StreamName,
 }
 
 impl CollectSubtask {
-    pub(in crate::stream_engine::autonomous_executor) fn from_collect_op(
-        collect_op: CollectOp,
-    ) -> Self {
+    pub fn from_collect_op(collect_op: CollectOp) -> Self {
         let upstream = collect_op.stream;
         Self { upstream }
     }
@@ -34,10 +30,7 @@ impl CollectSubtask {
     /// # Returns
     ///
     /// None when input queue does not exist or is empty.
-    pub(in crate::stream_engine::autonomous_executor) fn run(
-        &self,
-        context: &TaskContext,
-    ) -> Option<(Tuple, InQueueMetricsUpdateByCollect)> {
+    pub fn run(&self, context: &TaskContext) -> Option<(Tuple, InQueueMetricsUpdateByCollect)> {
         let repos = context.repos();
         let pump_task_id = context.task();
 

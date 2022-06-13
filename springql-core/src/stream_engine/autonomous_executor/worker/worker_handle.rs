@@ -19,12 +19,12 @@ use crate::{
 
 /// Handler to run worker thread.
 #[derive(Debug)]
-pub(in crate::stream_engine::autonomous_executor) struct WorkerHandle {
+pub struct WorkerHandle {
     stop_button: mpsc::SyncSender<()>,
 }
 
 impl WorkerHandle {
-    pub(in crate::stream_engine::autonomous_executor) fn new<T: WorkerThread>(
+    pub fn new<T: WorkerThread>(
         main_job_lock: Arc<MainJobLock>,
         event_queues: EventQueues,
         coordinators: Coordinators,
@@ -56,7 +56,7 @@ impl Drop for WorkerHandle {
 ///
 /// Any worker cannot start its main job before the whole setup sequence finish.
 #[derive(Debug)]
-pub(in crate::stream_engine::autonomous_executor) struct WorkerSetupCoordinator {
+pub struct WorkerSetupCoordinator {
     n_generic_workers: Mutex<i64>, // do not use usize to detect < 0
     n_source_workers: Mutex<i64>,
 
@@ -68,7 +68,7 @@ pub(in crate::stream_engine::autonomous_executor) struct WorkerSetupCoordinator 
 impl WorkerSetupCoordinator {
     const SYNC_SLEEP: Duration = Duration::from_millis(1);
 
-    pub(in crate::stream_engine::autonomous_executor) fn new(config: &SpringConfig) -> Self {
+    pub fn new(config: &SpringConfig) -> Self {
         let n_generic_workers = config.worker.n_generic_worker_threads as i64;
         let n_source_workers = config.worker.n_source_worker_threads as i64;
         Self {
@@ -80,7 +80,7 @@ impl WorkerSetupCoordinator {
         }
     }
 
-    pub(in crate::stream_engine::autonomous_executor) fn sync_wait_all_workers(&self) {
+    pub fn sync_wait_all_workers(&self) {
         self.sync_i64(&self.n_generic_workers);
         self.sync_i64(&self.n_source_workers);
 
@@ -89,22 +89,20 @@ impl WorkerSetupCoordinator {
         self.sync_bool(&self.has_setup_purger_worker);
     }
 
-    pub(in crate::stream_engine::autonomous_executor) fn ready_generic_worker(&self) {
+    pub fn ready_generic_worker(&self) {
         self.ready_i64(&self.n_generic_workers)
     }
-    pub(in crate::stream_engine::autonomous_executor) fn ready_source_worker(&self) {
+    pub fn ready_source_worker(&self) {
         self.ready_i64(&self.n_source_workers)
     }
 
-    pub(in crate::stream_engine::autonomous_executor) fn ready_memory_state_machine_worker(&self) {
+    pub fn ready_memory_state_machine_worker(&self) {
         self.ready_bool(&self.has_setup_memory_state_machine_worker);
     }
-    pub(in crate::stream_engine::autonomous_executor) fn ready_performance_monitor_worker_worker(
-        &self,
-    ) {
+    pub fn ready_performance_monitor_worker_worker(&self) {
         self.ready_bool(&self.has_setup_performance_monitor_worker);
     }
-    pub(in crate::stream_engine::autonomous_executor) fn ready_purger_worker(&self) {
+    pub fn ready_purger_worker(&self) {
         self.ready_bool(&self.has_setup_purger_worker);
     }
 
@@ -149,12 +147,12 @@ impl WorkerSetupCoordinator {
 /// Since worker threads publish and subscribe event, a worker cannot be dropped before waiting for other workers to finish
 /// (event publisher might fail to send event to channel if the receiver is already dropped).
 #[derive(Debug, Default)]
-pub(in crate::stream_engine::autonomous_executor) struct WorkerStopCoordinator {
+pub struct WorkerStopCoordinator {
     live_worker_count: Mutex<u16>,
 }
 
 impl WorkerStopCoordinator {
-    pub(in crate::stream_engine::autonomous_executor) fn sync_wait_all_workers(&self) {
+    pub fn sync_wait_all_workers(&self) {
         self.leave();
         while *self.locked_count() > 0 {
             thread::sleep(Duration::from_millis(100));

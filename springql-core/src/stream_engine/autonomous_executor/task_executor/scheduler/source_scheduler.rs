@@ -7,7 +7,7 @@ use std::collections::HashSet;
 use crate::stream_engine::autonomous_executor::{
     performance_metrics::PerformanceMetrics,
     task_executor::scheduler::Scheduler,
-    task_graph::{task_id::TaskId, TaskGraph},
+    task_graph::{TaskGraph, TaskId},
 };
 
 #[derive(Clone, Eq, PartialEq, Hash, Debug)]
@@ -16,7 +16,7 @@ struct SourceTask {
 }
 
 #[derive(Debug, Default)]
-pub(in crate::stream_engine::autonomous_executor) struct SourceScheduler {}
+pub struct SourceScheduler {}
 
 impl Scheduler for SourceScheduler {
     /// TODO [prioritize source with lower source-miss rate](https://gh01.base.toyota-tokyo.tech/SpringQL-internal/SpringQL/issues/122)

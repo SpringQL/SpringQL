@@ -1,6 +1,8 @@
 // This file is part of https://github.com/SpringQL/SpringQL which is licensed under MIT OR Apache-2.0. See file LICENSE-MIT or LICENSE-APACHE for full license details.
 
-pub(in crate::stream_engine) mod wall_clock_stopwatch;
+mod wall_clock_stopwatch;
+
+pub use wall_clock_stopwatch::WallClockStopwatch;
 
 use std::{
     ops::{Add, Div, Mul, Sub},
@@ -11,7 +13,7 @@ use crate::stream_engine::time::duration::SpringDuration;
 
 /// Real-time (wall-clock) duration.
 #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Debug)]
-pub(in crate::stream_engine) struct WallClockDuration(Duration);
+pub struct WallClockDuration(Duration);
 
 impl SpringDuration for WallClockDuration {
     fn as_std(&self) -> &Duration {

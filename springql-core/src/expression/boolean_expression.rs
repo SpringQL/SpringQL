@@ -1,21 +1,19 @@
 // This file is part of https://github.com/SpringQL/SpringQL which is licensed under MIT OR Apache-2.0. See file LICENSE-MIT or LICENSE-APACHE for full license details.
 
-pub(crate) mod comparison_function;
-pub(crate) mod logical_function;
-pub(crate) mod numerical_function;
+mod comparison_function;
+mod logical_function;
+mod numerical_function;
 
-use crate::expression::{
-    boolean_expression::{
-        comparison_function::ComparisonFunction, logical_function::LogicalFunction,
-        numerical_function::NumericalFunction,
-    },
-    ValueExprType,
-};
+pub use comparison_function::ComparisonFunction;
+pub use logical_function::LogicalFunction;
+pub use numerical_function::NumericalFunction;
+
+use crate::expression::ValueExprType;
 
 /// Boolean expression.
 #[allow(clippy::enum_variant_names)]
 #[derive(Clone, PartialEq, Hash, Debug)]
-pub(crate) enum BinaryExpr<E>
+pub enum BinaryExpr<E>
 where
     E: ValueExprType,
 {

@@ -3,7 +3,7 @@
 use std::fmt::Display;
 
 #[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, new)]
-pub(in crate::stream_engine::autonomous_executor) struct RowQueueId(String);
+pub struct RowQueueId(String);
 
 impl Display for RowQueueId {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {

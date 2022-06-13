@@ -13,21 +13,21 @@ use ordered_float::OrderedFloat;
 use crate::{
     api::error::{Result, SpringError},
     mem_size::MemSize,
-    pipeline::relation::sql_type::{
-        self, NumericComparableType, SqlType, StringComparableLoseType,
+    pipeline::{
+        F32LooseType, I64LooseType, NumericComparableType, SqlType, StringComparableLoseType,
     },
     stream_engine::{
         autonomous_executor::row::value::{
-            sql_convertible::{SpringValue, ToNnSqlValue},
-            sql_value::sql_compare_result::SqlCompareResult,
+            sql_convertible::ToNnSqlValue, sql_value::sql_compare_result::SqlCompareResult,
         },
-        time::{duration::event_duration::SpringEventDuration, timestamp::SpringTimestamp},
+        time::{SpringEventDuration, SpringTimestamp},
+        SpringValue,
     },
 };
 
 /// NOT NULL value.
 #[derive(Clone, Debug)]
-pub(crate) enum NnSqlValue {
+pub enum NnSqlValue {
     /// SMALLINT
     SmallInt(i16),
     /// INTEGER
@@ -178,7 +178,7 @@ impl NnSqlValue {
     }
 
     /// SqlType of this value
-    pub(crate) fn sql_type(&self) -> SqlType {
+    pub fn sql_type(&self) -> SqlType {
         match self {
             NnSqlValue::SmallInt(_) => SqlType::small_int(),
             NnSqlValue::Integer(_) => SqlType::integer(),
@@ -201,24 +201,16 @@ impl NnSqlValue {
     ///
     /// - `SpringError::Sql` when:
     ///   - Value cannot be converted to `typ`.
-    pub(crate) fn try_convert(&self, typ: &SqlType) -> Result<NnSqlValue> {
+    pub fn try_convert(&self, typ: &SqlType) -> Result<NnSqlValue> {
         match typ {
             SqlType::NumericComparable(n) => match n {
                 NumericComparableType::I64Loose(i) => match i {
-                    sql_type::I64LooseType::SmallInt => {
-                        self.unpack::<i16>().map(|v| v.into_sql_value())
-                    }
-                    sql_type::I64LooseType::Integer => {
-                        self.unpack::<i32>().map(|v| v.into_sql_value())
-                    }
-                    sql_type::I64LooseType::BigInt => {
-                        self.unpack::<i64>().map(|v| v.into_sql_value())
-                    }
+                    I64LooseType::SmallInt => self.unpack::<i16>().map(|v| v.into_sql_value()),
+                    I64LooseType::Integer => self.unpack::<i32>().map(|v| v.into_sql_value()),
+                    I64LooseType::BigInt => self.unpack::<i64>().map(|v| v.into_sql_value()),
                 },
                 NumericComparableType::F32Loose(f) => match f {
-                    sql_type::F32LooseType::Float => {
-                        self.unpack::<f32>().map(|v| v.into_sql_value())
-                    }
+                    F32LooseType::Float => self.unpack::<f32>().map(|v| v.into_sql_value()),
                 },
             },
             SqlType::StringComparableLoose(s) => match s {
@@ -236,7 +228,7 @@ impl NnSqlValue {
         }
     }
 
-    pub(super) fn sql_compare(&self, other: &Self) -> Result<SqlCompareResult> {
+    pub fn sql_compare(&self, other: &Self) -> Result<SqlCompareResult> {
         match (self.sql_type(), other.sql_type()) {
             (SqlType::NumericComparable(ref self_n), SqlType::NumericComparable(ref other_n)) => {
                 match (self_n, other_n) {
@@ -287,7 +279,7 @@ impl NnSqlValue {
     ///
     /// - `SpringError::Sql` when:
     ///   - inner value cannot negate
-    pub(crate) fn negate(self) -> Result<Self> {
+    pub fn negate(self) -> Result<Self> {
         match self {
             NnSqlValue::SmallInt(v) => Ok(Self::SmallInt(-v)),
             NnSqlValue::Integer(v) => Ok(Self::Integer(-v)),

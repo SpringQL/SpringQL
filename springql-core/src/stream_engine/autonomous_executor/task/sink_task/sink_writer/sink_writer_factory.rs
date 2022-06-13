@@ -2,16 +2,16 @@
 
 use crate::{
     api::{error::Result, SpringSinkWriterConfig},
-    pipeline::{option::Options, sink_writer_model::sink_writer_type::SinkWriterType},
+    pipeline::{Options, SinkWriterType},
     stream_engine::autonomous_executor::task::sink_task::sink_writer::{
         in_memory_queue::InMemoryQueueSinkWriter, net::NetSinkWriter, SinkWriter,
     },
 };
 
-pub(in crate::stream_engine) struct SinkWriterFactory;
+pub struct SinkWriterFactory;
 
 impl SinkWriterFactory {
-    pub(in crate::stream_engine) fn sink(
+    pub fn sink(
         sink_writer_type: &SinkWriterType,
         options: &Options,
         config: &SpringSinkWriterConfig,

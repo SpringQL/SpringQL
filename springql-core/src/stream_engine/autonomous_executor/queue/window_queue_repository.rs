@@ -8,19 +8,16 @@ use std::{
 use parking_lot::RwLock;
 
 use crate::stream_engine::autonomous_executor::{
-    queue::window_queue::WindowQueue, task_graph::queue_id::window_queue_id::WindowQueueId,
+    queue::window_queue::WindowQueue, task_graph::WindowQueueId,
 };
 
 #[derive(Debug, Default)]
-pub(in crate::stream_engine::autonomous_executor) struct WindowQueueRepository {
+pub struct WindowQueueRepository {
     repo: RwLock<HashMap<WindowQueueId, Arc<WindowQueue>>>,
 }
 
 impl WindowQueueRepository {
-    pub(in crate::stream_engine::autonomous_executor) fn get(
-        &self,
-        window_queue_id: &WindowQueueId,
-    ) -> Arc<WindowQueue> {
+    pub fn get(&self, window_queue_id: &WindowQueueId) -> Arc<WindowQueue> {
         let repo = self.repo.read();
         repo.get(window_queue_id)
             .unwrap_or_else(|| {
@@ -33,10 +30,7 @@ impl WindowQueueRepository {
     }
 
     /// Removes all currently existing queues and creates new empty ones.
-    pub(in crate::stream_engine::autonomous_executor) fn reset(
-        &self,
-        queue_ids: HashSet<WindowQueueId>,
-    ) {
+    pub fn reset(&self, queue_ids: HashSet<WindowQueueId>) {
         let mut repo = self.repo.write();
         repo.clear();
 
@@ -45,7 +39,7 @@ impl WindowQueueRepository {
         });
     }
 
-    pub(in crate::stream_engine::autonomous_executor) fn purge(&self) {
+    pub fn purge(&self) {
         let mut repo = self.repo.write();
         repo.iter_mut().for_each(|(_, queue)| {
             queue.purge();

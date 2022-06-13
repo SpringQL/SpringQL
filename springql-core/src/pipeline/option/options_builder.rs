@@ -5,10 +5,10 @@ use std::collections::HashMap;
 use crate::pipeline::option::Options;
 
 #[derive(Default, Debug)]
-pub(crate) struct OptionsBuilder(HashMap<String, String>);
+pub struct OptionsBuilder(HashMap<String, String>);
 
 impl OptionsBuilder {
-    pub(crate) fn add<SK, SV>(mut self, key: SK, value: SV) -> Self
+    pub fn add<SK, SV>(mut self, key: SK, value: SV) -> Self
     where
         SK: Into<String>,
         SV: Into<String>,
@@ -19,7 +19,7 @@ impl OptionsBuilder {
         Self(self.0)
     }
 
-    pub(crate) fn build(self) -> Options {
+    pub fn build(self) -> Options {
         Options(self.0)
     }
 }
