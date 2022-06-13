@@ -12,6 +12,7 @@ All other sections are for end-users.
 
 ### For developpers
 
+- Add deny lint option for `rustdoc::broken_intra_doc_links` ([#185](https://github.com/SpringQL/SpringQL/pull/185))
 - Refactor : Hide detail module structure ([#177](https://github.com/SpringQL/SpringQL/pull/177))
   - Make private to internal modules
   - When publishing members outside the module, we recommend re-export(`pub use`) rather than `pub(crate)`
