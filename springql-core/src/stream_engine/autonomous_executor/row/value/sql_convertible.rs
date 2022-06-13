@@ -69,7 +69,7 @@ pub trait SpringValue: Sized {
 
     /// # Failures
     ///
-    /// - [SpringError::Sql](crate::error::SpringError::Sql) when:
+    /// - `SpringError::Sql` when:
     ///   - the type implementing SqlConvertible is not convertible from bool
     fn try_from_bool(_: &bool) -> Result<Self> {
         Self::default_err("bool")
