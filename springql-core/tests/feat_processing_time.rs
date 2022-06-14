@@ -2,6 +2,8 @@
 
 mod test_support;
 
+use std::{thread, time::Duration};
+
 use pretty_assertions::assert_eq;
 use serde_json::json;
 use springql_core::api::{error::Result, *};
@@ -126,82 +128,6 @@ fn test_feat_processing_time_ptime() -> Result<()> {
     };
 
     assert_eq!(ptimes, ptimes_sorted);
-
-    Ok(())
-}
-
-/// See: <https://github.com/SpringQL/SpringQL/issues/126>
-#[test]
-fn test_feat_processing_time_window() -> Result<()> {
-    setup_test_logger();
-
-    let source_input = gen_source_input();
-
-    let test_source = ForeignSource::new().unwrap();
-    let test_sink = ForeignSink::start().unwrap();
-
-    let ddls = vec![
-        "
-        CREATE SOURCE STREAM source_trade (
-          ticker TEXT NOT NULL,
-          amount INTEGER NOT NULL
-        );
-        "
-        .to_string(),
-        "
-        CREATE SINK STREAM sink_avg_all (
-          avg_amount FLOAT NOT NULL
-        );
-        "
-        .to_string(),
-        "
-        CREATE PUMP avg_all AS
-        INSERT INTO sink_avg_all (avg_amount)
-        SELECT STREAM
-            AVG(source_trade.amount) AS avg_amount
-        FROM source_trade
-        FIXED WINDOW DURATION_SECS(10), DURATION_SECS(0);
-        "
-        .to_string(),
-        format!(
-            "
-        CREATE SINK WRITER tcp_sink_trade FOR sink_avg_all
-          TYPE NET_CLIENT OPTIONS (
-            PROTOCOL 'TCP',
-            REMOTE_HOST '{remote_host}',
-            REMOTE_PORT '{remote_port}'
-        );
-        ",
-            remote_host = test_sink.host_ip(),
-            remote_port = test_sink.port()
-        ),
-        format!(
-            "
-        CREATE SOURCE READER tcp_trade FOR source_trade
-          TYPE NET_CLIENT OPTIONS (
-            PROTOCOL 'TCP',
-            REMOTE_HOST '{remote_host}',
-            REMOTE_PORT '{remote_port}'
-          );
-        ",
-            remote_host = test_source.host_ip(),
-            remote_port = test_source.port()
-        ),
-    ];
-
-    let sink_received = run_and_drain(
-        &ddls,
-        ForeignSourceInput::new_fifo_batch(source_input),
-        test_source,
-        &test_sink,
-    );
-
-    assert_eq!(sink_received.len(), 1);
-
-    assert_eq!(
-        sink_received[0]["avg_amount"].as_f64().unwrap().round() as i32,
-        40,
-    );
 
     Ok(())
 }
