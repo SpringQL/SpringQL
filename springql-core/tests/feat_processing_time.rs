@@ -116,7 +116,7 @@ fn test_feat_processing_time_ptime() -> Result<()> {
         .into_iter()
         .map(|json| {
             let ptime = json["source_trade_ptime"].as_str().unwrap();
-            chrono::DateTime::parse_from_str(ptime, FORMAT).unwrap()
+            chrono::NaiveDateTime::parse_from_str(ptime, FORMAT).unwrap()
         })
         .collect::<Vec<_>>();
     let ptimes_sorted = {
