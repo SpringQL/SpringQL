@@ -22,7 +22,7 @@ pub mod test_support;
 
 pub use row::SpringValue;
 pub use row::{
-    ColumnValues, JsonObject, NnSqlValue, Row, SourceRow, SqlCompareResult, SqlValue,
+    ColumnValues, JsonObject, NnSqlValue, Row, RowTime, SourceRow, SqlCompareResult, SqlValue,
     SqlValueHashKey, StreamColumns,
 };
 pub use task::{

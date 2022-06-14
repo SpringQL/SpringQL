@@ -50,6 +50,7 @@ keyword = {
     | ^"OPTIONS"
     | ^"OUTER"
     | ^"PUMP"
+    | ^"PTIME"
     | ^"READER"
     | ^"ROWTIME"
     | ^"SELECT"
@@ -265,7 +266,10 @@ sub_value_expr = {
 }
 
 column_reference = {
-    correlation ~ "." ~ column_name
+    correlation ~ "." ~ (
+        ptime_column_name
+        | column_name
+    )
 }
 
 function_call = {
@@ -575,6 +579,9 @@ sink_writer_type = {
     identifier
 }
 
+ptime_column_name = {
+    ^"PTIME"
+}
 column_name = {
     identifier
 }

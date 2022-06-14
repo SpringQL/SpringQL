@@ -8,14 +8,25 @@ use crate::{
 /// Reference to a column in a row.
 ///
 /// Note that this never point to other expressions like `1 + 1 AS a`.
-#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, new)]
-pub struct ColumnReference {
-    pub stream_name: StreamName,
-    pub column_name: ColumnName,
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
+pub enum ColumnReference {
+    /// Normal column reference
+    Column {
+        stream_name: StreamName,
+        column_name: ColumnName,
+    },
+    /// Processing time
+    PTime { stream_name: StreamName },
 }
 
 impl MemSize for ColumnReference {
     fn mem_size(&self) -> usize {
-        self.stream_name.mem_size() + self.column_name.mem_size()
+        match self {
+            Self::Column {
+                stream_name,
+                column_name,
+            } => stream_name.mem_size() + column_name.mem_size(),
+            Self::PTime { stream_name } => stream_name.mem_size(),
+        }
     }
 }
