@@ -3,7 +3,6 @@
 use std::time::Duration;
 
 use anyhow::{anyhow, Context};
-use serde_json::json;
 use socketcan::{CANFrame, CANSocket, ShouldRetry};
 
 use crate::{
@@ -11,11 +10,9 @@ use crate::{
         error::{foreign_info::ForeignInfo, Result},
         SpringError, SpringSourceReaderConfig,
     },
-    pipeline::Options,
-    stream_engine::autonomous_executor::SourceRow,
+    pipeline::{CANOptions, Options},
+    stream_engine::autonomous_executor::{row::CANFrameSourceRow, SourceReader, SourceRow},
 };
-
-use super::SourceReader;
 
 /// # Data format
 ///
@@ -54,16 +51,16 @@ impl SourceReader for CANSourceReader {
     fn start(options: &Options, config: &SpringSourceReaderConfig) -> Result<Self> {
         let options = CANOptions::try_from(options)?;
 
-        let interface = options.interface;
+        let interface = &options.interface;
 
-        let can_socket = CANSocket::open(&interface)
+        let can_socket = CANSocket::open(interface)
             .context(format!(
                 "failed to open socket CAN interface {}",
                 &interface
             ))
             .map_err(|e| SpringError::ForeignIo {
                 source: e,
-                foreign_info: ForeignInfo::SocketCAN(interface.clone()),
+                foreign_info: ForeignInfo::SocketCAN(interface.to_string()),
             })?;
 
         can_socket
@@ -74,7 +71,7 @@ impl SourceReader for CANSourceReader {
             ))
             .map_err(|e| SpringError::ForeignIo {
                 source: e,
-                foreign_info: ForeignInfo::SocketCAN(interface.clone()),
+                foreign_info: ForeignInfo::SocketCAN(interface.to_string()),
             })?;
 
         log::info!(
@@ -83,7 +80,7 @@ impl SourceReader for CANSourceReader {
         );
 
         Ok(Self {
-            interface,
+            interface: interface.to_string(),
             can_socket,
         })
     }
@@ -128,31 +125,7 @@ impl CANSourceReader {
     }
 
     fn _can_frame_into_row(frame: CANFrame) -> SourceRow {
-        let can_data: u64 = Self::_can_data_into_u64(frame);
-
-        let json = json!({
-            "can_id": frame.id(),
-            "can_data_len": frame.data().len(),
-            "can_data_big_endian": can_data,
-        });
-        SourceRow::from_json(JsonObject::new(json))
-    }
-
-    fn _can_data_into_u64(frame: CANFrame) -> u64 {
-        const MAX_LEN: usize = 8;
-        let len = frame.data().len();
-        assert!(
-            len <= MAX_LEN,
-            "CAN data must be less than or equal to 8 bytes (CAN ID: {})",
-            frame.id()
-        );
-
-        let mut can_data = [0u8; MAX_LEN];
-        let (_left, right) = can_data.split_at_mut(MAX_LEN - len);
-
-        right.clone_from_slice(frame.data());
-
-        u64::from_be_bytes(can_data)
+        SourceRow::CANFrame(CANFrameSourceRow::new(frame))
     }
 }
 

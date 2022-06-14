@@ -5,6 +5,7 @@ mod in_memory_queue_options;
 mod net_options;
 mod options_builder;
 
+pub use can_options::CANOptions;
 pub use in_memory_queue_options::InMemoryQueueOptions;
 pub use net_options::{NetClientOptions, NetProtocol, NetServerOptions};
 pub use options_builder::OptionsBuilder;

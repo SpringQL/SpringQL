@@ -1,12 +1,13 @@
 // This file is part of https://github.com/SpringQL/SpringQL which is licensed under MIT OR Apache-2.0. See file LICENSE-MIT or LICENSE-APACHE for full license details.
 
-use crate::api::error::{Result, SpringError};
-
-use super::Options;
+use crate::{
+    api::error::{Result, SpringError},
+    pipeline::Options,
+};
 
 #[derive(Clone, Eq, PartialEq, Debug)]
-pub(crate) struct CANOptions {
-    pub(crate) interface: String,
+pub struct CANOptions {
+    pub interface: String,
 }
 
 impl TryFrom<&Options> for CANOptions {

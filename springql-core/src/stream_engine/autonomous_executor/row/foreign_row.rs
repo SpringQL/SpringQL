@@ -4,4 +4,4 @@ mod format;
 mod source_row;
 
 pub use format::JsonObject;
-pub use source_row::{JsonSourceRow, SourceRow, SourceRowFormat};
+pub use source_row::{CANFrameSourceRow, JsonSourceRow, SourceRow, SourceRowFormat};

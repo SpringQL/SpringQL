@@ -86,8 +86,7 @@ impl StreamShape {
         Self::new(vec![
             ColumnDefinition::fx_processing_time(),
             ColumnDefinition::fx_can_id(),
-            ColumnDefinition::fx_can_data_len(),
-            ColumnDefinition::fx_can_data_big_endian(),
+            ColumnDefinition::fx_can_data(),
         ])
         .unwrap()
     }
