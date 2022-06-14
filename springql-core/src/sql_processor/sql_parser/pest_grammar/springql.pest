@@ -50,6 +50,7 @@ keyword = {
     | ^"OPTIONS"
     | ^"OUTER"
     | ^"PUMP"
+    | ^"PTIME"
     | ^"READER"
     | ^"ROWTIME"
     | ^"SELECT"
