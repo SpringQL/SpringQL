@@ -4,7 +4,10 @@ use crate::{
     api::error::{Result, SpringError},
     mem_size::MemSize,
     pipeline::{ColumnReference, Field},
-    stream_engine::{autonomous_executor::row::Row, time::SpringTimestamp, SqlValue},
+    stream_engine::{
+        autonomous_executor::row::{Row, RowTime},
+        NnSqlValue, SqlValue,
+    },
 };
 use anyhow::anyhow;
 
@@ -17,10 +20,8 @@ use anyhow::anyhow;
 /// Unlike rows, tuples may have not only stream's columns but also fields derived from expressions.
 #[derive(Clone, PartialEq, Debug, new)]
 pub struct Tuple {
-    /// Either be an event-time or a process-time.
-    /// If a row this tuple is constructed from has a ROWTIME column, `rowtime` has duplicate value with one of `fields`.
-    rowtime: SpringTimestamp,
-
+    /// If this tuple is constructed from has a ROWTIME column, `rowtime` has duplicate value with one of `fields`.
+    rowtime: RowTime,
     fields: Vec<Field>,
 }
 
@@ -51,14 +52,26 @@ impl Tuple {
         Self { rowtime, fields }
     }
 
-    pub fn rowtime(&self) -> &SpringTimestamp {
-        &self.rowtime
+    pub fn rowtime(&self) -> RowTime {
+        self.rowtime
+    }
+
+    /// # Failures
+    ///
+    /// `SpringError::Sql` when:
+    ///   - `column_reference` does not match any field.
+    ///   - processing time is referenced while event time is defined to the stream.
+    pub fn get_value(&self, column_reference: &ColumnReference) -> Result<SqlValue> {
+        match column_reference {
+            ColumnReference::Column { .. } => self.get_column_value(column_reference),
+            ColumnReference::PTime { .. } => self.get_processing_time(),
+        }
     }
 
     /// # Failures
     ///
     /// `SpringError::Sql` if `column_reference` does not match any field.
-    pub fn get_value(&self, column_reference: &ColumnReference) -> Result<SqlValue> {
+    pub fn get_column_value(&self, column_reference: &ColumnReference) -> Result<SqlValue> {
         let sql_value = self.fields.iter().find_map(|field| {
             let colref = field.name();
             (colref == column_reference).then(|| field.sql_value().clone())
@@ -66,6 +79,19 @@ impl Tuple {
 
         sql_value
             .ok_or_else(|| SpringError::Sql(anyhow!("cannot find field `{:?}`", column_reference)))
+    }
+
+    /// # Failures
+    ///
+    /// `SpringError::Sql` if `column_reference` does not match any field.
+    pub fn get_processing_time(&self) -> Result<SqlValue> {
+        if let RowTime::ProcessingTime(ptime) = self.rowtime {
+            Ok(SqlValue::NotNull(NnSqlValue::Timestamp(ptime)))
+        } else {
+            Err(SpringError::Sql(anyhow!(
+                "processing time is not available for this stream"
+            )))
+        }
     }
 
     /// Left rowtime is used for joined tuple.
@@ -84,7 +110,10 @@ impl Tuple {
 
 #[cfg(test)]
 mod tests {
-    use crate::expression::{UnaryOperator, ValueExpr};
+    use crate::{
+        expression::{UnaryOperator, ValueExpr},
+        stream_engine::time::SpringTimestamp,
+    };
 
     use super::*;
 

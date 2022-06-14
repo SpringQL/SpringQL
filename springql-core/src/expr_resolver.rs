@@ -183,7 +183,7 @@ impl ExprResolver {
 
 #[cfg(test)]
 mod tests {
-    use crate::{expression::ValueExpr, stream_engine::time::SpringTimestamp};
+    use crate::{expression::ValueExpr, stream_engine::{time::SpringTimestamp, RowTime}};
 
     use super::*;
 
@@ -226,7 +226,7 @@ mod tests {
                 ValueExpr::factory_integer(3),
             ));
 
-            let empty_tuple = Tuple::new(SpringTimestamp::fx_ts1(), vec![]);
+            let empty_tuple = Tuple::new(RowTime::EventTime(SpringTimestamp::fx_ts1()), vec![]);
 
             assert_eq!(
                 resolver

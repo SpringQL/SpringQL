@@ -11,7 +11,7 @@ use crate::{
 #[derive(Clone, Eq, PartialEq, Debug)]
 pub struct StreamShape {
     cols: Vec<ColumnDefinition>,
-    promoted_rowtime: Option<ColumnName>,
+    event_time_col: Option<ColumnName>,
 }
 
 impl StreamShape {
@@ -21,22 +21,22 @@ impl StreamShape {
     ///   - ROWTIME column in `cols` is not a `TIMESTAMP NOT NULL` type.
     ///   - 2 or more column have ROWTIME constraints
     pub fn new(cols: Vec<ColumnDefinition>) -> Result<Self> {
-        let promoted_rowtime = Self::extract_promoted_rowtime(&cols)?;
+        let event_time = Self::extract_event_time(&cols)?;
 
-        let _ = if let Some(rowtime_col) = &promoted_rowtime {
-            Self::validate_rowtime_column(rowtime_col, &cols)
+        let _ = if let Some(etime_col) = &event_time {
+            Self::validate_event_time_column(etime_col, &cols)
         } else {
             Ok(())
         }?;
 
         Ok(Self {
             cols,
-            promoted_rowtime,
+            event_time_col: event_time,
         })
     }
 
-    pub fn promoted_rowtime(&self) -> Option<&ColumnName> {
-        self.promoted_rowtime.as_ref()
+    pub fn event_time(&self) -> Option<&ColumnName> {
+        self.event_time_col.as_ref()
     }
 
     pub fn columns(&self) -> &[ColumnDefinition] {
@@ -47,7 +47,7 @@ impl StreamShape {
         self.cols.iter().map(|c| c.column_name()).cloned().collect()
     }
 
-    fn extract_promoted_rowtime(cols: &[ColumnDefinition]) -> Result<Option<ColumnName>> {
+    fn extract_event_time(cols: &[ColumnDefinition]) -> Result<Option<ColumnName>> {
         let rowtime_cdts = cols
             .iter()
             .filter_map(|cd| {
@@ -74,7 +74,10 @@ impl StreamShape {
         }
     }
 
-    fn validate_rowtime_column(rowtime_col: &ColumnName, cols: &[ColumnDefinition]) -> Result<()> {
+    fn validate_event_time_column(
+        rowtime_col: &ColumnName,
+        cols: &[ColumnDefinition],
+    ) -> Result<()> {
         let rowtime_coldef = cols
             .iter()
             .find(|coldef| coldef.column_data_type().column_name() == rowtime_col)

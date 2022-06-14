@@ -61,10 +61,10 @@ impl StreamColumns {
         &self.stream_model
     }
 
-    pub fn promoted_rowtime(&self) -> Option<SpringTimestamp> {
-        let rowtime_col = self.stream_model.shape().promoted_rowtime()?;
+    pub fn event_time(&self) -> Option<SpringTimestamp> {
+        let etime_col = self.stream_model.shape().event_time()?;
         let rowtime_sql_value = self
-            .get_by_column_name(rowtime_col)
+            .get_by_column_name(etime_col)
             .expect("rowtime_col is set in stream definition, which must be validated");
         if let SqlValue::NotNull(v) = rowtime_sql_value {
             Some(v.unpack().expect("rowtime col must be TIMESTAMP type"))

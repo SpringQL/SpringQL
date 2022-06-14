@@ -3,11 +3,13 @@
 mod column;
 mod column_values;
 mod foreign_row;
+mod rowtime;
 mod value;
 
 pub use column::StreamColumns;
 pub use column_values::ColumnValues;
 pub use foreign_row::{JsonObject, JsonSourceRow, SourceRow, SourceRowFormat};
+pub use rowtime::RowTime;
 pub use value::{NnSqlValue, SpringValue, SqlCompareResult, SqlValue, SqlValueHashKey};
 
 use std::vec;
@@ -21,10 +23,11 @@ use crate::{
 
 /// - Mandatory `rowtime()`, either from `cols` or `arrival_rowtime`.
 /// - PartialEq by all columns (NULL prevents Eq).
-/// - PartialOrd by timestamp.
+/// - PartialOrd by `rowtime()`.
 #[derive(Clone, PartialEq, Debug)]
 pub struct Row {
-    arrival_rowtime: Option<SpringTimestamp>,
+    /// None if an event time is available (i.e. ROWTIME keyword is supplied)
+    processing_time: Option<SpringTimestamp>,
 
     /// Columns
     cols: StreamColumns,
@@ -32,14 +35,14 @@ pub struct Row {
 
 impl Row {
     pub fn new(cols: StreamColumns) -> Self {
-        let arrival_rowtime = if cols.promoted_rowtime().is_some() {
+        let processing_time = if cols.event_time().is_some() {
             None
         } else {
             Some(SystemTimestamp::now())
         };
 
         Row {
-            arrival_rowtime,
+            processing_time,
             cols,
         }
     }
@@ -54,12 +57,17 @@ impl Row {
     ///
     /// - (default) Arrival time to a stream.
     /// - Promoted from a column in a stream.
-    pub fn rowtime(&self) -> SpringTimestamp {
-        self.arrival_rowtime.unwrap_or_else(|| {
-            self.cols
-                .promoted_rowtime()
-                .expect("Either arrival ROWTIME or promoted ROWTIME must be enabled")
-        })
+    pub fn rowtime(&self) -> RowTime {
+        self.processing_time.map_or_else(
+            || {
+                RowTime::EventTime(
+                    self.cols
+                        .event_time()
+                        .expect("Either processing time or event time must be enabled"),
+                )
+            },
+            RowTime::ProcessingTime,
+        )
     }
 
     /// # Failure
@@ -83,7 +91,7 @@ impl IntoIterator for Row {
 
     fn into_iter(self) -> Self::IntoIter {
         let into_iter = self.cols.into_iter();
-        if let Some(rowtime) = self.arrival_rowtime {
+        if let Some(rowtime) = self.processing_time {
             into_iter
                 .chain(vec![(
                     ColumnName::arrival_rowtime(),
@@ -99,7 +107,7 @@ impl IntoIterator for Row {
 
 impl MemSize for Row {
     fn mem_size(&self) -> usize {
-        let arrival_rowtime_size = self.arrival_rowtime.map_or_else(|| 0, |ts| ts.mem_size());
+        let arrival_rowtime_size = self.processing_time.map_or_else(|| 0, |ts| ts.mem_size());
         let cols_size = self.cols.mem_size();
         arrival_rowtime_size + cols_size
     }
