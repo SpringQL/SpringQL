@@ -2,8 +2,6 @@
 
 mod test_support;
 
-use std::{thread, time::Duration};
-
 use pretty_assertions::assert_eq;
 use serde_json::json;
 use springql_core::api::{error::Result, *};
