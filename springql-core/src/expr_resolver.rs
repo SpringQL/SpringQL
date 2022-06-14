@@ -183,7 +183,10 @@ impl ExprResolver {
 
 #[cfg(test)]
 mod tests {
-    use crate::{expression::ValueExpr, stream_engine::{time::SpringTimestamp, RowTime}};
+    use crate::{
+        expression::ValueExpr,
+        stream_engine::{time::SpringTimestamp, RowTime},
+    };
 
     use super::*;
 
