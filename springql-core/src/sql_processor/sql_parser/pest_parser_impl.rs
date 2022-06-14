@@ -921,7 +921,10 @@ impl PestParserImpl {
             Self::parse_column_name,
             identity,
         )?;
-        Ok(ColumnReference::new(correlation, column_name))
+        Ok(ColumnReference::Column {
+            stream_name: correlation,
+            column_name,
+        })
     }
 
     /*

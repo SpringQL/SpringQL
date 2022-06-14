@@ -40,7 +40,10 @@ impl Tuple {
         let fields = row
             .into_iter()
             .map(|(column_name, sql_value)| {
-                let colref = ColumnReference::new(stream_name.clone(), column_name);
+                let colref = ColumnReference::Column {
+                    stream_name: stream_name.clone(),
+                    column_name,
+                };
                 Field::new(colref, sql_value)
             })
             .collect();

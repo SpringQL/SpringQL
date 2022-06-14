@@ -71,9 +71,9 @@ impl<E: ValueExprType> BinaryExpr<E> {
 
 impl ColumnReference {
     pub fn factory(stream_name: &str, column_name: &str) -> Self {
-        Self::new(
-            StreamName::factory(stream_name),
-            ColumnName::new(column_name.to_string()),
-        )
+        Self::Column {
+            stream_name: StreamName::factory(stream_name),
+            column_name: ColumnName::new(column_name.to_string()),
+        }
     }
 }
