@@ -45,7 +45,7 @@ impl SpringTimestamp {
             let floor_ts_secs = floor_ts_nano / 1_000_000_000;
             let floor_ts_nanos = floor_ts_nano % 1_000_000_000;
             NaiveDateTime::from_timestamp(floor_ts_secs as i64, floor_ts_nanos as u32)
-                .map_err(|e| SpringError::Time(e))?
+                .map_err(SpringError::Time)?
         };
 
         Ok(SpringTimestamp(floor_naive_date_time))

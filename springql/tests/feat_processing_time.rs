@@ -10,6 +10,7 @@ use springql_foreign_service::{
     source::{ForeignSource, ForeignSourceInput},
 };
 use springql_test_logger::setup_test_logger;
+use time::macros::format_description;
 
 use crate::test_support::*;
 
@@ -110,13 +111,17 @@ fn test_feat_processing_time_ptime() -> Result<()> {
 
     assert_eq!(sink_received.len(), 4);
 
-    const FORMAT: &str = "%Y-%m-%d %H:%M:%S%.9f";
-
     let ptimes = sink_received
         .into_iter()
         .map(|json| {
             let ptime = json["source_trade_ptime"].as_str().unwrap();
-            chrono::NaiveDateTime::parse_from_str(ptime, FORMAT).unwrap()
+            time::PrimitiveDateTime::parse(
+                ptime,
+                format_description!(
+                    "[year]-[month]-[day] [hour]:[minute]:[second].[subsecond digits:9]"
+                ),
+            )
+            .unwrap()
         })
         .collect::<Vec<_>>();
     let ptimes_sorted = {

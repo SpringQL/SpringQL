@@ -21,6 +21,8 @@ use crate::{
     },
 };
 
+type Success<T> = (Vec<T>, WindowInFlowByWindowTask);
+
 pub trait Window {
     type Pane: Pane;
 
@@ -38,13 +40,7 @@ pub trait Window {
         expr_resolver: &ExprResolver,
         tuple: Tuple,
         arg: <<Self as Window>::Pane as Pane>::DispatchArg,
-    ) -> Result<
-        (
-            Vec<<<Self as Window>::Pane as Pane>::CloseOut>,
-            WindowInFlowByWindowTask,
-        ),
-        SpringError,
-    > {
+    ) -> Result<Success<<Self::Pane as Pane>::CloseOut>, SpringError> {
         let rowtime = tuple.rowtime().as_timestamp();
 
         if rowtime < self.watermark().as_timestamp() {

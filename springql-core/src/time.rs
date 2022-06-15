@@ -187,6 +187,6 @@ mod datetime_format {
         D: Deserializer<'de>,
     {
         let s = String::deserialize(deserializer)?;
-        Ok(parse_to_primitive(&s).map_err(serde::de::Error::custom)?)
+        parse_to_primitive(&s).map_err(serde::de::Error::custom)
     }
 }
