@@ -24,7 +24,10 @@ impl StreamModel {
         self.shape
             .column_names()
             .iter()
-            .map(|c| ColumnReference::new(self.name.clone(), c.clone()))
+            .map(|c| ColumnReference::Column {
+                stream_name: self.name.clone(),
+                column_name: c.clone(),
+            })
             .collect()
     }
 }

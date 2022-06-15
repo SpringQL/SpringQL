@@ -132,29 +132,41 @@ impl SinkWriterModel {
 
 impl ColumnReference {
     pub fn fx_trade_timestamp() -> Self {
-        Self::new(StreamName::fx_trade(), ColumnName::fx_timestamp())
+        Self::Column {
+            stream_name: StreamName::fx_trade(),
+            column_name: ColumnName::fx_timestamp(),
+        }
     }
     pub fn fx_trade_ticker() -> Self {
-        Self::new(StreamName::fx_trade(), ColumnName::fx_ticker())
+        Self::Column {
+            stream_name: StreamName::fx_trade(),
+            column_name: ColumnName::fx_ticker(),
+        }
     }
     pub fn fx_trade_amount() -> Self {
-        Self::new(StreamName::fx_trade(), ColumnName::fx_amount())
+        Self::Column {
+            stream_name: StreamName::fx_trade(),
+            column_name: ColumnName::fx_amount(),
+        }
     }
 
     pub fn fx_city_temperature_timestamp() -> Self {
-        Self::new(
-            StreamName::fx_city_temperature(),
-            ColumnName::fx_timestamp(),
-        )
+        Self::Column {
+            stream_name: StreamName::fx_city_temperature(),
+            column_name: ColumnName::fx_timestamp(),
+        }
     }
     pub fn fx_city_temperature_city() -> Self {
-        Self::new(StreamName::fx_city_temperature(), ColumnName::fx_city())
+        Self::Column {
+            stream_name: StreamName::fx_city_temperature(),
+            column_name: ColumnName::fx_city(),
+        }
     }
     pub fn fx_city_temperature_temperature() -> Self {
-        Self::new(
-            StreamName::fx_city_temperature(),
-            ColumnName::fx_temperature(),
-        )
+        Self::Column {
+            stream_name: StreamName::fx_city_temperature(),
+            column_name: ColumnName::fx_temperature(),
+        }
     }
 }
 

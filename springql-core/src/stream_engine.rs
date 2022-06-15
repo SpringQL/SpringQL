@@ -13,7 +13,7 @@ use std::sync::{Arc, Mutex, MutexGuard};
 use anyhow::anyhow;
 
 pub use crate::stream_engine::autonomous_executor::SpringValue;
-pub use autonomous_executor::{NnSqlValue, Row, SqlCompareResult, SqlValue, Tuple};
+pub use autonomous_executor::{NnSqlValue, Row, RowTime, SqlCompareResult, SqlValue, Tuple};
 
 use crate::{
     api::{error::Result, SpringConfig, SpringError},

@@ -41,7 +41,7 @@ pub trait Window {
         Vec<<<Self as Window>::Pane as Pane>::CloseOut>,
         WindowInFlowByWindowTask,
     ) {
-        let rowtime = *tuple.rowtime();
+        let rowtime = tuple.rowtime().as_timestamp();
 
         if rowtime < self.watermark().as_timestamp() {
             // too late tuple does not have any chance to be dispatched nor to close a pane.

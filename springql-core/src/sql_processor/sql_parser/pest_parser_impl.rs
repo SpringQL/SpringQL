@@ -915,13 +915,23 @@ impl PestParserImpl {
             Self::parse_correlation,
             identity,
         )?;
-        let column_name = parse_child(
-            &mut params,
-            Rule::column_name,
-            Self::parse_column_name,
-            identity,
-        )?;
-        Ok(ColumnReference::new(correlation, column_name))
+
+        if try_parse_child(&mut params, Rule::ptime_column_name, |_| Ok(()), identity)?.is_some() {
+            Ok(ColumnReference::PTime {
+                stream_name: correlation,
+            })
+        } else {
+            let column_name = parse_child(
+                &mut params,
+                Rule::column_name,
+                Self::parse_column_name,
+                identity,
+            )?;
+            Ok(ColumnReference::Column {
+                stream_name: correlation,
+                column_name,
+            })
+        }
     }
 
     /*
