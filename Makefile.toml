@@ -113,7 +113,7 @@ cat target/cargo-deadlinks.out | sort | uniq > target/cargo-deadlinks.sort
 cat deadlinks.expected | sort | uniq > target/cargo-deadlinks.expected.sort
 diff -u target/cargo-deadlinks.expected.sort target/cargo-deadlinks.sort
 
-mlc --ignore-path target
+mlc --ignore-path target --throttle 15
 
 ''']
 
