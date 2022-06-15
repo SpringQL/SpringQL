@@ -7,6 +7,7 @@ pub use pane::{AggrPane, AggrPaneInner, GroupByValues, JoinDir, JoinPane, Pane};
 use std::cmp::Ordering;
 
 use crate::{
+    api::SpringError,
     pipeline::{WindowOperationParameter, WindowParameter},
     stream_engine::{
         autonomous_executor::task::window::watermark::Watermark,
@@ -44,12 +45,16 @@ where
     /// Then, return all panes to get a tuple with the `rowtime`.
     ///
     /// Caller must assure rowtime is not smaller than watermark.
-    pub fn panes_to_dispatch(&mut self, rowtime: SpringTimestamp) -> impl Iterator<Item = &mut P> {
-        self.generate_panes_if_not_exist(rowtime);
+    pub fn panes_to_dispatch(
+        &mut self,
+        rowtime: SpringTimestamp,
+    ) -> Result<impl Iterator<Item = &mut P>, SpringError> {
+        self.generate_panes_if_not_exist(rowtime)?;
 
-        self.panes
+        Ok(self
+            .panes
             .iter_mut()
-            .filter(move |pane| pane.is_acceptable(&rowtime))
+            .filter(move |pane| pane.is_acceptable(&rowtime)))
     }
 
     pub fn remove_panes_to_close(&mut self, watermark: &Watermark) -> Vec<P> {
@@ -74,10 +79,10 @@ where
         self.panes.clear()
     }
 
-    fn generate_panes_if_not_exist(&mut self, rowtime: SpringTimestamp) {
+    fn generate_panes_if_not_exist(&mut self, rowtime: SpringTimestamp) -> Result<(), SpringError> {
         // Sort-Merge Join like algorithm
         let mut pane_idx = 0;
-        for open_at in self.valid_open_at_s(rowtime) {
+        for open_at in self.valid_open_at_s(rowtime)? {
             loop {
                 if pane_idx < self.panes.len() {
                     match open_at.cmp(&self.panes[pane_idx].open_at()) {
@@ -98,14 +103,18 @@ where
                 }
             }
         }
+        Ok(())
     }
 
-    fn valid_open_at_s(&self, rowtime: SpringTimestamp) -> Vec<SpringTimestamp> {
+    fn valid_open_at_s(
+        &self,
+        rowtime: SpringTimestamp,
+    ) -> Result<Vec<SpringTimestamp>, SpringError> {
         let mut ret = vec![];
 
         let leftmost_open_at = {
             let l = (rowtime - self.window_param.length().to_duration())
-                .ceil(self.window_param.period().to_duration());
+                .ceil(self.window_param.period().to_duration())?;
 
             // edge case
             if l == rowtime - self.window_param.length().to_duration() {
@@ -114,7 +123,7 @@ where
                 l
             }
         };
-        let rightmost_open_at = rowtime.floor(self.window_param.period().to_duration());
+        let rightmost_open_at = rowtime.floor(self.window_param.period().to_duration())?;
 
         let mut open_at = leftmost_open_at;
         while open_at <= rightmost_open_at {
@@ -122,7 +131,7 @@ where
             open_at = open_at + self.window_param.period().to_duration();
         }
 
-        ret
+        Ok(ret)
     }
 
     fn generate_pane(&self, open_at: SpringTimestamp) -> P {
@@ -197,18 +206,22 @@ mod tests {
             SpringEventDuration::from_secs(5),
         );
         assert_eq!(
-            panes.valid_open_at_s(
-                SpringTimestamp::from_str("2020-01-01 00:00:05.000000000").unwrap()
-            ),
+            panes
+                .valid_open_at_s(
+                    SpringTimestamp::from_str("2020-01-01 00:00:05.000000000").unwrap()
+                )
+                .unwrap(),
             vec![
                 SpringTimestamp::from_str("2020-01-01 00:00:00.000000000").unwrap(),
                 SpringTimestamp::from_str("2020-01-01 00:00:05.000000000").unwrap()
             ]
         );
         assert_eq!(
-            panes.valid_open_at_s(
-                SpringTimestamp::from_str("2020-01-01 00:00:09.999999999").unwrap()
-            ),
+            panes
+                .valid_open_at_s(
+                    SpringTimestamp::from_str("2020-01-01 00:00:09.999999999").unwrap()
+                )
+                .unwrap(),
             vec![
                 SpringTimestamp::from_str("2020-01-01 00:00:00.000000000").unwrap(),
                 SpringTimestamp::from_str("2020-01-01 00:00:05.000000000").unwrap()
@@ -220,15 +233,19 @@ mod tests {
             SpringEventDuration::from_secs(10),
         );
         assert_eq!(
-            panes.valid_open_at_s(
-                SpringTimestamp::from_str("2020-01-01 00:00:00.000000000").unwrap()
-            ),
+            panes
+                .valid_open_at_s(
+                    SpringTimestamp::from_str("2020-01-01 00:00:00.000000000").unwrap()
+                )
+                .unwrap(),
             vec![SpringTimestamp::from_str("2020-01-01 00:00:00.000000000").unwrap(),]
         );
         assert_eq!(
-            panes.valid_open_at_s(
-                SpringTimestamp::from_str("2020-01-01 00:00:09.999999999").unwrap()
-            ),
+            panes
+                .valid_open_at_s(
+                    SpringTimestamp::from_str("2020-01-01 00:00:09.999999999").unwrap()
+                )
+                .unwrap(),
             vec![SpringTimestamp::from_str("2020-01-01 00:00:00.000000000").unwrap(),]
         );
     }

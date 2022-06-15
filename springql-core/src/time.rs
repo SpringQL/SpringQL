@@ -12,24 +12,14 @@ pub enum TimeError {
     ParseError(#[from] time::error::Parse),
     #[error("Fomatting Error {0}")]
     FormatError(#[from] time::error::Format),
+    #[error("Overflow {0}")]
+    OverflowError(#[from] time::error::ConversionRange),
+    #[error("Range {0}")]
+    ComponentRange(#[from] time::error::ComponentRange),
 }
 
 #[derive(Debug, Copy, Clone)]
 pub struct Duration(time::Duration);
-
-fn to_std_duration(time_duration: time::Duration) -> std::time::Duration {
-    std::time::Duration::new(
-        time_duration.whole_seconds() as u64,
-        time_duration.subsec_nanoseconds() as u32,
-    )
-}
-
-fn from_std_dration(std_duration: std::time::Duration) -> time::Duration {
-    time::Duration::new(
-        std_duration.as_secs() as i64,
-        std_duration.subsec_nanos() as i32,
-    )
-}
 
 impl Duration {
     pub fn seconds(seconds: i64) -> Self {
@@ -61,15 +51,15 @@ impl Duration {
     }
 
     pub fn from_std(std_duration: std::time::Duration) -> Result<Self, TimeError> {
-        Ok(Duration(from_std_dration(std_duration)))
+        Ok(Duration(time::Duration::try_from(std_duration)?))
     }
 
     pub fn to_std(self) -> Result<std::time::Duration, TimeError> {
-        Ok(to_std_duration(self.0))
+        Ok(std::time::Duration::try_from(self.0)?)
     }
 
-    pub fn num_nanoseconds(&self) -> Option<i64> {
-        Some(self.0.whole_nanoseconds() as i64)
+    pub fn num_nanoseconds(&self) -> i128 {
+        self.0.whole_nanoseconds()
     }
 }
 
@@ -133,15 +123,15 @@ impl NaiveDateTime {
         let utc_now = time::OffsetDateTime::now_utc();
         Self(to_primitive(utc_now))
     }
-    pub fn timestamp_nanos(&self) -> i64 {
+    pub fn timestamp_nanos(&self) -> i128 {
         let ofs_time = self.0.assume_utc();
-        ofs_time.unix_timestamp_nanos() as i64
+        ofs_time.unix_timestamp_nanos()
     }
 
-    pub fn from_timestamp(secs: i64, nsecs: u32) -> Self {
+    pub fn from_timestamp(secs: i64, nsecs: u32) -> Result<Self, TimeError> {
         let timestamp = ((secs as i128) * 1_000_000_000) + (nsecs as i128);
-        let odt = time::OffsetDateTime::from_unix_timestamp_nanos(timestamp).unwrap();
-        Self(to_primitive(odt))
+        let odt = time::OffsetDateTime::from_unix_timestamp_nanos(timestamp)?;
+        Ok(Self(to_primitive(odt)))
     }
 
     pub fn parse_from_str(s: &str) -> Result<Self, TimeError> {
