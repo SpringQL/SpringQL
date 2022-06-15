@@ -16,3 +16,19 @@ repository = "https://github.com/SpringQL/SpringQL"
 
 [dependencies]
 springql-core = {path="../springql-core"}
+
+[dev-dependencies]
+springql-foreign-service = {path = "../foreign-service"}
+springql-test-logger = {path = "../test-logger"}
+springql-test-web-console-mock = {path = "../test-web-console-mock"}
+pretty_assertions = "1.0"
+regex = "1.5"
+float-cmp = "0.9"
+tempfile = "3.3"
+rand = {version = "0.8", features = ["small_rng"]}
+serde = {version = "1.0", features = ["derive"], default-features = false}
+serde_json = "1.0"
+env_logger = "0.9"
+reqwest = {version = "0.11", features = ["json", "blocking"], default-features = false}
+log = "0.4"
+chrono = "0.4"
