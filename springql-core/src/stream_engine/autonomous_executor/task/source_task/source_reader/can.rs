@@ -133,7 +133,10 @@ impl CANSourceReader {
 mod tests {
     use std::sync::Arc;
 
-    use crate::pipeline::{StreamModel, StreamName, StreamShape};
+    use crate::{
+        pipeline::{StreamModel, StreamName, StreamShape},
+        stream_engine::SqlValue,
+    };
 
     use super::*;
 
@@ -150,13 +153,18 @@ mod tests {
             .into_row(Arc::new(stream))
             .unwrap();
 
-        let got_can_id: i32 = row.get_by_index(0).unwrap().unwrap().unpack().unwrap();
-        assert_eq!(got_can_id, can_id as i32);
+        if let SqlValue::NotNull(got_can_id) = row.get_by_index(0).unwrap() {
+            let got_can_id: i32 = got_can_id.unpack().unwrap();
+            assert_eq!(got_can_id, can_id as i32);
+        } else {
+            unreachable!()
+        }
 
-        let can_data_len: i16 = row.get_by_index(1).unwrap().unwrap().unpack().unwrap();
-        assert_eq!(can_data_len as usize, can_data.len());
-
-        let got_can_data: Vec<u8> = row.get_by_index(2).unwrap().unwrap().unpack().unwrap();
-        assert_eq!(got_can_data, can_data);
+        if let SqlValue::NotNull(got_can_data) = row.get_by_index(1).unwrap() {
+            let got_can_data: Vec<u8> = got_can_data.unpack().unwrap();
+            assert_eq!(got_can_data, can_data);
+        } else {
+            unreachable!()
+        }
     }
 }
