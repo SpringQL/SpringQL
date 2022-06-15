@@ -212,30 +212,34 @@ mod tests {
 
                 // [:55, :05): ("GOOGL", 100)
                 // [:00, :10): ("GOOGL", 100)
-                let (out, window_in_flow) = window.dispatch(
-                    &expr_resolver,
-                    Tuple::factory_trade(
-                        SpringTimestamp::from_str("2020-01-01 00:00:00.000000000").unwrap(),
-                        "GOOGL",
-                        100,
-                    ),
-                    (),
-                );
+                let (out, window_in_flow) = window
+                    .dispatch(
+                        &expr_resolver,
+                        Tuple::factory_trade(
+                            SpringTimestamp::from_str("2020-01-01 00:00:00.000000000").unwrap(),
+                            "GOOGL",
+                            100,
+                        ),
+                        (),
+                    )
+                    .unwrap();
                 assert!(out.is_empty());
                 assert_eq!(window_in_flow.window_gain_bytes_states, 0);
                 assert_eq!(window_in_flow.window_gain_bytes_rows, 0);
 
                 // [:55, :05): ("GOOGL", 100), ("ORCL", 100)
                 // [:00, :10): ("GOOGL", 100), ("ORCL", 100)
-                let (out, window_in_flow) = window.dispatch(
-                    &expr_resolver,
-                    Tuple::factory_trade(
-                        SpringTimestamp::from_str("2020-01-01 00:00:04.999999999").unwrap(),
-                        "ORCL",
-                        100,
-                    ),
-                    (),
-                );
+                let (out, window_in_flow) = window
+                    .dispatch(
+                        &expr_resolver,
+                        Tuple::factory_trade(
+                            SpringTimestamp::from_str("2020-01-01 00:00:04.999999999").unwrap(),
+                            "ORCL",
+                            100,
+                        ),
+                        (),
+                    )
+                    .unwrap();
                 assert!(out.is_empty());
                 assert_eq!(window_in_flow.window_gain_bytes_states, 0);
                 assert_eq!(window_in_flow.window_gain_bytes_rows, 0);
@@ -244,15 +248,17 @@ mod tests {
                 //
                 // [:00, :10): ("GOOGL", 100), ("ORCL", 100), ("ORCL", 400)
                 // [:05, :15):                                ("ORCL", 400)
-                let (mut out, window_in_flow) = window.dispatch(
-                    &expr_resolver,
-                    Tuple::factory_trade(
-                        SpringTimestamp::from_str("2020-01-01 00:00:06.000000000").unwrap(),
-                        "ORCL",
-                        400,
-                    ),
-                    (),
-                );
+                let (mut out, window_in_flow) = window
+                    .dispatch(
+                        &expr_resolver,
+                        Tuple::factory_trade(
+                            SpringTimestamp::from_str("2020-01-01 00:00:06.000000000").unwrap(),
+                            "ORCL",
+                            400,
+                        ),
+                        (),
+                    )
+                    .unwrap();
                 assert_eq!(out.len(), 2);
                 out.sort_by_key(|aggregated_and_grouping_values| {
                     sort_key(&group_by_label, aggregated_and_grouping_values)
@@ -277,15 +283,17 @@ mod tests {
                 // [:00, :10): ("GOOGL", 100), ("ORCL", 100), ("ORCL", 400) <-- !!NOT CLOSED YET (within delay)!!
                 // [:05, :15):                                ("ORCL", 400), ("ORCL", 100)
                 // [:10, :20):                                               ("ORCL", 100)
-                let (out, window_in_flow) = window.dispatch(
-                    &expr_resolver,
-                    Tuple::factory_trade(
-                        SpringTimestamp::from_str("2020-01-01 00:00:10.999999999").unwrap(),
-                        "ORCL",
-                        100,
-                    ),
-                    (),
-                );
+                let (out, window_in_flow) = window
+                    .dispatch(
+                        &expr_resolver,
+                        Tuple::factory_trade(
+                            SpringTimestamp::from_str("2020-01-01 00:00:10.999999999").unwrap(),
+                            "ORCL",
+                            100,
+                        ),
+                        (),
+                    )
+                    .unwrap();
                 assert!(out.is_empty());
                 assert_eq!(window_in_flow.window_gain_bytes_states, 0);
                 assert_eq!(window_in_flow.window_gain_bytes_rows, 0);
@@ -295,15 +303,17 @@ mod tests {
                 // [:00, :10): ("GOOGL", 100), ("ORCL", 100), ("ORCL", 400)
                 // [:05, :15):                                ("ORCL", 400), ("ORCL", 100)
                 // [:10, :20):                                               ("ORCL", 100)
-                let (out, window_in_flow) = window.dispatch(
-                    &expr_resolver,
-                    Tuple::factory_trade(
-                        SpringTimestamp::from_str("2020-01-01 00:00:09.999999998").unwrap(),
-                        "ORCL",
-                        100,
-                    ),
-                    (),
-                );
+                let (out, window_in_flow) = window
+                    .dispatch(
+                        &expr_resolver,
+                        Tuple::factory_trade(
+                            SpringTimestamp::from_str("2020-01-01 00:00:09.999999998").unwrap(),
+                            "ORCL",
+                            100,
+                        ),
+                        (),
+                    )
+                    .unwrap();
                 assert!(out.is_empty());
                 assert_eq!(window_in_flow.window_gain_bytes_states, 0);
                 assert_eq!(window_in_flow.window_gain_bytes_rows, 0);
@@ -311,15 +321,17 @@ mod tests {
                 // [:00, :10): ("GOOGL", 100), ("ORCL", 100), ("ORCL", 400),                ("ORCL", 100) <-- !!LATE DATA!!
                 // [:05, :15):                                ("ORCL", 400), ("ORCL", 100), ("ORCL", 100)
                 // [:10, :20):                                               ("ORCL", 100)
-                let (out, window_in_flow) = window.dispatch(
-                    &expr_resolver,
-                    Tuple::factory_trade(
-                        SpringTimestamp::from_str("2020-01-01 00:00:09.9999999999").unwrap(),
-                        "ORCL",
-                        100,
-                    ),
-                    (),
-                );
+                let (out, window_in_flow) = window
+                    .dispatch(
+                        &expr_resolver,
+                        Tuple::factory_trade(
+                            SpringTimestamp::from_str("2020-01-01 00:00:09.9999999999").unwrap(),
+                            "ORCL",
+                            100,
+                        ),
+                        (),
+                    )
+                    .unwrap();
                 assert!(out.is_empty());
                 assert_eq!(window_in_flow.window_gain_bytes_states, 0);
                 assert_eq!(window_in_flow.window_gain_bytes_rows, 0);
@@ -328,15 +340,17 @@ mod tests {
                 //
                 // [:05, :15):                                ("ORCL", 400), ("ORCL", 100), ("ORCL", 100), ("ORCL", 100)
                 // [:10, :20):                                               ("ORCL", 100),                ("ORCL", 100)
-                let (mut out, window_in_flow) = window.dispatch(
-                    &expr_resolver,
-                    Tuple::factory_trade(
-                        SpringTimestamp::from_str("2020-01-01 00:00:11.000000000").unwrap(),
-                        "ORCL",
-                        100,
-                    ),
-                    (),
-                );
+                let (mut out, window_in_flow) = window
+                    .dispatch(
+                        &expr_resolver,
+                        Tuple::factory_trade(
+                            SpringTimestamp::from_str("2020-01-01 00:00:11.000000000").unwrap(),
+                            "ORCL",
+                            100,
+                        ),
+                        (),
+                    )
+                    .unwrap();
                 assert_eq!(out.len(), 2);
                 out.sort_by_key(|aggregated_and_grouping_values| {
                     sort_key(&group_by_label, aggregated_and_grouping_values)
@@ -363,15 +377,17 @@ mod tests {
                 //
                 // [:15, :25):                                                                                           ("ORCL", 100)
                 // [:20, :30):                                                                                           ("ORCL", 100)
-                let (out, window_in_flow) = window.dispatch(
-                    &expr_resolver,
-                    Tuple::factory_trade(
-                        SpringTimestamp::from_str("2020-01-01 00:00:21.000000000").unwrap(),
-                        "ORCL",
-                        100,
-                    ),
-                    (),
-                );
+                let (out, window_in_flow) = window
+                    .dispatch(
+                        &expr_resolver,
+                        Tuple::factory_trade(
+                            SpringTimestamp::from_str("2020-01-01 00:00:21.000000000").unwrap(),
+                            "ORCL",
+                            100,
+                        ),
+                        (),
+                    )
+                    .unwrap();
                 assert_eq!(out.len(), 2);
                 t_expect(
                     aggr_label,
@@ -442,58 +458,66 @@ mod tests {
                 );
 
                 // [:00, :10): ("GOOGL", 100)
-                let (out, window_in_flow) = window.dispatch(
-                    &expr_resolver,
-                    Tuple::factory_trade(
-                        SpringTimestamp::from_str("2020-01-01 00:00:00.000000000").unwrap(),
-                        "GOOGL",
-                        100,
-                    ),
-                    (),
-                );
+                let (out, window_in_flow) = window
+                    .dispatch(
+                        &expr_resolver,
+                        Tuple::factory_trade(
+                            SpringTimestamp::from_str("2020-01-01 00:00:00.000000000").unwrap(),
+                            "GOOGL",
+                            100,
+                        ),
+                        (),
+                    )
+                    .unwrap();
                 assert!(out.is_empty());
                 assert_eq!(window_in_flow.window_gain_bytes_states, 0);
                 assert_eq!(window_in_flow.window_gain_bytes_rows, 0);
 
                 // [:00, :10): ("GOOGL", 100), ("ORCL", 100)
-                let (out, window_in_flow) = window.dispatch(
-                    &expr_resolver,
-                    Tuple::factory_trade(
-                        SpringTimestamp::from_str("2020-01-01 00:00:09.000000000").unwrap(),
-                        "ORCL",
-                        100,
-                    ),
-                    (),
-                );
+                let (out, window_in_flow) = window
+                    .dispatch(
+                        &expr_resolver,
+                        Tuple::factory_trade(
+                            SpringTimestamp::from_str("2020-01-01 00:00:09.000000000").unwrap(),
+                            "ORCL",
+                            100,
+                        ),
+                        (),
+                    )
+                    .unwrap();
                 assert!(out.is_empty());
                 assert_eq!(window_in_flow.window_gain_bytes_states, 0);
                 assert_eq!(window_in_flow.window_gain_bytes_rows, 0);
 
                 // [:00, :10): ("GOOGL", 100), ("ORCL", 100), ("ORCL", 400)
-                let (out, window_in_flow) = window.dispatch(
-                    &expr_resolver,
-                    Tuple::factory_trade(
-                        SpringTimestamp::from_str("2020-01-01 00:00:09.999999999").unwrap(),
-                        "ORCL",
-                        400,
-                    ),
-                    (),
-                );
+                let (out, window_in_flow) = window
+                    .dispatch(
+                        &expr_resolver,
+                        Tuple::factory_trade(
+                            SpringTimestamp::from_str("2020-01-01 00:00:09.999999999").unwrap(),
+                            "ORCL",
+                            400,
+                        ),
+                        (),
+                    )
+                    .unwrap();
                 assert!(out.is_empty());
                 assert_eq!(window_in_flow.window_gain_bytes_states, 0);
                 assert_eq!(window_in_flow.window_gain_bytes_rows, 0);
 
                 // [:00, :10): ("GOOGL", 100), ("ORCL", 100), ("ORCL", 400) <-- !!NOT CLOSED YET (within delay)!!
                 // [:10, :20):                                               ("ORCL", 100)
-                let (out, window_in_flow) = window.dispatch(
-                    &expr_resolver,
-                    Tuple::factory_trade(
-                        SpringTimestamp::from_str("2020-01-01 00:00:10.999999999").unwrap(),
-                        "ORCL",
-                        100,
-                    ),
-                    (),
-                );
+                let (out, window_in_flow) = window
+                    .dispatch(
+                        &expr_resolver,
+                        Tuple::factory_trade(
+                            SpringTimestamp::from_str("2020-01-01 00:00:10.999999999").unwrap(),
+                            "ORCL",
+                            100,
+                        ),
+                        (),
+                    )
+                    .unwrap();
                 assert!(out.is_empty());
                 assert_eq!(window_in_flow.window_gain_bytes_states, 0);
                 assert_eq!(window_in_flow.window_gain_bytes_rows, 0);
@@ -502,30 +526,34 @@ mod tests {
                 //
                 // [:00, :10): ("GOOGL", 100), ("ORCL", 100), ("ORCL", 400)
                 // [:10, :20):                                               ("ORCL", 100)
-                let (out, window_in_flow) = window.dispatch(
-                    &expr_resolver,
-                    Tuple::factory_trade(
-                        SpringTimestamp::from_str("2020-01-01 00:00:09.999999998").unwrap(),
-                        "ORCL",
-                        100,
-                    ),
-                    (),
-                );
+                let (out, window_in_flow) = window
+                    .dispatch(
+                        &expr_resolver,
+                        Tuple::factory_trade(
+                            SpringTimestamp::from_str("2020-01-01 00:00:09.999999998").unwrap(),
+                            "ORCL",
+                            100,
+                        ),
+                        (),
+                    )
+                    .unwrap();
                 assert!(out.is_empty());
                 assert_eq!(window_in_flow.window_gain_bytes_states, 0);
                 assert_eq!(window_in_flow.window_gain_bytes_rows, 0);
 
                 // [:00, :10): ("GOOGL", 100), ("ORCL", 100), ("ORCL", 400),                ("ORCL", 100) <-- !!LATE DATA!!
                 // [:10, :20):                                               ("ORCL", 100)
-                let (out, window_in_flow) = window.dispatch(
-                    &expr_resolver,
-                    Tuple::factory_trade(
-                        SpringTimestamp::from_str("2020-01-01 00:00:09.9999999999").unwrap(),
-                        "ORCL",
-                        100,
-                    ),
-                    (),
-                );
+                let (out, window_in_flow) = window
+                    .dispatch(
+                        &expr_resolver,
+                        Tuple::factory_trade(
+                            SpringTimestamp::from_str("2020-01-01 00:00:09.9999999999").unwrap(),
+                            "ORCL",
+                            100,
+                        ),
+                        (),
+                    )
+                    .unwrap();
                 assert!(out.is_empty());
                 assert_eq!(window_in_flow.window_gain_bytes_states, 0);
                 assert_eq!(window_in_flow.window_gain_bytes_rows, 0);
@@ -533,15 +561,17 @@ mod tests {
                 // [:00, :10): -> "GOOGL" AVG = 100; "ORCL" AVG = 200
                 //
                 // [:10, :20):                                               ("ORCL", 100),                ("ORCL", 100)
-                let (mut out, window_in_flow) = window.dispatch(
-                    &expr_resolver,
-                    Tuple::factory_trade(
-                        SpringTimestamp::from_str("2020-01-01 00:00:11.000000000").unwrap(),
-                        "ORCL",
-                        100,
-                    ),
-                    (),
-                );
+                let (mut out, window_in_flow) = window
+                    .dispatch(
+                        &expr_resolver,
+                        Tuple::factory_trade(
+                            SpringTimestamp::from_str("2020-01-01 00:00:11.000000000").unwrap(),
+                            "ORCL",
+                            100,
+                        ),
+                        (),
+                    )
+                    .unwrap();
                 assert_eq!(out.len(), 2);
                 out.sort_by_key(|aggregated_and_grouping_values| {
                     sort_key(&group_by_label, aggregated_and_grouping_values)
@@ -566,15 +596,17 @@ mod tests {
                 // [:10, :20): -> "ORCL" = 100
                 //
                 // [:20, :30):                                                                                           ("ORCL", 100)
-                let (out, window_in_flow) = window.dispatch(
-                    &expr_resolver,
-                    Tuple::factory_trade(
-                        SpringTimestamp::from_str("2020-01-01 00:00:21.000000000").unwrap(),
-                        "ORCL",
-                        100,
-                    ),
-                    (),
-                );
+                let (out, window_in_flow) = window
+                    .dispatch(
+                        &expr_resolver,
+                        Tuple::factory_trade(
+                            SpringTimestamp::from_str("2020-01-01 00:00:21.000000000").unwrap(),
+                            "ORCL",
+                            100,
+                        ),
+                        (),
+                    )
+                    .unwrap();
                 assert_eq!(out.len(), 1);
                 t_expect(
                     aggr_label,
