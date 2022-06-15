@@ -131,7 +131,7 @@ mod tests {
             let ts = SpringTimestamp::from_str(ts).unwrap();
             let expected = SpringTimestamp::from_str(expected).unwrap();
 
-            let actual = ts.floor(resolution)?;
+            let actual = ts.floor(resolution).unwrap();
             assert_eq!(actual, expected);
         }
 
@@ -224,7 +224,7 @@ mod tests {
             let ts = SpringTimestamp::from_str(ts).unwrap();
             let expected = SpringTimestamp::from_str(expected).unwrap();
 
-            let actual = ts.ceil(resolution)?;
+            let actual = ts.ceil(resolution).unwrap();
             assert_eq!(actual, expected);
         }
 
