@@ -33,6 +33,7 @@ impl JoinSubtask {
             .lock()
             .expect("another thread accessing to window gets poisoned")
             .dispatch(expr_resolver, tuple, dir)
+            .expect("dispatch failed")
     }
 
     pub fn get_window_mut(&self) -> MutexGuard<JoinWindow> {

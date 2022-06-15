@@ -34,9 +34,9 @@ impl MemSize for SpringTimestamp {
 
 impl SpringTimestamp {
     /// Note: `2262-04-11T23:47:16.854775804` is the maximum possible timestamp because it uses nano-sec unixtime internally.
-    pub fn floor(&self, resolution: Duration) -> SpringTimestamp {
+    pub fn floor(&self, resolution: Duration) -> Result<SpringTimestamp> {
         let ts_nano = self.0.timestamp_nanos();
-        let resolution_nano = resolution.num_nanoseconds().expect("no overflow");
+        let resolution_nano = resolution.num_nanoseconds();
         assert!(resolution_nano > 0);
 
         let floor_ts_nano = (ts_nano / resolution_nano) * resolution_nano;
@@ -44,19 +44,20 @@ impl SpringTimestamp {
         let floor_naive_date_time = {
             let floor_ts_secs = floor_ts_nano / 1_000_000_000;
             let floor_ts_nanos = floor_ts_nano % 1_000_000_000;
-            NaiveDateTime::from_timestamp(floor_ts_secs, floor_ts_nanos as u32)
+            NaiveDateTime::from_timestamp(floor_ts_secs as i64, floor_ts_nanos as u32)
+                .map_err(|e| SpringError::Time(e))?
         };
 
-        SpringTimestamp(floor_naive_date_time)
+        Ok(SpringTimestamp(floor_naive_date_time))
     }
 
     /// Note: `2262-04-11T23:47:16.854775804` is the maximum possible timestamp because it uses nano-sec unixtime internally.
-    pub fn ceil(&self, resolution: Duration) -> SpringTimestamp {
-        let floor = self.floor(resolution);
+    pub fn ceil(&self, resolution: Duration) -> Result<SpringTimestamp> {
+        let floor = self.floor(resolution)?;
         if &floor == self {
-            floor
+            Ok(floor)
         } else {
-            floor + resolution
+            Ok(floor + resolution)
         }
     }
 
@@ -130,7 +131,7 @@ mod tests {
             let ts = SpringTimestamp::from_str(ts).unwrap();
             let expected = SpringTimestamp::from_str(expected).unwrap();
 
-            let actual = ts.floor(resolution);
+            let actual = ts.floor(resolution)?;
             assert_eq!(actual, expected);
         }
 
@@ -223,7 +224,7 @@ mod tests {
             let ts = SpringTimestamp::from_str(ts).unwrap();
             let expected = SpringTimestamp::from_str(expected).unwrap();
 
-            let actual = ts.ceil(resolution);
+            let actual = ts.ceil(resolution)?;
             assert_eq!(actual, expected);
         }
 
