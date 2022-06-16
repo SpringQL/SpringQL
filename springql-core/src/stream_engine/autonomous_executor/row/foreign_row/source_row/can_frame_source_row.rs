@@ -15,7 +15,10 @@ use crate::{
 pub struct CANFrameSourceRow(CANFrame);
 
 impl CANFrameSourceRow {
-    /// fixed columns
+    /// # Failure
+    /// 
+    /// - `SpringError::Sql` when:
+    ///   - `stream_model` 
     pub fn into_row(self, stream_model: Arc<StreamModel>) -> Result<Row> {
         todo!("use fixed columns (ptime, id, data)")
     }
