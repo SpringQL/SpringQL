@@ -8,7 +8,7 @@ mod timer;
 use std::{path::Path, thread, time::Duration};
 
 use anyhow::{Context, Result};
-use chrono::{DateTime, FixedOffset};
+use time::{format_description::well_known, OffsetDateTime};
 
 use crate::source::source_input::timed_stream::{
     file_parser::FileParser, file_type::FileType, timer::Timer,
@@ -33,7 +33,7 @@ impl TimedStream {
         file_type: FileType,
         file_path: P,
         timestamp_field: String,
-        virt_initial_datetime: DateTime<FixedOffset>,
+        virt_initial_datetime: OffsetDateTime,
     ) -> Result<Self> {
         let file_parser = FileParser::new(file_type, file_path)?;
         let timer = Timer::new(virt_initial_datetime.into());
@@ -64,7 +64,7 @@ impl Iterator for TimedStream {
                 )
             })?;
             let timestamp =
-                DateTime::parse_from_rfc3339(timestamp_s)
+                OffsetDateTime::parse(timestamp_s, &well_known::Rfc3339)
                     .with_context(||
                         format!(
                             r#"timestamp field "{}" is not in RFC 3339 format. Correct example: "1996-12-19T16:39:57-08:00""#,
