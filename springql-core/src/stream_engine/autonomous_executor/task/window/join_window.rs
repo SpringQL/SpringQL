@@ -195,7 +195,7 @@ mod tests {
             .dispatch(
                 &expr_resolver,
                 Tuple::factory_city_temperature(
-                    SpringTimestamp::from_str("2020-01-01 00:00:00.0000000000").unwrap(),
+                    SpringTimestamp::from_str("2020-01-01 00:00:00.000000000").unwrap(),
                     "",
                     10,
                 ),
@@ -282,7 +282,7 @@ mod tests {
             .dispatch(
                 &expr_resolver,
                 Tuple::factory_trade(
-                    SpringTimestamp::from_str("2020-01-01 00:00:11.0000000000").unwrap(),
+                    SpringTimestamp::from_str("2020-01-01 00:00:11.000000000").unwrap(),
                     "",
                     600,
                 ),
@@ -292,7 +292,7 @@ mod tests {
         assert_eq!(out.len(), 3);
         t_expect(
             out.get(0).cloned().unwrap(),
-            SpringTimestamp::from_str("2020-01-01 00:00:00.0000000000").unwrap(),
+            SpringTimestamp::from_str("2020-01-01 00:00:00.000000000").unwrap(),
             100,
             Some(10),
         );

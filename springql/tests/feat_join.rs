@@ -2,38 +2,79 @@
 
 mod test_support;
 
-use std::thread;
-use std::time::Duration;
-
-use log::LevelFilter;
+use pretty_assertions::assert_eq;
 use serde_json::json;
-use springql_core::api::*;
+use springql::*;
 use springql_foreign_service::{
     sink::ForeignSink,
     source::{ForeignSource, ForeignSourceInput},
 };
-use springql_test_logger::setup_test_logger_with_level;
+use springql_test_logger::setup_test_logger;
 
 use crate::test_support::*;
 
-/// every row has the same timestamp (a time-based window preserves rows forever)
-fn _gen_source_input(n: u64) -> impl Iterator<Item = serde_json::Value> {
-    (0..n).map(move |_| {
-        let ts = "2020-01-01 00:00:00.000000000".to_string();
-        let ticker = String::from_iter(std::iter::repeat('X').take(1000));
-        let amount = 100;
-        json!({
-            "ts": ts,
-            "ticker": ticker,
-            "amount": amount,
-        })
-    })
+fn gen_source_trade() -> Vec<serde_json::Value> {
+    let json_00_1 = json!({
+        "ts": "2020-01-01 00:00:00.000000000",
+        "ticker": "ORCL",
+        "amount": 10,
+    });
+    let json_00_2 = json!({
+        "ts": "2020-01-01 00:00:09.999999999",
+        "ticker": "GOOGL",
+        "amount": 30,
+    });
+    let json_10_1 = json!({
+        "ts": "2020-01-01 00:00:10.000000000",
+        "ticker": "IBM",
+        "amount": 50,
+    });
+    let json_20_1 = json!({
+        "ts": "2020-01-01 00:00:20.000000000",
+        "ticker": "IBM",
+        "amount": 70,
+    });
+
+    vec![json_00_1, json_00_2, json_10_1, json_20_1]
 }
 
-fn t(n_in_rows: u64, upper_limit_bytes: u64) {
-    setup_test_logger_with_level(LevelFilter::Warn);
+fn gen_source_city_temperature() -> Vec<serde_json::Value> {
+    let json_00_1 = json!({
+        "ts": "2020-01-01 00:00:00.000000000",
+        "city": "Tokyo",
+        "temperature": -3,
+    });
 
-    let source_trade = _gen_source_input(n_in_rows).collect();
+    vec![json_00_1]
+}
+
+fn run_and_drain(
+    ddls: &[String],
+    test_source_trade_input: ForeignSourceInput,
+    test_source_trade: ForeignSource,
+    test_source_city_temperature_input: ForeignSourceInput,
+    test_source_city_temperature: ForeignSource,
+    test_sink: &ForeignSink,
+) -> Vec<serde_json::Value> {
+    let _pipeline = apply_ddls(ddls, SpringConfig::default());
+
+    test_source_trade.start(test_source_trade_input);
+    test_source_city_temperature.start(test_source_city_temperature_input);
+
+    let mut sink_received = drain_from_sink(test_sink);
+    sink_received.sort_by_key(|r| {
+        let ts = &r["ts"];
+        ts.as_str().unwrap().to_string()
+    });
+    sink_received
+}
+
+#[test]
+fn test_feat_left_outer_join() {
+    setup_test_logger();
+
+    let source_trade = gen_source_trade();
+    let source_city_temperature = gen_source_city_temperature();
 
     let test_source_trade = ForeignSource::new().unwrap();
     let test_source_city_temperature = ForeignSource::new().unwrap();
@@ -65,7 +106,6 @@ fn t(n_in_rows: u64, upper_limit_bytes: u64) {
         );
         "
         .to_string(),
-        // input rows have the same timestamps, so the window preserves all rows until purge
         "
         CREATE PUMP pu_join AS
           INSERT INTO sink_joined (ts, amount, temperature)
@@ -117,20 +157,29 @@ fn t(n_in_rows: u64, upper_limit_bytes: u64) {
         ),
     ];
 
-    let mut config = SpringConfig::default();
-    config.memory.upper_limit_bytes = upper_limit_bytes;
-    config.memory.severe_to_critical_percent = 60;
-    config.memory.moderate_to_severe_percent = 30;
-    config.memory.critical_to_severe_percent = 50;
-    config.memory.severe_to_moderate_percent = 20;
+    let sink_received = run_and_drain(
+        &ddls,
+        ForeignSourceInput::new_fifo_batch(source_trade),
+        test_source_trade,
+        ForeignSourceInput::new_fifo_batch(source_city_temperature),
+        test_source_city_temperature,
+        &test_sink,
+    );
 
-    let _pipeline = apply_ddls(&ddls, config);
-    test_source_trade.start(ForeignSourceInput::new_fifo_batch(source_trade));
-    test_source_city_temperature.start(ForeignSourceInput::new_fifo_batch(vec![]));
-    thread::sleep(Duration::from_secs(10));
-}
+    assert_eq!(sink_received.len(), 3);
 
-#[test]
-fn test_feat_purger() {
-    t(10000, 100000)
+    let r0 = sink_received[0].clone();
+    assert_eq!(r0["ts"].as_str().unwrap(), "2020-01-01 00:00:00.000000000");
+    assert_eq!(r0["amount"].as_i64().unwrap(), 10);
+    assert!(r0["temperature"].is_null() || r0["temperature"].as_i64().unwrap() == -3);
+
+    let r1 = sink_received[1].clone();
+    assert_eq!(r1["ts"].as_str().unwrap(), "2020-01-01 00:00:09.999999999");
+    assert_eq!(r1["amount"].as_i64().unwrap(), 30);
+    assert!(r1["temperature"].is_null());
+
+    let r2 = sink_received[2].clone();
+    assert_eq!(r2["ts"].as_str().unwrap(), "2020-01-01 00:00:10.000000000");
+    assert_eq!(r2["amount"].as_i64().unwrap(), 50);
+    assert!(r2["temperature"].is_null());
 }
