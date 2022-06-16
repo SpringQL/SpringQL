@@ -17,12 +17,12 @@ fn gen_source_input() -> Vec<serde_json::Value> {
         "amount": 10,
     });
     let json_00_2 = json!({
-        "ts": "2020-01-01 00:00:09.9999999999",
+        "ts": "2020-01-01 00:00:09.999999999",
         "ticker": "GOOGL",
         "amount": 30,
     });
     let json_10_1 = json!({
-        "ts": "2020-01-01 00:00:10.0000000000",
+        "ts": "2020-01-01 00:00:10.000000000",
         "ticker": "IBM",
         "amount": 50,
     });

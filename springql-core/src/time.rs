@@ -91,26 +91,19 @@ pub struct NaiveDateTime(#[serde(with = "datetime_format")] time::PrimitiveDateT
 
 pub const MIN_DATETIME: NaiveDateTime = NaiveDateTime(time::PrimitiveDateTime::MIN);
 
-fn format_description(format: bool) -> &'static [time::format_description::FormatItem<'static>] {
-    // port from chrono format : const FORMAT: &str = "%Y-%m-%d %H:%M:%S%.9f";
-    if format {
-        // formatting pattern must have 9 digits for subsecond
-        format_description!("[year]-[month]-[day] [hour]:[minute]:[second].[subsecond digits:9]")
-    } else {
-        // parsing pattern unlimited digits for subsecond (we have test case for: 10 digits subsecond )
-        format_description!("[year]-[month]-[day] [hour]:[minute]:[second].[subsecond]")
-    }
+const FORMAT_DESCRIPTION: &'static [time::format_description::FormatItem<'static>] =
+    format_description!("[year]-[month]-[day] [hour]:[minute]:[second].[subsecond digits:9]");
+
+fn format_description() -> &'static [time::format_description::FormatItem<'static>] {
+    FORMAT_DESCRIPTION
 }
 
 fn parse_to_primitive(s: &str) -> Result<time::PrimitiveDateTime, TimeError> {
-    Ok(time::PrimitiveDateTime::parse(
-        s,
-        format_description(false),
-    )?)
+    Ok(time::PrimitiveDateTime::parse(s, format_description())?)
 }
 
 fn format_primitive(pri: &time::PrimitiveDateTime) -> Result<String, TimeError> {
-    Ok(pri.format(format_description(true))?)
+    Ok(pri.format(format_description())?)
 }
 
 fn to_primitive(odt: time::OffsetDateTime) -> time::PrimitiveDateTime {

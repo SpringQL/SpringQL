@@ -325,7 +325,7 @@ mod tests {
                     .dispatch(
                         &expr_resolver,
                         Tuple::factory_trade(
-                            SpringTimestamp::from_str("2020-01-01 00:00:09.9999999999").unwrap(),
+                            SpringTimestamp::from_str("2020-01-01 00:00:09.999999999").unwrap(),
                             "ORCL",
                             100,
                         ),
@@ -547,7 +547,7 @@ mod tests {
                     .dispatch(
                         &expr_resolver,
                         Tuple::factory_trade(
-                            SpringTimestamp::from_str("2020-01-01 00:00:09.9999999999").unwrap(),
+                            SpringTimestamp::from_str("2020-01-01 00:00:09.999999999").unwrap(),
                             "ORCL",
                             100,
                         ),
