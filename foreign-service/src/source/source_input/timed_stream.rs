@@ -36,7 +36,7 @@ impl TimedStream {
         virt_initial_datetime: OffsetDateTime,
     ) -> Result<Self> {
         let file_parser = FileParser::new(file_type, file_path)?;
-        let timer = Timer::new(virt_initial_datetime.into());
+        let timer = Timer::new(virt_initial_datetime);
         Ok(Self {
             timestamp_field,
             timer,
