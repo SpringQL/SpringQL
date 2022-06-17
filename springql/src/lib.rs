@@ -6,10 +6,5 @@
 
 pub use springql_core::api::*;
 
-/// error and result types for SpringQL
-pub mod error {
-    pub use springql_core::api::error::{Result, SpringError};
-}
-
 #[cfg(test)]
 mod tests {}
