@@ -30,16 +30,20 @@ pub struct PerformanceMonitorWorkerThread;
 #[derive(Debug)]
 pub struct PerformanceMonitorWorkerThreadArg {
     config: SpringConfig,
-    web_console_reporter: WebConsoleReporter,
+    web_console_reporter: Option<WebConsoleReporter>,
 }
 
 impl From<&SpringConfig> for PerformanceMonitorWorkerThreadArg {
     fn from(config: &SpringConfig) -> Self {
-        let web_console_reporter = WebConsoleReporter::new(
-            &config.web_console.host,
-            config.web_console.port,
-            WallClockDuration::from_millis(config.web_console.timeout_msec as u64),
-        );
+        let web_console_reporter = if config.web_console.enable_report_post {
+            Some(WebConsoleReporter::new(
+                &config.web_console.host,
+                config.web_console.port,
+                WallClockDuration::from_millis(config.web_console.timeout_msec as u64),
+            ))
+        } else {
+            None
+        };
         Self {
             config: config.clone(),
             web_console_reporter,
@@ -121,12 +125,12 @@ impl WorkerThread for PerformanceMonitorWorkerThread {
                     .performance_metrics_summary_report_interval_msec as i32,
             );
 
-            if thread_arg.config.web_console.enable_report_post {
+            if let Some(web_console_reporter) = &thread_arg.web_console_reporter {
                 state = Self::post_web_console(
                     state,
                     pipeline_derivatives.as_ref(),
                     metrics.as_ref(),
-                    &thread_arg.web_console_reporter,
+                    web_console_reporter,
                     thread_arg.config.web_console.report_interval_msec as i32,
                 );
             }
