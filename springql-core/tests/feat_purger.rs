@@ -19,7 +19,7 @@ use crate::test_support::*;
 /// every row has the same timestamp (a time-based window preserves rows forever)
 fn _gen_source_input(n: u64) -> impl Iterator<Item = serde_json::Value> {
     (0..n).map(move |_| {
-        let ts = "2020-01-01 00:00:00.0000000000".to_string();
+        let ts = "2020-01-01 00:00:00.000000000".to_string();
         let ticker = String::from_iter(std::iter::repeat('X').take(1000));
         let amount = 100;
         json!({

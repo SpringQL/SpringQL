@@ -6,7 +6,7 @@ pub mod foreign_info;
 
 use thiserror::Error;
 
-use crate::{api::error::foreign_info::ForeignInfo, pipeline::StreamName};
+use crate::{api::error::foreign_info::ForeignInfo, pipeline::StreamName, time::TimeError};
 
 /// Result type
 pub type Result<T> = std::result::Result<T, SpringError>;
@@ -68,4 +68,7 @@ pub enum SpringError {
         /// Column index
         i_col: usize,
     },
+
+    #[error("Time conversion error {0}")]
+    Time(TimeError),
 }

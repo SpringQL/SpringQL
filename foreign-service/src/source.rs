@@ -11,7 +11,7 @@ use std::{
 };
 
 use anyhow::Result;
-use chrono::Duration;
+use time::Duration;
 
 /// Runs as a TCP server and write(2)s foreign rows to socket.
 pub struct ForeignSource {
@@ -62,7 +62,7 @@ impl ForeignSource {
         }
 
         log::info!("[ForeignSource] No message left. Wait forever...");
-        thread::sleep(Duration::hours(1).to_std().unwrap());
+        thread::sleep(Duration::hours(1).try_into().unwrap());
 
         Ok(())
     }

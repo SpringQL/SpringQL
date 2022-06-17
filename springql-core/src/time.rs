@@ -1,65 +1,65 @@
 // This file is part of https://github.com/SpringQL/SpringQL which is licensed under MIT OR Apache-2.0. See file LICENSE-MIT or LICENSE-APACHE for full license details.
 
-use std::ops::{Add, Sub};
-
-use chrono::{FixedOffset, Utc};
 use serde::{Deserialize, Serialize};
+use std::ops::{Add, Sub};
+use time::{macros::format_description, UtcOffset};
 
 #[derive(Debug, thiserror::Error)]
 pub enum TimeError {
     #[error("Value out of range {0}")]
     OutOfRange(String),
     #[error("Parse Error {0}")]
-    ParseError(#[from] chrono::ParseError),
+    ParseError(#[from] time::error::Parse),
+    #[error("Fomatting Error {0}")]
+    FormatError(#[from] time::error::Format),
+    #[error("Overflow {0}")]
+    OverflowError(#[from] time::error::ConversionRange),
+    #[error("Range {0}")]
+    ComponentRange(#[from] time::error::ComponentRange),
 }
 
 #[derive(Debug, Copy, Clone)]
-pub struct Duration(chrono::Duration);
+pub struct Duration(time::Duration);
 
 impl Duration {
     pub fn seconds(seconds: i64) -> Self {
-        Duration(chrono::Duration::seconds(seconds))
+        Duration(time::Duration::seconds(seconds))
     }
 
     pub fn minutes(minutes: i64) -> Self {
-        Duration(chrono::Duration::minutes(minutes))
+        Duration(time::Duration::minutes(minutes))
     }
 
     pub fn hours(hours: i64) -> Self {
-        Duration(chrono::Duration::hours(hours))
+        Duration(time::Duration::hours(hours))
     }
 
     pub fn days(days: i64) -> Self {
-        Duration(chrono::Duration::days(days))
+        Duration(time::Duration::days(days))
     }
 
     pub fn milliseconds(milliseconds: i64) -> Self {
-        Duration(chrono::Duration::milliseconds(milliseconds))
+        Duration(time::Duration::milliseconds(milliseconds))
     }
 
     pub fn microseconds(microseconds: i64) -> Self {
-        Duration(chrono::Duration::microseconds(microseconds))
+        Duration(time::Duration::microseconds(microseconds))
     }
 
     pub fn nanoseconds(nanos: i64) -> Self {
-        Duration(chrono::Duration::nanoseconds(nanos))
+        Duration(time::Duration::nanoseconds(nanos))
     }
 
     pub fn from_std(std_duration: std::time::Duration) -> Result<Self, TimeError> {
-        Ok(Duration(
-            chrono::Duration::from_std(std_duration)
-                .map_err(|e| TimeError::OutOfRange(e.to_string()))?,
-        ))
+        Ok(Duration(time::Duration::try_from(std_duration)?))
     }
 
     pub fn to_std(self) -> Result<std::time::Duration, TimeError> {
-        self.0
-            .to_std()
-            .map_err(|e| TimeError::OutOfRange(e.to_string()))
+        Ok(std::time::Duration::try_from(self.0)?)
     }
 
-    pub fn num_nanoseconds(&self) -> Option<i64> {
-        self.0.num_nanoseconds()
+    pub fn num_nanoseconds(&self) -> i128 {
+        self.0.whole_nanoseconds()
     }
 }
 
@@ -71,42 +71,64 @@ impl Add for Duration {
     }
 }
 
-pub struct DateTime(chrono::DateTime<FixedOffset>);
+pub struct DateTime(time::OffsetDateTime);
 
 impl DateTime {
     pub fn parse_from_rfc3339(s: &str) -> Result<Self, TimeError> {
-        Ok(Self(chrono::DateTime::parse_from_rfc3339(s)?))
+        Ok(Self(time::OffsetDateTime::parse(
+            s,
+            &time::format_description::well_known::Rfc3339,
+        )?))
     }
 
     pub fn naive_utc(&self) -> NaiveDateTime {
-        NaiveDateTime(self.0.naive_utc())
+        NaiveDateTime(to_primitive(self.0))
     }
 }
 
 #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Serialize, Deserialize, new)]
-pub struct NaiveDateTime(#[serde(with = "datetime_format")] chrono::NaiveDateTime);
+pub struct NaiveDateTime(#[serde(with = "datetime_format")] time::PrimitiveDateTime);
 
-pub const MIN_DATETIME: NaiveDateTime = NaiveDateTime(chrono::naive::MIN_DATETIME);
-const FORMAT: &str = "%Y-%m-%d %H:%M:%S%.9f";
+pub const MIN_DATETIME: NaiveDateTime = NaiveDateTime(time::PrimitiveDateTime::MIN);
+
+const FORMAT_DESCRIPTION: &[time::format_description::FormatItem<'static>] =
+    format_description!("[year]-[month]-[day] [hour]:[minute]:[second].[subsecond digits:9]");
+
+fn parse_to_primitive(s: &str) -> Result<time::PrimitiveDateTime, TimeError> {
+    Ok(time::PrimitiveDateTime::parse(s, FORMAT_DESCRIPTION)?)
+}
+
+fn format_primitive(pri: &time::PrimitiveDateTime) -> Result<String, TimeError> {
+    Ok(pri.format(FORMAT_DESCRIPTION)?)
+}
+
+fn to_primitive(odt: time::OffsetDateTime) -> time::PrimitiveDateTime {
+    let udt = odt.to_offset(UtcOffset::UTC);
+    time::PrimitiveDateTime::new(udt.date(), udt.time())
+}
 
 impl NaiveDateTime {
     pub fn utc_now() -> Self {
-        Self(Utc::now().naive_utc())
+        let utc_now = time::OffsetDateTime::now_utc();
+        Self(to_primitive(utc_now))
     }
-    pub fn timestamp_nanos(&self) -> i64 {
-        self.0.timestamp_nanos()
+    pub fn timestamp_nanos(&self) -> i128 {
+        let ofs_time = self.0.assume_utc();
+        ofs_time.unix_timestamp_nanos()
     }
 
-    pub fn from_timestamp(secs: i64, nsecs: u32) -> Self {
-        Self(chrono::NaiveDateTime::from_timestamp(secs, nsecs))
+    pub fn from_timestamp(secs: i64, nsecs: u32) -> Result<Self, TimeError> {
+        let timestamp = ((secs as i128) * 1_000_000_000) + (nsecs as i128);
+        let odt = time::OffsetDateTime::from_unix_timestamp_nanos(timestamp)?;
+        Ok(Self(to_primitive(odt)))
     }
 
     pub fn parse_from_str(s: &str) -> Result<Self, TimeError> {
-        Ok(Self(chrono::NaiveDateTime::parse_from_str(s, FORMAT)?))
+        Ok(Self(parse_to_primitive(s)?))
     }
 
     pub fn format(&self) -> String {
-        self.0.format(FORMAT).to_string()
+        format_primitive(&self.0).unwrap() // TODO: avoid panic
     }
 }
 
@@ -130,29 +152,30 @@ impl Sub<NaiveDateTime> for NaiveDateTime {
     type Output = Duration;
 
     fn sub(self, rhs: NaiveDateTime) -> Duration {
-        Duration(self.0.signed_duration_since(rhs.0))
+        Duration(self.0 - rhs.0)
     }
 }
 
 /// See: <https://serde.rs/custom-date-format.html>
 mod datetime_format {
-    use super::FORMAT;
-    use chrono::NaiveDateTime;
+    use super::{format_primitive, parse_to_primitive};
+    use time::PrimitiveDateTime;
+
     use serde::{self, Deserialize, Deserializer, Serializer};
 
-    pub fn serialize<S>(date: &NaiveDateTime, serializer: S) -> Result<S::Ok, S::Error>
+    pub fn serialize<S>(date: &PrimitiveDateTime, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
     {
-        let s = format!("{}", date.format(FORMAT));
+        let s = format_primitive(date).map_err(serde::ser::Error::custom)?;
         serializer.serialize_str(&s)
     }
 
-    pub fn deserialize<'de, D>(deserializer: D) -> Result<NaiveDateTime, D::Error>
+    pub fn deserialize<'de, D>(deserializer: D) -> Result<PrimitiveDateTime, D::Error>
     where
         D: Deserializer<'de>,
     {
         let s = String::deserialize(deserializer)?;
-        NaiveDateTime::parse_from_str(&s, FORMAT).map_err(serde::de::Error::custom)
+        parse_to_primitive(&s).map_err(serde::de::Error::custom)
     }
 }

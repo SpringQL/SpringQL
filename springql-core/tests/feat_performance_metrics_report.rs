@@ -4,7 +4,6 @@ mod test_support;
 
 use std::sync::{Arc, Mutex};
 
-use chrono::NaiveDateTime;
 use float_cmp::approx_eq;
 use pretty_assertions::assert_eq;
 use rand::prelude::{IteratorRandom, SliceRandom};
@@ -19,6 +18,7 @@ use springql_test_web_console_mock::{
     builder::WebConsoleMockBuilder, request_body::PostTaskGraphBody, WebConsoleMock,
 };
 use test_support::drain_from_sink;
+use time::{macros::format_description, OffsetDateTime, PrimitiveDateTime};
 
 use crate::test_support::apply_ddls;
 
@@ -27,8 +27,13 @@ fn _gen_source_input(n: u64) -> impl Iterator<Item = serde_json::Value> {
     let mut rng = rand::thread_rng();
 
     (0..n).map(move |i| {
-        let ts = NaiveDateTime::from_timestamp(i as i64, 0);
-        let ts = ts.format("%Y-%m-%d %H:%M:%S.0000000000").to_string();
+        let odt = OffsetDateTime::from_unix_timestamp_nanos((i as i128) * 1_000_000_000).unwrap();
+        let ts = PrimitiveDateTime::new(odt.date(), odt.time());
+        let ts = ts
+            .format(format_description!(
+                "[year]-[month]-[day] [hour]:[minute]:[second].[subsecond digits:9]"
+            ))
+            .unwrap();
 
         let ticker = ["ORCL", "GOOGL", "MSFT", "AAPL", "FB"]
             .choose(&mut rng)

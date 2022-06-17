@@ -11,6 +11,7 @@ pub use join_window::JoinWindow;
 pub use panes::{AggrPane, GroupByValues, JoinDir, JoinPane, Pane, Panes};
 
 use crate::{
+    api::SpringError,
     expr_resolver::ExprResolver,
     stream_engine::{
         autonomous_executor::{
@@ -19,6 +20,8 @@ use crate::{
         Tuple,
     },
 };
+
+type Success<T> = (Vec<T>, WindowInFlowByWindowTask);
 
 pub trait Window {
     type Pane: Pane;
@@ -37,22 +40,19 @@ pub trait Window {
         expr_resolver: &ExprResolver,
         tuple: Tuple,
         arg: <<Self as Window>::Pane as Pane>::DispatchArg,
-    ) -> (
-        Vec<<<Self as Window>::Pane as Pane>::CloseOut>,
-        WindowInFlowByWindowTask,
-    ) {
+    ) -> Result<Success<<Self::Pane as Pane>::CloseOut>, SpringError> {
         let rowtime = tuple.rowtime().as_timestamp();
 
         if rowtime < self.watermark().as_timestamp() {
             // too late tuple does not have any chance to be dispatched nor to close a pane.
-            (Vec::new(), WindowInFlowByWindowTask::zero())
+            Ok((Vec::new(), WindowInFlowByWindowTask::zero()))
         } else {
             self.watermark_mut().update(rowtime);
             let wm = *self.watermark();
 
             let window_in_flow_dispatch = self
                 .panes_mut()
-                .panes_to_dispatch(rowtime)
+                .panes_to_dispatch(rowtime)?
                 .map(|pane| pane.dispatch(expr_resolver, &tuple, arg.clone()))
                 .fold(WindowInFlowByWindowTask::zero(), |acc, window_in_flow| {
                     acc + window_in_flow
@@ -71,7 +71,7 @@ pub trait Window {
                     },
                 );
 
-            (out, window_in_flow_dispatch + window_in_flow_close)
+            Ok((out, window_in_flow_dispatch + window_in_flow_close))
         }
     }
 }
