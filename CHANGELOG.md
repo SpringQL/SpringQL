@@ -13,6 +13,8 @@ All other sections are for end-users.
 ### Changed
 
 - Migrate dependencies `chrono` -> `time` ([#194](https://github.com/SpringQL/SpringQL/pull/194))
+  - SpringTimestamp::from_str can accept more strictly
+    - subsecond part must 9 digits
   - relates security advisory [RUSTSEC-2020-0071](https://rustsec.org/advisories/RUSTSEC-2020-0071)
     - [Tracking issue](https://github.com/SpringQL/SpringQL/issues/173)
 
