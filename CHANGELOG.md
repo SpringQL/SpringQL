@@ -10,6 +10,10 @@ All other sections are for end-users.
 <!-- markdownlint-disable MD024 -->
 ## [Unreleased]
 
+### Changed
+
+- Bump up MSRV from 1.56.0 to 1.56.1 ([#199](https://github.com/SpringQL/SpringQL/pull/199))
+
 ### Added
 
 - Implicit `ptime` column (processing time) for streams without `ROWTIME` keyword (event time) ([#195](https://github.com/SpringQL/SpringQL/pull/195))
