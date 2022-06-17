@@ -91,19 +91,15 @@ pub struct NaiveDateTime(#[serde(with = "datetime_format")] time::PrimitiveDateT
 
 pub const MIN_DATETIME: NaiveDateTime = NaiveDateTime(time::PrimitiveDateTime::MIN);
 
-const FORMAT_DESCRIPTION: &'static [time::format_description::FormatItem<'static>] =
+const FORMAT_DESCRIPTION: &[time::format_description::FormatItem<'static>] =
     format_description!("[year]-[month]-[day] [hour]:[minute]:[second].[subsecond digits:9]");
 
-fn format_description() -> &'static [time::format_description::FormatItem<'static>] {
-    FORMAT_DESCRIPTION
-}
-
 fn parse_to_primitive(s: &str) -> Result<time::PrimitiveDateTime, TimeError> {
-    Ok(time::PrimitiveDateTime::parse(s, format_description())?)
+    Ok(time::PrimitiveDateTime::parse(s, FORMAT_DESCRIPTION)?)
 }
 
 fn format_primitive(pri: &time::PrimitiveDateTime) -> Result<String, TimeError> {
-    Ok(pri.format(format_description())?)
+    Ok(pri.format(FORMAT_DESCRIPTION)?)
 }
 
 fn to_primitive(odt: time::OffsetDateTime) -> time::PrimitiveDateTime {
