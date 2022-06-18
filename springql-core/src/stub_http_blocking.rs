@@ -32,8 +32,10 @@ static REQUESTS: OnceCell<RwLock<Vec<Value>>> = OnceCell::new();
 /// gets stubed request JsonValues
 pub fn stubed_requests() -> Vec<Value> {
     let req_store = REQUESTS.get_or_init(|| RwLock::new(Vec::new()));
-    let store = req_store.read().unwrap();
-    store.clone()
+    let mut store = req_store.write().unwrap();
+    let result = store.clone();
+    store.clear();
+    result
 }
 
 impl RequestBuilder {
