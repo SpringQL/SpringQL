@@ -2,28 +2,28 @@
 
 mod web_console_request;
 
-use crate::stream_engine::{
-    autonomous_executor::{
-        performance_metrics::PerformanceMetrics,
-        performance_monitor_worker::web_console_reporter::web_console_request::WebConsoleRequest,
-        task_graph::TaskGraph,
+use crate::{
+    http_blocking::{ReqwestClient, Response},
+    stream_engine::{
+        autonomous_executor::{
+            performance_metrics::PerformanceMetrics,
+            performance_monitor_worker::web_console_reporter::web_console_request::WebConsoleRequest,
+            task_graph::TaskGraph,
+        },
+        time::{SpringDuration, WallClockDuration},
     },
-    time::{SpringDuration, WallClockDuration},
 };
 
 /// Reports performance summary to [web-console API](https://github.com/SpringQL/web-console/blob/main/doc/api.md).
 #[derive(Debug)]
 pub struct WebConsoleReporter {
     url: String,
-    client: reqwest::blocking::Client,
+    client: ReqwestClient,
 }
 
 impl WebConsoleReporter {
     pub fn new(host: &str, port: u16, timeout: WallClockDuration) -> Self {
-        let client = reqwest::blocking::Client::builder()
-            .timeout(Some(*timeout.as_std()))
-            .build()
-            .expect("failed to build a reqwest client");
+        let client = ReqwestClient::with_timeout(*timeout.as_std());
 
         let url = format!("http://{}:{}/task-graph", host, port);
 
@@ -33,7 +33,7 @@ impl WebConsoleReporter {
     pub fn report(&self, metrics: &PerformanceMetrics, graph: &TaskGraph) {
         let request = WebConsoleRequest::from_metrics(metrics, graph);
 
-        let res = self.client.post(&self.url).json(&request.to_json()).send();
+        let res = self.client.post(&self.url).json(request.to_json()).send();
 
         match res {
             Ok(resp) => self.handle_response(resp),
@@ -41,7 +41,7 @@ impl WebConsoleReporter {
         }
     }
 
-    fn handle_response(&self, resp: reqwest::blocking::Response) {
+    fn handle_response(&self, resp: Response) {
         let res_status = resp.error_for_status_ref();
         match res_status {
             Ok(_) => log::debug!("successfully POSTed metrics to web-console"),

@@ -18,3 +18,5 @@ mod time;
 
 /// public API for SpringQL
 pub mod api;
+
+mod http_blocking;
