@@ -1,6 +1,7 @@
 use std::time::Duration;
 
 use reqwest::StatusCode;
+use serde_json::Value;
 
 #[derive(Debug)]
 pub struct ReqwestClient(reqwest::blocking::Client);
@@ -38,7 +39,7 @@ impl RequestBuilder {
             json_value: None,
         }
     }
-    pub fn json(self, json: serde_json::Value) -> Self {
+    pub fn json(self, json: Value) -> Self {
         Self {
             raw_builder: self.raw_builder,
             json_value: Some(json),

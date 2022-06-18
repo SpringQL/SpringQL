@@ -2,16 +2,18 @@
 
 mod web_console_request;
 
-use crate::{
-    http_blocking::{ReqwestClient, Response},
-    stream_engine::{
-        autonomous_executor::{
-            performance_metrics::PerformanceMetrics,
-            performance_monitor_worker::web_console_reporter::web_console_request::WebConsoleRequest,
-            task_graph::TaskGraph,
-        },
-        time::{SpringDuration, WallClockDuration},
+#[cfg(not(feature = "stub_web_console"))]
+use crate::http_blocking::{ReqwestClient, Response};
+#[cfg(feature = "stub_web_console")]
+use crate::stub_http_blocking::{ReqwestClient, Response};
+
+use crate::stream_engine::{
+    autonomous_executor::{
+        performance_metrics::PerformanceMetrics,
+        performance_monitor_worker::web_console_reporter::web_console_request::WebConsoleRequest,
+        task_graph::TaskGraph,
     },
+    time::{SpringDuration, WallClockDuration},
 };
 
 /// Reports performance summary to [web-console API](https://github.com/SpringQL/web-console/blob/main/doc/api.md).
