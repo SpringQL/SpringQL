@@ -1,23 +1,27 @@
 // This file is part of https://github.com/SpringQL/SpringQL which is licensed under MIT OR Apache-2.0. See file LICENSE-MIT or LICENSE-APACHE for full license details.
+#![allow(unused_imports)] // conditional compilation used in this mod
 
 mod test_support;
 
-use crate::test_support::apply_ddls;
 use float_cmp::approx_eq;
 use pretty_assertions::assert_eq;
 use rand::prelude::{IteratorRandom, SliceRandom};
 use serde_json::json;
+use time::{macros::format_description, OffsetDateTime, PrimitiveDateTime};
+
+use crate::test_support::{apply_ddls, drain_from_sink};
 use springql_core::api::*;
-use springql_core::stubed_requests;
 use springql_foreign_service::{
     sink::ForeignSink,
     source::{ForeignSource, ForeignSourceInput},
 };
 use springql_test_logger::setup_test_logger;
-use test_support::drain_from_sink;
-use time::{macros::format_description, OffsetDateTime, PrimitiveDateTime};
+
+#[cfg(feature = "stub_web_console")]
+use springql_core::stubed_requests;
 
 /// 1 sec tick data
+#[cfg(feature = "stub_web_console")]
 fn _gen_source_input(n: u64) -> impl Iterator<Item = serde_json::Value> {
     let mut rng = rand::thread_rng();
 
@@ -43,6 +47,7 @@ fn _gen_source_input(n: u64) -> impl Iterator<Item = serde_json::Value> {
     })
 }
 
+#[cfg(feature = "stub_web_console")]
 fn _config() -> SpringConfig {
     let mut config = SpringConfig::default();
     config.web_console.enable_report_post = true;
