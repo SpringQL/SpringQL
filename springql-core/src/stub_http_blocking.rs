@@ -22,7 +22,7 @@ impl ReqwestClient {
         Self
     }
 
-    pub fn post(&self, _url: &String) -> RequestBuilder {
+    pub fn post(&self, _url: &str) -> RequestBuilder {
         RequestBuilder::new()
     }
 }
