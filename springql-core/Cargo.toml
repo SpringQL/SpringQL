@@ -42,7 +42,6 @@ time = {version="0.3.9", features = ["formatting", "parsing", "macros"]}
 [dev-dependencies]
 springql-foreign-service = {path = "../foreign-service"}
 springql-test-logger = {path = "../test-logger"}
-springql-test-web-console-mock = {path = "../test-web-console-mock"}
 pretty_assertions = "1.0"
 regex = "1.5"
 float-cmp = "0.9"
