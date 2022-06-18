@@ -63,7 +63,7 @@ fn start_pile_reports(
     source_input: ForeignSourceInput,
     test_source: ForeignSource,
     test_sink: &ForeignSink,
-) -> () {
+) {
     let config = _config();
     let _pipeline = apply_ddls(ddls, config);
     test_source.start(source_input);
