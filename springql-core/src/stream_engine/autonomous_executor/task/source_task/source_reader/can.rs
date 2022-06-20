@@ -18,25 +18,8 @@ use crate::{
 ///
 /// CAN source reader emits a SourceRow with the following columns:
 ///
-/// - can_id INTEGER
-/// - can_data_len SMALLINT
-///   - CAN data binary length
-/// - can_data_big_endian UNSIGNED BIGINT
-///   - CAN data binary in big-endian and 0-padded from the MSB.
-///
-/// ## Example
-///
-/// ```text
-/// CAN Frame
-///   CAN ID: 0x00001234
-///   CAN Data: [0x00, 0x01]
-/// ```
-///
-/// is encoded into SourceRow like below:
-///
-/// ```text
-/// (can_id, can_data_len, can_data_big_endian) = (0x1234, 2, 0x00 00 00 00 00 00 00 01 )
-/// ```
+/// - can_id UNSIGNED INTEGER
+/// - can_data BLOB
 #[derive(Debug)]
 pub(in crate::stream_engine) struct CANSourceReader {
     interface: String,
