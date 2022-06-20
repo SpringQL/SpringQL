@@ -1,6 +1,6 @@
 // This file is part of https://github.com/SpringQL/SpringQL which is licensed under MIT OR Apache-2.0. See file LICENSE-MIT or LICENSE-APACHE for full license details.
 
-use anyhow::Context;
+use anyhow::{anyhow, Context};
 
 use crate::{
     api::error::{Result, SpringError},
@@ -81,6 +81,112 @@ impl SpringValue for i64 {
 impl ToNnSqlValue for i64 {
     fn into_sql_value(self) -> NnSqlValue {
         NnSqlValue::BigInt(self)
+    }
+}
+
+impl SpringValue for u32 {
+    fn try_from_i16(v: &i16) -> Result<Self> {
+        if 0 <= *v {
+            Ok(*v as u32)
+        } else {
+            Err(SpringError::Sql(anyhow!(
+                "cannot convert i16 value ({}) into u32",
+                v
+            )))
+        }
+    }
+
+    fn try_from_i32(v: &i32) -> Result<Self> {
+        if 0 <= *v {
+            Ok(*v as u32)
+        } else {
+            Err(SpringError::Sql(anyhow!(
+                "cannot convert i32 value ({}) into u32",
+                v
+            )))
+        }
+    }
+
+    fn try_from_i64(v: &i64) -> Result<Self> {
+        if 0 <= *v && *v <= u32::MAX as i64 {
+            Ok(*v as u32)
+        } else {
+            Err(SpringError::Sql(anyhow!(
+                "cannot convert i64 value ({}) into u32",
+                v
+            )))
+        }
+    }
+
+    fn try_from_u16(v: &u16) -> Result<Self> {
+        Ok(*v as u32)
+    }
+
+    fn try_from_u32(v: &u32) -> Result<Self> {
+        Ok(*v)
+    }
+
+    fn try_from_u64(v: &u64) -> Result<Self> {
+        u32::try_from(*v)
+            .with_context(|| format!("cannot convert u64 value ({}) into u32", v))
+            .map_err(SpringError::Sql)
+    }
+}
+impl ToNnSqlValue for u32 {
+    fn into_sql_value(self) -> NnSqlValue {
+        NnSqlValue::UnsignedInteger(self)
+    }
+}
+
+impl SpringValue for u64 {
+    fn try_from_i16(v: &i16) -> Result<Self> {
+        if 0 <= *v {
+            Ok(*v as u64)
+        } else {
+            Err(SpringError::Sql(anyhow!(
+                "cannot convert i16 value ({}) into u64",
+                v
+            )))
+        }
+    }
+
+    fn try_from_i32(v: &i32) -> Result<Self> {
+        if 0 <= *v {
+            Ok(*v as u64)
+        } else {
+            Err(SpringError::Sql(anyhow!(
+                "cannot convert i32 value ({}) into u64",
+                v
+            )))
+        }
+    }
+
+    fn try_from_i64(v: &i64) -> Result<Self> {
+        if 0 <= *v {
+            Ok(*v as u64)
+        } else {
+            Err(SpringError::Sql(anyhow!(
+                "cannot convert i32 value ({}) into u64",
+                v
+            )))
+        }
+    }
+
+    fn try_from_u16(v: &u16) -> Result<Self> {
+        Ok(*v as u64)
+    }
+
+    fn try_from_u32(v: &u32) -> Result<Self> {
+        Ok(*v as u64)
+    }
+
+    fn try_from_u64(v: &u64) -> Result<Self> {
+        Ok(*v)
+    }
+}
+impl ToNnSqlValue for u64 {
+    fn into_sql_value(self) -> NnSqlValue {
+        NnSqlValue::UnsignedBigInt(self)
     }
 }
 

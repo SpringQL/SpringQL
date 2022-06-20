@@ -23,6 +23,7 @@ All other sections are for end-users.
 
 - Implicit `ptime` column (processing time) for streams without `ROWTIME` keyword (event time) ([#195](https://github.com/SpringQL/SpringQL/pull/195))
 - `BLOB` type ([#187](https://github.com/SpringQL/SpringQL/pull/187))
+- `UNSIGNED INTEGER` type ([#201](https://github.com/SpringQL/SpringQL/pull/201))
 
 ### For developers
 
