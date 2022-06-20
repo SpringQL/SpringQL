@@ -5,7 +5,7 @@
 [![crates.io](https://img.shields.io/crates/v/springql-core.svg)](https://crates.io/crates/springql-core)
 [![Crates.io](https://img.shields.io/crates/d/springql-core?label=cargo%20installs)](https://crates.io/crates/springql-core)
 [![docs.rs](https://img.shields.io/badge/API%20doc-docs.rs-blueviolet)](https://docs.rs/springql-core)
-![MSRV](https://img.shields.io/badge/rustc-1.56.1+-lightgray.svg)
+![MSRV](https://img.shields.io/badge/rustc-1.57.0+-lightgray.svg)
 [![codecov](https://codecov.io/gh/SpringQL/SpringQL/branch/main/graph/badge.svg?token=XI0IR5QVU3)](https://codecov.io/gh/SpringQL/SpringQL)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/SpringQL/SpringQL/blob/master/LICENSE-MIT)
 [![License: Apache 2.0](https://img.shields.io/badge/license-Apache_2.0-blue.svg)](https://github.com/SpringQL/SpringQL/blob/master/LICENSE-APACHE)
