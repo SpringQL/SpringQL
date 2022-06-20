@@ -2,6 +2,7 @@
 
 #![doc = include_str!("pipeline.md")]
 
+mod can_source;
 mod field;
 mod name;
 mod option;
@@ -16,13 +17,15 @@ mod stream_model;
 #[cfg(test)]
 pub mod test_support;
 
+pub use can_source::{CANSourceStreamColumns, CANSourceStreamModel};
 pub use field::{ColumnReference, Field};
 pub use name::{
     AggrAlias, ColumnName, CorrelationAlias, PumpName, QueueName, SinkWriterName, SourceReaderName,
     StreamName, ValueAlias,
 };
 pub use option::{
-    InMemoryQueueOptions, NetClientOptions, NetProtocol, NetServerOptions, Options, OptionsBuilder,
+    CANOptions, InMemoryQueueOptions, NetClientOptions, NetProtocol, NetServerOptions, Options,
+    OptionsBuilder,
 };
 pub use pipeline_graph::{Edge, PipelineGraph};
 pub use pipeline_version::PipelineVersion;
@@ -32,7 +35,7 @@ pub use pump_model::{
 };
 pub use relation::{
     ColumnConstraint, ColumnDataType, ColumnDefinition, F32LooseType, I64LooseType,
-    NumericComparableType, SqlType, StringComparableLoseType,
+    NumericComparableType, SqlType, StringComparableLoseType, U64LooseType,
 };
 pub use sink_writer_model::{SinkWriterModel, SinkWriterType};
 pub use source_reader_model::{SourceReaderModel, SourceReaderType};

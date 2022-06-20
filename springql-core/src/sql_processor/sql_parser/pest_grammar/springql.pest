@@ -65,6 +65,7 @@ keyword = {
     | ^"TIMESTAMP"
     | ^"TRUE"
     | ^"TYPE"
+    | ^"UNSIGNED"
     | ^"WINDOW"
     | ^"WRITER"
 }
@@ -320,9 +321,11 @@ data_type = {
  */
 
 integer_type = {
-    ^"SMALLINT"
-    | ^"INTEGER"
-    | ^"BIGINT"
+    ^"UNSIGNED"? ~ (
+        ^"SMALLINT"
+        | ^"INTEGER"
+        | ^"BIGINT"
+    )
 }
 
 /*

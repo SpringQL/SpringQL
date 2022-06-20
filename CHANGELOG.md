@@ -12,6 +12,12 @@ All other sections are for end-users.
 
 ### Changed
 
+- Bump up MSRV from 1.56.1 to 1.57.0 ([#203](https://github.com/SpringQL/SpringQL/pull/203))
+
+## [v0.13.0]
+
+### Changed
+
 - Migrate dependencies `chrono` -> `time` ([#194](https://github.com/SpringQL/SpringQL/pull/194))
   - SpringTimestamp::from_str can accept more strictly
     - subsecond part must 9 digits
@@ -23,6 +29,8 @@ All other sections are for end-users.
 
 - Implicit `ptime` column (processing time) for streams without `ROWTIME` keyword (event time) ([#195](https://github.com/SpringQL/SpringQL/pull/195))
 - `BLOB` type ([#187](https://github.com/SpringQL/SpringQL/pull/187))
+- `UNSIGNED INTEGER` type ([#201](https://github.com/SpringQL/SpringQL/pull/201))
+- CAN source reader, which feeds SocketCAN frames into a stream with `can_id UNSIGNED INTEGER NOT NULL, can_data BLOB NOT NULL` columns ([#170](https://github.com/SpringQL/SpringQL/pull/170))
 
 ### Changed
 
@@ -202,9 +210,10 @@ All other sections are for end-users.
 [Semantic Versioning]: https://semver.org/
 
 <!-- Versions -->
-[Unreleased]: https://github.com/SpringQL/SpringQL/compare/v0.12.0...HEAD
+[Unreleased]: https://github.com/SpringQL/SpringQL/compare/v0.13.0...HEAD
 [Released]: https://github.com/SpringQL/SpringQL/releases
-[v0.11.0]: https://github.com/SpringQL/SpringQL/compare/v0.11.0...v0.12.0
+[v0.13.0]: https://github.com/SpringQL/SpringQL/compare/v0.12.0...v0.13.0
+[v0.12.0]: https://github.com/SpringQL/SpringQL/compare/v0.11.0...v0.12.0
 [v0.11.0]: https://github.com/SpringQL/SpringQL/compare/v0.10.0...v0.11.0
 [v0.10.0]: https://github.com/SpringQL/SpringQL/compare/v0.9.0...v0.10.0
 [v0.9.0]: https://github.com/SpringQL/SpringQL/compare/v0.8.0...v0.9.0

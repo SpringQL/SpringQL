@@ -81,6 +81,14 @@ impl StreamShape {
     pub fn fx_no_promoted_rowtime() -> Self {
         Self::new(vec![ColumnDefinition::fx_amount()]).unwrap()
     }
+
+    pub(crate) fn fx_can_source() -> Self {
+        Self::new(vec![
+            ColumnDefinition::fx_can_id(),
+            ColumnDefinition::fx_can_data(),
+        ])
+        .unwrap()
+    }
 }
 
 impl StreamModel {
@@ -184,6 +192,13 @@ impl ColumnDefinition {
     pub fn fx_amount() -> Self {
         Self::new(ColumnDataType::fx_amount(), vec![])
     }
+
+    pub(crate) fn fx_can_id() -> Self {
+        Self::new(ColumnDataType::fx_can_id(), vec![])
+    }
+    pub(crate) fn fx_can_data() -> Self {
+        Self::new(ColumnDataType::fx_can_data(), vec![])
+    }
 }
 
 impl ColumnDataType {
@@ -209,6 +224,13 @@ impl ColumnDataType {
 
     pub fn fx_amount() -> Self {
         Self::new(ColumnName::fx_amount(), SqlType::integer(), false)
+    }
+
+    pub(crate) fn fx_can_id() -> Self {
+        Self::new(ColumnName::fx_can_id(), SqlType::unsigned_integer(), false)
+    }
+    pub(crate) fn fx_can_data() -> Self {
+        Self::new(ColumnName::fx_can_data(), SqlType::blob(), false)
     }
 }
 
@@ -237,6 +259,13 @@ impl ColumnName {
     }
     pub fn fx_temperature() -> Self {
         Self::new("temperature".to_string())
+    }
+
+    pub(crate) fn fx_can_id() -> Self {
+        Self::new("can_id".to_string())
+    }
+    pub(crate) fn fx_can_data() -> Self {
+        Self::new("can_data".to_string())
     }
 }
 

@@ -1,9 +1,11 @@
 // This file is part of https://github.com/SpringQL/SpringQL which is licensed under MIT OR Apache-2.0. See file LICENSE-MIT or LICENSE-APACHE for full license details.
 
+mod can_options;
 mod in_memory_queue_options;
 mod net_options;
 mod options_builder;
 
+pub use can_options::CANOptions;
 pub use in_memory_queue_options::InMemoryQueueOptions;
 pub use net_options::{NetClientOptions, NetProtocol, NetServerOptions};
 pub use options_builder::OptionsBuilder;

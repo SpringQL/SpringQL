@@ -61,7 +61,7 @@ jobs:
           - make:
               task: test
             os: ubuntu-latest
-            rust: 1.56.1
+            rust: 1.57.0
           - make:
               task: test
             os: macos-latest

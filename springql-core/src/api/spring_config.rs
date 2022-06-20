@@ -54,6 +54,8 @@ timeout_msec = 3_000
 net_connect_timeout_msec = 1_000
 net_read_timeout_msec = 100
 
+can_read_timeout_msec = 100
+
 [sink_writer]
 net_connect_timeout_msec = 1_000
 net_write_timeout_msec = 100
@@ -153,6 +155,8 @@ pub struct SpringWebConsoleConfig {
 pub struct SpringSourceReaderConfig {
     pub net_connect_timeout_msec: u32,
     pub net_read_timeout_msec: u32,
+
+    pub can_read_timeout_msec: u32,
 }
 
 /// Config related to sink writer.
