@@ -10,6 +10,8 @@ All other sections are for end-users.
 <!-- markdownlint-disable MD024 -->
 ## [Unreleased]
 
+## [v0.13.0]
+
 ### Changed
 
 - Migrate dependencies `chrono` -> `time` ([#194](https://github.com/SpringQL/SpringQL/pull/194))
@@ -199,9 +201,10 @@ All other sections are for end-users.
 [Semantic Versioning]: https://semver.org/
 
 <!-- Versions -->
-[Unreleased]: https://github.com/SpringQL/SpringQL/compare/v0.12.0...HEAD
+[Unreleased]: https://github.com/SpringQL/SpringQL/compare/v0.13.0...HEAD
 [Released]: https://github.com/SpringQL/SpringQL/releases
-[v0.11.0]: https://github.com/SpringQL/SpringQL/compare/v0.11.0...v0.12.0
+[v0.13.0]: https://github.com/SpringQL/SpringQL/compare/v0.12.0...v0.13.0
+[v0.12.0]: https://github.com/SpringQL/SpringQL/compare/v0.11.0...v0.12.0
 [v0.11.0]: https://github.com/SpringQL/SpringQL/compare/v0.10.0...v0.11.0
 [v0.10.0]: https://github.com/SpringQL/SpringQL/compare/v0.9.0...v0.10.0
 [v0.9.0]: https://github.com/SpringQL/SpringQL/compare/v0.8.0...v0.9.0
