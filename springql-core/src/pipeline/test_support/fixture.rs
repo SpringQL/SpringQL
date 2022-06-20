@@ -227,7 +227,7 @@ impl ColumnDataType {
     }
 
     pub(crate) fn fx_can_id() -> Self {
-        Self::new(ColumnName::fx_can_id(), SqlType::integer(), false)
+        Self::new(ColumnName::fx_can_id(), SqlType::unsigned_integer(), false)
     }
     pub(crate) fn fx_can_data() -> Self {
         Self::new(ColumnName::fx_can_data(), SqlType::blob(), false)

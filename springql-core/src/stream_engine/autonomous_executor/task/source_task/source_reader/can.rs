@@ -154,8 +154,8 @@ mod tests {
             .unwrap();
 
         if let SqlValue::NotNull(got_can_id) = row.get_by_index(0).unwrap() {
-            let got_can_id: i32 = got_can_id.unpack().unwrap();
-            assert_eq!(got_can_id, can_id as i32);
+            let got_can_id: u32 = got_can_id.unpack().unwrap();
+            assert_eq!(got_can_id, can_id);
         } else {
             unreachable!()
         }
