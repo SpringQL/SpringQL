@@ -16,9 +16,9 @@ use springql_core::api::{SpringConfig, SpringPipeline};
 
 fn parse_can_interface_arg() -> String {
     let args: Vec<String> = env::args().collect();
-    assert_eq!(args.len(), 1);
+    assert_eq!(args.len(), 2);
 
-    let interface = args[0].clone();
+    let interface = args[1].clone();
     log::info!("Using CAN interface: {}", interface);
 
     interface
