@@ -52,7 +52,7 @@ impl RequestBuilder {
         if let Some(json_value) = self.json_value {
             Ok(Response(self.raw_builder.json(&json_value).send()?))
         } else {
-            unreachable!()
+            unreachable!(".json() is not called yet")
         }
     }
 }
