@@ -6,7 +6,7 @@ mod foreign_row;
 mod rowtime;
 mod value;
 
-pub use column::StreamColumns;
+pub use column::{CANSourceStreamColumns, StreamColumns};
 pub use column_values::ColumnValues;
 pub use foreign_row::{CANFrameSourceRow, JsonObject, JsonSourceRow, SourceRow, SourceRowFormat};
 pub use rowtime::RowTime;

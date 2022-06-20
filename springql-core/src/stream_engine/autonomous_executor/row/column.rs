@@ -1,4 +1,5 @@
 // This file is part of https://github.com/SpringQL/SpringQL which is licensed under MIT OR Apache-2.0. See file LICENSE-MIT or LICENSE-APACHE for full license details.
 
 mod stream_column;
-pub use stream_column::StreamColumns;
+
+pub use stream_column::{CANSourceStreamColumns, StreamColumns};

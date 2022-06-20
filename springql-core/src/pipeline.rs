@@ -37,7 +37,7 @@ pub use relation::{
 };
 pub use sink_writer_model::{SinkWriterModel, SinkWriterType};
 pub use source_reader_model::{SourceReaderModel, SourceReaderType};
-pub use stream_model::{StreamModel, StreamShape};
+pub use stream_model::{CANSourceStreamModel, StreamModel, StreamShape};
 
 use std::{collections::HashSet, sync::Arc};
 

@@ -14,7 +14,7 @@ use anyhow::Context;
 
 use crate::{
     api::{error::Result, SpringError},
-    pipeline::StreamModel,
+    pipeline::{CANSourceStreamModel, StreamModel},
     stream_engine::Row,
 };
 
@@ -55,7 +55,8 @@ impl SourceRow {
         match self {
             SourceRow::Json(json_source_row) => json_source_row.into_row(stream_model),
             SourceRow::CANFrame(can_frame_source_row) => {
-                can_frame_source_row.into_row(stream_model)
+                let stream = CANSourceStreamModel::try_from(stream_model.as_ref())?;
+                can_frame_source_row.into_row(&stream)
             }
         }
     }
