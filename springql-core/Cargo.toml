@@ -6,6 +6,7 @@ authors = ["Sho Nakatani <lay.sakura@gmail.com>"]
 license = "MIT OR Apache-2.0"
 
 edition = "2021"
+rust-version = "1.56.1"
 
 categories = ["embedded"]
 description = "SpringQL: Open-source stream processor for IoT devices and in-vehicle computers"
@@ -17,9 +18,6 @@ repository = "https://github.com/SpringQL/SpringQL"
 [dependencies]
 anyhow = "1.0"
 thiserror = "1.0"
-
-chrono = "0.4"
-
 serde = {version = "1.0", features = ["derive"], default-features = false}
 serde_json = "1.0"
 
@@ -46,6 +44,7 @@ reqwest = {version = "0.11", features = ["json", "blocking"], default-features =
 once_cell = "1.8"
 
 parking_lot = "0.12"
+time = {version="0.3.9", features = ["formatting", "parsing", "macros"]}
 
 socketcan = "1.7"
 

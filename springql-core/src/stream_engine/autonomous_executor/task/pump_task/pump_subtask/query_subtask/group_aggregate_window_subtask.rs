@@ -32,6 +32,7 @@ impl GroupAggregateWindowSubtask {
             .lock()
             .expect("another thread accessing to window gets poisoned")
             .dispatch(expr_resolver, tuple, ())
+            .expect("dispatch failed")
     }
 
     pub fn get_window_mut(&self) -> MutexGuard<AggrWindow> {

@@ -145,9 +145,8 @@ impl JoinPane {
 
     fn null_right_tuple(&self) -> Tuple {
         // unused
-        let rowtime = RowTime::EventTime(
-            SpringTimestamp::from_str("1970-01-01 00:00:00.0000000000").unwrap(),
-        );
+        let rowtime =
+            RowTime::EventTime(SpringTimestamp::from_str("1970-01-01 00:00:00.000000000").unwrap());
 
         let fields = self
             .join_parameter

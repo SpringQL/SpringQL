@@ -153,9 +153,11 @@ impl AutonomousExecutor {
                 log::trace!("{:?}", e)
             }
 
+            // IO Error / Value Error
             SpringError::ForeignIo { .. }
             | SpringError::SpringQlCoreIo(_)
-            | SpringError::Unavailable { .. } => log::warn!("{:?}", e),
+            | SpringError::Unavailable { .. }
+            | SpringError::Time(_) => log::warn!("{:?}", e),
 
             SpringError::InvalidOption { .. }
             | SpringError::InvalidFormat { .. }

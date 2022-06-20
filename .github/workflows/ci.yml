@@ -61,7 +61,7 @@ jobs:
           - make:
               task: test
             os: ubuntu-latest
-            rust: 1.56.0
+            rust: 1.56.1
           - make:
               task: test
             os: macos-latest
@@ -213,4 +213,3 @@ jobs:
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           slack_webhook_url: ${{ secrets.SLACK_WEBHOOK_URL }}
-
