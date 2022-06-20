@@ -1106,6 +1106,7 @@ impl PestParserImpl {
         let s = self_as_str(&mut params);
         match s.to_ascii_uppercase().as_str() {
             "INTEGER" => Ok(SqlType::integer()),
+            "UNSIGNED INTEGER" => Ok(SqlType::unsigned_integer()),
             x => {
                 eprintln!("Unexpected data type parsed: {}", x);
                 unreachable!();

@@ -84,6 +84,46 @@ impl ToNnSqlValue for i64 {
     }
 }
 
+impl SpringValue for u32 {
+    fn try_from_u16(v: &u16) -> Result<Self> {
+        Ok(*v as u32)
+    }
+
+    fn try_from_u32(v: &u32) -> Result<Self> {
+        Ok(*v)
+    }
+
+    fn try_from_u64(v: &u64) -> Result<Self> {
+        u32::try_from(*v)
+            .with_context(|| format!("cannot convert u64 value ({}) into u32", v))
+            .map_err(SpringError::Sql)
+    }
+}
+impl ToNnSqlValue for u32 {
+    fn into_sql_value(self) -> NnSqlValue {
+        NnSqlValue::UnsignedInteger(self)
+    }
+}
+
+impl SpringValue for u64 {
+    fn try_from_u16(v: &u16) -> Result<Self> {
+        Ok(*v as u64)
+    }
+
+    fn try_from_u32(v: &u32) -> Result<Self> {
+        Ok(*v as u64)
+    }
+
+    fn try_from_u64(v: &u64) -> Result<Self> {
+        Ok(*v)
+    }
+}
+impl ToNnSqlValue for u64 {
+    fn into_sql_value(self) -> NnSqlValue {
+        NnSqlValue::UnsignedBigInt(self)
+    }
+}
+
 #[cfg(test)]
 mod tests_i32 {
     use crate::{
