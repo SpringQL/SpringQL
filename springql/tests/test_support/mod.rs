@@ -5,6 +5,8 @@ use std::time::Duration;
 use springql::{SpringConfig, SpringPipeline};
 use springql_foreign_service::sink::ForeignSink;
 
+pub mod request_body;
+
 #[allow(dead_code)]
 pub fn apply_ddls(ddls: &[String], config: SpringConfig) -> SpringPipeline {
     let pipeline = SpringPipeline::new(&config).unwrap();

@@ -43,6 +43,10 @@ All other sections are for end-users.
 - Refactor : Hide detail module structure ([#177](https://github.com/SpringQL/SpringQL/pull/177))
   - Make private to internal modules
   - When publishing members outside the module, we recommend re-export(`pub use`) rather than `pub(crate)`
+- Refactor : refactor test for web-console ([#200](https://github.com/SpringQL/SpringQL/pull/200))
+  - relates security advisory [RUSTSEC-2020-0071](https://rustsec.org/advisories/RUSTSEC-2020-0071)
+    - remove test-web-console-mock crate and dependent simple-server
+  - add `stub_web_console` feature flag : for development and test only
 
 ## [v0.12.0]
 

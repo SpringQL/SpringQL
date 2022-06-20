@@ -2,6 +2,11 @@
 
 mod web_console_request;
 
+#[cfg(not(feature = "stub_web_console"))]
+use crate::http_blocking::{ReqwestClient, Response};
+#[cfg(feature = "stub_web_console")]
+use crate::stub_http_blocking::{ReqwestClient, Response};
+
 use crate::stream_engine::{
     autonomous_executor::{
         performance_metrics::PerformanceMetrics,
@@ -15,15 +20,12 @@ use crate::stream_engine::{
 #[derive(Debug)]
 pub struct WebConsoleReporter {
     url: String,
-    client: reqwest::blocking::Client,
+    client: ReqwestClient,
 }
 
 impl WebConsoleReporter {
     pub fn new(host: &str, port: u16, timeout: WallClockDuration) -> Self {
-        let client = reqwest::blocking::Client::builder()
-            .timeout(Some(*timeout.as_std()))
-            .build()
-            .expect("failed to build a reqwest client");
+        let client = ReqwestClient::with_timeout(*timeout.as_std());
 
         let url = format!("http://{}:{}/task-graph", host, port);
 
@@ -33,7 +35,7 @@ impl WebConsoleReporter {
     pub fn report(&self, metrics: &PerformanceMetrics, graph: &TaskGraph) {
         let request = WebConsoleRequest::from_metrics(metrics, graph);
 
-        let res = self.client.post(&self.url).json(&request.to_json()).send();
+        let res = self.client.post(&self.url).json(request.to_json()).send();
 
         match res {
             Ok(resp) => self.handle_response(resp),
@@ -41,7 +43,7 @@ impl WebConsoleReporter {
         }
     }
 
-    fn handle_response(&self, resp: reqwest::blocking::Response) {
+    fn handle_response(&self, resp: Response) {
         let res_status = resp.error_for_status_ref();
         match res_status {
             Ok(_) => log::debug!("successfully POSTed metrics to web-console"),

@@ -18,3 +18,12 @@ mod time;
 
 /// public API for SpringQL
 pub mod api;
+
+#[cfg(not(feature = "stub_web_console"))]
+mod http_blocking;
+
+#[cfg(feature = "stub_web_console")]
+mod stub_http_blocking;
+
+#[cfg(feature = "stub_web_console")]
+pub use stub_http_blocking::stubed_requests;

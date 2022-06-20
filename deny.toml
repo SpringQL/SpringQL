@@ -50,10 +50,6 @@ notice = "warn"
 ignore = [
     #"RUSTSEC-0000-0000",
 
-    # temporary turn off : [Potential segfault in the time crate](https://rustsec.org/advisories/RUSTSEC-2020-0071)
-    # tracking issue : https://github.com/SpringQL/SpringQL/issues/173
-    "RUSTSEC-2020-0071",
-
 ]
 # Threshold for security vulnerabilities, any vulnerability with a CVSS score
 # lower than the range specified will be ignored. Note that ignored advisories
@@ -200,7 +196,7 @@ unknown-git = "warn"
 # if not specified. If it is specified but empty, no registries are allowed.
 allow-registry = ["https://github.com/rust-lang/crates.io-index"]
 # List of URLs for allowed Git repositories
-allow-git = ["https://github.com/laysakura/simple-server"]
+allow-git = []
 
 [sources.allow-org]
 # 1 or more github.com organizations to allow git sources for

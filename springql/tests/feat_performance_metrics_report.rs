@@ -1,28 +1,27 @@
 // This file is part of https://github.com/SpringQL/SpringQL which is licensed under MIT OR Apache-2.0. See file LICENSE-MIT or LICENSE-APACHE for full license details.
+#![allow(unused_imports)] // conditional compilation used in this mod
 
 mod test_support;
-
-use std::sync::{Arc, Mutex};
 
 use float_cmp::approx_eq;
 use pretty_assertions::assert_eq;
 use rand::prelude::{IteratorRandom, SliceRandom};
 use serde_json::json;
+use time::{macros::format_description, OffsetDateTime, PrimitiveDateTime};
+
+use crate::test_support::{apply_ddls, drain_from_sink};
 use springql::*;
 use springql_foreign_service::{
     sink::ForeignSink,
     source::{ForeignSource, ForeignSourceInput},
 };
 use springql_test_logger::setup_test_logger;
-use springql_test_web_console_mock::{
-    builder::WebConsoleMockBuilder, request_body::PostTaskGraphBody, WebConsoleMock,
-};
-use test_support::drain_from_sink;
-use time::{macros::format_description, OffsetDateTime, PrimitiveDateTime};
 
-use crate::test_support::apply_ddls;
+#[cfg(feature = "stub_web_console")]
+use springql_core::stubed_requests;
 
 /// 1 sec tick data
+#[cfg(feature = "stub_web_console")]
 fn _gen_source_input(n: u64) -> impl Iterator<Item = serde_json::Value> {
     let mut rng = rand::thread_rng();
 
@@ -48,47 +47,30 @@ fn _gen_source_input(n: u64) -> impl Iterator<Item = serde_json::Value> {
     })
 }
 
-fn _config(mock: &WebConsoleMock) -> SpringConfig {
+#[cfg(feature = "stub_web_console")]
+fn _config() -> SpringConfig {
     let mut config = SpringConfig::default();
     config.web_console.enable_report_post = true;
     config.web_console.report_interval_msec = 100;
-    config.web_console.host = mock.sock_addr().ip().to_string();
-    config.web_console.port = mock.sock_addr().port();
+    config.web_console.host = "localhost".to_string();
+    config.web_console.port = 12345;
     config
 }
 
-fn _set_callback(
-    mock_builder: WebConsoleMockBuilder,
-    pile: Arc<Mutex<Vec<PostTaskGraphBody>>>,
-) -> WebConsoleMockBuilder {
-    mock_builder.add_callback_post_pipeline(move |body| {
-        pile.lock().unwrap().push(body);
-    })
-}
-
+#[cfg(feature = "stub_web_console")]
 fn start_pile_reports(
     ddls: &[String],
     source_input: ForeignSourceInput,
     test_source: ForeignSource,
     test_sink: &ForeignSink,
-) -> Arc<Mutex<Vec<PostTaskGraphBody>>> {
-    let body_pile = Arc::new(Mutex::new(Vec::new()));
-
-    let mock_builder = WebConsoleMockBuilder::default();
-    let mock_builder = _set_callback(mock_builder, body_pile.clone());
-    let mock = mock_builder.build();
-
-    let config = _config(&mock);
-
-    mock.start();
-
+) {
+    let config = _config();
     let _pipeline = apply_ddls(ddls, config);
     test_source.start(source_input);
     let _sink_received = drain_from_sink(test_sink);
-
-    body_pile
 }
 
+#[cfg(feature = "stub_web_console")]
 #[test]
 fn test_performance_metrics_report_floor_time() {
     setup_test_logger();
@@ -147,13 +129,19 @@ fn test_performance_metrics_report_floor_time() {
         ),
     ];
 
-    let body_pile = start_pile_reports(
+    start_pile_reports(
         &ddls,
         ForeignSourceInput::new_fifo_batch(source_input),
         test_source,
         &test_sink,
     );
-    let body_pile = body_pile.lock().unwrap();
+    let request_values = stubed_requests();
+    let mut body_pile = Vec::new();
+    for val in request_values {
+        let body: crate::test_support::request_body::PostTaskGraphBody =
+            serde_json::from_value(val).unwrap();
+        body_pile.push(body);
+    }
 
     assert!(body_pile
         .iter()
@@ -232,6 +220,7 @@ fn test_performance_metrics_report_floor_time() {
     assert!(non_empty_q_tcp_sink_trade.window_queue.is_none());
 }
 
+#[cfg(feature = "stub_web_console")]
 #[test]
 fn test_performance_metrics_report_sampling() {
     setup_test_logger();
@@ -294,13 +283,19 @@ fn test_performance_metrics_report_sampling() {
         ),
     ];
 
-    let body_pile = start_pile_reports(
+    start_pile_reports(
         &ddls,
         ForeignSourceInput::new_fifo_batch(source_input),
         test_source,
         &test_sink,
     );
-    let body_pile = body_pile.lock().unwrap();
+    let request_values = stubed_requests();
+    let mut body_pile = Vec::new();
+    for val in request_values {
+        let body: crate::test_support::request_body::PostTaskGraphBody =
+            serde_json::from_value(val).unwrap();
+        body_pile.push(body);
+    }
 
     assert!(body_pile
         .iter()
