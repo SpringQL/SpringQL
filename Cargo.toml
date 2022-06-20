@@ -4,5 +4,4 @@ members = [
   "springql-core",
   "foreign-service",
   "test-logger",
-  "test-web-console-mock",
 ]
