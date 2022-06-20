@@ -2,4 +2,4 @@
 
 mod stream_column;
 
-pub use stream_column::{CANSourceStreamColumns, StreamColumns};
+pub use stream_column::StreamColumns;

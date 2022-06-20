@@ -14,7 +14,7 @@ use anyhow::Context;
 
 use crate::{
     api::{error::Result, SpringError},
-    pipeline::{CANSourceStreamModel, StreamModel},
+    pipeline::{StreamModel, CANSourceStreamModel},
     stream_engine::Row,
 };
 

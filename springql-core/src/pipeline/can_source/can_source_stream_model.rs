@@ -2,7 +2,9 @@
 
 use crate::{
     api::SpringError,
-    pipeline::{stream_model::stream_shape::CANSourceStreamShape, StreamModel, StreamName},
+    pipeline::{
+        can_source::can_source_stream_shape::CANSourceStreamShape, StreamModel, StreamName,
+    },
 };
 
 use anyhow::anyhow;

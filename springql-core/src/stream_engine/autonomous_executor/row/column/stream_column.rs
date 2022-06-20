@@ -1,9 +1,5 @@
 // This file is part of https://github.com/SpringQL/SpringQL which is licensed under MIT OR Apache-2.0. See file LICENSE-MIT or LICENSE-APACHE for full license details.
 
-mod can_source_stream_columns;
-
-pub use can_source_stream_columns::CANSourceStreamColumns;
-
 use std::{sync::Arc, vec};
 
 use anyhow::{anyhow, Context};

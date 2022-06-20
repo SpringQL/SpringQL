@@ -22,8 +22,8 @@ pub mod test_support;
 
 pub use row::SpringValue;
 pub use row::{
-    CANSourceStreamColumns, ColumnValues, JsonObject, NnSqlValue, Row, RowTime, SourceRow,
-    SqlCompareResult, SqlValue, SqlValueHashKey, StreamColumns,
+    ColumnValues, JsonObject, NnSqlValue, Row, RowTime, SourceRow, SqlCompareResult, SqlValue,
+    SqlValueHashKey, StreamColumns,
 };
 pub use task::{
     NetClientSourceReader, NetServerSourceReader, SinkWriterRepository, SourceReader,

@@ -2,6 +2,7 @@
 
 #![doc = include_str!("pipeline.md")]
 
+mod can_source;
 mod field;
 mod name;
 mod option;
@@ -16,6 +17,7 @@ mod stream_model;
 #[cfg(test)]
 pub mod test_support;
 
+pub use can_source::{CANSourceStreamColumns, CANSourceStreamModel};
 pub use field::{ColumnReference, Field};
 pub use name::{
     AggrAlias, ColumnName, CorrelationAlias, PumpName, QueueName, SinkWriterName, SourceReaderName,
@@ -37,7 +39,7 @@ pub use relation::{
 };
 pub use sink_writer_model::{SinkWriterModel, SinkWriterType};
 pub use source_reader_model::{SourceReaderModel, SourceReaderType};
-pub use stream_model::{CANSourceStreamModel, StreamModel, StreamShape};
+pub use stream_model::{StreamModel, StreamShape};
 
 use std::{collections::HashSet, sync::Arc};
 

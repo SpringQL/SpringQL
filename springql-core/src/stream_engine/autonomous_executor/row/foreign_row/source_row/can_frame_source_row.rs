@@ -4,9 +4,9 @@ use socketcan::CANFrame;
 
 use crate::{
     api::error::Result,
-    pipeline::{CANSourceStreamModel, ColumnName},
+    pipeline::{CANSourceStreamColumns, CANSourceStreamModel, ColumnName},
     stream_engine::{
-        autonomous_executor::{row::Row, CANSourceStreamColumns, ColumnValues},
+        autonomous_executor::{row::Row, ColumnValues},
         NnSqlValue, SqlValue,
     },
 };
