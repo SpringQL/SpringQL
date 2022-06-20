@@ -32,7 +32,7 @@ pub use pump_model::{
 };
 pub use relation::{
     ColumnConstraint, ColumnDataType, ColumnDefinition, F32LooseType, I64LooseType,
-    NumericComparableType, SqlType, StringComparableLoseType, U64LooseType,
+    NumericComparableType, SqlType, StringComparableLoseType,
 };
 pub use sink_writer_model::{SinkWriterModel, SinkWriterType};
 pub use source_reader_model::{SourceReaderModel, SourceReaderType};

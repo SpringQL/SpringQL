@@ -15,7 +15,6 @@ use crate::{
     mem_size::MemSize,
     pipeline::{
         F32LooseType, I64LooseType, NumericComparableType, SqlType, StringComparableLoseType,
-        U64LooseType,
     },
     stream_engine::{
         autonomous_executor::row::value::{
@@ -35,11 +34,6 @@ pub enum NnSqlValue {
     Integer(i32),
     /// BIGINT
     BigInt(i64),
-
-    /// UNSIGNED INTEGER
-    UnsignedInteger(u32),
-    /// UNSIGNED BIGINT
-    UnsignedBigInt(u64),
 
     /// FLOAT
     Float(
@@ -70,9 +64,6 @@ impl MemSize for NnSqlValue {
             NnSqlValue::Integer(_) => size_of::<i32>(),
             NnSqlValue::BigInt(_) => size_of::<i64>(),
 
-            NnSqlValue::UnsignedInteger(_) => size_of::<u32>(),
-            NnSqlValue::UnsignedBigInt(_) => size_of::<u64>(),
-
             NnSqlValue::Float(_) => size_of::<f32>(),
 
             NnSqlValue::Text(s) => s.capacity(),
@@ -102,15 +93,11 @@ impl MemSize for NnSqlValue {
 ///
 /// does not work properly with closures which capture &mut environments.
 macro_rules! for_all_loose_types {
-    ( $nn_sql_value:expr, $closure_i64:expr, $closure_u64:expr, $closure_ordered_float:expr, $closure_string:expr, $closure_blob:expr, $closure_bool:expr, $closure_timestamp:expr, $closure_duration:expr ) => {{
+    ( $nn_sql_value:expr, $closure_i64:expr, $closure_ordered_float:expr, $closure_string:expr, $closure_blob:expr, $closure_bool:expr, $closure_timestamp:expr, $closure_duration:expr ) => {{
         match &$nn_sql_value {
             NnSqlValue::SmallInt(_) | NnSqlValue::Integer(_) | NnSqlValue::BigInt(_) => {
                 let v = $nn_sql_value.unpack::<i64>().unwrap();
                 $closure_i64(v)
-            }
-            NnSqlValue::UnsignedInteger(_) | NnSqlValue::UnsignedBigInt(_) => {
-                let v = $nn_sql_value.unpack::<u64>().unwrap();
-                $closure_u64(v)
             }
             NnSqlValue::Float(_) => {
                 let v = $nn_sql_value.unpack::<f32>().unwrap();
@@ -141,9 +128,6 @@ impl Hash for NnSqlValue {
             |i: i64| {
                 i.hash(state);
             },
-            |u: u64| {
-                u.hash(state);
-            },
             |f: OrderedFloat<f32>| {
                 f.hash(state);
             },
@@ -165,7 +149,6 @@ impl Display for NnSqlValue {
         let s: String = for_all_loose_types!(
             self,
             |i: i64| i.to_string(),
-            |u: u64| u.to_string(),
             |f: OrderedFloat<f32>| f.to_string(),
             |s: String| format!(r#""{}""#, s),
             |v: Vec<u8>| format!("{:?}", v),
@@ -195,8 +178,6 @@ impl NnSqlValue {
             NnSqlValue::SmallInt(i16_) => T::try_from_i16(i16_),
             NnSqlValue::Integer(i32_) => T::try_from_i32(i32_),
             NnSqlValue::BigInt(i64_) => T::try_from_i64(i64_),
-            NnSqlValue::UnsignedInteger(u32_) => T::try_from_u32(u32_),
-            NnSqlValue::UnsignedBigInt(u64_) => T::try_from_u64(u64_),
             NnSqlValue::Float(f32_) => T::try_from_f32(f32_),
             NnSqlValue::Text(string) => T::try_from_string(string),
             NnSqlValue::Blob(blob) => T::try_from_blob(blob),
@@ -212,8 +193,6 @@ impl NnSqlValue {
             NnSqlValue::SmallInt(_) => SqlType::small_int(),
             NnSqlValue::Integer(_) => SqlType::integer(),
             NnSqlValue::BigInt(_) => SqlType::big_int(),
-            NnSqlValue::UnsignedInteger(_) => SqlType::unsigned_integer(),
-            NnSqlValue::UnsignedBigInt(_) => SqlType::unsigned_big_int(),
             NnSqlValue::Float(_) => SqlType::float(),
             NnSqlValue::Text(_) => SqlType::text(),
             NnSqlValue::Blob(_) => SqlType::blob(),
@@ -240,14 +219,6 @@ impl NnSqlValue {
                     I64LooseType::SmallInt => self.unpack::<i16>().map(|v| v.into_sql_value()),
                     I64LooseType::Integer => self.unpack::<i32>().map(|v| v.into_sql_value()),
                     I64LooseType::BigInt => self.unpack::<i64>().map(|v| v.into_sql_value()),
-                },
-                NumericComparableType::U64Loose(u) => match u {
-                    U64LooseType::UnsignedInteger => {
-                        self.unpack::<u32>().map(|v| v.into_sql_value())
-                    }
-                    U64LooseType::UnsignedBigInt => {
-                        self.unpack::<u64>().map(|v| v.into_sql_value())
-                    }
                 },
                 NumericComparableType::F32Loose(f) => match f {
                     F32LooseType::Float => self.unpack::<f32>().map(|v| v.into_sql_value()),
@@ -276,10 +247,6 @@ impl NnSqlValue {
                     (NumericComparableType::I64Loose(_), NumericComparableType::I64Loose(_)) => {
                         let (self_i64, other_i64) = (self.unpack::<i64>()?, other.unpack::<i64>()?);
                         Ok(SqlCompareResult::from(self_i64.cmp(&other_i64)))
-                    }
-                    (NumericComparableType::U64Loose(_), NumericComparableType::U64Loose(_)) => {
-                        let (self_u64, other_u64) = (self.unpack::<u64>()?, other.unpack::<u64>()?);
-                        Ok(SqlCompareResult::from(self_u64.cmp(&other_u64)))
                     }
                     (NumericComparableType::F32Loose(_), NumericComparableType::F32Loose(_)) => {
                         let (self_f32, other_f32) = (self.unpack::<f32>()?, other.unpack::<f32>()?);
@@ -330,10 +297,7 @@ impl NnSqlValue {
             NnSqlValue::Integer(v) => Ok(Self::Integer(-v)),
             NnSqlValue::BigInt(v) => Ok(Self::BigInt(-v)),
             NnSqlValue::Float(v) => Ok(Self::Float(-v)),
-
-            NnSqlValue::UnsignedInteger(_)
-            | NnSqlValue::UnsignedBigInt(_)
-            | NnSqlValue::Text(_)
+            NnSqlValue::Text(_)
             | NnSqlValue::Blob(_)
             | NnSqlValue::Boolean(_)
             | NnSqlValue::Timestamp(_)
@@ -348,8 +312,6 @@ impl From<NnSqlValue> for serde_json::Value {
             NnSqlValue::SmallInt(i) => serde_json::Value::from(i),
             NnSqlValue::Integer(i) => serde_json::Value::from(i),
             NnSqlValue::BigInt(i) => serde_json::Value::from(i),
-            NnSqlValue::UnsignedInteger(u) => serde_json::Value::from(u),
-            NnSqlValue::UnsignedBigInt(u) => serde_json::Value::from(u),
             NnSqlValue::Float(f) => serde_json::Value::from(f.into_inner()),
             NnSqlValue::Text(s) => serde_json::Value::from(s),
             NnSqlValue::Boolean(b) => serde_json::Value::from(b),
@@ -372,10 +334,6 @@ impl Add for NnSqlValue {
                     (NumericComparableType::I64Loose(_), NumericComparableType::I64Loose(_)) => {
                         let (self_i64, rhs_i64) = (self.unpack::<i64>()?, rhs.unpack::<i64>()?);
                         Ok(Self::BigInt(self_i64 + rhs_i64))
-                    }
-                    (NumericComparableType::U64Loose(_), NumericComparableType::U64Loose(_)) => {
-                        let (self_u64, rhs_u64) = (self.unpack::<u64>()?, rhs.unpack::<u64>()?);
-                        Ok(Self::UnsignedBigInt(self_u64 + rhs_u64))
                     }
                     (NumericComparableType::F32Loose(_), NumericComparableType::F32Loose(_)) => {
                         let (self_f32, rhs_f32) = (self.unpack::<f32>()?, rhs.unpack::<f32>()?);
@@ -406,10 +364,6 @@ impl Mul for NnSqlValue {
                     (NumericComparableType::I64Loose(_), NumericComparableType::I64Loose(_)) => {
                         let (self_i64, rhs_i64) = (self.unpack::<i64>()?, rhs.unpack::<i64>()?);
                         Ok(Self::BigInt(self_i64 * rhs_i64))
-                    }
-                    (NumericComparableType::U64Loose(_), NumericComparableType::U64Loose(_)) => {
-                        let (self_u64, rhs_u64) = (self.unpack::<u64>()?, rhs.unpack::<u64>()?);
-                        Ok(Self::UnsignedBigInt(self_u64 * rhs_u64))
                     }
                     (NumericComparableType::F32Loose(_), NumericComparableType::F32Loose(_)) => {
                         let (self_f32, rhs_f32) = (self.unpack::<f32>()?, rhs.unpack::<f32>()?);
@@ -448,20 +402,6 @@ mod tests {
         assert_eq!(NnSqlValue::BigInt(-1).unpack::<i16>()?, -1);
         assert_eq!(NnSqlValue::BigInt(-1).unpack::<i32>()?, -1);
         assert_eq!(NnSqlValue::BigInt(-1).unpack::<i64>()?, -1);
-
-        assert_eq!(
-            NnSqlValue::UnsignedInteger(u16::MAX as u32).unpack::<u32>()?,
-            u16::MAX as u32
-        );
-        assert_eq!(
-            NnSqlValue::UnsignedInteger(u16::MAX as u32).unpack::<u64>()?,
-            u16::MAX as u64
-        );
-
-        assert_eq!(
-            NnSqlValue::UnsignedBigInt(u16::MAX as u64).unpack::<u64>()?,
-            u16::MAX as u64
-        );
 
         assert_eq!(
             NnSqlValue::Text("🚔".to_string()).unpack::<String>()?,

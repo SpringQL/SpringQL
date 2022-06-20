@@ -46,30 +46,6 @@ pub trait SpringValue: Sized {
     /// # Failures
     ///
     /// - `SpringError::Sql` when:
-    ///   - the type implementing SqlConvertible is not convertible from u16
-    fn try_from_u16(_: &u16) -> Result<Self> {
-        Self::default_err("u16")
-    }
-
-    /// # Failures
-    ///
-    /// - `SpringError::Sql` when:
-    ///   - the type implementing SqlConvertible is not convertible from u32
-    fn try_from_u32(_: &u32) -> Result<Self> {
-        Self::default_err("u32")
-    }
-
-    /// # Failures
-    ///
-    /// - `SpringError::Sql` when:
-    ///   - the type implementing SqlConvertible is not convertible from u64
-    fn try_from_u64(_: &u64) -> Result<Self> {
-        Self::default_err("u64")
-    }
-
-    /// # Failures
-    ///
-    /// - `SpringError::Sql` when:
     ///   - the type implementing SqlConvertible is not convertible from f32
     fn try_from_f32(_: &f32) -> Result<Self> {
         Self::default_err("f32")
