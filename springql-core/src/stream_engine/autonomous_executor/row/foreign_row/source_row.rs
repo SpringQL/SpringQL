@@ -1,8 +1,10 @@
 // This file is part of https://github.com/SpringQL/SpringQL which is licensed under MIT OR Apache-2.0. See file LICENSE-MIT or LICENSE-APACHE for full license details.
 
+mod can_frame_source_row;
 mod json_source_row;
 mod source_row_format;
 
+pub use can_frame_source_row::CANFrameSourceRow;
 pub use json_source_row::JsonSourceRow;
 pub use source_row_format::SourceRowFormat;
 
@@ -12,7 +14,7 @@ use anyhow::Context;
 
 use crate::{
     api::{error::Result, SpringError},
-    pipeline::StreamModel,
+    pipeline::{StreamModel, CANSourceStreamModel},
     stream_engine::Row,
 };
 
@@ -22,6 +24,7 @@ use crate::{
 #[derive(Eq, PartialEq, Debug)]
 pub enum SourceRow {
     Json(JsonSourceRow),
+    CANFrame(CANFrameSourceRow),
 }
 
 impl SourceRow {
@@ -51,6 +54,10 @@ impl SourceRow {
     pub fn into_row(self, stream_model: Arc<StreamModel>) -> Result<Row> {
         match self {
             SourceRow::Json(json_source_row) => json_source_row.into_row(stream_model),
+            SourceRow::CANFrame(can_frame_source_row) => {
+                let stream = CANSourceStreamModel::try_from(stream_model.as_ref())?;
+                can_frame_source_row.into_row(&stream)
+            }
         }
     }
 }

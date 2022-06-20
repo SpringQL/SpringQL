@@ -1,8 +1,10 @@
 // This file is part of https://github.com/SpringQL/SpringQL which is licensed under MIT OR Apache-2.0. See file LICENSE-MIT or LICENSE-APACHE for full license details.
 
 mod stream_shape;
-use crate::pipeline::{field::ColumnReference, name::StreamName};
+
 pub use stream_shape::StreamShape;
+
+use crate::pipeline::{field::ColumnReference, name::StreamName};
 
 #[derive(Clone, Eq, PartialEq, Debug, new)]
 pub struct StreamModel {
