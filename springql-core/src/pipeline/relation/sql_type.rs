@@ -42,6 +42,19 @@ impl SqlType {
         SqlType::NumericComparable(NumericComparableType::I64Loose(I64LooseType::BigInt))
     }
 
+    /// Constructor of Integer
+    pub fn unsigned_integer() -> SqlType {
+        SqlType::NumericComparable(NumericComparableType::U64Loose(
+            U64LooseType::UnsignedInteger,
+        ))
+    }
+    /// Constructor of unsigned BigInt
+    pub fn unsigned_big_int() -> SqlType {
+        SqlType::NumericComparable(NumericComparableType::U64Loose(
+            U64LooseType::UnsignedBigInt,
+        ))
+    }
+
     /// Constructor of Float
     pub fn float() -> SqlType {
         SqlType::NumericComparable(NumericComparableType::F32Loose(F32LooseType::Float))
@@ -74,10 +87,14 @@ impl SqlType {
 }
 
 /// Numeric types (comparable).
+#[allow(clippy::enum_variant_names)]
 #[derive(Clone, Eq, PartialEq, Hash, Debug)]
 pub enum NumericComparableType {
     /// Loosely typed as i64
     I64Loose(I64LooseType),
+
+    /// Loosely typed as u64
+    U64Loose(U64LooseType),
 
     /// Loosely typed as f32
     F32Loose(F32LooseType),
@@ -94,6 +111,16 @@ pub enum I64LooseType {
 
     /// 8-byte signed integer.
     BigInt,
+}
+
+/// Unsigned integer types (loosely typed as u64).
+#[derive(Clone, Eq, PartialEq, Hash, Debug)]
+pub enum U64LooseType {
+    /// 4-byte unsigned integer.
+    UnsignedInteger,
+
+    /// 8-byte unsigned integer.
+    UnsignedBigInt,
 }
 
 /// Float types (loosely typed as f64).
