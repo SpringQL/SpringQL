@@ -14,6 +14,10 @@ All other sections are for end-users.
 
 - Bump up MSRV from 1.56.1 to 1.57.0 ([#203](https://github.com/SpringQL/SpringQL/pull/203))
 
+### Fixed
+
+- Fix `examples/in_vehicle_pipeline.rs` to run again ([#204](https://github.com/SpringQL/SpringQL/pull/204))
+
 ## [v0.13.0]
 
 ### Changed
