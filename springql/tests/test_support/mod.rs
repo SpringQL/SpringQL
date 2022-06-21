@@ -2,7 +2,7 @@
 
 use std::time::Duration;
 
-use springql_core::{api::SpringConfig, api::SpringPipeline};
+use springql::{SpringConfig, SpringPipeline};
 use springql_foreign_service::sink::ForeignSink;
 
 pub mod request_body;

@@ -1,6 +1,7 @@
 [workspace]
 
 members = [
+  "springql",
   "springql-core",
   "foreign-service",
   "test-logger",

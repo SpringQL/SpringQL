@@ -4,7 +4,7 @@ mod test_support;
 
 use pretty_assertions::assert_eq;
 use serde_json::json;
-use springql_core::api::*;
+use springql::*;
 use springql_foreign_service::{
     sink::ForeignSink,
     source::{ForeignSource, ForeignSourceInput},
@@ -14,45 +14,42 @@ use springql_test_logger::setup_test_logger;
 use crate::test_support::{apply_ddls, drain_from_sink};
 
 #[test]
-fn test_feat_floor_time() {
+fn test_feat_and() {
     setup_test_logger();
 
-    let json_oracle = json!({
-        "ts": "2020-01-01 23:59:59.999999999",
-        "ticker": "ORCL",
-        "amount": 20,
+    let json1 = json!({
+        "ts": "2020-01-01 00:00:00.000000000",
     });
-    let source_input = vec![json_oracle];
+    let source_input = vec![json1];
 
     let test_source = ForeignSource::new().unwrap();
     let test_sink = ForeignSink::start().unwrap();
 
     let ddls = vec![
         "
-        CREATE SOURCE STREAM source_trade (
-          ts TIMESTAMP NOT NULL ROWTIME,    
-          ticker TEXT NOT NULL,
-          amount INTEGER NOT NULL
+        CREATE SOURCE STREAM source_1 (
+          ts TIMESTAMP NOT NULL ROWTIME
         );
         "
         .to_string(),
         "
-        CREATE SINK STREAM sink_trade (
-          ts TIMESTAMP NOT NULL ROWTIME,    
-          ticker TEXT NOT NULL,
-          amount INTEGER NOT NULL
+        CREATE SINK STREAM sink_1 (
+          ts TIMESTAMP NOT NULL ROWTIME,
+          answer_true_and_true BOOLEAN NOT NULL,
+          answer_true_and_false BOOLEAN NOT NULL,
+          answer_false_and_true BOOLEAN NOT NULL
         );
         "
         .to_string(),
         "
-        CREATE PUMP pu_floor_time AS
-          INSERT INTO sink_trade (ts, ticker, amount)
-          SELECT STREAM FLOOR_TIME(source_trade.ts, DURATION_SECS(1)), source_trade.ticker, source_trade.amount FROM source_trade;
+        CREATE PUMP pu_add AS
+          INSERT INTO sink_1 (ts, answer_true_and_true, answer_true_and_false, answer_false_and_true)
+          SELECT STREAM source_1.ts, TRUE AND TRUE, TRUE AND FALSE, FALSE AND TRUE FROM source_1;
         "
         .to_string(),
         format!(
             "
-        CREATE SINK WRITER tcp_sink_trade FOR sink_trade
+        CREATE SINK WRITER tcp_sink_1 FOR sink_1
           TYPE NET_CLIENT OPTIONS (
             PROTOCOL 'TCP',
             REMOTE_HOST '{remote_host}',
@@ -64,7 +61,7 @@ fn test_feat_floor_time() {
         ),
         format!(
             "
-        CREATE SOURCE READER tcp_trade FOR source_trade
+        CREATE SOURCE READER tcp_1 FOR source_1
           TYPE NET_CLIENT OPTIONS (
             PROTOCOL 'TCP',
             REMOTE_HOST '{remote_host}',
@@ -81,5 +78,7 @@ fn test_feat_floor_time() {
     let sink_received = drain_from_sink(&test_sink);
     let r = sink_received.get(0).unwrap();
 
-    assert_eq!(r["ts"], "2020-01-01 23:59:59.000000000");
+    assert_eq!(r["answer_true_and_true"], true);
+    assert_eq!(r["answer_true_and_false"], false);
+    assert_eq!(r["answer_false_and_true"], false);
 }

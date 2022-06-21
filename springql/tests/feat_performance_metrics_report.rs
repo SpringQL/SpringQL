@@ -10,7 +10,7 @@ use serde_json::json;
 use time::{macros::format_description, OffsetDateTime, PrimitiveDateTime};
 
 use crate::test_support::{apply_ddls, drain_from_sink};
-use springql_core::api::*;
+use springql::*;
 use springql_foreign_service::{
     sink::ForeignSink,
     source::{ForeignSource, ForeignSourceInput},

@@ -32,7 +32,12 @@ All other sections are for end-users.
 - `UNSIGNED INTEGER` type ([#201](https://github.com/SpringQL/SpringQL/pull/201))
 - CAN source reader, which feeds SocketCAN frames into a stream with `can_id UNSIGNED INTEGER NOT NULL, can_data BLOB NOT NULL` columns ([#170](https://github.com/SpringQL/SpringQL/pull/170))
 
-### For developers
+### Changed
+
+- add crate `springql` ([#193](https://github.com/SpringQL/SpringQL/pull/193))
+  - re-export `springql-core` API from `springql`
+
+### For developpers
 
 - Add deny lint option for `rustdoc::broken_intra_doc_links` ([#185](https://github.com/SpringQL/SpringQL/pull/185))
 - Refactor : Hide detail module structure ([#177](https://github.com/SpringQL/SpringQL/pull/177))
