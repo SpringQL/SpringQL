@@ -17,9 +17,32 @@
 //! echo '{"ts": "2022-01-01 13:00:10.000000000", "symbol": "APPL", "amount": 100}' |nc localhost 54300
 //! ```
 
-use std::{sync::Arc, thread, time::Duration};
+use std::{
+    process::Command,
+    sync::Arc,
+    thread,
+    time::{Duration, Instant},
+};
 
 use springql::{SpringConfig, SpringPipeline};
+
+fn send_data_to_pipeline() {
+    fn send_row(json: &str) {
+        let cmd_text = format!(r#"echo '{}' |nc localhost 54300"#, json);
+        Command::new("bash")
+            .arg("-c")
+            .arg(cmd_text)
+            .spawn()
+            .expect("send failed");
+    }
+
+    send_row(r#"{"ts": "2022-01-01 13:00:00.000000000", "symbol": "ORCL", "amount": 10}"#);
+    send_row(r#"{"ts": "2022-01-01 13:00:01.000000000", "symbol": "ORCL", "amount": 30}"#);
+    send_row(r#"{"ts": "2022-01-01 13:00:01.000000000", "symbol": "GOOGL", "amount": 50}"#);
+    send_row(r#"{"ts": "2022-01-01 13:00:02.000000000", "symbol": "ORCL", "amount": 40}"#);
+    send_row(r#"{"ts": "2022-01-01 13:00:05.000000000", "symbol": "GOOGL", "amount": 60}"#);
+    send_row(r#"{"ts": "2022-01-01 13:00:10.000000000", "symbol": "APPL", "amount": 100}"#);
+}
 
 fn main() {
     const SOURCE_PORT: u16 = 54300;
@@ -136,6 +159,9 @@ fn main() {
         .unwrap();
 
     eprintln!("waiting JSON records in tcp/{} port...", SOURCE_PORT);
+    let start_at = Instant::now();
+
+    send_data_to_pipeline();
 
     loop {
         // Fetching rows from q_avg_all.
@@ -154,6 +180,10 @@ fn main() {
         }
 
         // Avoid busy loop
-        thread::sleep(Duration::from_millis(10))
+        thread::sleep(Duration::from_millis(10));
+        // exit with 5 second
+        if Instant::now() - start_at > Duration::from_secs(5) {
+            return;
+        }
     }
 }
