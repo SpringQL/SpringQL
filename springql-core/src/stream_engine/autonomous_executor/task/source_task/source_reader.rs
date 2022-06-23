@@ -1,11 +1,13 @@
 // This file is part of https://github.com/SpringQL/SpringQL which is licensed under MIT OR Apache-2.0. See file LICENSE-MIT or LICENSE-APACHE for full license details.
 
 mod can;
+mod in_memory_queue;
 mod net_client;
 mod net_server;
 mod source_reader_factory;
 mod source_reader_repository;
 
+pub use in_memory_queue::InMemoryQueueSourceReader;
 pub use net_client::NetClientSourceReader;
 pub use net_server::NetServerSourceReader;
 pub use source_reader_repository::SourceReaderRepository;

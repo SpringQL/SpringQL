@@ -95,4 +95,14 @@ impl StreamEngine {
         let row = q.pop_non_blocking();
         Ok(row)
     }
+
+    /// # Failure
+    ///
+    /// - `SpringError::Unavailable` when:
+    ///   - queue named `queue_name` does not exist.
+    pub fn push_in_memory_queue(&mut self, queue_name: QueueName, row: Row) -> Result<()> {
+        let q = InMemoryQueueRepository::instance().get(&queue_name)?;
+        q.push(row);
+        Ok(())
+    }
 }

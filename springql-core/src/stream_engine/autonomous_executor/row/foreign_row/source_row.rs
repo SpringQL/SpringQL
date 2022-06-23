@@ -14,17 +14,18 @@ use anyhow::Context;
 
 use crate::{
     api::{error::Result, SpringError},
-    pipeline::{StreamModel, CANSourceStreamModel},
+    pipeline::{CANSourceStreamModel, StreamModel},
     stream_engine::Row,
 };
 
 /// Input row from foreign sources (retrieved from SourceReader).
 ///
 /// Immediately converted into `Row` on stream-engine boundary.
-#[derive(Eq, PartialEq, Debug)]
+#[derive(PartialEq, Debug)]
 pub enum SourceRow {
     Json(JsonSourceRow),
     CANFrame(CANFrameSourceRow),
+    Raw(Row),
 }
 
 impl SourceRow {
@@ -57,6 +58,10 @@ impl SourceRow {
             SourceRow::CANFrame(can_frame_source_row) => {
                 let stream = CANSourceStreamModel::try_from(stream_model.as_ref())?;
                 can_frame_source_row.into_row(&stream)
+            }
+            SourceRow::Raw(mut row) => {
+                row.apply_new_stream_model(stream_model)?;
+                Ok(row)
             }
         }
     }

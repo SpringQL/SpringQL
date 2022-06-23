@@ -76,4 +76,9 @@ impl Connection {
             engine.pop_in_memory_queue_non_blocking(QueueName::new(queue.to_string()))?;
         Ok(sink_row)
     }
+
+    pub fn push(&self, queue: &str, row: Row) -> Result<()> {
+        let mut engine = self.engine.get()?;
+        engine.push_in_memory_queue(QueueName::new(queue.to_string()), row)
+    }
 }
