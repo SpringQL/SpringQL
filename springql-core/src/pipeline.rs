@@ -2,7 +2,6 @@
 
 #![doc = include_str!("pipeline.md")]
 
-mod can_source;
 mod field;
 mod name;
 mod option;
