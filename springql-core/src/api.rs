@@ -54,8 +54,8 @@ impl SpringPipeline {
     ///
     /// - [SpringError::Unavailable](crate::api::error::SpringError::Unavailable) when:
     ///   - queue named `queue` does not exist.
-    pub fn pop(&self, queue: &str) -> Result<SpringRow> {
-        self.0.pop(queue).map(SpringRow)
+    pub fn pop(&self, queue: &str) -> Result<SpringSinkRow> {
+        self.0.pop(queue).map(SpringSinkRow)
     }
 
     /// Pop a row from an in memory queue. This is a non-blocking function.
@@ -69,10 +69,10 @@ impl SpringPipeline {
     ///
     /// - [SpringError::Unavailable](crate::api::error::SpringError::Unavailable) when:
     ///   - queue named `queue` does not exist.
-    pub fn pop_non_blocking(&self, queue: &str) -> Result<Option<SpringRow>> {
+    pub fn pop_non_blocking(&self, queue: &str) -> Result<Option<SpringSinkRow>> {
         self.0
             .pop_non_blocking(queue)
-            .map(|opt_row| opt_row.map(SpringRow))
+            .map(|opt_row| opt_row.map(SpringSinkRow))
     }
 
     /// Push a row into an in memory queue. This is a non-blocking function.
@@ -81,16 +81,16 @@ impl SpringPipeline {
     ///
     /// - [SpringError::Unavailable](crate::api::error::SpringError::Unavailable) when:
     ///   - queue named `queue` does not exist.
-    pub fn push(&self, queue: &str, row: SpringRow) -> Result<()> {
+    pub fn push(&self, queue: &str, row: SpringSinkRow) -> Result<()> {
         self.0.push(queue, row.0)
     }
 }
 
-/// Row object from an in memory queue.
+/// Row object from an in memory sink queue.
 #[derive(Debug)]
-pub struct SpringRow(Row);
+pub struct SpringSinkRow(Row);
 
-impl SpringRow {
+impl SpringSinkRow {
     /// Get a i-th column value from the row.
     ///
     /// # Failure
