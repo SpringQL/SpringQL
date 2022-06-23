@@ -17,7 +17,7 @@ use crate::{
                 MetricsUpdateByTaskExecution, TaskMetricsUpdateByTask,
             },
             repositories::Repositories,
-            row::Row,
+            row::StreamRow,
             task::task_context::TaskContext,
             task_graph::{QueueId, TaskId},
         },
@@ -82,7 +82,7 @@ impl SinkTask {
         &self,
         queue_id: QueueId,
         repos: Arc<Repositories>,
-    ) -> Option<(Row, InQueueMetricsUpdateByTask)> {
+    ) -> Option<(StreamRow, InQueueMetricsUpdateByTask)> {
         match queue_id {
             QueueId::Row(queue_id) => {
                 let row_q_repo = repos.row_queue_repository();
@@ -106,7 +106,7 @@ impl SinkTask {
         }
     }
 
-    fn emit(&self, row: Row, context: &TaskContext) -> Result<()> {
+    fn emit(&self, row: StreamRow, context: &TaskContext) -> Result<()> {
         let sink_writer = context
             .repos()
             .sink_writer_repository()

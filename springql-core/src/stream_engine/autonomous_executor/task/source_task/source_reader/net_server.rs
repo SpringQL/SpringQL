@@ -134,7 +134,7 @@ mod tests {
         pipeline::OptionsBuilder,
         stream_engine::{
             autonomous_executor::task::sink_task::{NetSinkWriter, SinkWriter},
-            Row,
+            StreamRow,
         },
     };
     fn ephemeral_port() -> u16 {
@@ -163,9 +163,15 @@ mod tests {
 
         let mut writer = tcp_writer(port);
 
-        writer.send_row(Row::fx_city_temperature_tokyo()).unwrap();
-        writer.send_row(Row::fx_city_temperature_osaka()).unwrap();
-        writer.send_row(Row::fx_city_temperature_london()).unwrap();
+        writer
+            .send_row(StreamRow::fx_city_temperature_tokyo())
+            .unwrap();
+        writer
+            .send_row(StreamRow::fx_city_temperature_osaka())
+            .unwrap();
+        writer
+            .send_row(StreamRow::fx_city_temperature_london())
+            .unwrap();
 
         assert_eq!(
             reader.next_row()?,

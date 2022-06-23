@@ -6,7 +6,7 @@ use crate::{
     api::error::Result,
     pipeline::{CANSourceStreamColumns, CANSourceStreamModel, ColumnName},
     stream_engine::{
-        autonomous_executor::{row::Row, ColumnValues},
+        autonomous_executor::{row::StreamRow, ColumnValues},
         NnSqlValue, SqlValue,
     },
 };
@@ -22,10 +22,10 @@ impl CANFrameSourceRow {
     ///
     /// - `SpringError::Sql` when:
     ///   - `stream_model`
-    pub fn into_row(self, stream_model: &CANSourceStreamModel) -> Result<Row> {
+    pub fn into_row(self, stream_model: &CANSourceStreamModel) -> Result<StreamRow> {
         let column_values = self.into_column_values();
         let stream_columns = CANSourceStreamColumns::new(stream_model, column_values)?;
-        Ok(Row::new(stream_columns.into_stream_columns()))
+        Ok(StreamRow::new(stream_columns.into_stream_columns()))
     }
 
     fn into_column_values(self) -> ColumnValues {

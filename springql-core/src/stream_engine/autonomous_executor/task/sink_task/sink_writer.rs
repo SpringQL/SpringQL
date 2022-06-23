@@ -13,7 +13,7 @@ use std::fmt::Debug;
 use crate::{
     api::{error::Result, SpringSinkWriterConfig},
     pipeline::Options,
-    stream_engine::Row,
+    stream_engine::StreamRow,
 };
 
 /// Instance of SinkWriterModel.
@@ -32,5 +32,5 @@ pub trait SinkWriter: Debug + Sync + Send + 'static {
     /// - `SpringError::ForeignIo` when:
     ///   - Remote sink has failed to parse request.
     ///   - Unknown foreign error.
-    fn send_row(&mut self, row: Row) -> Result<()>;
+    fn send_row(&mut self, row: StreamRow) -> Result<()>;
 }

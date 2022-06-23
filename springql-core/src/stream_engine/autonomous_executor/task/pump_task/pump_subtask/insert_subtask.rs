@@ -8,7 +8,7 @@ use crate::{
     stream_engine::{
         autonomous_executor::{
             performance_metrics::OutQueueMetricsUpdateByTask,
-            row::Row,
+            row::StreamRow,
             task::{pump_task::pump_subtask::query_subtask::SqlValues, task_context::TaskContext},
             task_graph::QueueId,
         },
@@ -86,7 +86,7 @@ impl InsertSubtask {
     fn out_queue_metrics_update(
         &self,
         queue_id: QueueId,
-        rows: &[Row],
+        rows: &[StreamRow],
     ) -> OutQueueMetricsUpdateByTask {
         let bytes_put: usize = rows.iter().map(|row| row.mem_size()).sum();
         OutQueueMetricsUpdateByTask::new(queue_id, rows.len() as u64, bytes_put as u64)

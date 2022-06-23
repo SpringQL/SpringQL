@@ -2,15 +2,15 @@
 
 use crate::{
     api::error::{Result, SpringError},
-    stream_engine::{Row, SpringValue, SqlValue},
+    stream_engine::{SpringValue, SqlValue, StreamRow},
 };
 
 /// Row object from an in memory sink queue.
 #[derive(Debug)]
-pub struct SpringSinkRow(Row);
+pub struct SpringSinkRow(StreamRow);
 
 impl SpringSinkRow {
-    pub(crate) fn new(row: Row) -> Self {
+    pub(crate) fn new(row: StreamRow) -> Self {
         SpringSinkRow(row)
     }
 
@@ -37,7 +37,7 @@ impl SpringSinkRow {
         }
     }
 
-    pub(crate) fn into_row(self) -> Row {
+    pub(crate) fn into_row(self) -> StreamRow {
         self.0
     }
 }

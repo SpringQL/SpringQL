@@ -140,22 +140,6 @@ impl StreamColumns {
             }
         }
     }
-
-    pub fn apply_new_stream_model(&mut self, stream_model: Arc<StreamModel>) -> Result<()> {
-        if self.stream_model.shape() == stream_model.shape() {
-            self.stream_model = stream_model;
-            Ok(())
-        } else {
-            Err(SpringError::InvalidFormat {
-                s: format!(
-                    "original stream `{}` and new stream `{}` have different shape",
-                    self.stream_model.name(),
-                    stream_model.name()
-                ),
-                source: anyhow!(r#"stream model shape mismatch"#),
-            })
-        }
-    }
 }
 
 impl IntoIterator for StreamColumns {
@@ -171,6 +155,19 @@ impl IntoIterator for StreamColumns {
             .map(|(coldef, sql_value)| (coldef.column_data_type().column_name().clone(), sql_value))
             .collect::<Vec<Self::Item>>()
             .into_iter()
+    }
+}
+
+impl From<StreamColumns> for ColumnValues {
+    fn from(stream_columns: StreamColumns) -> ColumnValues {
+        let mut colvals = ColumnValues::default();
+
+        for (col_name, sql_value) in stream_columns {
+            colvals
+                .insert(col_name, sql_value)
+                .expect("StreamColumns must not have duplicate column names");
+        }
+        colvals
     }
 }
 

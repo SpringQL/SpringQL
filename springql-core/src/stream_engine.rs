@@ -13,7 +13,7 @@ use std::sync::{Arc, Mutex, MutexGuard};
 use anyhow::anyhow;
 
 pub use crate::stream_engine::autonomous_executor::SpringValue;
-pub use autonomous_executor::{NnSqlValue, Row, RowTime, SqlCompareResult, SqlValue, Tuple};
+pub use autonomous_executor::{NnSqlValue, RowTime, SqlCompareResult, SqlValue, StreamRow, Tuple};
 
 use crate::{
     api::{error::Result, SpringConfig, SpringError},
@@ -90,7 +90,7 @@ impl StreamEngine {
     pub fn pop_in_memory_queue_non_blocking(
         &mut self,
         queue_name: QueueName,
-    ) -> Result<Option<Row>> {
+    ) -> Result<Option<StreamRow>> {
         let q = InMemoryQueueRepository::instance().get(&queue_name)?;
         let row = q.pop_non_blocking();
         Ok(row)
@@ -100,7 +100,7 @@ impl StreamEngine {
     ///
     /// - `SpringError::Unavailable` when:
     ///   - queue named `queue_name` does not exist.
-    pub fn push_in_memory_queue(&mut self, queue_name: QueueName, row: Row) -> Result<()> {
+    pub fn push_in_memory_queue(&mut self, queue_name: QueueName, row: StreamRow) -> Result<()> {
         let q = InMemoryQueueRepository::instance().get(&queue_name)?;
         q.push(row);
         Ok(())

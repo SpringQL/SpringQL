@@ -36,7 +36,7 @@ impl SourceReader for InMemoryQueueSourceReader {
         let q = InMemoryQueueRepository::instance().get(&self.0)?;
 
         if let Some(row) = q.pop_non_blocking() {
-            Ok(SourceRow::Raw(row))
+            Ok(SourceRow::Raw(row.into()))
         } else {
             Err(SpringError::ForeignSourceTimeout {
                 source: anyhow!("queue is empty"),

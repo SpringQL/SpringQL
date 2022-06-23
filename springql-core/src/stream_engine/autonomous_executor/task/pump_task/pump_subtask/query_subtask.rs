@@ -21,7 +21,7 @@ use crate::{
             performance_metrics::{
                 InQueueMetricsUpdateByCollect, InQueueMetricsUpdateByTask, WindowInFlowByWindowTask,
             },
-            row::{ColumnValues, Row, StreamColumns},
+            row::{ColumnValues, StreamColumns, StreamRow},
             task::{
                 pump_task::pump_subtask::query_subtask::{
                     collect_subtask::CollectSubtask,
@@ -75,13 +75,17 @@ impl SqlValues {
     /// - Tuple fields and column_order have different length.
     /// - Type mismatch between `self.fields` (ordered) and `stream_shape`
     /// - Duplicate column names in `column_order`
-    pub fn into_row(self, stream_model: Arc<StreamModel>, column_order: Vec<ColumnName>) -> Row {
+    pub fn into_row(
+        self,
+        stream_model: Arc<StreamModel>,
+        column_order: Vec<ColumnName>,
+    ) -> StreamRow {
         assert_eq!(self.0.len(), column_order.len());
 
         let column_values = self.mk_column_values(column_order);
         let stream_columns = StreamColumns::new(stream_model, column_values)
             .expect("type or shape mismatch? must be checked on pump creation");
-        Row::new(stream_columns)
+        StreamRow::new(stream_columns)
     }
 
     fn mk_column_values(self, column_order: Vec<ColumnName>) -> ColumnValues {

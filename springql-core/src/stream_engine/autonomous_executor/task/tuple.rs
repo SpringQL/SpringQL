@@ -5,7 +5,7 @@ use crate::{
     mem_size::MemSize,
     pipeline::{ColumnReference, Field},
     stream_engine::{
-        autonomous_executor::row::{Row, RowTime},
+        autonomous_executor::row::{RowTime, StreamRow},
         NnSqlValue, SqlValue,
     },
 };
@@ -34,7 +34,7 @@ impl MemSize for Tuple {
 }
 
 impl Tuple {
-    pub fn from_row(row: Row) -> Self {
+    pub fn from_row(row: StreamRow) -> Self {
         let rowtime = row.rowtime();
 
         let stream_name = row.stream_model().name().clone();

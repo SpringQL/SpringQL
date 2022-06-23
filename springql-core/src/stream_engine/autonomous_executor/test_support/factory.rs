@@ -9,7 +9,7 @@ use crate::{
     pipeline::{ColumnName, OptionsBuilder, StreamModel, StreamName, StreamShape},
     stream_engine::{
         autonomous_executor::{
-            row::{ColumnValues, NnSqlValue, Row, SqlValue, StreamColumns},
+            row::{ColumnValues, NnSqlValue, SqlValue, StreamColumns, StreamRow},
             task::{NetClientSourceReader, SourceReader, Tuple},
         },
         time::SpringTimestamp,
@@ -124,7 +124,7 @@ impl StreamColumns {
     }
 }
 
-impl Row {
+impl StreamRow {
     pub fn factory_city_temperature(
         timestamp: SpringTimestamp,
         city: &str,
@@ -147,9 +147,13 @@ impl Tuple {
         city: &str,
         temperature: i32,
     ) -> Self {
-        Self::from_row(Row::factory_city_temperature(timestamp, city, temperature))
+        Self::from_row(StreamRow::factory_city_temperature(
+            timestamp,
+            city,
+            temperature,
+        ))
     }
     pub fn factory_trade(timestamp: SpringTimestamp, ticker: &str, amount: i16) -> Self {
-        Self::from_row(Row::factory_trade(timestamp, ticker, amount))
+        Self::from_row(StreamRow::factory_trade(timestamp, ticker, amount))
     }
 }
