@@ -14,6 +14,10 @@ All other sections are for end-users.
 
 - Bump up MSRV from 1.56.1 to 1.57.0 ([#203](https://github.com/SpringQL/SpringQL/pull/203))
 
+### Added
+
+- In-memory queue source reader ([#208](https://github.com/SpringQL/SpringQL/pull/208))
+
 ### Fixed
 
 - Fix `examples/in_vehicle_pipeline.rs` to run again ([#205](https://github.com/SpringQL/SpringQL/pull/205))
