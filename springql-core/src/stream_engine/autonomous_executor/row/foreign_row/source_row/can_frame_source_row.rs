@@ -14,7 +14,7 @@ use crate::{
 /// Input row from foreign sources (retrieved from SourceReader).
 ///
 /// Immediately converted into `Row` on stream-engine boundary.
-#[derive(Debug, new)]
+#[derive(Clone, Debug, new)]
 pub struct CANFrameSourceRow(CANFrame);
 
 impl CANFrameSourceRow {

@@ -13,7 +13,7 @@ use crate::{
 /// Input row from foreign sources (retrieved from SourceReader).
 ///
 /// Immediately converted into `Row` on stream-engine boundary.
-#[derive(Eq, PartialEq, Debug)]
+#[derive(Clone, Eq, PartialEq, Debug)]
 pub struct JsonSourceRow(JsonObject);
 
 impl JsonSourceRow {

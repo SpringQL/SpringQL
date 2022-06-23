@@ -5,6 +5,7 @@ pub mod error;
 mod spring_config;
 mod spring_pipeline;
 mod spring_sink_row;
+mod spring_source_row;
 
 pub use crate::{
     api::{

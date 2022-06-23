@@ -21,7 +21,7 @@ use crate::{
 /// Input row from foreign sources (retrieved from SourceReader).
 ///
 /// Immediately converted into `Row` on stream-engine boundary.
-#[derive(PartialEq, Debug)]
+#[derive(Clone, PartialEq, Debug)]
 pub enum SourceRow {
     Json(JsonSourceRow),
     CANFrame(CANFrameSourceRow),
