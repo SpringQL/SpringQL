@@ -13,6 +13,7 @@ All other sections are for end-users.
 ### Changed
 
 - Bump up MSRV from 1.56.1 to 1.57.0 ([#203](https://github.com/SpringQL/SpringQL/pull/203))
+- Name changed: `SpringRow` -> `SpringSinkRow` ([#210](https://github.com/SpringQL/SpringQL/pull/210))
 
 ### Added
 
