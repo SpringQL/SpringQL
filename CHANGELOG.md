@@ -16,7 +16,7 @@ All other sections are for end-users.
 
 ### Added
 
-- In-memory queue source reader ([#208](https://github.com/SpringQL/SpringQL/pull/208))
+- In-memory queue source reader and `SpringPipeline::push()` API ([#208](https://github.com/SpringQL/SpringQL/pull/208))
 
 ### Fixed
 
