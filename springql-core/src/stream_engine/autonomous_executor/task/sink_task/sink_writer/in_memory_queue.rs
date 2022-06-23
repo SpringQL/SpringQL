@@ -5,7 +5,7 @@ use crate::{
     pipeline::{InMemoryQueueOptions, Options, QueueName},
     stream_engine::{
         autonomous_executor::task::sink_task::sink_writer::SinkWriter,
-        in_memory_queue_repository::InMemoryQueueRepository, Row,
+        in_memory_queue_repository::InMemoryQueueRepository, StreamRow,
     },
 };
 
@@ -23,7 +23,7 @@ impl SinkWriter for InMemoryQueueSinkWriter {
         Ok(Self(queue_name))
     }
 
-    fn send_row(&mut self, row: Row) -> Result<()> {
+    fn send_row(&mut self, row: StreamRow) -> Result<()> {
         let q = InMemoryQueueRepository::instance().get(&self.0)?;
         q.push(row);
         Ok(())

@@ -2,7 +2,7 @@
 
 use std::{collections::VecDeque, sync::Mutex};
 
-use crate::stream_engine::autonomous_executor::row::Row;
+use crate::stream_engine::autonomous_executor::row::StreamRow;
 
 /// Input queue of window tasks.
 ///
@@ -11,18 +11,18 @@ use crate::stream_engine::autonomous_executor::row::Row;
 /// ![Window queue](https://raw.githubusercontent.com/SpringQL/SpringQL/main/springql-core/doc/img/window-queue.drawio.svg)
 #[derive(Debug, Default)]
 pub struct WindowQueue {
-    waiting_q: Mutex<VecDeque<Row>>,
+    waiting_q: Mutex<VecDeque<StreamRow>>,
 }
 
 impl WindowQueue {
-    pub fn put(&self, row: Row) {
+    pub fn put(&self, row: StreamRow) {
         self.waiting_q
             .lock()
             .expect("mutex in WindowQueue is poisoned")
             .push_back(row);
     }
 
-    pub fn dispatch(&self) -> Option<Row> {
+    pub fn dispatch(&self) -> Option<StreamRow> {
         self.waiting_q
             .lock()
             .expect("mutex in WindowQueue is poisoned")

@@ -6,7 +6,7 @@ use crate::{
     api::error::Result,
     pipeline::StreamModel,
     stream_engine::autonomous_executor::row::{
-        column::StreamColumns, foreign_row::format::JsonObject, Row,
+        column::StreamColumns, foreign_row::format::JsonObject, StreamRow,
     },
 };
 
@@ -26,12 +26,12 @@ impl JsonSourceRow {
         Self(json)
     }
 
-    pub fn into_row(self, stream_model: Arc<StreamModel>) -> Result<Row> {
+    pub fn into_row(self, stream_model: Arc<StreamModel>) -> Result<StreamRow> {
         // SourceRow -> JsonObject -> HashMap<ColumnName, SqlValue> -> StreamColumns -> Row
 
         let column_values = self.0.into_column_values()?;
         let stream_columns = StreamColumns::new(stream_model, column_values)?;
-        Ok(Row::new(stream_columns))
+        Ok(StreamRow::new(stream_columns))
     }
 }
 
@@ -45,7 +45,7 @@ mod tests {
         let stream = Arc::new(StreamModel::fx_city_temperature());
 
         let fr = JsonSourceRow::fx_city_temperature_tokyo();
-        let r = Row::fx_city_temperature_tokyo();
+        let r = StreamRow::fx_city_temperature_tokyo();
         assert_eq!(fr.into_row(stream).unwrap(), r);
     }
 }

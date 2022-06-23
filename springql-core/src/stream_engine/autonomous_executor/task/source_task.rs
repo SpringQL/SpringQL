@@ -19,7 +19,7 @@ use crate::{
                 MetricsUpdateByTaskExecution, OutQueueMetricsUpdateByTask, TaskMetricsUpdateByTask,
             },
             repositories::Repositories,
-            row::Row,
+            row::StreamRow,
             task::task_context::TaskContext,
             task_graph::{QueueId, RowQueueId, TaskId, WindowQueueId},
             AutonomousExecutor,
@@ -76,7 +76,7 @@ impl SourceTask {
     fn put_row_into(
         &self,
         queue_id: QueueId,
-        row: Row,
+        row: StreamRow,
         context: &TaskContext,
     ) -> OutQueueMetricsUpdateByTask {
         let repos = context.repos();
@@ -88,7 +88,7 @@ impl SourceTask {
     }
     fn put_row_into_row_queue(
         &self,
-        row: Row,
+        row: StreamRow,
         queue_id: RowQueueId,
         repos: Arc<Repositories>,
     ) -> OutQueueMetricsUpdateByTask {
@@ -101,7 +101,7 @@ impl SourceTask {
     }
     fn put_row_into_window_queue(
         &self,
-        row: Row,
+        row: StreamRow,
         queue_id: WindowQueueId,
         repos: Arc<Repositories>,
     ) -> OutQueueMetricsUpdateByTask {
@@ -113,7 +113,7 @@ impl SourceTask {
         OutQueueMetricsUpdateByTask::new(queue_id.into(), 1, bytes_put as u64)
     }
 
-    fn collect_next(&self, context: &TaskContext) -> Option<Row> {
+    fn collect_next(&self, context: &TaskContext) -> Option<StreamRow> {
         let source_reader = context
             .repos()
             .source_reader_repository()

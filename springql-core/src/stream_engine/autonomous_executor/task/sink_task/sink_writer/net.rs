@@ -14,7 +14,7 @@ use crate::{
     pipeline::{NetClientOptions, Options},
     stream_engine::{
         autonomous_executor::{row::JsonObject, task::sink_task::sink_writer::SinkWriter},
-        Row,
+        StreamRow,
     },
 };
 
@@ -58,7 +58,7 @@ impl SinkWriter for NetSinkWriter {
         })
     }
 
-    fn send_row(&mut self, row: Row) -> Result<()> {
+    fn send_row(&mut self, row: StreamRow) -> Result<()> {
         let mut json_s = JsonObject::from(row).to_string();
         json_s.push('\n');
 
@@ -104,13 +104,13 @@ mod tests {
             NetSinkWriter::start(&options, &SpringSinkWriterConfig::fx_default()).unwrap();
 
         sink_writer
-            .send_row(Row::fx_city_temperature_tokyo())
+            .send_row(StreamRow::fx_city_temperature_tokyo())
             .unwrap();
         sink_writer
-            .send_row(Row::fx_city_temperature_osaka())
+            .send_row(StreamRow::fx_city_temperature_osaka())
             .unwrap();
         sink_writer
-            .send_row(Row::fx_city_temperature_london())
+            .send_row(StreamRow::fx_city_temperature_london())
             .unwrap();
 
         const TIMEOUT: Duration = Duration::from_secs(1);

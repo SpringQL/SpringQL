@@ -6,7 +6,7 @@ use crate::{
     api::{error::Result, SpringConfig},
     pipeline::QueueName,
     sql_processor::SqlProcessor,
-    stream_engine::{command::Command, EngineMutex, Row},
+    stream_engine::{command::Command, EngineMutex, StreamRow},
 };
 
 fn setup_logger() {
@@ -54,7 +54,7 @@ impl Connection {
         }
     }
 
-    pub fn pop(&self, queue: &str) -> Result<Row> {
+    pub fn pop(&self, queue: &str) -> Result<StreamRow> {
         const SLEEP_MSECS: u64 = 10;
 
         let mut engine = self.engine.get()?;
@@ -70,14 +70,14 @@ impl Connection {
         }
     }
 
-    pub fn pop_non_blocking(&self, queue: &str) -> Result<Option<Row>> {
+    pub fn pop_non_blocking(&self, queue: &str) -> Result<Option<StreamRow>> {
         let mut engine = self.engine.get()?;
         let sink_row =
             engine.pop_in_memory_queue_non_blocking(QueueName::new(queue.to_string()))?;
         Ok(sink_row)
     }
 
-    pub fn push(&self, queue: &str, row: Row) -> Result<()> {
+    pub fn push(&self, queue: &str, row: StreamRow) -> Result<()> {
         let mut engine = self.engine.get()?;
         engine.push_in_memory_queue(QueueName::new(queue.to_string()), row)
     }

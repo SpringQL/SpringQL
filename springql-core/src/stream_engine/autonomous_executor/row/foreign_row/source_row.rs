@@ -15,7 +15,7 @@ use anyhow::Context;
 use crate::{
     api::{error::Result, SpringError},
     pipeline::{CANSourceStreamModel, StreamModel},
-    stream_engine::Row,
+    stream_engine::StreamRow,
 };
 
 /// Input row from foreign sources (retrieved from SourceReader).
@@ -25,7 +25,7 @@ use crate::{
 pub enum SourceRow {
     Json(JsonSourceRow),
     CANFrame(CANFrameSourceRow),
-    Raw(Row),
+    Raw(StreamRow),
 }
 
 impl SourceRow {
@@ -52,7 +52,7 @@ impl SourceRow {
     ///
     /// - `SpringError::InvalidFormat` when:
     ///   - This source row cannot be converted into row.
-    pub fn into_row(self, stream_model: Arc<StreamModel>) -> Result<Row> {
+    pub fn into_row(self, stream_model: Arc<StreamModel>) -> Result<StreamRow> {
         match self {
             SourceRow::Json(json_source_row) => json_source_row.into_row(stream_model),
             SourceRow::CANFrame(can_frame_source_row) => {

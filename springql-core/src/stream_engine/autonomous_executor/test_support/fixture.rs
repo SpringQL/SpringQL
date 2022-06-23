@@ -20,7 +20,7 @@ use crate::{
                 InQueueMetricsUpdateByCollect, InQueueMetricsUpdateByTask,
                 OutQueueMetricsUpdateByTask, TaskMetricsUpdateByTask, WindowInFlowByWindowTask,
             },
-            row::{JsonObject, JsonSourceRow, Row, StreamColumns},
+            row::{JsonObject, JsonSourceRow, StreamColumns, StreamRow},
             task::Tuple,
             task_graph::{
                 QueueId, QueueIdWithUpstream, RowQueueId, TaskGraph, TaskId, WindowQueueId,
@@ -115,7 +115,7 @@ impl JsonSourceRow {
     }
 }
 
-impl Row {
+impl StreamRow {
     pub fn fx_city_temperature_tokyo() -> Self {
         Self::new(StreamColumns::fx_city_temperature_tokyo())
     }
@@ -143,7 +143,7 @@ impl Row {
 
 impl Tuple {
     pub fn fx_trade_oracle() -> Self {
-        let row = Row::fx_trade_oracle();
+        let row = StreamRow::fx_trade_oracle();
         Self::from_row(row)
     }
 }

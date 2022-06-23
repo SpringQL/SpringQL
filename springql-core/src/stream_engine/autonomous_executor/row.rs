@@ -25,7 +25,7 @@ use crate::{
 /// - PartialEq by all columns (NULL prevents Eq).
 /// - PartialOrd by `rowtime()`.
 #[derive(Clone, PartialEq, Debug)]
-pub struct Row {
+pub struct StreamRow {
     /// None if an event time is available (i.e. ROWTIME keyword is supplied)
     processing_time: Option<SpringTimestamp>,
 
@@ -33,7 +33,7 @@ pub struct Row {
     cols: StreamColumns,
 }
 
-impl Row {
+impl StreamRow {
     pub fn new(cols: StreamColumns) -> Self {
         let processing_time = if cols.event_time().is_some() {
             None
@@ -41,7 +41,7 @@ impl Row {
             Some(SystemTimestamp::now())
         };
 
-        Row {
+        StreamRow {
             processing_time,
             cols,
         }
@@ -89,13 +89,13 @@ impl Row {
     }
 }
 
-impl PartialOrd for Row {
+impl PartialOrd for StreamRow {
     fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
         Some(self.rowtime().cmp(&other.rowtime()))
     }
 }
 
-impl IntoIterator for Row {
+impl IntoIterator for StreamRow {
     type Item = (ColumnName, SqlValue);
     type IntoIter = vec::IntoIter<Self::Item>;
 
@@ -115,7 +115,7 @@ impl IntoIterator for Row {
     }
 }
 
-impl MemSize for Row {
+impl MemSize for StreamRow {
     fn mem_size(&self) -> usize {
         let arrival_rowtime_size = self.processing_time.map_or_else(|| 0, |ts| ts.mem_size());
         let cols_size = self.cols.mem_size();
@@ -123,8 +123,8 @@ impl MemSize for Row {
     }
 }
 
-impl From<Row> for JsonObject {
-    fn from(row: Row) -> Self {
+impl From<StreamRow> for JsonObject {
+    fn from(row: StreamRow) -> Self {
         let map = row
             .into_iter()
             .map(|(col, val)| (col.to_string(), serde_json::Value::from(val)))
@@ -145,22 +145,22 @@ mod tests {
     #[test]
     fn test_partial_eq() {
         assert_eq!(
-            Row::fx_city_temperature_tokyo(),
-            Row::fx_city_temperature_tokyo()
+            StreamRow::fx_city_temperature_tokyo(),
+            StreamRow::fx_city_temperature_tokyo()
         );
     }
 
     #[test]
     fn test_partial_ne() {
         assert_ne!(
-            Row::fx_city_temperature_tokyo(),
-            Row::fx_city_temperature_osaka()
+            StreamRow::fx_city_temperature_tokyo(),
+            StreamRow::fx_city_temperature_osaka()
         );
     }
 
     #[test]
     fn test_into_json() {
-        let row = Row::fx_city_temperature_tokyo();
+        let row = StreamRow::fx_city_temperature_tokyo();
 
         let json = JsonObject::new(json!({
             "ts": SpringTimestamp::fx_ts1().to_string(),
@@ -173,7 +173,7 @@ mod tests {
 
     #[test]
     fn test_from_row_arrival_rowtime() {
-        let row = Row::fx_no_promoted_rowtime();
+        let row = StreamRow::fx_no_promoted_rowtime();
         let f_json = JsonObject::from(row);
         let mut f_colvals = f_json.into_column_values().unwrap();
         let f_rowtime_sql_value = f_colvals.remove(&ColumnName::arrival_rowtime()).unwrap();
