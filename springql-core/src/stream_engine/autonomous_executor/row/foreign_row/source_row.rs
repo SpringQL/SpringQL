@@ -59,7 +59,10 @@ impl SourceRow {
                 let stream = CANSourceStreamModel::try_from(stream_model.as_ref())?;
                 can_frame_source_row.into_row(&stream)
             }
-            SourceRow::Raw(row) => Ok(row),
+            SourceRow::Raw(mut row) => {
+                row.apply_new_stream_model(stream_model)?;
+                Ok(row)
+            }
         }
     }
 }

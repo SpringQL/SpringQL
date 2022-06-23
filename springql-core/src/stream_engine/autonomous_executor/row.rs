@@ -12,7 +12,7 @@ pub use foreign_row::{CANFrameSourceRow, JsonObject, JsonSourceRow, SourceRow, S
 pub use rowtime::RowTime;
 pub use value::{NnSqlValue, SpringValue, SqlCompareResult, SqlValue, SqlValueHashKey};
 
-use std::vec;
+use std::{sync::Arc, vec};
 
 use crate::{
     api::error::Result,
@@ -76,6 +76,16 @@ impl Row {
     ///   - Column index out of range
     pub fn get_by_index(&self, i_col: usize) -> Result<&SqlValue> {
         self.cols.get_by_index(i_col)
+    }
+
+    /// Creates new row with the different stream model having the same shape.
+    ///
+    /// # Failure
+    ///
+    /// - `SpringError::InvalidFormat` when:
+    ///   - `self` and `stream_model` has different shape.
+    pub fn apply_new_stream_model(&mut self, stream_model: Arc<StreamModel>) -> Result<()> {
+        self.cols.apply_new_stream_model(stream_model)
     }
 }
 
