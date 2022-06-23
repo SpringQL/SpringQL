@@ -20,7 +20,7 @@ use crate::{
                 InQueueMetricsUpdateByCollect, InQueueMetricsUpdateByTask,
                 OutQueueMetricsUpdateByTask, TaskMetricsUpdateByTask, WindowInFlowByWindowTask,
             },
-            row::{JsonObject, JsonSourceRow, StreamColumns, StreamRow},
+            row::{JsonObject, JsonSourceRow, SchemalessRow, StreamColumns, StreamRow},
             task::Tuple,
             task_graph::{
                 QueueId, QueueIdWithUpstream, RowQueueId, TaskGraph, TaskId, WindowQueueId,
@@ -138,6 +138,32 @@ impl StreamRow {
 
     pub fn fx_no_promoted_rowtime() -> Self {
         Self::new(StreamColumns::fx_no_promoted_rowtime())
+    }
+}
+
+impl SchemalessRow {
+    pub fn fx_city_temperature_tokyo() -> Self {
+        Self::from(StreamRow::fx_city_temperature_tokyo())
+    }
+    pub fn fx_city_temperature_osaka() -> Self {
+        Self::from(StreamRow::fx_city_temperature_osaka())
+    }
+    pub fn fx_city_temperature_london() -> Self {
+        Self::from(StreamRow::fx_city_temperature_london())
+    }
+
+    pub fn fx_trade_oracle() -> Self {
+        Self::from(StreamRow::fx_trade_oracle())
+    }
+    pub fn fx_trade_ibm() -> Self {
+        Self::from(StreamRow::fx_trade_ibm())
+    }
+    pub fn fx_trade_google() -> Self {
+        Self::from(StreamRow::fx_trade_google())
+    }
+
+    pub fn fx_no_promoted_rowtime() -> Self {
+        Self::from(StreamRow::fx_no_promoted_rowtime())
     }
 }
 

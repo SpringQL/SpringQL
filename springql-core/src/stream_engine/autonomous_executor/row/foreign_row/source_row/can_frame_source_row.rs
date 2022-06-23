@@ -4,9 +4,9 @@ use socketcan::CANFrame;
 
 use crate::{
     api::error::Result,
-    pipeline::{CANSourceStreamColumns, CANSourceStreamModel, ColumnName},
+    pipeline::ColumnName,
     stream_engine::{
-        autonomous_executor::{row::StreamRow, ColumnValues},
+        autonomous_executor::{row::SchemalessRow, ColumnValues},
         NnSqlValue, SqlValue,
     },
 };
@@ -22,10 +22,9 @@ impl CANFrameSourceRow {
     ///
     /// - `SpringError::Sql` when:
     ///   - `stream_model`
-    pub fn into_row(self, stream_model: &CANSourceStreamModel) -> Result<StreamRow> {
+    pub fn into_schemaless_row(self) -> Result<SchemalessRow> {
         let column_values = self.into_column_values();
-        let stream_columns = CANSourceStreamColumns::new(stream_model, column_values)?;
-        Ok(StreamRow::new(stream_columns.into_stream_columns()))
+        Ok(SchemalessRow::from(column_values))
     }
 
     fn into_column_values(self) -> ColumnValues {

@@ -17,7 +17,6 @@ mod stream_model;
 #[cfg(test)]
 pub mod test_support;
 
-pub use can_source::{CANSourceStreamColumns, CANSourceStreamModel};
 pub use field::{ColumnReference, Field};
 pub use name::{
     AggrAlias, ColumnName, CorrelationAlias, PumpName, QueueName, SinkWriterName, SourceReaderName,

@@ -6,12 +6,9 @@ mod json_source_row;
 pub use can_frame_source_row::CANFrameSourceRow;
 pub use json_source_row::JsonSourceRow;
 
-use std::sync::Arc;
-
 use crate::{
-    api::error::Result,
-    pipeline::{CANSourceStreamModel, StreamModel},
-    stream_engine::{autonomous_executor::row::schemaless_row::SchemalessRow, StreamRow},
+    api::{error::Result, SpringError},
+    stream_engine::autonomous_executor::row::schemaless_row::SchemalessRow,
 };
 
 /// Input row from foreign sources (retrieved from SourceReader).
@@ -33,21 +30,16 @@ impl SourceRow {
         let json_source_row = JsonSourceRow::parse(json)?;
         Ok(Self::Json(json_source_row))
     }
+}
 
-    /// # Failure
-    ///
-    /// - `SpringError::InvalidFormat` when:
-    ///   - This source row cannot be converted into row.
-    pub fn into_row(self, stream_model: Arc<StreamModel>) -> Result<StreamRow> {
-        match self {
-            SourceRow::Json(json_source_row) => json_source_row.into_row(stream_model),
-            SourceRow::CANFrame(can_frame_source_row) => {
-                let stream = CANSourceStreamModel::try_from(stream_model.as_ref())?;
-                can_frame_source_row.into_row(&stream)
-            }
-            SourceRow::Raw(schemaless_row) => {
-                StreamRow::from_schemaless_row(schemaless_row, stream_model)
-            }
+impl TryFrom<SourceRow> for SchemalessRow {
+    type Error = SpringError;
+
+    fn try_from(row: SourceRow) -> Result<Self> {
+        match row {
+            SourceRow::Json(json_source_row) => json_source_row.into_schemaless_row(),
+            SourceRow::CANFrame(can_frame_source_row) => can_frame_source_row.into_schemaless_row(),
+            SourceRow::Raw(schemaless_row) => Ok(schemaless_row),
         }
     }
 }

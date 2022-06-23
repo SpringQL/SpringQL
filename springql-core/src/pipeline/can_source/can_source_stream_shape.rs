@@ -31,9 +31,3 @@ impl Default for CANSourceStreamShape {
         Self(stream_shape)
     }
 }
-
-impl CANSourceStreamShape {
-    pub fn into_stream_shape(self) -> StreamShape {
-        self.0
-    }
-}

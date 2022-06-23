@@ -24,3 +24,9 @@ impl From<StreamRow> for SchemalessRow {
         Self { colvals }
     }
 }
+
+impl From<ColumnValues> for SchemalessRow {
+    fn from(colvals: ColumnValues) -> Self {
+        Self { colvals }
+    }
+}
