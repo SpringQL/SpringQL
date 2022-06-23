@@ -5,7 +5,7 @@ use crate::{
     pipeline::{Options, SourceReaderType},
     stream_engine::autonomous_executor::task::source_task::source_reader::{
         can::CANSourceReader, net_client::NetClientSourceReader, net_server::NetServerSourceReader,
-        SourceReader,
+        InMemoryQueueSourceReader, SourceReader,
     },
 };
 
@@ -25,6 +25,9 @@ impl SourceReaderFactory {
                 Ok(Box::new(NetServerSourceReader::start(options, config)?))
             }
             SourceReaderType::CAN => Ok(Box::new(CANSourceReader::start(options, config)?)),
+            SourceReaderType::InMemoryQueue => {
+                Ok(Box::new(InMemoryQueueSourceReader::start(options, config)?))
+            }
         }
     }
 }

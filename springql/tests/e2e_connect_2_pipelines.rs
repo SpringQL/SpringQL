@@ -106,7 +106,7 @@ fn pipeline2(test_sink: &ForeignSink) -> SpringPipeline {
             "
       CREATE SOURCE READER q_source_2 FOR source_2
         TYPE IN_MEMORY_QUEUE OPTIONS (
-          PROTOCOL 'q_source_1'
+          NAME 'q_source_2'
         );
       ",
         ),
@@ -125,7 +125,7 @@ fn test_connect_2_pipelines() {
 
     test_source.start(ForeignSourceInput::new_fifo_batch(gen_pipeline1_input()));
 
-    for i in 0..gen_pipeline1_input().len() {
+    for _ in 0..gen_pipeline1_input().len() {
         let row = pipeline1.pop("q_sink_1").unwrap();
         pipeline2.push("q_source_2", row).unwrap();
     }

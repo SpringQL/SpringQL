@@ -1,7 +1,8 @@
 // This file is part of https://github.com/SpringQL/SpringQL which is licensed under MIT OR Apache-2.0. See file LICENSE-MIT or LICENSE-APACHE for full license details.
 
-pub mod error;
 mod spring_config;
+
+pub mod error;
 pub use crate::{
     api::{
         error::{Result, SpringError},
@@ -72,6 +73,16 @@ impl SpringPipeline {
         self.0
             .pop_non_blocking(queue)
             .map(|opt_row| opt_row.map(SpringRow))
+    }
+
+    /// Push a row into an in memory queue. This is a non-blocking function.
+    ///
+    /// # Failure
+    ///
+    /// - [SpringError::Unavailable](crate::api::error::SpringError::Unavailable) when:
+    ///   - queue named `queue` does not exist.
+    pub fn push(&self, queue: &str, row: SpringRow) -> Result<()> {
+        self.0.push(queue, row.0)
     }
 }
 
