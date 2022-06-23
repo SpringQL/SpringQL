@@ -174,6 +174,19 @@ impl IntoIterator for StreamColumns {
     }
 }
 
+impl From<StreamColumns> for ColumnValues {
+    fn from(stream_columns: StreamColumns) -> ColumnValues {
+        let mut colvals = ColumnValues::default();
+
+        for (col_name, sql_value) in stream_columns {
+            colvals
+                .insert(col_name, sql_value)
+                .expect("StreamColumns must not have duplicate column names");
+        }
+        colvals
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use crate::stream_engine::{

@@ -11,7 +11,7 @@ use anyhow::{anyhow, Context};
 
 use crate::stream_engine::autonomous_executor::row::value::SqlValue;
 
-#[derive(Clone, Debug, Default)]
+#[derive(Clone, PartialEq, Debug, Default)]
 pub struct ColumnValues(HashMap<ColumnName, SqlValue>);
 
 impl ColumnValues {

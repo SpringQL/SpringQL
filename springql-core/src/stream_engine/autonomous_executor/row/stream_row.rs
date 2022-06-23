@@ -7,7 +7,9 @@ use crate::{
     mem_size::MemSize,
     pipeline::{ColumnName, StreamModel},
     stream_engine::{
-        autonomous_executor::{JsonObject, StreamColumns},
+        autonomous_executor::{
+            row::schemaless_row::SchemalessRow, ColumnValues, JsonObject, StreamColumns,
+        },
         time::{SpringTimestamp, SystemTimestamp},
         NnSqlValue, RowTime, SqlValue,
     },
@@ -39,6 +41,11 @@ impl StreamRow {
         }
     }
 
+    pub fn from_schemaless_row(row: SchemalessRow, stream_model: Arc<StreamModel>) -> Result<Self> {
+        let cols = StreamColumns::new(stream_model, row.into_column_values())?;
+        Ok(Self::new(cols))
+    }
+
     pub fn stream_model(&self) -> &StreamModel {
         self.cols.stream_model()
     }
@@ -68,16 +75,6 @@ impl StreamRow {
     ///   - Column index out of range
     pub fn get_by_index(&self, i_col: usize) -> Result<&SqlValue> {
         self.cols.get_by_index(i_col)
-    }
-
-    /// Creates new row with the different stream model having the same shape.
-    ///
-    /// # Failure
-    ///
-    /// - `SpringError::InvalidFormat` when:
-    ///   - `self` and `stream_model` has different shape.
-    pub fn apply_new_stream_model(&mut self, stream_model: Arc<StreamModel>) -> Result<()> {
-        self.cols.apply_new_stream_model(stream_model)
     }
 }
 
@@ -123,6 +120,13 @@ impl From<StreamRow> for JsonObject {
             .collect::<serde_json::Map<String, serde_json::Value>>();
         let v = serde_json::Value::from(map);
         JsonObject::new(v)
+    }
+}
+
+impl From<StreamRow> for ColumnValues {
+    fn from(row: StreamRow) -> Self {
+        let cols = row.cols;
+        cols.into()
     }
 }
 

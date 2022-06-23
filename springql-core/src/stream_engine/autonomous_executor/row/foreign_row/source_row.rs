@@ -15,7 +15,7 @@ use anyhow::Context;
 use crate::{
     api::{error::Result, SpringError},
     pipeline::{CANSourceStreamModel, StreamModel},
-    stream_engine::StreamRow,
+    stream_engine::{autonomous_executor::row::schemaless_row::SchemalessRow, StreamRow},
 };
 
 /// Input row from foreign sources (retrieved from SourceReader).
@@ -25,7 +25,7 @@ use crate::{
 pub enum SourceRow {
     Json(JsonSourceRow),
     CANFrame(CANFrameSourceRow),
-    Raw(StreamRow),
+    Raw(SchemalessRow),
 }
 
 impl SourceRow {
@@ -59,9 +59,8 @@ impl SourceRow {
                 let stream = CANSourceStreamModel::try_from(stream_model.as_ref())?;
                 can_frame_source_row.into_row(&stream)
             }
-            SourceRow::Raw(mut row) => {
-                row.apply_new_stream_model(stream_model)?;
-                Ok(row)
+            SourceRow::Raw(schemaless_row) => {
+                StreamRow::from_schemaless_row(schemaless_row, stream_model)
             }
         }
     }
