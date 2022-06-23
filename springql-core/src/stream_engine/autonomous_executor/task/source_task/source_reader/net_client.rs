@@ -13,8 +13,7 @@ use crate::{
     api::SpringSourceReaderConfig,
     pipeline::{NetClientOptions, Options},
     stream_engine::autonomous_executor::{
-        row::{SourceRow, SourceRowFormat},
-        task::source_task::source_reader::SourceReader,
+        row::SourceRow, task::source_task::source_reader::SourceReader,
     },
 };
 
@@ -88,7 +87,7 @@ impl SourceReader for NetClientSourceReader {
 impl NetClientSourceReader {
     // TODO other formats than JSON
     fn parse_resp(&self, json_s: &str) -> Result<SourceRow> {
-        SourceRow::from_bytes(SourceRowFormat::Json, json_s.as_bytes())
+        SourceRow::from_json(json_s)
     }
 }
 
