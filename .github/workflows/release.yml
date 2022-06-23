@@ -1,0 +1,17 @@
+name: release
+
+on:
+  workflow_dispatch:
+    inputs: 
+      release_version:
+        description: 'release version number'
+        required: true
+        type: string
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: checkout code
+        uses: actions/checkout@v2
