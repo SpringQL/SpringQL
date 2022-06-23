@@ -1,12 +1,15 @@
 // This file is part of https://github.com/SpringQL/SpringQL which is licensed under MIT OR Apache-2.0. See file LICENSE-MIT or LICENSE-APACHE for full license details.
 
-mod spring_config;
-
 pub mod error;
+
+mod spring_config;
+mod spring_sink_row;
+
 pub use crate::{
     api::{
         error::{Result, SpringError},
         spring_config::*,
+        spring_sink_row::SpringSinkRow,
         SpringConfig,
     },
     stream_engine::{
@@ -14,10 +17,8 @@ pub use crate::{
         SpringValue,
     },
 };
-use crate::{
-    connection::Connection,
-    stream_engine::{Row, SqlValue},
-};
+
+use crate::connection::Connection;
 
 /// Pipeline.
 #[derive(Debug)]
@@ -55,7 +56,7 @@ impl SpringPipeline {
     /// - [SpringError::Unavailable](crate::api::error::SpringError::Unavailable) when:
     ///   - queue named `queue` does not exist.
     pub fn pop(&self, queue: &str) -> Result<SpringSinkRow> {
-        self.0.pop(queue).map(SpringSinkRow)
+        self.0.pop(queue).map(SpringSinkRow::new)
     }
 
     /// Pop a row from an in memory queue. This is a non-blocking function.
@@ -72,7 +73,7 @@ impl SpringPipeline {
     pub fn pop_non_blocking(&self, queue: &str) -> Result<Option<SpringSinkRow>> {
         self.0
             .pop_non_blocking(queue)
-            .map(|opt_row| opt_row.map(SpringSinkRow))
+            .map(|opt_row| opt_row.map(SpringSinkRow::new))
     }
 
     /// Push a row into an in memory queue. This is a non-blocking function.
@@ -82,36 +83,7 @@ impl SpringPipeline {
     /// - [SpringError::Unavailable](crate::api::error::SpringError::Unavailable) when:
     ///   - queue named `queue` does not exist.
     pub fn push(&self, queue: &str, row: SpringSinkRow) -> Result<()> {
-        self.0.push(queue, row.0)
-    }
-}
-
-/// Row object from an in memory sink queue.
-#[derive(Debug)]
-pub struct SpringSinkRow(Row);
-
-impl SpringSinkRow {
-    /// Get a i-th column value from the row.
-    ///
-    /// # Failure
-    ///
-    /// - [SpringError::Sql](crate::api::error::SpringError::Sql) when:
-    ///   - Column index out of range
-    /// - [SpringError::Null](crate::api::error::SpringError::Null) when:
-    ///   - Column value is NULL
-    pub fn get_not_null_by_index<T>(&self, i_col: usize) -> Result<T>
-    where
-        T: SpringValue,
-    {
-        let sql_value = self.0.get_by_index(i_col)?;
-
-        match sql_value {
-            SqlValue::Null => Err(SpringError::Null {
-                stream_name: self.0.stream_model().name().clone(),
-                i_col,
-            }),
-            SqlValue::NotNull(nn_sql_value) => nn_sql_value.unpack(),
-        }
+        self.0.push(queue, row.into_row())
     }
 }
 
