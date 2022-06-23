@@ -19,8 +19,10 @@ use crate::{
     api::{error::Result, SpringConfig, SpringError},
     pipeline::{Pipeline, QueueName},
     stream_engine::{
-        autonomous_executor::AutonomousExecutor, command::AlterPipelineCommand,
-        in_memory_queue_repository::InMemoryQueueRepository, sql_executor::SqlExecutor,
+        autonomous_executor::{AutonomousExecutor, SchemalessRow},
+        command::AlterPipelineCommand,
+        in_memory_queue_repository::InMemoryQueueRepository,
+        sql_executor::SqlExecutor,
     },
 };
 
@@ -90,7 +92,7 @@ impl StreamEngine {
     pub fn pop_in_memory_queue_non_blocking(
         &mut self,
         queue_name: QueueName,
-    ) -> Result<Option<StreamRow>> {
+    ) -> Result<Option<SchemalessRow>> {
         let q = InMemoryQueueRepository::instance().get(&queue_name)?;
         let row = q.pop_non_blocking();
         Ok(row)
@@ -100,7 +102,11 @@ impl StreamEngine {
     ///
     /// - `SpringError::Unavailable` when:
     ///   - queue named `queue_name` does not exist.
-    pub fn push_in_memory_queue(&mut self, queue_name: QueueName, row: StreamRow) -> Result<()> {
+    pub fn push_in_memory_queue(
+        &mut self,
+        queue_name: QueueName,
+        row: SchemalessRow,
+    ) -> Result<()> {
         let q = InMemoryQueueRepository::instance().get(&queue_name)?;
         q.push(row);
         Ok(())

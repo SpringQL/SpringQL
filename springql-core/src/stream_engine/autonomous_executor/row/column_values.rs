@@ -5,7 +5,7 @@ use crate::{
     pipeline::ColumnName,
 };
 
-use std::collections::HashMap;
+use std::{collections::HashMap, vec};
 
 use anyhow::{anyhow, Context};
 
@@ -33,11 +33,28 @@ impl ColumnValues {
     /// # Failure
     ///
     /// - `SpringError::Sql` when:
+    ///   - Column index out of range
+    pub fn get_by_index(&self, i_col: usize) -> Result<&SqlValue> {
+        todo!()
+    }
+
+    /// # Failure
+    ///
+    /// - `SpringError::Sql` when:
     ///   - `k` does not included.
     pub fn remove(&mut self, k: &ColumnName) -> Result<SqlValue> {
         self.0
             .remove(k)
             .with_context(|| format!(r#"column "{}" not found from this ColumnValues"#, k))
             .map_err(SpringError::Sql)
+    }
+}
+
+impl IntoIterator for ColumnValues {
+    type Item = (ColumnName, SqlValue);
+    type IntoIter = vec::IntoIter<Self::Item>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        todo!()
     }
 }

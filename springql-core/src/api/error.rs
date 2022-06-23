@@ -6,7 +6,7 @@ pub mod foreign_info;
 
 use thiserror::Error;
 
-use crate::{api::error::foreign_info::ForeignInfo, pipeline::StreamName, time::TimeError};
+use crate::{api::error::foreign_info::ForeignInfo, time::TimeError};
 
 /// Result type
 pub type Result<T> = std::result::Result<T, SpringError>;
@@ -61,10 +61,9 @@ pub enum SpringError {
     #[error("SQL error")]
     Sql(anyhow::Error),
 
-    /// Occurs only when a value is fetched from a SpringRow.
+    /// Occurs only when a value is fetched from a SpringSinkRow.
     #[error("unexpectedly got NULL")]
     Null {
-        stream_name: StreamName,
         /// Column index
         i_col: usize,
     },

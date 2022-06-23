@@ -1,7 +1,7 @@
 // This file is part of https://github.com/SpringQL/SpringQL which is licensed under MIT OR Apache-2.0. See file LICENSE-MIT or LICENSE-APACHE for full license details.
 
 use crate::{
-    api::{error::Result, SpringConfig, SpringSinkRow},
+    api::{error::Result, spring_source_row::SpringSourceRow, SpringConfig, SpringSinkRow},
     connection::Connection,
 };
 
@@ -67,7 +67,7 @@ impl SpringPipeline {
     ///
     /// - [SpringError::Unavailable](crate::api::error::SpringError::Unavailable) when:
     ///   - queue named `queue` does not exist.
-    pub fn push(&self, queue: &str, row: SpringSinkRow) -> Result<()> {
-        self.0.push(queue, row.into_row())
+    pub fn push(&self, queue: &str, row: SpringSourceRow) -> Result<()> {
+        self.0.push(queue, row.into_schemaless_row()?)
     }
 }

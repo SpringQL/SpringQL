@@ -127,7 +127,7 @@ fn test_connect_2_pipelines() {
 
     for _ in 0..gen_pipeline1_input().len() {
         let row = pipeline1.pop("q_sink_1").unwrap();
-        pipeline2.push("q_source_2", row).unwrap();
+        pipeline2.push("q_source_2", row.into()).unwrap();
     }
 
     let sink_received = drain_from_sink(&test_sink);
