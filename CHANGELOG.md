@@ -17,6 +17,7 @@ All other sections are for end-users.
 ### Fixed
 
 - Fix `examples/in_vehicle_pipeline.rs` to run again ([#205](https://github.com/SpringQL/SpringQL/pull/205))
+- Fix examples fleaky ([#207](https://github.com/SpringQL/SpringQL/pull/207))
 
 ## [v0.13.0]
 
