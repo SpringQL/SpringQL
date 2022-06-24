@@ -133,12 +133,6 @@ impl AsRef<str> for AggrAlias {
     }
 }
 
-impl ColumnName {
-    pub fn arrival_rowtime() -> Self {
-        Self::new("ROWTIME".to_string())
-    }
-}
-
 impl StreamName {
     pub fn virtual_root() -> Self {
         Self::new("__st_virtual_root__".to_string())
