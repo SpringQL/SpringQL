@@ -9,11 +9,11 @@ use crate::{
     stream_engine::{
         autonomous_executor::{row::schemaless_row::SchemalessRow, ColumnValues, StreamColumns},
         time::{SpringTimestamp, SystemTimestamp},
-        NnSqlValue, RowTime, SqlValue,
+        RowTime, SqlValue,
     },
 };
 
-/// - Mandatory `rowtime()`, either from `cols` or `arrival_rowtime`.
+/// - Mandatory `rowtime()`, either from `cols` or `ptime`.
 /// - PartialEq by all columns (NULL prevents Eq).
 /// - PartialOrd by `rowtime()`.
 #[derive(Clone, PartialEq, Debug)]
@@ -87,26 +87,15 @@ impl IntoIterator for StreamRow {
     type IntoIter = vec::IntoIter<Self::Item>;
 
     fn into_iter(self) -> Self::IntoIter {
-        let into_iter = self.cols.into_iter();
-        if let Some(rowtime) = self.processing_time {
-            into_iter
-                .chain(vec![(
-                    ColumnName::arrival_rowtime(),
-                    SqlValue::NotNull(NnSqlValue::Timestamp(rowtime)),
-                )])
-                .collect::<Vec<Self::Item>>()
-                .into_iter()
-        } else {
-            into_iter
-        }
+        self.cols.into_iter()
     }
 }
 
 impl MemSize for StreamRow {
     fn mem_size(&self) -> usize {
-        let arrival_rowtime_size = self.processing_time.map_or_else(|| 0, |ts| ts.mem_size());
+        let ptime_size = self.processing_time.map_or_else(|| 0, |ts| ts.mem_size());
         let cols_size = self.cols.mem_size();
-        arrival_rowtime_size + cols_size
+        ptime_size + cols_size
     }
 }
 
@@ -119,7 +108,6 @@ impl From<StreamRow> for ColumnValues {
 
 #[cfg(test)]
 mod tests {
-    use crate::{stream_engine::autonomous_executor::row::foreign_row::JsonObject, time::Duration};
 
     use super::*;
 
@@ -137,21 +125,5 @@ mod tests {
             StreamRow::fx_city_temperature_tokyo(),
             StreamRow::fx_city_temperature_osaka()
         );
-    }
-
-    #[test]
-    fn test_from_row_arrival_rowtime() {
-        let row = SchemalessRow::fx_no_promoted_rowtime();
-        let f_json = JsonObject::from(row);
-        let mut f_colvals = f_json.into_column_values().unwrap();
-        let f_rowtime_sql_value = f_colvals.remove(&ColumnName::arrival_rowtime()).unwrap();
-
-        if let SqlValue::NotNull(f_rowtime_nn_sql_value) = f_rowtime_sql_value {
-            let f_rowtime: SpringTimestamp = f_rowtime_nn_sql_value.unpack().unwrap();
-            assert!(SystemTimestamp::now() - Duration::seconds(1) < f_rowtime);
-            assert!(f_rowtime < SystemTimestamp::now() + Duration::seconds(1));
-        } else {
-            unreachable!()
-        };
     }
 }

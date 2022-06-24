@@ -13,6 +13,15 @@
 //! ```
 
 use springql::{SpringConfig, SpringPipeline};
+use std::process::Command;
+
+fn send_data_to_pipeline() {
+    Command::new("bash")
+        .arg("-c")
+        .arg(r#"echo '{"ts": "2022-01-01 13:00:00.000000000", "temperature": 5.3}' |nc localhost 54300"#)
+        .spawn()
+        .expect("send failed");
+}
 
 fn main() {
     const SOURCE_PORT: u16 = 54300;
@@ -80,9 +89,16 @@ fn main() {
 
     eprintln!("waiting JSON records in tcp/{} port...", SOURCE_PORT);
 
+    let mut row_recieved = 0;
+    send_data_to_pipeline();
     while let Ok(row) = pipeline.pop("q") {
+        row_recieved += 1;
         let ts: String = row.get_not_null_by_index(0).unwrap();
         let temperature_fahrenheit: f32 = row.get_not_null_by_index(1).unwrap();
         eprintln!("{}\t{}", ts, temperature_fahrenheit);
+        if row_recieved > 4 {
+            break;
+        }
+        send_data_to_pipeline();
     }
 }
