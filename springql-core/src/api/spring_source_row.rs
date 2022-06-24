@@ -15,6 +15,17 @@ impl SpringSourceRow {
         Self(source_row)
     }
 
+    /// Create a source row from a JSON string.
+    ///
+    /// # Failure
+    ///
+    /// - `SpringError::InvalidFormat` when:
+    ///   - `json` cannot be parsed as a JSON
+    pub fn from_json(json: &str) -> Result<Self> {
+        let source_row = SourceRow::from_json(json)?;
+        Ok(Self(source_row))
+    }
+
     pub(crate) fn into_schemaless_row(self) -> Result<SchemalessRow> {
         self.0.try_into()
     }
