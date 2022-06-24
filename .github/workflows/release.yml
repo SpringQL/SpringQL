@@ -3,6 +3,10 @@ name: release
 on:
   workflow_dispatch:
     inputs: 
+      current_version:
+        description: 'current version number'
+        required: true
+        type: string
       release_version:
         description: 'release version number'
         required: true
@@ -15,3 +19,13 @@ jobs:
     steps:
       - name: checkout code
         uses: actions/checkout@v2
+      
+      - name: edit changelog
+        run: |
+          # load helper script
+          source .github/workflows/scripts/keep-a-changelog.bash
+          # edit CHANGELOG.md
+          cp CHANGELOG.md CHANGELOG.md.org
+          cat CHANGELOG.md.org | bump_changelog "${{ inputs.current_version }}" "${{ inputs.release_version }}" > CHANGELOG.md
+          rm CHANGELOG.md.org
+
