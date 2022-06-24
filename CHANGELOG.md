@@ -10,6 +10,8 @@ All other sections are for end-users.
 <!-- markdownlint-disable MD024 -->
 ## [Unreleased]
 
+## [v0.14.0] - 2022-06-24
+
 ### Changed
 
 - Bump up MSRV from 1.56.1 to 1.57.0 ([#203](https://github.com/SpringQL/SpringQL/pull/203))
@@ -225,8 +227,9 @@ All other sections are for end-users.
 [Semantic Versioning]: https://semver.org/
 
 <!-- Versions -->
-[Unreleased]: https://github.com/SpringQL/SpringQL/compare/v0.13.0...HEAD
+[Unreleased]: https://github.com/SpringQL/SpringQL/compare/v0.14.0...HEAD
 [Released]: https://github.com/SpringQL/SpringQL/releases
+[v0.14.0]: https://github.com/SpringQL/SpringQL/compare/v0.13.0...v0.14.0
 [v0.13.0]: https://github.com/SpringQL/SpringQL/compare/v0.12.0...v0.13.0
 [v0.12.0]: https://github.com/SpringQL/SpringQL/compare/v0.11.0...v0.12.0
 [v0.11.0]: https://github.com/SpringQL/SpringQL/compare/v0.10.0...v0.11.0
