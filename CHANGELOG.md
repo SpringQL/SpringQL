@@ -18,6 +18,7 @@ All other sections are for end-users.
 ### Added
 
 - In-memory queue source reader and `SpringPipeline::push()` API ([#208](https://github.com/SpringQL/SpringQL/pull/208))
+- `SpringSourceRow` and its constructor `SpringSourceRow::from_json()`([#214](https://github.com/SpringQL/SpringQL/pull/214))
 
 ### Fixed
 
