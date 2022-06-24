@@ -114,27 +114,19 @@ impl CANSourceReader {
 
 #[cfg(test)]
 mod tests {
-    use std::sync::Arc;
 
-    use crate::{
-        pipeline::{StreamModel, StreamName, StreamShape},
-        stream_engine::{autonomous_executor::row::SchemalessRow, SqlValue, StreamRow},
-    };
+    use crate::stream_engine::{autonomous_executor::row::SchemalessRow, SqlValue};
 
     use super::*;
 
     #[test]
     fn test_can_frame_into_row() {
-        let shape = StreamShape::fx_can_source();
-        let stream = StreamModel::new(StreamName::new("source_can".to_string()), shape);
-
         let can_id = 1;
         let can_data = &[0x00u8, 0x01];
 
         let frame = CANFrame::new(can_id, can_data, false, false).unwrap();
         let source_row = CANSourceReader::_can_frame_into_row(frame);
-        let schemaless_row = SchemalessRow::try_from(source_row).unwrap();
-        let row = StreamRow::from_schemaless_row(schemaless_row, Arc::new(stream)).unwrap();
+        let row = SchemalessRow::try_from(source_row).unwrap();
 
         if let SqlValue::NotNull(got_can_id) = row.get_by_index(0).unwrap() {
             let got_can_id: u32 = got_can_id.unpack().unwrap();

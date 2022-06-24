@@ -66,14 +66,6 @@ impl StreamRow {
             RowTime::ProcessingTime,
         )
     }
-
-    /// # Failure
-    ///
-    /// - `SpringError::Sql` when:
-    ///   - Column index out of range
-    pub fn get_by_index(&self, i_col: usize) -> Result<&SqlValue> {
-        self.cols.get_by_index(i_col) // TODO rm all
-    }
 }
 
 impl PartialOrd for StreamRow {

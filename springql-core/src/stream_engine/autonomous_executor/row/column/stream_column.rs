@@ -77,17 +77,6 @@ impl StreamColumns {
     /// # Failure
     ///
     /// - `SpringError::Sql` when:
-    ///   - Column index out of range
-    pub fn get_by_index(&self, i_col: usize) -> Result<&SqlValue> {
-        self.values
-            .get(i_col)
-            .context("column index out of range")
-            .map_err(SpringError::Sql)
-    }
-
-    /// # Failure
-    ///
-    /// - `SpringError::Sql` when:
     ///   - No column named `column_name` is found from this stream.
     pub fn get_by_column_name(&self, column_name: &ColumnName) -> Result<&SqlValue> {
         let pos = self
