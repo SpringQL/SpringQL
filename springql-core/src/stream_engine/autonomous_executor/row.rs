@@ -11,7 +11,8 @@ mod value;
 
 pub use column::StreamColumns;
 pub use column_values::ColumnValues;
-pub use foreign_row::{CANFrameSourceRow, JsonObject, JsonSourceRow, SourceRow, SourceRowFormat};
+pub use foreign_row::{CANFrameSourceRow, JsonObject, JsonSourceRow, SourceRow};
 pub use rowtime::RowTime;
+pub use schemaless_row::SchemalessRow;
 pub use stream_row::StreamRow;
 pub use value::{NnSqlValue, SpringValue, SqlCompareResult, SqlValue, SqlValueHashKey};

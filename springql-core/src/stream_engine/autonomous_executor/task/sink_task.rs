@@ -115,7 +115,7 @@ impl SinkTask {
         sink_writer
             .lock()
             .expect("other worker threads sharing the same sink subtask must not get panic")
-            .send_row(row)?;
+            .send_row(row.into())?;
 
         Ok(())
     }

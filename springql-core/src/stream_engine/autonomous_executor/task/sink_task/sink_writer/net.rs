@@ -12,9 +12,8 @@ use crate::{
     api::error::{foreign_info::ForeignInfo, Result, SpringError},
     api::SpringSinkWriterConfig,
     pipeline::{NetClientOptions, Options},
-    stream_engine::{
-        autonomous_executor::{row::JsonObject, task::sink_task::sink_writer::SinkWriter},
-        StreamRow,
+    stream_engine::autonomous_executor::{
+        row::JsonObject, task::sink_task::sink_writer::SinkWriter, SchemalessRow,
     },
 };
 
@@ -58,7 +57,7 @@ impl SinkWriter for NetSinkWriter {
         })
     }
 
-    fn send_row(&mut self, row: StreamRow) -> Result<()> {
+    fn send_row(&mut self, row: SchemalessRow) -> Result<()> {
         let mut json_s = JsonObject::from(row).to_string();
         json_s.push('\n');
 
@@ -104,13 +103,13 @@ mod tests {
             NetSinkWriter::start(&options, &SpringSinkWriterConfig::fx_default()).unwrap();
 
         sink_writer
-            .send_row(StreamRow::fx_city_temperature_tokyo())
+            .send_row(SchemalessRow::fx_city_temperature_tokyo())
             .unwrap();
         sink_writer
-            .send_row(StreamRow::fx_city_temperature_osaka())
+            .send_row(SchemalessRow::fx_city_temperature_osaka())
             .unwrap();
         sink_writer
-            .send_row(StreamRow::fx_city_temperature_london())
+            .send_row(SchemalessRow::fx_city_temperature_london())
             .unwrap();
 
         const TIMEOUT: Duration = Duration::from_secs(1);

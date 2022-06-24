@@ -5,14 +5,14 @@ use crate::{
     pipeline::ColumnName,
 };
 
-use std::collections::HashMap;
+use std::vec;
 
 use anyhow::{anyhow, Context};
 
 use crate::stream_engine::autonomous_executor::row::value::SqlValue;
 
 #[derive(Clone, PartialEq, Debug, Default)]
-pub struct ColumnValues(HashMap<ColumnName, SqlValue>);
+pub struct ColumnValues(Vec<(ColumnName, SqlValue)>);
 
 impl ColumnValues {
     /// # Failure
@@ -20,12 +20,13 @@ impl ColumnValues {
     /// - `SpringError::Sql` when:
     ///   - `k` is already inserted.
     pub fn insert(&mut self, k: ColumnName, v: SqlValue) -> Result<()> {
-        if self.0.insert(k.clone(), v).is_some() {
+        if self.0.iter().any(|(col, _)| col == &k) {
             Err(SpringError::Sql(anyhow!(
                 r#"column "{}" found twice in this ColumnValues"#,
                 k
             )))
         } else {
+            self.0.push((k, v));
             Ok(())
         }
     }
@@ -33,11 +34,39 @@ impl ColumnValues {
     /// # Failure
     ///
     /// - `SpringError::Sql` when:
+    ///   - Column index out of range
+    pub fn get_by_index(&self, i_col: usize) -> Result<&SqlValue> {
+        self.0.get(i_col).map(|(_, v)| v).ok_or_else(|| {
+            SpringError::Sql(anyhow!(
+                r#"column index {} out of range in this ColumnValues"#,
+                i_col
+            ))
+        })
+    }
+
+    /// # Failure
+    ///
+    /// - `SpringError::Sql` when:
     ///   - `k` does not included.
     pub fn remove(&mut self, k: &ColumnName) -> Result<SqlValue> {
-        self.0
-            .remove(k)
-            .with_context(|| format!(r#"column "{}" not found from this ColumnValues"#, k))
-            .map_err(SpringError::Sql)
+        let idx = {
+            self.0
+                .iter()
+                .enumerate()
+                .find_map(|(i, (col, _))| (col == k).then(|| i))
+                .with_context(|| format!(r#"column "{}" not found from this ColumnValues"#, k))
+                .map_err(SpringError::Sql)
+        }?;
+        let (_, v) = self.0.swap_remove(idx);
+        Ok(v)
+    }
+}
+
+impl IntoIterator for ColumnValues {
+    type Item = (ColumnName, SqlValue);
+    type IntoIter = vec::IntoIter<Self::Item>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.0.into_iter()
     }
 }

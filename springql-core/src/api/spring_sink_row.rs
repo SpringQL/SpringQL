@@ -1,16 +1,19 @@
 // This file is part of https://github.com/SpringQL/SpringQL which is licensed under MIT OR Apache-2.0. See file LICENSE-MIT or LICENSE-APACHE for full license details.
 
 use crate::{
-    api::error::{Result, SpringError},
-    stream_engine::{SpringValue, SqlValue, StreamRow},
+    api::{
+        error::{Result, SpringError},
+        spring_source_row::SpringSourceRow,
+    },
+    stream_engine::{autonomous_executor::SchemalessRow, SpringValue, SqlValue},
 };
 
 /// Row object from an in memory sink queue.
 #[derive(Debug)]
-pub struct SpringSinkRow(StreamRow);
+pub struct SpringSinkRow(SchemalessRow);
 
 impl SpringSinkRow {
-    pub(crate) fn new(row: StreamRow) -> Self {
+    pub(crate) fn new(row: SchemalessRow) -> Self {
         SpringSinkRow(row)
     }
 
@@ -29,15 +32,14 @@ impl SpringSinkRow {
         let sql_value = self.0.get_by_index(i_col)?;
 
         match sql_value {
-            SqlValue::Null => Err(SpringError::Null {
-                stream_name: self.0.stream_model().name().clone(),
-                i_col,
-            }),
+            SqlValue::Null => Err(SpringError::Null { i_col }),
             SqlValue::NotNull(nn_sql_value) => nn_sql_value.unpack(),
         }
     }
+}
 
-    pub(crate) fn into_row(self) -> StreamRow {
-        self.0
+impl From<SpringSinkRow> for SpringSourceRow {
+    fn from(sink_row: SpringSinkRow) -> Self {
+        SpringSourceRow::new(sink_row.0)
     }
 }

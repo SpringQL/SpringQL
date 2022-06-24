@@ -7,9 +7,7 @@ use crate::{
     mem_size::MemSize,
     pipeline::{ColumnName, StreamModel},
     stream_engine::{
-        autonomous_executor::{
-            row::schemaless_row::SchemalessRow, ColumnValues, JsonObject, StreamColumns,
-        },
+        autonomous_executor::{row::schemaless_row::SchemalessRow, ColumnValues, StreamColumns},
         time::{SpringTimestamp, SystemTimestamp},
         RowTime, SqlValue,
     },
@@ -68,14 +66,6 @@ impl StreamRow {
             RowTime::ProcessingTime,
         )
     }
-
-    /// # Failure
-    ///
-    /// - `SpringError::Sql` when:
-    ///   - Column index out of range
-    pub fn get_by_index(&self, i_col: usize) -> Result<&SqlValue> {
-        self.cols.get_by_index(i_col)
-    }
 }
 
 impl PartialOrd for StreamRow {
@@ -101,17 +91,6 @@ impl MemSize for StreamRow {
     }
 }
 
-impl From<StreamRow> for JsonObject {
-    fn from(row: StreamRow) -> Self {
-        let map = row
-            .into_iter()
-            .map(|(col, val)| (col.to_string(), serde_json::Value::from(val)))
-            .collect::<serde_json::Map<String, serde_json::Value>>();
-        let v = serde_json::Value::from(map);
-        JsonObject::new(v)
-    }
-}
-
 impl From<StreamRow> for ColumnValues {
     fn from(row: StreamRow) -> Self {
         let cols = row.cols;
@@ -121,9 +100,6 @@ impl From<StreamRow> for ColumnValues {
 
 #[cfg(test)]
 mod tests {
-    use serde_json::json;
-
-    use crate::stream_engine::autonomous_executor::row::foreign_row::JsonObject;
 
     use super::*;
 
@@ -141,18 +117,5 @@ mod tests {
             StreamRow::fx_city_temperature_tokyo(),
             StreamRow::fx_city_temperature_osaka()
         );
-    }
-
-    #[test]
-    fn test_into_json() {
-        let row = StreamRow::fx_city_temperature_tokyo();
-
-        let json = JsonObject::new(json!({
-            "ts": SpringTimestamp::fx_ts1().to_string(),
-            "city": "Tokyo",
-            "temperature": 21
-        }));
-
-        assert_eq!(JsonObject::from(row), json);
     }
 }

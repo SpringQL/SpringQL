@@ -19,7 +19,7 @@ use crate::{
                 MetricsUpdateByTaskExecution, OutQueueMetricsUpdateByTask, TaskMetricsUpdateByTask,
             },
             repositories::Repositories,
-            row::StreamRow,
+            row::{SchemalessRow, StreamRow},
             task::task_context::TaskContext,
             task_graph::{QueueId, RowQueueId, TaskId, WindowQueueId},
             AutonomousExecutor,
@@ -130,7 +130,10 @@ impl SourceTask {
             .expect("other worker threads sharing the same subtask must not get panic");
         source_reader
             .next_row()
-            .and_then(|source_row| source_row.into_row(source_stream))
+            .and_then(|source_row| {
+                let schemaless_row = SchemalessRow::try_from(source_row)?;
+                StreamRow::from_schemaless_row(schemaless_row, source_stream)
+            })
             .map_or_else(
                 |e| {
                     AutonomousExecutor::handle_error(e);

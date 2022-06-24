@@ -132,9 +132,9 @@ mod tests {
     use crate::{
         api::SpringSinkWriterConfig,
         pipeline::OptionsBuilder,
-        stream_engine::{
-            autonomous_executor::task::sink_task::{NetSinkWriter, SinkWriter},
-            StreamRow,
+        stream_engine::autonomous_executor::{
+            task::sink_task::{NetSinkWriter, SinkWriter},
+            SchemalessRow,
         },
     };
     fn ephemeral_port() -> u16 {
@@ -164,13 +164,13 @@ mod tests {
         let mut writer = tcp_writer(port);
 
         writer
-            .send_row(StreamRow::fx_city_temperature_tokyo())
+            .send_row(SchemalessRow::fx_city_temperature_tokyo())
             .unwrap();
         writer
-            .send_row(StreamRow::fx_city_temperature_osaka())
+            .send_row(SchemalessRow::fx_city_temperature_osaka())
             .unwrap();
         writer
-            .send_row(StreamRow::fx_city_temperature_london())
+            .send_row(SchemalessRow::fx_city_temperature_london())
             .unwrap();
 
         assert_eq!(
