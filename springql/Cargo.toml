@@ -15,7 +15,7 @@ readme = "../README.md"
 repository = "https://github.com/SpringQL/SpringQL"
 
 [dependencies]
-springql-core = {path="../springql-core"}
+springql-core = "0.14.0"
 
 [dev-dependencies]
 springql-foreign-service = {path = "../foreign-service"}
