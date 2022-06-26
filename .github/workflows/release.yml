@@ -20,6 +20,11 @@ jobs:
       - name: checkout code
         uses: actions/checkout@v2
       
+      - name: git config
+        run: |
+          git config --global user.email "action@github.com"
+          git config --global user.name "SpringQL release script"
+
       - name: edit changelog
         run: |
           # load helper script
@@ -28,4 +33,35 @@ jobs:
           cp CHANGELOG.md CHANGELOG.md.org
           cat CHANGELOG.md.org | bump_changelog "${{ inputs.current_version }}" "${{ inputs.release_version }}" > CHANGELOG.md
           rm CHANGELOG.md.org
+      
+      - name: bump crate versions
+        run: |
+          cd springql
+          cargo bump ${{ inputs.release_version }}
+          cd ..
+          cd springql-core
+          cargo bump ${{ inputs.release_version }}
+          cd ..
+          cd foreign-sevice
+          cargo bump ${{ inputs.release_version }}
+          cd ..
+          cd test-logger
+          cargo bump ${{ inputs.release_version }}
+          cd ..
+
+      - name: cargo publish
+        run: |
+          cargo login "${{ secrets.CRATES_IO_TOKEN }}"
+          cargo publish -p springql-core
+          cargo publish -p springql
+
+      - name: commit changes
+        run: |
+          git add .
+          git commit -m "update changelog for release ${{ inputs.release_version }}"
+
+      - name: git tag
+        run: |
+          git tag "${{ inputs.release_version }}"
+      
 
