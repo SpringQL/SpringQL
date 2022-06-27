@@ -14,6 +14,9 @@ on:
 
 jobs:
   release:
+    env:
+      CURRENT_VERSION: ${{ github.event.inputs.current_version }}
+      RELEASE_VERSION: ${{ github.event.inputs.release_version }}
     runs-on: ubuntu-latest
 
     steps:
@@ -31,22 +34,22 @@ jobs:
           source .github/workflows/scripts/keep-a-changelog.bash
           # edit CHANGELOG.md
           cp CHANGELOG.md CHANGELOG.md.org
-          cat CHANGELOG.md.org | bump_changelog "${{ inputs.current_version }}" "${{ inputs.release_version }}" > CHANGELOG.md
+          cat CHANGELOG.md.org | bump_changelog "${CURRENT_VERSION}" "${RELEASE_VERSION}" > CHANGELOG.md
           rm CHANGELOG.md.org
       
       - name: bump crate versions
         run: |
           cd springql
-          cargo bump ${{ inputs.release_version }}
+          cargo bump "${RELEASE_VERSION}"
           cd ..
           cd springql-core
-          cargo bump ${{ inputs.release_version }}
+          cargo bump "${RELEASE_VERSION}"
           cd ..
           cd foreign-sevice
-          cargo bump ${{ inputs.release_version }}
+          cargo bump "${RELEASE_VERSION}"
           cd ..
           cd test-logger
-          cargo bump ${{ inputs.release_version }}
+          cargo bump "${RELEASE_VERSION}"
           cd ..
 
       - name: cargo publish
@@ -58,10 +61,13 @@ jobs:
       - name: commit changes
         run: |
           git add .
-          git commit -m "update changelog for release ${{ inputs.release_version }}"
+          git commit -m "update changelog for release ${RELEASE_VERSION}"
 
       - name: git tag
         run: |
-          git tag "${{ inputs.release_version }}"
+          git tag "${RELEASE_VERSION}"
       
-
+      - name: git push
+        run: |
+          git push origin "${RELEASE_VERSION}"
+          git push origin main
