@@ -6,8 +6,6 @@ use springql_core::api::{
     SpringSourceReaderConfig, SpringWebConsoleConfig, SpringWorkerConfig,
 };
 
-use ::config::Config;
-
 /// Default configuration.
 ///
 /// Default key-values are overwritten by `overwrite_config_toml` parameter in `SpringConfig::new()`.
@@ -82,7 +80,7 @@ impl SpringConfigDeserialize {
     ///   - `overwrite_config_toml` includes invalid key and/or value.
     /// - [SpringError::InvalidFormat](crate::api::error::SpringError::InvalidFormat) when:
     ///   - `overwrite_config_toml` is not valid as TOML.
-    pub fn new(overwrite_config_toml: &str) -> Result<SpringConfig> {
+    pub fn load(overwrite_config_toml: &str) -> Result<SpringConfig> {
         let default_conf = config::Config::builder()
             .add_source(config::File::from_str(
                 SPRING_CONFIG_DEFAULT,
@@ -120,7 +118,7 @@ impl SpringConfigDeserialize {
     /// - [SpringError::InvalidFormat](crate::api::error::SpringError::InvalidFormat) when:
     ///   - `overwrite_config_toml` is not valid as TOML.
     pub fn from_toml(overwrite_config_toml: &str) -> Result<SpringConfig> {
-        Self::new(overwrite_config_toml)
+        Self::load(overwrite_config_toml)
     }
 }
 
