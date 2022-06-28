@@ -54,9 +54,10 @@ jobs:
 
       - name: cargo publish
         run: |
-          cargo login "${{ secrets.CRATES_IO_TOKEN }}"
-          cargo publish -p springql-core
-          cargo publish -p springql
+          # TODO: de-comment for login
+          # cargo login "${{ secrets.CRATES_IO_TOKEN }}"
+          cargo publish -p springql-core --dry-run # TODO: remove `--dry-run`
+          cargo publish -p springql --dry-run      # TODO: remove `--dry-run`
 
       - name: commit changes
         run: |
@@ -69,5 +70,6 @@ jobs:
       
       - name: git push
         run: |
-          git push origin "${RELEASE_VERSION}"
-          git push origin main
+          # TODO: de-comment for push
+          # git push origin "${RELEASE_VERSION}"
+          # git push origin main
