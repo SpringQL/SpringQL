@@ -10,6 +10,10 @@ All other sections are for end-users.
 <!-- markdownlint-disable MD024 -->
 ## [Unreleased]
 
+### Changed
+
+- Config deserialize features move from springql-core to springql
+
 ## [v0.14.0] - 2022-06-24
 
 ### Changed

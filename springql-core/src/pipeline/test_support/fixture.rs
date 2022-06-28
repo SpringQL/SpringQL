@@ -19,7 +19,7 @@ use crate::{
 
 impl SpringConfig {
     pub fn fx_default() -> Self {
-        Self::new("").unwrap()
+        Self::default()
     }
 }
 
