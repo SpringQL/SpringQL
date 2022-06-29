@@ -13,7 +13,7 @@ pub use crate::{
         spring_config::*,
         spring_pipeline::SpringPipeline,
         spring_sink_row::SpringSinkRow,
-        spring_source_row::SpringSourceRow,
+        spring_source_row::{SpringSourceRow, SpringSourceRowBuilder},
         SpringConfig,
     },
     stream_engine::{

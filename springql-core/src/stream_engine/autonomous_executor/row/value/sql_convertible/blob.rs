@@ -15,7 +15,7 @@ impl SpringValue for Vec<u8> {
 }
 
 impl ToNnSqlValue for Vec<u8> {
-    fn into_sql_value(self) -> NnSqlValue {
+    fn into_nn_sql_value(self) -> NnSqlValue {
         NnSqlValue::Blob(self)
     }
 }

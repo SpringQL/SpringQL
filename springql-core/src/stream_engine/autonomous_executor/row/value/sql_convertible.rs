@@ -10,7 +10,10 @@ mod timestamp;
 
 use crate::{
     api::error::{Result, SpringError},
-    stream_engine::time::{SpringEventDuration, SpringTimestamp},
+    stream_engine::{
+        time::{SpringEventDuration, SpringTimestamp},
+        SqlValue,
+    },
 };
 use anyhow::anyhow;
 use std::any::type_name;
@@ -18,7 +21,13 @@ use std::any::type_name;
 use crate::stream_engine::autonomous_executor::row::value::sql_value::NnSqlValue;
 
 /// Rust values can be unpacked from NnSqlValue back into them.
-pub trait SpringValue: Sized {
+pub trait SpringValue: ToNnSqlValue + Sized {
+    /// Convert Rust type into strictly-matching SQL type.
+    fn into_sql_value(self) -> SqlValue {
+        let nn = self.into_nn_sql_value();
+        SqlValue::NotNull(nn)
+    }
+
     /// # Failures
     ///
     /// - `SpringError::Sql` when:
@@ -128,5 +137,5 @@ pub trait SpringValue: Sized {
 /// Rust values which can be packed into NnSqlValue
 pub trait ToNnSqlValue: Sized {
     /// Convert Rust type into strictly-matching SQL type.
-    fn into_sql_value(self) -> NnSqlValue;
+    fn into_nn_sql_value(self) -> NnSqlValue;
 }
