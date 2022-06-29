@@ -15,7 +15,7 @@ use crate::{
 /// Used for foreign sources and sinks.
 ///
 /// - PartialEq by all columns (NULL prevents Eq).
-#[derive(Clone, PartialEq, Debug)]
+#[derive(Clone, PartialEq, Debug, Default)]
 pub struct SchemalessRow {
     /// Columns
     colvals: ColumnValues,
@@ -30,6 +30,13 @@ impl SchemalessRow {
         self.colvals.get_by_index(i_col)
     }
 
+    /// # Failure
+    ///
+    /// - `SpringError::Sql` when:
+    ///   - `k` is already inserted.
+    pub fn insert(&mut self, k: ColumnName, v: SqlValue) -> Result<()> {
+        self.colvals.insert(k, v)
+    }
     pub fn into_column_values(self) -> ColumnValues {
         self.colvals
     }

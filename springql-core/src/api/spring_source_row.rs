@@ -1,12 +1,16 @@
 // This file is part of https://github.com/SpringQL/SpringQL which is licensed under MIT OR Apache-2.0. See file LICENSE-MIT or LICENSE-APACHE for full license details.
 
+mod spring_source_row_builder;
+
+pub use spring_source_row_builder::SpringSourceRowBuilder;
+
 use crate::{
     api::error::Result,
     stream_engine::autonomous_executor::{SchemalessRow, SourceRow},
 };
 
 /// Row object from an in memory sink queue.
-#[derive(Clone, Debug)]
+#[derive(Clone, PartialEq, Debug)]
 pub struct SpringSourceRow(SourceRow);
 
 impl SpringSourceRow {
