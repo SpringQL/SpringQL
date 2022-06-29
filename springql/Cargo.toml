@@ -15,7 +15,7 @@ readme = "../README.md"
 repository = "https://github.com/SpringQL/SpringQL"
 
 [dependencies]
-springql-core = "0.14.0"
+springql-core = { path="../springql-core", version="0.14.0" }
 serde = {version = "1.0", features = ["derive"], default-features = false}
 config = {version = "0.13", features = ["toml"], default-features = false}
 

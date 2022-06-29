@@ -64,13 +64,72 @@ net_write_timeout_msec = 100
 "#;
 
 #[derive(Clone, Eq, PartialEq, Debug, Deserialize)]
-#[serde(remote = "SpringConfig")]
 pub struct SpringConfigDeserialize {
-    pub worker: SpringWorkerConfig,
-    pub memory: SpringMemoryConfig,
-    pub web_console: SpringWebConsoleConfig,
-    pub source_reader: SpringSourceReaderConfig,
-    pub sink_writer: SpringSinkWriterConfig,
+    #[serde(with = "SpringWorkerConfigDeserialize")]
+    worker: SpringWorkerConfig,
+    #[serde(with = "SpringMemoryConfigDeserialize")]
+    memory: SpringMemoryConfig,
+    #[serde(with = "SpringWebConsoleConfigDeserialize")]
+    web_console: SpringWebConsoleConfig,
+    #[serde(with = "SpringSourceReaderConfigDeserialize")]
+    source_reader: SpringSourceReaderConfig,
+    #[serde(with = "SpringSinkWriterConfigDeserialize")]
+    sink_writer: SpringSinkWriterConfig,
+}
+
+#[derive(Clone, Eq, PartialEq, Debug, Deserialize)]
+#[serde(remote = "SpringWorkerConfig")]
+pub struct SpringWorkerConfigDeserialize {
+    pub n_generic_worker_threads: u16,
+    pub n_source_worker_threads: u16,
+}
+
+#[allow(missing_docs)]
+#[derive(Copy, Clone, Eq, PartialEq, Debug, Deserialize)]
+#[serde(remote = "SpringMemoryConfig")]
+pub struct SpringMemoryConfigDeserialize {
+    pub upper_limit_bytes: u64,
+
+    pub moderate_to_severe_percent: u8,
+    pub severe_to_critical_percent: u8,
+
+    pub critical_to_severe_percent: u8,
+    pub severe_to_moderate_percent: u8,
+
+    pub memory_state_transition_interval_msec: u32,
+    pub performance_metrics_summary_report_interval_msec: u32,
+}
+
+#[allow(missing_docs)]
+#[derive(Clone, Eq, PartialEq, Debug, Deserialize)]
+#[serde(remote = "SpringWebConsoleConfig")]
+pub struct SpringWebConsoleConfigDeserialize {
+    pub enable_report_post: bool,
+
+    pub report_interval_msec: u32,
+
+    pub host: String,
+    pub port: u16,
+
+    pub timeout_msec: u32,
+}
+
+#[allow(missing_docs)]
+#[derive(Copy, Clone, Eq, PartialEq, Debug, Deserialize)]
+#[serde(remote = "SpringSourceReaderConfig")]
+pub struct SpringSourceReaderConfigDeserialize {
+    pub net_connect_timeout_msec: u32,
+    pub net_read_timeout_msec: u32,
+
+    pub can_read_timeout_msec: u32,
+}
+
+#[allow(missing_docs)]
+#[derive(Copy, Clone, Eq, PartialEq, Debug, Deserialize)]
+#[serde(remote = "SpringSinkWriterConfig")]
+pub struct SpringSinkWriterConfigDeserialize {
+    pub net_connect_timeout_msec: u32,
+    pub net_write_timeout_msec: u32,
 }
 
 impl SpringConfigDeserialize {
@@ -101,8 +160,17 @@ impl SpringConfigDeserialize {
                 source: e.into(),
             })?;
 
-        c.try_deserialize()
-            .map_err(|e| SpringError::InvalidConfig { source: e.into() })
+        let de = c
+            .try_deserialize::<'_, Self>()
+            .map_err(|e| SpringError::InvalidConfig { source: e.into() })?;
+
+        Ok(SpringConfig {
+            worker: de.worker,
+            memory: de.memory,
+            web_console: de.web_console,
+            source_reader: de.source_reader,
+            sink_writer: de.sink_writer,
+        })
     }
 
     /// Configuration by TOML format string.
