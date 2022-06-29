@@ -11,7 +11,8 @@ use springql::{
 
 use crate::test_support::*;
 
-fn pipeline() -> SpringPipeline {
+// Requires queue name parameters for: <https://github.com/SpringQL/SpringQL/issues/219>
+fn pipeline(source_queue_name: &str, sink_queue_name: &str) -> SpringPipeline {
     let ddls = vec![
         "
         CREATE SOURCE STREAM source_1 (
@@ -37,17 +38,19 @@ fn pipeline() -> SpringPipeline {
             "
         CREATE SINK WRITER q_sink_1 FOR sink_1
           TYPE IN_MEMORY_QUEUE OPTIONS (
-            NAME 'q_sink_1'
+            NAME '{}'
         );
         ",
+            sink_queue_name
         ),
         format!(
             "
         CREATE SOURCE READER q_source_1 FOR source_1
           TYPE IN_MEMORY_QUEUE OPTIONS (
-            NAME 'q_source_1'
+            NAME '{}'
           );
         ",
+            source_queue_name
         ),
     ];
 
@@ -56,7 +59,7 @@ fn pipeline() -> SpringPipeline {
 
 #[test]
 fn test_source_row_from_json() {
-    let pipeline = pipeline();
+    let pipeline = pipeline("q_source_from_json", "q_sink_from_json");
 
     let source_rows = vec![
         SpringSourceRow::from_json(r#"{"ts": "2022-01-01 13:00:00.000000000", "n": 42}"#).unwrap(),
@@ -64,11 +67,11 @@ fn test_source_row_from_json() {
     ];
 
     for row in source_rows {
-        pipeline.push("q_source_1", row).unwrap();
+        pipeline.push("q_source_from_json", row).unwrap();
     }
 
-    let sink_row1 = pipeline.pop("q_sink_1").unwrap();
-    let sink_row2 = pipeline.pop("q_sink_1").unwrap();
+    let sink_row1 = pipeline.pop("q_sink_from_json").unwrap();
+    let sink_row2 = pipeline.pop("q_sink_from_json").unwrap();
 
     assert_eq!(
         sink_row1.get_not_null_by_index::<String>(0).unwrap(),
@@ -85,7 +88,7 @@ fn test_source_row_from_json() {
 
 #[test]
 fn test_source_row_from_builder() -> Result<(), SpringError> {
-    let pipeline = pipeline();
+    let pipeline = pipeline("q_source_from_builder", "q_sink_from_builder");
 
     let source_rows = vec![
         SpringSourceRowBuilder::default()
@@ -105,11 +108,11 @@ fn test_source_row_from_builder() -> Result<(), SpringError> {
     ];
 
     for row in source_rows {
-        pipeline.push("q_source_1", row).unwrap();
+        pipeline.push("q_source_from_builder", row).unwrap();
     }
 
-    let sink_row1 = pipeline.pop("q_sink_1").unwrap();
-    let sink_row2 = pipeline.pop("q_sink_1").unwrap();
+    let sink_row1 = pipeline.pop("q_sink_from_builder").unwrap();
+    let sink_row2 = pipeline.pop("q_sink_from_builder").unwrap();
 
     assert_eq!(
         sink_row1.get_not_null_by_index::<String>(0).unwrap(),
