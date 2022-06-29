@@ -10,6 +10,10 @@ All other sections are for end-users.
 <!-- markdownlint-disable MD024 -->
 ## [Unreleased]
 
+### Added
+
+- `SpringSourceRowBuilder` to make `SpringSourceRow`s from native values (not from JSON), enabling rows with BLOB columns, for example ([#218](https://github.com/SpringQL/SpringQL/pull/218))
+
 ## [v0.14.0] - 2022-06-24
 
 ### Changed
