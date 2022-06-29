@@ -12,7 +12,7 @@ All other sections are for end-users.
 
 ### Changed
 
-- Config deserialize features move from springql-core to springql
+- Remove config deserialize from core ([#216](https://github.com/SpringQL/SpringQL/pull/216))
 
 ## [v0.15.0] - 2022-06-29
 
