@@ -10,7 +10,7 @@ use crate::{
 };
 
 /// Row object from an in memory sink queue.
-#[derive(Clone, PartialEq, Debug)]
+#[derive(Clone, Debug)]
 pub struct SpringSourceRow(SourceRow);
 
 impl SpringSourceRow {
