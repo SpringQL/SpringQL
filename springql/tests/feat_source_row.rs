@@ -2,7 +2,12 @@
 
 mod test_support;
 
-use springql::{SpringConfig, SpringPipeline, SpringSourceRow};
+use std::str::FromStr;
+
+use springql::{
+    SpringConfig, SpringError, SpringPipeline, SpringSourceRow, SpringSourceRowBuilder,
+    SpringTimestamp,
+};
 
 use crate::test_support::*;
 
@@ -76,4 +81,47 @@ fn test_source_row_from_json() {
         "2022-01-01 14:00:00.000000000",
     );
     assert_eq!(sink_row2.get_not_null_by_index::<i32>(1).unwrap(), 43);
+}
+
+#[test]
+fn test_source_row_from_builder() -> Result<(), SpringError> {
+    let pipeline = pipeline();
+
+    let source_rows = vec![
+        SpringSourceRowBuilder::default()
+            .add_column(
+                "ts",
+                SpringTimestamp::from_str("2022-01-01 13:00:00.000000000").unwrap(),
+            )?
+            .add_column("n", 42i32)?
+            .build(),
+        SpringSourceRowBuilder::default()
+            .add_column(
+                "ts",
+                SpringTimestamp::from_str("2022-01-01 14:00:00.000000000").unwrap(),
+            )?
+            .add_column("n", 43i32)?
+            .build(),
+    ];
+
+    for row in source_rows {
+        pipeline.push("q_source_1", row).unwrap();
+    }
+
+    let sink_row1 = pipeline.pop("q_sink_1").unwrap();
+    let sink_row2 = pipeline.pop("q_sink_1").unwrap();
+
+    assert_eq!(
+        sink_row1.get_not_null_by_index::<String>(0).unwrap(),
+        "2022-01-01 13:00:00.000000000",
+    );
+    assert_eq!(sink_row1.get_not_null_by_index::<i32>(1).unwrap(), 42);
+
+    assert_eq!(
+        sink_row2.get_not_null_by_index::<String>(0).unwrap(),
+        "2022-01-01 14:00:00.000000000",
+    );
+    assert_eq!(sink_row2.get_not_null_by_index::<i32>(1).unwrap(), 43);
+
+    Ok(())
 }
