@@ -31,7 +31,7 @@ impl SpringValue for i16 {
     }
 }
 impl ToNnSqlValue for i16 {
-    fn into_sql_value(self) -> NnSqlValue {
+    fn into_nn_sql_value(self) -> NnSqlValue {
         NnSqlValue::SmallInt(self)
     }
 }
@@ -56,7 +56,7 @@ impl SpringValue for i32 {
     }
 }
 impl ToNnSqlValue for i32 {
-    fn into_sql_value(self) -> NnSqlValue {
+    fn into_nn_sql_value(self) -> NnSqlValue {
         NnSqlValue::Integer(self)
     }
 }
@@ -79,7 +79,7 @@ impl SpringValue for i64 {
     }
 }
 impl ToNnSqlValue for i64 {
-    fn into_sql_value(self) -> NnSqlValue {
+    fn into_nn_sql_value(self) -> NnSqlValue {
         NnSqlValue::BigInt(self)
     }
 }
@@ -133,7 +133,7 @@ impl SpringValue for u32 {
     }
 }
 impl ToNnSqlValue for u32 {
-    fn into_sql_value(self) -> NnSqlValue {
+    fn into_nn_sql_value(self) -> NnSqlValue {
         NnSqlValue::UnsignedInteger(self)
     }
 }
@@ -185,7 +185,7 @@ impl SpringValue for u64 {
     }
 }
 impl ToNnSqlValue for u64 {
-    fn into_sql_value(self) -> NnSqlValue {
+    fn into_nn_sql_value(self) -> NnSqlValue {
         NnSqlValue::UnsignedBigInt(self)
     }
 }

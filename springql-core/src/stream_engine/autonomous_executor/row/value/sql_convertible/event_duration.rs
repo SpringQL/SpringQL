@@ -17,7 +17,7 @@ impl SpringValue for SpringEventDuration {
 }
 
 impl ToNnSqlValue for SpringEventDuration {
-    fn into_sql_value(self) -> NnSqlValue {
+    fn into_nn_sql_value(self) -> NnSqlValue {
         NnSqlValue::Duration(self)
     }
 }
