@@ -15,7 +15,7 @@ impl SpringValue for bool {
 }
 
 impl ToNnSqlValue for bool {
-    fn into_sql_value(self) -> NnSqlValue {
+    fn into_nn_sql_value(self) -> NnSqlValue {
         NnSqlValue::Boolean(self)
     }
 }

@@ -237,35 +237,35 @@ impl NnSqlValue {
         match typ {
             SqlType::NumericComparable(n) => match n {
                 NumericComparableType::I64Loose(i) => match i {
-                    I64LooseType::SmallInt => self.unpack::<i16>().map(|v| v.into_sql_value()),
-                    I64LooseType::Integer => self.unpack::<i32>().map(|v| v.into_sql_value()),
-                    I64LooseType::BigInt => self.unpack::<i64>().map(|v| v.into_sql_value()),
+                    I64LooseType::SmallInt => self.unpack::<i16>().map(|v| v.into_nn_sql_value()),
+                    I64LooseType::Integer => self.unpack::<i32>().map(|v| v.into_nn_sql_value()),
+                    I64LooseType::BigInt => self.unpack::<i64>().map(|v| v.into_nn_sql_value()),
                 },
                 NumericComparableType::U64Loose(u) => match u {
                     U64LooseType::UnsignedInteger => {
-                        self.unpack::<u32>().map(|v| v.into_sql_value())
+                        self.unpack::<u32>().map(|v| v.into_nn_sql_value())
                     }
                     U64LooseType::UnsignedBigInt => {
-                        self.unpack::<u64>().map(|v| v.into_sql_value())
+                        self.unpack::<u64>().map(|v| v.into_nn_sql_value())
                     }
                 },
                 NumericComparableType::F32Loose(f) => match f {
-                    F32LooseType::Float => self.unpack::<f32>().map(|v| v.into_sql_value()),
+                    F32LooseType::Float => self.unpack::<f32>().map(|v| v.into_nn_sql_value()),
                 },
             },
             SqlType::StringComparableLoose(s) => match s {
                 StringComparableLoseType::Text => {
-                    self.unpack::<String>().map(|v| v.into_sql_value())
+                    self.unpack::<String>().map(|v| v.into_nn_sql_value())
                 }
             },
-            SqlType::BinaryComparable => self.unpack::<Vec<u8>>().map(|v| v.into_sql_value()),
-            SqlType::BooleanComparable => self.unpack::<bool>().map(|v| v.into_sql_value()),
-            SqlType::TimestampComparable => {
-                self.unpack::<SpringTimestamp>().map(|v| v.into_sql_value())
-            }
+            SqlType::BinaryComparable => self.unpack::<Vec<u8>>().map(|v| v.into_nn_sql_value()),
+            SqlType::BooleanComparable => self.unpack::<bool>().map(|v| v.into_nn_sql_value()),
+            SqlType::TimestampComparable => self
+                .unpack::<SpringTimestamp>()
+                .map(|v| v.into_nn_sql_value()),
             SqlType::DurationComparable => self
                 .unpack::<SpringEventDuration>()
-                .map(|v| v.into_sql_value()),
+                .map(|v| v.into_nn_sql_value()),
         }
     }
 

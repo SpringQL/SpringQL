@@ -14,6 +14,12 @@ All other sections are for end-users.
 
 - Config deserialize features move from springql-core to springql
 
+## [v0.15.0] - 2022-06-29
+
+### Added
+
+- `SpringSourceRowBuilder` to make `SpringSourceRow`s from native values (not from JSON), enabling rows with BLOB columns, for example ([#218](https://github.com/SpringQL/SpringQL/pull/218))
+
 ## [v0.14.0] - 2022-06-24
 
 ### Changed
@@ -231,8 +237,9 @@ All other sections are for end-users.
 [Semantic Versioning]: https://semver.org/
 
 <!-- Versions -->
-[Unreleased]: https://github.com/SpringQL/SpringQL/compare/v0.14.0...HEAD
+[Unreleased]: https://github.com/SpringQL/SpringQL/compare/v0.15.0...HEAD
 [Released]: https://github.com/SpringQL/SpringQL/releases
+[v0.15.0]: https://github.com/SpringQL/SpringQL/compare/v0.14.0...v0.15.0
 [v0.14.0]: https://github.com/SpringQL/SpringQL/compare/v0.13.0...v0.14.0
 [v0.13.0]: https://github.com/SpringQL/SpringQL/compare/v0.12.0...v0.13.0
 [v0.12.0]: https://github.com/SpringQL/SpringQL/compare/v0.11.0...v0.12.0

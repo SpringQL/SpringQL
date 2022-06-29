@@ -26,7 +26,7 @@ impl SpringValue for f32 {
 }
 
 impl ToNnSqlValue for f32 {
-    fn into_sql_value(self) -> NnSqlValue {
+    fn into_nn_sql_value(self) -> NnSqlValue {
         NnSqlValue::Float(OrderedFloat(self))
     }
 }

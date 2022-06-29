@@ -21,7 +21,7 @@ impl SpringValue for SpringTimestamp {
 }
 
 impl ToNnSqlValue for SpringTimestamp {
-    fn into_sql_value(self) -> NnSqlValue {
+    fn into_nn_sql_value(self) -> NnSqlValue {
         NnSqlValue::Timestamp(self)
     }
 }
