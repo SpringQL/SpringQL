@@ -4,11 +4,11 @@ on:
   workflow_dispatch:
     inputs: 
       current_version:
-        description: 'current version number'
+        description: 'current version number (example `0.15.1`)'
         required: true
         type: string
       release_version:
-        description: 'release version number'
+        description: 'release version number (example `0.15.1`)'
         required: true
         type: string
 
@@ -22,7 +22,11 @@ jobs:
     steps:
       - name: checkout code
         uses: actions/checkout@v2
-      
+
+      - name: Install release tools
+        run: |
+          cargo install cargo-edit toml-cli
+
       - name: git config
         run: |
           git config --global user.email "action@github.com"
@@ -39,18 +43,21 @@ jobs:
       
       - name: bump crate versions
         run: |
+          cargo set-version -p springql ${RELEASE_VERSION}
+          cargo set-version -p springql-core ${RELEASE_VERSION}
+          cargo set-version -p springql-foreign-service ${RELEASE_VERSION}
+          cargo set-version -p springql-test-logger ${RELEASE_VERSION}
           cd springql
-          cargo bump "${RELEASE_VERSION}"
+          cp Cargo.toml Cargo.toml.org
+          toml set Cargo.toml.org dependencies.springql-core.version "${RELEASE_VERSION}" > Cargo.toml
+          rm Cargo.toml.org
           cd ..
-          cd springql-core
-          cargo bump "${RELEASE_VERSION}"
-          cd ..
-          cd foreign-sevice
-          cargo bump "${RELEASE_VERSION}"
-          cd ..
-          cd test-logger
-          cargo bump "${RELEASE_VERSION}"
-          cd ..
+
+
+      - name: commit changes
+        run: |
+          git add .
+          git commit -m "update for release v${RELEASE_VERSION}"
 
       - name: cargo publish
         run: |
@@ -59,17 +66,16 @@ jobs:
           cargo publish -p springql-core --dry-run # TODO: remove `--dry-run`
           cargo publish -p springql --dry-run      # TODO: remove `--dry-run`
 
-      - name: commit changes
-        run: |
-          git add .
-          git commit -m "update changelog for release ${RELEASE_VERSION}"
-
       - name: git tag
         run: |
-          git tag "${RELEASE_VERSION}"
+          git tag "v${RELEASE_VERSION}"
+          git tag "springql@${RELASE_VERSION}"
+          git tag "springql-core@${RELASE_VERSION}"
       
       - name: git push
         run: |
           # TODO: de-comment for push
-          # git push origin "${RELEASE_VERSION}"
+          # git push origin "v${RELEASE_VERSION}"
+          # git push origin "springql@${RELEASE_VERSION}"
+          # git push origin "springql-core@${RELEASE_VERSION}"
           # git push origin main
