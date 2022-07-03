@@ -6,22 +6,17 @@ use anyhow::Context;
 
 use crate::{
     api::error::{Result, SpringError},
-    pipeline::option::Options,
+    pipeline::{option::Options, NetProtocol},
 };
 
 #[derive(Clone, Eq, PartialEq, Debug)]
-pub enum NetProtocol {
-    Tcp,
-}
-
-#[derive(Clone, Eq, PartialEq, Debug)]
-pub struct NetClientOptions {
+pub struct SourceNetClientOptions {
     pub protocol: NetProtocol,
     pub remote_host: IpAddr,
     pub remote_port: u16,
 }
 
-impl TryFrom<&Options> for NetClientOptions {
+impl TryFrom<&Options> for SourceNetClientOptions {
     type Error = SpringError;
 
     fn try_from(options: &Options) -> Result<Self> {
@@ -36,29 +31,6 @@ impl TryFrom<&Options> for NetClientOptions {
             })?,
             remote_port: options.get("REMOTE_PORT", |remote_port_str| {
                 remote_port_str.parse().context("invalid remote port")
-            })?,
-        })
-    }
-}
-
-#[derive(Clone, Eq, PartialEq, Debug)]
-pub struct NetServerOptions {
-    pub protocol: NetProtocol,
-    pub port: u16,
-}
-
-impl TryFrom<&Options> for NetServerOptions {
-    type Error = SpringError;
-
-    fn try_from(options: &Options) -> Result<Self> {
-        Ok(Self {
-            protocol: options.get("PROTOCOL", |protocol_str| {
-                (protocol_str == "TCP")
-                    .then(|| NetProtocol::Tcp)
-                    .context("unsupported protocol")
-            })?,
-            port: options.get("PORT", |remote_port_str| {
-                remote_port_str.parse().context("invalid port")
             })?,
         })
     }

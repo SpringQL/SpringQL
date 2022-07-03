@@ -2,13 +2,17 @@
 
 mod can_options;
 mod in_memory_queue_options;
-mod net_options;
+mod net_protocol;
+mod net_server_options;
 mod options_builder;
+mod source_net_client_options;
 
 pub use can_options::CANOptions;
 pub use in_memory_queue_options::InMemoryQueueOptions;
-pub use net_options::{NetClientOptions, NetProtocol, NetServerOptions};
+pub use net_protocol::NetProtocol;
+pub use net_server_options::NetServerOptions;
 pub use options_builder::OptionsBuilder;
+pub use source_net_client_options::SourceNetClientOptions;
 
 use std::collections::HashMap;
 

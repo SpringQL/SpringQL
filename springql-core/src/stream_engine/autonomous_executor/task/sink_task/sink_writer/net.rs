@@ -11,7 +11,7 @@ use anyhow::Context;
 use crate::{
     api::error::{foreign_info::ForeignInfo, Result, SpringError},
     api::SpringSinkWriterConfig,
-    pipeline::{NetClientOptions, Options},
+    pipeline::{Options, SourceNetClientOptions},
     stream_engine::autonomous_executor::{
         row::JsonObject, task::sink_task::sink_writer::SinkWriter, SchemalessRow,
     },
@@ -25,7 +25,7 @@ pub struct NetSinkWriter {
 
 impl SinkWriter for NetSinkWriter {
     fn start(options: &Options, config: &SpringSinkWriterConfig) -> Result<Self> {
-        let options = NetClientOptions::try_from(options)?;
+        let options = SourceNetClientOptions::try_from(options)?;
         let sock_addr = SocketAddr::new(options.remote_host, options.remote_port);
 
         let tcp_stream = TcpStream::connect_timeout(

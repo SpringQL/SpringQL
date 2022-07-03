@@ -11,7 +11,7 @@ use anyhow::Context;
 use crate::{
     api::error::{foreign_info::ForeignInfo, Result, SpringError},
     api::SpringSourceReaderConfig,
-    pipeline::{NetClientOptions, Options},
+    pipeline::{Options, SourceNetClientOptions},
     stream_engine::autonomous_executor::{
         row::SourceRow, task::source_task::source_reader::SourceReader,
     },
@@ -29,7 +29,7 @@ impl SourceReader for NetClientSourceReader {
     /// - `SpringError::ForeignIo`
     /// - `SpringError::InvalidOption`
     fn start(options: &Options, config: &SpringSourceReaderConfig) -> Result<Self> {
-        let options = NetClientOptions::try_from(options)?;
+        let options = SourceNetClientOptions::try_from(options)?;
         let sock_addr = SocketAddr::new(options.remote_host, options.remote_port);
 
         let tcp_stream = TcpStream::connect_timeout(
