@@ -66,6 +66,9 @@ cargo run --example doc_app1
 echo '-- Start doc_app2'
 cargo run --example doc_app2
 
+echo '-- Start http_client_sink_writer'
+cargo run --example http_client_sink_writer 127.0.0.1 18080
+
 echo '-- Start in_vehicle_pipeline'
   cargo run --example in_vehicle_pipeline
 echo '-- End in_vehicle_pipeline'
