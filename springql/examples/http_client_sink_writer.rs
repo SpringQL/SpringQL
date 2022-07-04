@@ -3,12 +3,10 @@
 //! Usage:
 //!
 //! ```bash
-//! # Launch your HTTP server first.
-//!
 //! cargo run --example http_client_sink_writer -- REMOTE_HOST REMOTE_PORT
 //! ```
 
-use std::{env, thread, time::Duration};
+use std::{env, process::Command, thread, time::Duration};
 
 use springql::SpringSourceRowBuilder;
 use springql_core::api::{SpringConfig, SpringPipeline};
@@ -25,10 +23,20 @@ fn parse_remote_args() -> (String, u16) {
     (host, port)
 }
 
+fn launch_http_server(port: u16) {
+    Command::new("bash")
+        .arg("-c")
+        .arg(format!("nc -l {}", port))
+        .spawn()
+        .expect("failed to launch http server");
+}
+
 fn main() {
     setup_test_logger();
 
     let (sink_host, sink_port) = parse_remote_args();
+
+    launch_http_server(sink_port);
 
     let pipeline = SpringPipeline::new(&SpringConfig::default()).unwrap();
 
