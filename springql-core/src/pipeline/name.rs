@@ -144,6 +144,10 @@ impl SinkWriterName {
         Self::new("NET_CLIENT_SINK".to_string())
     }
 
+    pub fn http11_sink() -> Self {
+        Self::new("HTTP1_SINK".to_string())
+    }
+
     pub fn in_memory_queue_sink() -> Self {
         Self::new("IN_MEMORY_QUEUE_SERVER_SINK".to_string())
     }

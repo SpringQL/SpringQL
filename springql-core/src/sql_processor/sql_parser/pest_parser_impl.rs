@@ -1243,6 +1243,7 @@ impl PestParserImpl {
         )?;
         match typ.as_ref() {
             "NET_CLIENT" => Ok(SinkWriterType::Net),
+            "HTTP1_CLIENT" => Ok(SinkWriterType::Http1Client),
             "IN_MEMORY_QUEUE" => Ok(SinkWriterType::InMemoryQueue),
             _ => Err(SpringError::Sql(anyhow!(
                 "Invalid source reader name: {}",
@@ -1297,12 +1298,8 @@ impl PestParserImpl {
     }
 
     fn parse_option_name(mut params: FnParseParams) -> Result<String> {
-        parse_child(
-            &mut params,
-            Rule::identifier,
-            Self::parse_identifier,
-            identity,
-        )
+        let s = self_as_str(&mut params);
+        Ok(s.to_string())
     }
 
     fn parse_option_value(mut params: FnParseParams) -> Result<String> {

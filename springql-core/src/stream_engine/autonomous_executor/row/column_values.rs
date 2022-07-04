@@ -47,18 +47,35 @@ impl ColumnValues {
     /// # Failure
     ///
     /// - `SpringError::Sql` when:
-    ///   - `k` does not included.
+    ///   - `column_name` is not included.
+    pub(crate) fn get_by_column_name(&self, column_name: &ColumnName) -> Result<&SqlValue> {
+        let idx = self.find_idx(column_name)?;
+        let (_, v) = self.0.get(idx).expect("valid index");
+        Ok(v)
+    }
+
+    /// # Failure
+    ///
+    /// - `SpringError::Sql` when:
+    ///   - `k` is not included.
     pub fn remove(&mut self, k: &ColumnName) -> Result<SqlValue> {
-        let idx = {
-            self.0
-                .iter()
-                .enumerate()
-                .find_map(|(i, (col, _))| (col == k).then(|| i))
-                .with_context(|| format!(r#"column "{}" not found from this ColumnValues"#, k))
-                .map_err(SpringError::Sql)
-        }?;
+        let idx = self.find_idx(k)?;
         let (_, v) = self.0.swap_remove(idx);
         Ok(v)
+    }
+
+    fn find_idx(&self, column_name: &ColumnName) -> Result<usize> {
+        self.0
+            .iter()
+            .enumerate()
+            .find_map(|(i, (col, _))| (col == column_name).then(|| i))
+            .with_context(|| {
+                format!(
+                    r#"column "{}" not found from this ColumnValues"#,
+                    column_name
+                )
+            })
+            .map_err(SpringError::Sql)
     }
 }
 

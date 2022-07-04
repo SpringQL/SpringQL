@@ -1,13 +1,19 @@
 // This file is part of https://github.com/SpringQL/SpringQL which is licensed under MIT OR Apache-2.0. See file LICENSE-MIT or LICENSE-APACHE for full license details.
 
 mod can_options;
+mod http1_client_options;
 mod in_memory_queue_options;
-mod net_options;
+mod net_client_options;
+mod net_protocol;
+mod net_server_options;
 mod options_builder;
 
 pub use can_options::CANOptions;
+pub use http1_client_options::{Http1ClientOptions, HttpMethod};
 pub use in_memory_queue_options::InMemoryQueueOptions;
-pub use net_options::{NetClientOptions, NetProtocol, NetServerOptions};
+pub use net_client_options::NetClientOptions;
+pub use net_protocol::NetProtocol;
+pub use net_server_options::NetServerOptions;
 pub use options_builder::OptionsBuilder;
 
 use std::collections::HashMap;
@@ -38,6 +44,13 @@ impl Options {
                 value: "(not found)".to_string(),
                 source: e,
             })
+    }
+
+    pub fn as_key_values(&self) -> Vec<(&str, &str)> {
+        self.0
+            .iter()
+            .map(|(k, v)| (k.as_str(), v.as_str()))
+            .collect()
     }
 }
 

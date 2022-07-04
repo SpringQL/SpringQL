@@ -590,7 +590,12 @@ column_name = {
 }
 
 option_name = {
-    identifier
+    rich_utf8_letter ~ (
+        rich_utf8_letter
+        | DECIMAL_NUMBER
+        | "-"  // e.g. HEADER_Content-Type
+    )*
+    
 }
 
 correlation = {
