@@ -8,7 +8,7 @@
 //! cargo run --example http_client_sink_writer -- REMOTE_HOST REMOTE_PORT
 //! ```
 
-use std::env;
+use std::{env, thread, time::Duration};
 
 use springql::SpringSourceRowBuilder;
 use springql_core::api::{SpringConfig, SpringPipeline};
@@ -63,13 +63,14 @@ fn main() {
         .command(format!(
             "
             CREATE SINK WRITER http_sink_1 FOR sink_1
-              TYPE HTTP1.1_CLIENT OPTIONS (
+              TYPE HTTP1_CLIENT OPTIONS (
                 REMOTE_HOST '{}',
                 REMOTE_PORT '{}',
                 METHOD 'POST',
-                HEADER;Content-Type 'application/octet-stream',
-                HEADER;Connection 'keep-alive',
-                BLOB_BODY 'http_body'
+                PATH '/test',
+                HEADER_Content-Type 'application/octet-stream',
+                HEADER_Connection 'keep-alive',
+                BLOB_BODY_COLUMN 'http_body'
             );
             ",
             remote_host = sink_host,
@@ -98,4 +99,6 @@ fn main() {
     for row in source_rows {
         pipeline.push("q", row).unwrap()
     }
+
+    thread::sleep(Duration::from_secs(1));
 }

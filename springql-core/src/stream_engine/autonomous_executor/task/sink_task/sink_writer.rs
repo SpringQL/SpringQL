@@ -2,6 +2,7 @@
 
 mod in_memory_queue;
 mod net;
+mod http_client;
 mod sink_writer_factory;
 mod sink_writer_repository;
 

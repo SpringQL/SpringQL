@@ -1,6 +1,7 @@
 // This file is part of https://github.com/SpringQL/SpringQL which is licensed under MIT OR Apache-2.0. See file LICENSE-MIT or LICENSE-APACHE for full license details.
 
 mod can_options;
+mod http11_client_options;
 mod in_memory_queue_options;
 mod net_client_options;
 mod net_protocol;
@@ -8,6 +9,7 @@ mod net_server_options;
 mod options_builder;
 
 pub use can_options::CANOptions;
+pub use http11_client_options::{Http1ClientOptions, HttpMethod};
 pub use in_memory_queue_options::InMemoryQueueOptions;
 pub use net_client_options::NetClientOptions;
 pub use net_protocol::NetProtocol;
@@ -43,10 +45,25 @@ impl Options {
                 source: e,
             })
     }
+
+    pub fn as_key_values(&self) -> Vec<(&str, &str)> {
+        self.0
+            .iter()
+            .map(|(k, v)| (k.as_str(), v.as_str()))
+            .collect()
+    }
 }
 
 impl From<OptionsBuilder> for Options {
     fn from(options_builder: OptionsBuilder) -> Self {
         options_builder.build()
+    }
+}
+
+impl Iterator for Options {
+    type Item = (String, String);
+
+    fn next(&mut self) -> Option<Self::Item> {
+        self.0.iter().map(|(k, v)| (k.clone(), v.clone())).next()
     }
 }
