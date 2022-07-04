@@ -6,6 +6,7 @@ mod net_protocol;
 mod net_server_options;
 mod options_builder;
 mod source_net_client_options;
+mod sink_net_client_options;
 
 pub use can_options::CANOptions;
 pub use in_memory_queue_options::InMemoryQueueOptions;
