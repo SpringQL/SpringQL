@@ -11,21 +11,26 @@ use anyhow::Context;
 use crate::{
     api::error::{foreign_info::ForeignInfo, Result, SpringError},
     api::SpringSinkWriterConfig,
-    pipeline::{Options, SourceNetClientOptions},
-    stream_engine::autonomous_executor::{
-        row::JsonObject, task::sink_task::sink_writer::SinkWriter, SchemalessRow,
+    pipeline::{ColumnName, Options, SinkFormat, SinkNetClientOptions},
+    stream_engine::{
+        autonomous_executor::{
+            row::JsonObject, task::sink_task::sink_writer::SinkWriter, SchemalessRow,
+        },
+        SqlValue,
     },
 };
 
 #[derive(Debug)]
 pub struct NetSinkWriter {
+    format: SinkFormat,
+
     foreign_addr: SocketAddr,
     tcp_stream_writer: BufWriter<TcpStream>, // TODO UDP
 }
 
 impl SinkWriter for NetSinkWriter {
     fn start(options: &Options, config: &SpringSinkWriterConfig) -> Result<Self> {
-        let options = SourceNetClientOptions::try_from(options)?;
+        let options = SinkNetClientOptions::try_from(options)?;
         let sock_addr = SocketAddr::new(options.remote_host, options.remote_port);
 
         let tcp_stream = TcpStream::connect_timeout(
@@ -52,27 +57,57 @@ impl SinkWriter for NetSinkWriter {
         log::info!("[NetSinkWriter] Ready to write into {}", sock_addr);
 
         Ok(Self {
+            format: options.format,
             tcp_stream_writer,
             foreign_addr: sock_addr,
         })
     }
 
     fn send_row(&mut self, row: SchemalessRow) -> Result<()> {
+        let format = &self.format.clone();
+        match format {
+            SinkFormat::Json => self.send_row_json(row),
+            SinkFormat::Blob { blob_column } => self.send_row_blob(row, blob_column),
+        }
+    }
+}
+
+impl NetSinkWriter {
+    fn send_row_json(&mut self, row: SchemalessRow) -> Result<()> {
         let mut json_s = JsonObject::from(row).to_string();
         json_s.push('\n');
 
         log::debug!("[NetSinkWriter] Writing message to remote: {}", json_s);
+        self.write_row(json_s.as_bytes())
+    }
 
+    fn send_row_blob(&mut self, row: SchemalessRow, blob_column: &ColumnName) -> Result<()> {
+        let sql_value = row.get_by_column_name(blob_column)?;
+        if let SqlValue::NotNull(nn_sql_value) = sql_value {
+            let blob: Vec<u8> = nn_sql_value.unpack()?;
+            self.write_row(&blob)
+        } else {
+            log::error!("Sink column {} is unexpectedly NULL", blob_column);
+            Err(SpringError::Null { i_col: 0 })
+        }
+    }
+
+    fn write_row(&mut self, content: &[u8]) -> Result<()> {
         self.tcp_stream_writer
-            .write_all(json_s.as_bytes())
-            .with_context(|| format!("failed to write JSON row to remote sink: {}", json_s))
+            .write_all(content)
+            .with_context(|| {
+                format!(
+                    "failed to write row's content to remote sink: {}",
+                    String::from_utf8_lossy(content)
+                )
+            })
             .map_err(|e| SpringError::ForeignIo {
                 source: e,
                 foreign_info: ForeignInfo::GenericTcp(self.foreign_addr),
             })?;
         self.tcp_stream_writer
             .flush()
-            .with_context(|| format!("failed to flush JSON row to remote sink: {}", json_s))
+            .with_context(|| "failed to flush row to remote sink")
             .map_err(|e| SpringError::ForeignIo {
                 source: e,
                 foreign_info: ForeignInfo::GenericTcp(self.foreign_addr),

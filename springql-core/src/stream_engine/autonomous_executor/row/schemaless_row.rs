@@ -33,6 +33,14 @@ impl SchemalessRow {
     /// # Failure
     ///
     /// - `SpringError::Sql` when:
+    ///   - Column name is not found
+    pub fn get_by_column_name(&self, column_name: &ColumnName) -> Result<&SqlValue> {
+        self.colvals.get_by_column_name(column_name)
+    }
+
+    /// # Failure
+    ///
+    /// - `SpringError::Sql` when:
     ///   - `k` is already inserted.
     pub fn insert(&mut self, k: ColumnName, v: SqlValue) -> Result<()> {
         self.colvals.insert(k, v)

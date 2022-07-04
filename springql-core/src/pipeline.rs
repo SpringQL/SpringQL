@@ -23,7 +23,7 @@ pub use name::{
 };
 pub use option::{
     CANOptions, InMemoryQueueOptions, NetProtocol, NetServerOptions, Options, OptionsBuilder,
-    SourceNetClientOptions,
+    SinkFormat, SinkNetClientOptions, SourceNetClientOptions,
 };
 pub use pipeline_graph::{Edge, PipelineGraph};
 pub use pipeline_version::PipelineVersion;
