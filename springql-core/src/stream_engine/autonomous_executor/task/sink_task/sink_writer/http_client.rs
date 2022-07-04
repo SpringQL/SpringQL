@@ -75,8 +75,6 @@ impl SinkWriter for HttpClientSinkWriter {
 impl HttpClientSinkWriter {
     fn send_request(&mut self, body: Vec<u8>) -> Result<()> {
         let req_builder = if self.http_method == Method::POST {
-            log::error!("path: {}", self.url);
-
             reqwest::blocking::Client::builder()
                 .connect_timeout(self.connect_timeout)
                 .timeout(self.timeout)
@@ -99,12 +97,6 @@ impl HttpClientSinkWriter {
                 foreign_info: ForeignInfo::Http(self.foreign_addr),
                 source: e.into(),
             })?;
-
-        log::error!(
-            "[HttpClientSinkWriter] HTTP request sent to {}: {:?}",
-            self.foreign_addr,
-            _resp
-        );
 
         Ok(())
     }
