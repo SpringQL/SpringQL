@@ -22,8 +22,8 @@ pub use name::{
     StreamName, ValueAlias,
 };
 pub use option::{
-    CANOptions, InMemoryQueueOptions, NetProtocol, NetServerOptions, Options, OptionsBuilder,
-    SinkFormat, SinkNetClientOptions, SourceNetClientOptions,
+    CANOptions, InMemoryQueueOptions, NetClientOptions, NetProtocol, NetServerOptions, Options,
+    OptionsBuilder,
 };
 pub use pipeline_graph::{Edge, PipelineGraph};
 pub use pipeline_version::PipelineVersion;
