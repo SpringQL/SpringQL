@@ -59,11 +59,3 @@ impl From<OptionsBuilder> for Options {
         options_builder.build()
     }
 }
-
-impl Iterator for Options {
-    type Item = (String, String);
-
-    fn next(&mut self) -> Option<Self::Item> {
-        self.0.iter().map(|(k, v)| (k.clone(), v.clone())).next()
-    }
-}
