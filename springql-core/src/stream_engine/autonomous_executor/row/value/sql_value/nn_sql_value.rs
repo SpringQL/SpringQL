@@ -89,7 +89,7 @@ impl MemSize for NnSqlValue {
 
 /// Although function is better to use,
 ///
-/// ```
+/// ```ignore
 /// fn for_all_loose_types<R, FnNull, FnI64, FnString>(
 ///     &self,
 ///     f_i64: FnI64,
