@@ -23,7 +23,7 @@ impl StreamShape {
     pub fn new(cols: Vec<ColumnDefinition>) -> Result<Self> {
         let event_time = Self::extract_event_time(&cols)?;
 
-        let _ = if let Some(etime_col) = &event_time {
+        if let Some(etime_col) = &event_time {
             Self::validate_event_time_column(etime_col, &cols)
         } else {
             Ok(())
