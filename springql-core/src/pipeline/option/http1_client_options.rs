@@ -3,6 +3,7 @@
 use std::{collections::HashMap, net::IpAddr, str::FromStr};
 
 use anyhow::Context;
+use reqwest::Url;
 
 use crate::{
     api::error::{Result, SpringError},
@@ -33,7 +34,7 @@ pub struct Http1ClientOptions {
     pub remote_host: IpAddr,
     pub remote_port: u16,
     pub method: HttpMethod,
-    pub path: String,
+    pub url: Url,
     pub headers: HashMap<String, String>,
     pub blob_body_column: ColumnName,
 }
@@ -54,7 +55,9 @@ impl TryFrom<&Options> for Http1ClientOptions {
             method: options.get("METHOD", |method_str| {
                 method_str.parse().context("invalid HTTP method")
             })?,
-            path: options.get("PATH", |path_str| Ok(path_str.clone()))?,
+            url: options.get("URL", |path_str| {
+                Url::parse(path_str.as_str()).context("failed to parse URL")
+            })?,
             headers,
             blob_body_column: options.get("BLOB_BODY_COLUMN", |column_str| {
                 Ok(ColumnName::new(column_str.to_string()))

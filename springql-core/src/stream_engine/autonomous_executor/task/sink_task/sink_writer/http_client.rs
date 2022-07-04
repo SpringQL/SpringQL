@@ -2,7 +2,7 @@
 
 use std::{net::SocketAddr, time::Duration};
 
-use reqwest::{header::HeaderMap, Method};
+use reqwest::{header::HeaderMap, Method, Url};
 
 use crate::{
     api::error::{foreign_info::ForeignInfo, Result, SpringError},
@@ -22,7 +22,7 @@ pub struct HttpClientSinkWriter {
     connect_timeout: Duration,
 
     http_method: Method,
-    path: String,
+    url: Url,
     http_headers: HeaderMap,
     http_body_blob_column: ColumnName,
 }
@@ -43,19 +43,19 @@ impl SinkWriter for HttpClientSinkWriter {
         let connect_timeout = Duration::from_millis(config.http_connect_timeout_msec as u64);
 
         let http_method = Method::from(options.method);
-        let path = options.path.clone();
+        let url = options.url.clone();
         let http_headers =
             HeaderMap::try_from(&options.headers).expect("don't know why this fails");
         let http_body_blob_column = options.blob_body_column;
 
-        log::info!("[HttpClientSinkWriter] Ready to write into {}", sock_addr);
+        log::info!("[HttpClientSinkWriter] Ready to connect {}", sock_addr);
 
         Ok(Self {
             foreign_addr: sock_addr,
             timeout,
             connect_timeout,
             http_method,
-            path,
+            url,
             http_headers,
             http_body_blob_column,
         })
@@ -75,12 +75,14 @@ impl SinkWriter for HttpClientSinkWriter {
 impl HttpClientSinkWriter {
     fn send_request(&mut self, body: Vec<u8>) -> Result<()> {
         let req_builder = if self.http_method == Method::POST {
+            log::error!("path: {}", self.url);
+
             reqwest::blocking::Client::builder()
                 .connect_timeout(self.connect_timeout)
                 .timeout(self.timeout)
                 .build()
                 .expect("msg: failed to create reqwest client")
-                .post(self.path.to_string())
+                .post(self.url.to_string())
         } else {
             unimplemented!("HTTP method {} is not supported yet", self.http_method);
         };
@@ -97,6 +99,12 @@ impl HttpClientSinkWriter {
                 foreign_info: ForeignInfo::Http(self.foreign_addr),
                 source: e.into(),
             })?;
+
+        log::error!(
+            "[HttpClientSinkWriter] HTTP request sent to {}: {:?}",
+            self.foreign_addr,
+            _resp
+        );
 
         Ok(())
     }

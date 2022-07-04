@@ -12,6 +12,7 @@ use std::{env, thread, time::Duration};
 
 use springql::SpringSourceRowBuilder;
 use springql_core::api::{SpringConfig, SpringPipeline};
+use springql_test_logger::setup_test_logger;
 
 fn parse_remote_args() -> (String, u16) {
     let args: Vec<String> = env::args().collect();
@@ -25,6 +26,8 @@ fn parse_remote_args() -> (String, u16) {
 }
 
 fn main() {
+    setup_test_logger();
+
     let (sink_host, sink_port) = parse_remote_args();
 
     let pipeline = SpringPipeline::new(&SpringConfig::default()).unwrap();
@@ -64,10 +67,10 @@ fn main() {
             "
             CREATE SINK WRITER http_sink_1 FOR sink_1
               TYPE HTTP1_CLIENT OPTIONS (
-                REMOTE_HOST '{}',
-                REMOTE_PORT '{}',
+                REMOTE_HOST '{remote_host}',
+                REMOTE_PORT '{remote_port}',
                 METHOD 'POST',
-                PATH '/test',
+                URL 'http://{remote_host}:{remote_port}/test',
                 HEADER_Content-Type 'application/octet-stream',
                 HEADER_Connection 'keep-alive',
                 BLOB_BODY_COLUMN 'http_body'
@@ -89,7 +92,7 @@ fn main() {
         )
         .unwrap();
 
-    let bytes = vec![b'h', b'e', b'l', b'l', b'o', 0, 1, 2];
+    let bytes = vec![b'h', b'e', b'l', b'l', b'o', 0xF0, 0x9F, 0x98, 0x84];
 
     let source_rows = vec![SpringSourceRowBuilder::default()
         .add_column("bytes", bytes)
