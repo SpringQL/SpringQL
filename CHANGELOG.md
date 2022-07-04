@@ -10,6 +10,8 @@ All other sections are for end-users.
 <!-- markdownlint-disable MD024 -->
 ## [Unreleased]
 
+## [v0.16.0] - 2022-07-05
+
 ### Added
 
 - `HTTP1_CLIENT` sink writer ([#224](https://github.com/SpringQL/SpringQL/pull/224))
