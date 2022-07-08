@@ -33,7 +33,7 @@ impl WorkerHandle {
         let (stop_button, stop_receiver) = mpsc::sync_channel(0);
         coordinators.worker_stop_coordinator.join();
 
-        let _ = T::run(
+        T::run(
             main_job_lock,
             event_queues,
             stop_receiver,

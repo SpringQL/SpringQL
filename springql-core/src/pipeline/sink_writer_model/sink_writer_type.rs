@@ -5,6 +5,7 @@ use crate::pipeline::name::SinkWriterName;
 #[derive(Clone, Eq, PartialEq, Debug)]
 pub enum SinkWriterType {
     Net,
+    Http1Client,
     InMemoryQueue,
 }
 
@@ -12,6 +13,7 @@ impl From<&SinkWriterType> for SinkWriterName {
     fn from(sink_writer_type: &SinkWriterType) -> Self {
         match sink_writer_type {
             SinkWriterType::Net => SinkWriterName::net_sink(),
+            SinkWriterType::Http1Client => SinkWriterName::http11_sink(),
             SinkWriterType::InMemoryQueue => SinkWriterName::in_memory_queue_sink(),
         }
     }

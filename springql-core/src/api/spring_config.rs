@@ -101,4 +101,7 @@ pub struct SpringSourceReaderConfig {
 pub struct SpringSinkWriterConfig {
     pub net_connect_timeout_msec: u32,
     pub net_write_timeout_msec: u32,
+
+    pub http_timeout_msec: u32,
+    pub http_connect_timeout_msec: u32,
 }

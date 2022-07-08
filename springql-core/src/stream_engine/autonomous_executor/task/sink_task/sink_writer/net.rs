@@ -62,17 +62,27 @@ impl SinkWriter for NetSinkWriter {
         json_s.push('\n');
 
         log::debug!("[NetSinkWriter] Writing message to remote: {}", json_s);
+        self.write_row(json_s.as_bytes())
+    }
+}
 
+impl NetSinkWriter {
+    fn write_row(&mut self, content: &[u8]) -> Result<()> {
         self.tcp_stream_writer
-            .write_all(json_s.as_bytes())
-            .with_context(|| format!("failed to write JSON row to remote sink: {}", json_s))
+            .write_all(content)
+            .with_context(|| {
+                format!(
+                    "failed to write row's content to remote sink: {}",
+                    String::from_utf8_lossy(content)
+                )
+            })
             .map_err(|e| SpringError::ForeignIo {
                 source: e,
                 foreign_info: ForeignInfo::GenericTcp(self.foreign_addr),
             })?;
         self.tcp_stream_writer
             .flush()
-            .with_context(|| format!("failed to flush JSON row to remote sink: {}", json_s))
+            .with_context(|| "failed to flush row to remote sink")
             .map_err(|e| SpringError::ForeignIo {
                 source: e,
                 foreign_info: ForeignInfo::GenericTcp(self.foreign_addr),

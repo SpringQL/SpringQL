@@ -2,6 +2,7 @@
 
 mod in_memory_queue;
 mod net;
+mod http_client;
 mod sink_writer_factory;
 mod sink_writer_repository;
 
@@ -32,5 +33,7 @@ pub trait SinkWriter: Debug + Sync + Send + 'static {
     /// - `SpringError::ForeignIo` when:
     ///   - Remote sink has failed to parse request.
     ///   - Unknown foreign error.
+    /// - `SpringError::Null` when:
+    ///   - `row` contains unexpected NULL column.
     fn send_row(&mut self, row: SchemalessRow) -> Result<()>;
 }
