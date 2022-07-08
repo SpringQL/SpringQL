@@ -42,6 +42,8 @@ impl Default for SpringConfig {
             sink_writer: SpringSinkWriterConfig {
                 net_connect_timeout_msec: 1000,
                 net_write_timeout_msec: 100,
+                http_connect_timeout_msec: 1_000,
+                http_timeout_msec: 100
             },
         }
     }

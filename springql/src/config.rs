@@ -61,6 +61,9 @@ can_read_timeout_msec = 100
 [sink_writer]
 net_connect_timeout_msec = 1_000
 net_write_timeout_msec = 100
+
+http_connect_timeout_msec = 1_000
+http_timeout_msec = 100
 "#;
 
 #[derive(Clone, Eq, PartialEq, Debug, Deserialize)]
