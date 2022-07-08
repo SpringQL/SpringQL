@@ -45,8 +45,6 @@ jobs:
         run: |
           cargo set-version -p springql ${RELEASE_VERSION}
           cargo set-version -p springql-core ${RELEASE_VERSION}
-          cargo set-version -p springql-foreign-service ${RELEASE_VERSION}
-          cargo set-version -p springql-test-logger ${RELEASE_VERSION}
           cd springql
           cp Cargo.toml Cargo.toml.org
           toml set Cargo.toml.org dependencies.springql-core.version "${RELEASE_VERSION}" > Cargo.toml
