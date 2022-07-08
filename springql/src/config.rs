@@ -190,7 +190,15 @@ impl SpringConfigDeserialize {
     }
 }
 
-/// deserialize configration from toml
-pub fn config_from_toml(toml: &str) -> Result<SpringConfig> {
-    SpringConfigDeserialize::from_toml(toml)
+
+/// TOML Deserialize function for SpringConfig
+pub trait SpringConfigExt {
+    /// Create StringConfig from toml
+    fn from_toml( toml: &str ) -> Result<SpringConfig> ;
+}
+
+impl SpringConfigExt for SpringConfig {
+    fn from_toml( toml: &str ) -> Result<SpringConfig> {
+        SpringConfigDeserialize::from_toml(toml)        
+    }
 }

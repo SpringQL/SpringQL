@@ -7,7 +7,7 @@
 pub use springql_core::api::*;
 
 mod config;
-pub use crate::config::config_from_toml;
+pub use crate::config::SpringConfigExt;
 
 #[cfg(test)]
 mod tests {}
