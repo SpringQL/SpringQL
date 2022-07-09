@@ -24,7 +24,7 @@ use std::{
     time::{Duration, Instant},
 };
 
-use springql::{SpringConfig, SpringPipeline};
+use springql::{SpringConfig, SpringPipeline, SpringConfigExt};
 
 fn send_data_to_pipeline() {
     fn send_row(json: &str) {
@@ -48,7 +48,7 @@ fn main() {
     const SOURCE_PORT: u16 = 54300;
 
     // Using Arc to share the reference between threads feeding sink rows.
-    let pipeline = Arc::new(SpringPipeline::new(&SpringConfig::default()).unwrap());
+    let pipeline = Arc::new(SpringPipeline::new(&SpringConfig::from_toml("").unwrap()).unwrap());
 
     pipeline
         .command(

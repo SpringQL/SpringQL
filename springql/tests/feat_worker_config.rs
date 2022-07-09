@@ -85,7 +85,7 @@ fn t(worker_config: SpringWorkerConfig) {
 
     let config = SpringConfig {
         worker: worker_config,
-        ..Default::default()
+        ..SpringConfig::from_toml("").unwrap()
     };
 
     let _pipeline = apply_ddls(&ddls, config);

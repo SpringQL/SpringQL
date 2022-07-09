@@ -6,7 +6,7 @@ use std::str::FromStr;
 
 use springql::{
     SpringConfig, SpringError, SpringPipeline, SpringSourceRow, SpringSourceRowBuilder,
-    SpringTimestamp,
+    SpringTimestamp, SpringConfigExt,
 };
 
 use crate::test_support::*;
@@ -54,7 +54,7 @@ fn pipeline(source_queue_name: &str, sink_queue_name: &str) -> SpringPipeline {
         ),
     ];
 
-    apply_ddls(&ddls, SpringConfig::default())
+    apply_ddls(&ddls, SpringConfig::from_toml("").unwrap())
 }
 
 #[test]

@@ -11,43 +11,6 @@ pub struct SpringConfig {
     pub sink_writer: SpringSinkWriterConfig,
 }
 
-impl Default for SpringConfig {
-    fn default() -> Self {
-        Self {
-            worker: SpringWorkerConfig {
-                n_generic_worker_threads: 1,
-                n_source_worker_threads: 1,
-            },
-            memory: SpringMemoryConfig {
-                upper_limit_bytes: 10_000_000,
-                moderate_to_severe_percent: 60,
-                severe_to_critical_percent: 95,
-                critical_to_severe_percent: 80,
-                severe_to_moderate_percent: 40,
-                memory_state_transition_interval_msec: 10,
-                performance_metrics_summary_report_interval_msec: 10,
-            },
-            web_console: SpringWebConsoleConfig {
-                enable_report_post: false,
-                report_interval_msec: 3000,
-                host: "127.0.0.1".to_string(),
-                port: 8050,
-                timeout_msec: 3000,
-            },
-            source_reader: SpringSourceReaderConfig {
-                net_connect_timeout_msec: 1000,
-                net_read_timeout_msec: 100,
-                can_read_timeout_msec: 100,
-            },
-            sink_writer: SpringSinkWriterConfig {
-                net_connect_timeout_msec: 1000,
-                net_write_timeout_msec: 100,
-                http_connect_timeout_msec: 1_000,
-                http_timeout_msec: 100
-            },
-        }
-    }
-}
 
 /// Config related to worker threads.
 #[allow(missing_docs)]

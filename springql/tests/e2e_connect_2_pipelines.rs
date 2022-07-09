@@ -3,7 +3,7 @@
 mod test_support;
 
 use serde_json::json;
-use springql::{SpringConfig, SpringPipeline};
+use springql::{SpringConfig, SpringPipeline, SpringConfigExt};
 use springql_foreign_service::{
     sink::ForeignSink,
     source::{ForeignSource, ForeignSourceInput},
@@ -65,7 +65,7 @@ fn pipeline1(test_source: &ForeignSource) -> SpringPipeline {
         ),
     ];
 
-    apply_ddls(&ddls, SpringConfig::default())
+    apply_ddls(&ddls, SpringConfig::from_toml("").unwrap())
 }
 
 fn pipeline2(test_sink: &ForeignSink) -> SpringPipeline {
@@ -112,7 +112,7 @@ fn pipeline2(test_sink: &ForeignSink) -> SpringPipeline {
         ),
     ];
 
-    apply_ddls(&ddls, SpringConfig::default())
+    apply_ddls(&ddls, SpringConfig::from_toml("").unwrap())
 }
 
 #[test]

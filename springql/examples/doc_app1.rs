@@ -12,7 +12,7 @@
 //! echo '{"ts": "2022-01-01 13:00:00.000000000", "temperature": 5.3}' |nc localhost 54300
 //! ```
 
-use springql::{SpringConfig, SpringPipeline};
+use springql::{SpringConfig, SpringPipeline, SpringConfigExt};
 use std::process::Command;
 
 fn send_data_to_pipeline() {
@@ -26,7 +26,7 @@ fn send_data_to_pipeline() {
 fn main() {
     const SOURCE_PORT: u16 = 54300;
 
-    let pipeline = SpringPipeline::new(&SpringConfig::default()).unwrap();
+    let pipeline = SpringPipeline::new(&SpringConfig::from_toml("").unwrap()).unwrap();
 
     pipeline
         .command(

@@ -4,6 +4,7 @@ mod test_support;
 
 use pretty_assertions::assert_eq;
 use serde_json::json;
+use springql::SpringConfigExt;
 use springql_core::api::*;
 use springql_foreign_service::{
     sink::ForeignSink,
@@ -56,7 +57,7 @@ fn run_and_drain(
     test_source_city_temperature: ForeignSource,
     test_sink: &ForeignSink,
 ) -> Vec<serde_json::Value> {
-    let _pipeline = apply_ddls(ddls, SpringConfig::default());
+    let _pipeline = apply_ddls(ddls, SpringConfig::from_toml("").unwrap());
 
     test_source_trade.start(test_source_trade_input);
     test_source_city_temperature.start(test_source_city_temperature_input);

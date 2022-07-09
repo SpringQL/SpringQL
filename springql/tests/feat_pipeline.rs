@@ -87,7 +87,7 @@ fn test_feat_split_from_source() {
         ),
     ];
 
-    let pipeline = apply_ddls(&ddls, SpringConfig::default());
+    let pipeline = apply_ddls(&ddls, SpringConfig::from_toml("").unwrap());
     test_source.start(ForeignSourceInput::new_fifo_batch(source_input));
 
     let row = pipeline.pop("q1").unwrap();
