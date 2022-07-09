@@ -39,6 +39,11 @@ All other sections are for end-users.
 - Fix `examples/in_vehicle_pipeline.rs` to run again ([#205](https://github.com/SpringQL/SpringQL/pull/205))
 - Fix examples fleaky ([#207](https://github.com/SpringQL/SpringQL/pull/207))
 
+### For developers
+
+- add `release.yml` for automate release process ([#215](https://github.com/SpringQL/SpringQL/pull/215))
+  - currently: any updates DISABLED, we need more test for use in release process.
+
 ## [v0.13.0]
 
 ### Changed
