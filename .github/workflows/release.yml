@@ -47,7 +47,7 @@ jobs:
           source .github/workflows/scripts/keep-a-changelog.bash
           # edit CHANGELOG.md
           cp CHANGELOG.md CHANGELOG.md.org
-          cat CHANGELOG.md.org | bump_changelog "${CURRENT_VERSION}" "${RELEASE_VERSION}" > CHANGELOG.md
+          cat CHANGELOG.md.org | bump_changelog "v${CURRENT_VERSION}" "v${RELEASE_VERSION}" > CHANGELOG.md
           rm CHANGELOG.md.org
       
       - name: bump crate versions
