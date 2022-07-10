@@ -82,10 +82,10 @@ jobs:
       - name: git push
         run: |
           # TODO: de-comment for push
+          git push origin test_for_release
           git push origin "v${RELEASE_VERSION}"
           git push origin "springql@${RELEASE_VERSION}"
           git push origin "springql-core@${RELEASE_VERSION}"
-          git push origin test_for_release
 
       - name: cargo publish
         run: |
