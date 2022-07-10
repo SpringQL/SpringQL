@@ -78,18 +78,24 @@ jobs:
           git tag "v${RELEASE_VERSION}"
           git tag "springql@${RELASE_VERSION}"
           git tag "springql-core@${RELASE_VERSION}"
-
-      - name: cargo publish
-        run: |
-          # TODO: de-comment for login
-          # cargo login "${{ secrets.CRATES_IO_TOKEN }}"
-          cargo publish -p springql-core --dry-run # TODO: remove `--dry-run`
-          cargo publish -p springql --dry-run      # TODO: remove `--dry-run`
       
       - name: git push
         run: |
           # TODO: de-comment for push
-          # git push origin "v${RELEASE_VERSION}"
-          # git push origin "springql@${RELEASE_VERSION}"
-          # git push origin "springql-core@${RELEASE_VERSION}"
-          # git push origin main
+          git push origin "v${RELEASE_VERSION}"
+          git push origin "springql@${RELEASE_VERSION}"
+          git push origin "springql-core@${RELEASE_VERSION}"
+          git push origin test_for_release
+
+      - name: cargo publish
+        run: |
+          # load helper script
+          source .github/workflows/scripts/crates.io-script.bash
+
+          # TODO: de-comment for login
+          # cargo login "${{ secrets.CRATES_IO_TOKEN }}"
+
+          cargo publish -p springql-core --dry-run # TODO: remove `--dry-run`
+          wait_published "springql-core" "${RELEASE_VERSION}" 2> /dev/null
+          cargo publish -p springql --dry-run      # TODO: remove `--dry-run`
+          wait_published "springql" "${RELEASE_VERSION}" 2> /dev/null
