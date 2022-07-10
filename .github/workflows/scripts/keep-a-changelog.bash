@@ -8,7 +8,7 @@ function bump_changelog() {
     CURRENT_VERSION=$1
     NEW_VERSION=$2
 
-    while read -r line
+    while IFS='' read -r line
     do
         if [ "$line" == "[Unreleased]: https://github.com/SpringQL/SpringQL/compare/${CURRENT_VERSION}...HEAD" ]; then 
             # update line for [Unreleased]
