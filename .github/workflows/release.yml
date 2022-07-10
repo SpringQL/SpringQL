@@ -82,6 +82,7 @@ jobs:
       - name: git push
         run: |
           # TODO: de-comment for push
+          git remote set-url origin https://github-actions:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}
           git push origin test_for_release
           git push origin "v${RELEASE_VERSION}"
           git push origin "springql@${RELEASE_VERSION}"
