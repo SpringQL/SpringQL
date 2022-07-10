@@ -29,9 +29,8 @@ jobs:
         run: |
           echo '### Initial git status' >> $GITHUB_STEP_SUMMARY
           echo '```console' >> $GITHUB_STEP_SUMMARY
-          git status >> $GITHUB_STEP_SUMMARY
+          git status -v >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY
-
 
       - name: Cache install release tools
         id: cache_tools
@@ -88,15 +87,22 @@ jobs:
           git tag "v${RELEASE_VERSION}"
           git tag "springql@${RELASE_VERSION}"
           git tag "springql-core@${RELASE_VERSION}"
-      
+
+      - name: Show final git status 
+        run: |
+          echo '### Final git status' >> $GITHUB_STEP_SUMMARY
+          echo '```console' >> $GITHUB_STEP_SUMMARY
+          git status -v >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+
       - name: git push
         run: |
           # TODO: de-comment for push
           git remote set-url origin https://github-actions:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}
-          git push origin test_for_release
-          git push origin "v${RELEASE_VERSION}"
-          git push origin "springql@${RELEASE_VERSION}"
-          git push origin "springql-core@${RELEASE_VERSION}"
+          git push -v origin test_for_release
+          git push -v origin "v${RELEASE_VERSION}"
+          git push -v origin "springql@${RELEASE_VERSION}"
+          git push -v origin "springql-core@${RELEASE_VERSION}"
 
       - name: cargo publish
         run: |
