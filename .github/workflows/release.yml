@@ -25,6 +25,14 @@ jobs:
         with:
           ref: main
 
+      - name: Show initial git status 
+        run: |
+          echo '### Initial git status' >> $GITHUB_STEP_SUMMARY
+          echo '```console' >> $GITHUB_STEP_SUMMARY
+          git status >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+
+
       - name: Cache install release tools
         id: cache_tools
         uses: actions/cache@v2      
