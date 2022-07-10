@@ -22,6 +22,8 @@ jobs:
     steps:
       - name: checkout code
         uses: actions/checkout@v2
+        with:
+          ref: main
 
       - name: Cache install release tools
         id: cache_tools
