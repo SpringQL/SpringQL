@@ -17,6 +17,8 @@ jobs:
     env:
       CURRENT_VERSION: ${{ github.event.inputs.current_version }}
       RELEASE_VERSION: ${{ github.event.inputs.release_version }}
+    permissions:
+      contents: write
     runs-on: ubuntu-latest
 
     steps:
@@ -97,9 +99,8 @@ jobs:
 
       - name: git push
         run: |
-          # TODO: de-comment for push
           git remote set-url origin https://github-actions:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}
-          git push -v origin test_for_release
+          git push -v origin main
           git push -v origin "v${RELEASE_VERSION}"
           git push -v origin "springql@${RELEASE_VERSION}"
           git push -v origin "springql-core@${RELEASE_VERSION}"
@@ -112,7 +113,7 @@ jobs:
           # TODO: de-comment for login
           # cargo login "${{ secrets.CRATES_IO_TOKEN }}"
 
-          cargo publish -p springql-core --dry-run # TODO: remove `--dry-run`
+          cargo publish -p springql-core
           wait_published "springql-core" "${RELEASE_VERSION}" 2> /dev/null
-          cargo publish -p springql --dry-run      # TODO: remove `--dry-run`
+          cargo publish -p springql
           wait_published "springql" "${RELEASE_VERSION}" 2> /dev/null
