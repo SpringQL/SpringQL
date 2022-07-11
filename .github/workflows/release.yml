@@ -110,8 +110,7 @@ jobs:
           # load helper script
           source .github/workflows/scripts/crates.io-script.bash
 
-          # TODO: de-comment for login
-          # cargo login "${{ secrets.CRATES_IO_TOKEN }}"
+          cargo login "${{ secrets.CRATES_IO_TOKEN }}"
 
           cargo publish -p springql-core
           wait_published "springql-core" "${RELEASE_VERSION}" 2> /dev/null
