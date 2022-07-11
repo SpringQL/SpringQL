@@ -17,13 +17,33 @@ jobs:
     env:
       CURRENT_VERSION: ${{ github.event.inputs.current_version }}
       RELEASE_VERSION: ${{ github.event.inputs.release_version }}
+    permissions:
+      contents: write
     runs-on: ubuntu-latest
 
     steps:
       - name: checkout code
         uses: actions/checkout@v2
+        with:
+          ref: main
 
+      - name: Show initial git status 
+        run: |
+          echo '### Initial git status' >> $GITHUB_STEP_SUMMARY
+          echo '```console' >> $GITHUB_STEP_SUMMARY
+          git status -v >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+
+      - name: Cache install release tools
+        id: cache_tools
+        uses: actions/cache@v2      
+        with:
+          key: cache_tools_0
+          path: |
+            ~/.cargo/bin
+        
       - name: Install release tools
+        if: ${{ steps.cache_tools.outputs.cache-hit==false }}
         run: |
           cargo install cargo-edit toml-cli
 
@@ -38,7 +58,7 @@ jobs:
           source .github/workflows/scripts/keep-a-changelog.bash
           # edit CHANGELOG.md
           cp CHANGELOG.md CHANGELOG.md.org
-          cat CHANGELOG.md.org | bump_changelog "${CURRENT_VERSION}" "${RELEASE_VERSION}" > CHANGELOG.md
+          cat CHANGELOG.md.org | bump_changelog "v${CURRENT_VERSION}" "v${RELEASE_VERSION}" > CHANGELOG.md
           rm CHANGELOG.md.org
       
       - name: bump crate versions
@@ -57,23 +77,42 @@ jobs:
           git add .
           git commit -m "update for release v${RELEASE_VERSION}"
 
-      - name: cargo publish
+      - name: Show commit diff
         run: |
-          # TODO: de-comment for login
-          # cargo login "${{ secrets.CRATES_IO_TOKEN }}"
-          cargo publish -p springql-core --dry-run # TODO: remove `--dry-run`
-          cargo publish -p springql --dry-run      # TODO: remove `--dry-run`
+          echo '### Release Commit' >> $GITHUB_STEP_SUMMARY
+          echo '```diff' >> $GITHUB_STEP_SUMMARY
+          git diff HEAD^ >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
 
       - name: git tag
         run: |
           git tag "v${RELEASE_VERSION}"
           git tag "springql@${RELASE_VERSION}"
           git tag "springql-core@${RELASE_VERSION}"
-      
+
+      - name: Show final git status 
+        run: |
+          echo '### Final git status' >> $GITHUB_STEP_SUMMARY
+          echo '```console' >> $GITHUB_STEP_SUMMARY
+          git status -v >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+
       - name: git push
         run: |
-          # TODO: de-comment for push
-          # git push origin "v${RELEASE_VERSION}"
-          # git push origin "springql@${RELEASE_VERSION}"
-          # git push origin "springql-core@${RELEASE_VERSION}"
-          # git push origin main
+          git remote set-url origin https://github-actions:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}
+          git push -v origin main
+          git push -v origin "v${RELEASE_VERSION}"
+          git push -v origin "springql@${RELEASE_VERSION}"
+          git push -v origin "springql-core@${RELEASE_VERSION}"
+
+      - name: cargo publish
+        run: |
+          # load helper script
+          source .github/workflows/scripts/crates.io-script.bash
+
+          cargo login "${{ secrets.CRATES_IO_TOKEN }}"
+
+          cargo publish -p springql-core
+          wait_published "springql-core" "${RELEASE_VERSION}" 2> /dev/null
+          cargo publish -p springql
+          wait_published "springql" "${RELEASE_VERSION}" 2> /dev/null
