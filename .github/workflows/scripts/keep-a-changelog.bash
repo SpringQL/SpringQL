@@ -20,7 +20,7 @@ function bump_changelog() {
             # insert line after ## [Unleleased]
             echo # output blank line
             RELEASE_DATE=$(date '+%Y-%m-%d')
-            echo "## [${NEW_VERSION}] (${RELEASE_DATE})"
+            echo "## [${NEW_VERSION}] - ${RELEASE_DATE}"
         fi
 
         if [ "$line" == "[Released]: https://github.com/SpringQL/SpringQL/releases" ]; then
