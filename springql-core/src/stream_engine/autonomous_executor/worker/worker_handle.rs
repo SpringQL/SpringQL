@@ -81,14 +81,17 @@ impl WorkerSetupCoordinator {
     }
 
     pub fn sync_wait_all_workers(&self) {
-        log::info!("[{:?}] sync_wait_all_workers", thread::current().id());
-
         self.sync_i64(&self.n_generic_workers);
         self.sync_i64(&self.n_source_workers);
 
         self.sync_bool(&self.has_setup_memory_state_machine_worker);
         self.sync_bool(&self.has_setup_performance_monitor_worker);
         self.sync_bool(&self.has_setup_purger_worker);
+
+        log::debug!(
+            "[{}] sync_wait_all_workers() done",
+            thread::current().name().unwrap()
+        );
     }
 
     pub fn ready_generic_worker(&self) {
