@@ -1,6 +1,8 @@
 [workspace]
 
 members = [
+  "mem-leak",
+
   "springql",
   "springql-core",
   "foreign-service",

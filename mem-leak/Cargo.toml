@@ -1,0 +1,10 @@
+[package]
+name = "mem-leak"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+springql = {path = "../springql"}
+springql-test-logger = {path = "../test-logger"}
