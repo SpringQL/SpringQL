@@ -18,7 +18,7 @@ use crate::{
             },
             repositories::Repositories,
             row::StreamRow,
-            task::task_context::TaskContext,
+            task::{task_context::TaskContext, ProcessedRows, TaskRunResult},
             task_graph::{QueueId, TaskId},
         },
         time::WallClockStopwatch,
@@ -46,7 +46,7 @@ impl SinkTask {
         &self.id
     }
 
-    pub fn run(&self, context: &TaskContext) -> Result<MetricsUpdateByTaskExecution> {
+    pub fn run(&self, context: &TaskContext) -> Result<TaskRunResult> {
         let stopwatch = WallClockStopwatch::start();
 
         let repos = context.repos();
@@ -56,26 +56,27 @@ impl SinkTask {
             .task_graph()
             .input_queue(&context.task(), &self.upstream);
 
-        let in_queues_metrics = if let Some(in_queue_id) = opt_in_queue_id {
+        let (processed_rows, in_queues_metrics) = if let Some(in_queue_id) = opt_in_queue_id {
             if let Some((row, in_queue_metrics)) = self.use_row_from(in_queue_id, repos) {
                 self.emit(row, context)?;
-                vec![in_queue_metrics]
+                (ProcessedRows::new(1), vec![in_queue_metrics])
             } else {
-                vec![]
+                (ProcessedRows::default(), vec![])
             }
         } else {
-            vec![]
+            (ProcessedRows::default(), vec![])
         };
 
         let execution_time = stopwatch.stop();
 
         let out_queues_metrics = vec![];
         let task_metrics = TaskMetricsUpdateByTask::new(context.task(), execution_time);
-        Ok(MetricsUpdateByTaskExecution::new(
-            task_metrics,
-            in_queues_metrics,
-            out_queues_metrics,
-        ))
+        let metrics =
+            MetricsUpdateByTaskExecution::new(task_metrics, in_queues_metrics, out_queues_metrics);
+        Ok(TaskRunResult {
+            processed_rows,
+            metrics,
+        })
     }
 
     fn use_row_from(

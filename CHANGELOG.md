@@ -10,6 +10,16 @@ All other sections are for end-users.
 <!-- markdownlint-disable MD024 -->
 ## [Unreleased]
 
+## [v0.16.1] - 2022-07-13
+
+### Fixed
+
+- High CPU usage even when no rows are coming from source ([#225](https://github.com/SpringQL/SpringQL/pull/225))
+
+### Added
+
+- `in_memory` example ([#225](https://github.com/SpringQL/SpringQL/pull/225))
+
 ## [v0.16.0] - 2022-07-05
 
 ### Added
@@ -244,8 +254,10 @@ All other sections are for end-users.
 [Semantic Versioning]: https://semver.org/
 
 <!-- Versions -->
-[Unreleased]: https://github.com/SpringQL/SpringQL/compare/v0.15.0...HEAD
+[Unreleased]: https://github.com/SpringQL/SpringQL/compare/v0.16.1...HEAD
 [Released]: https://github.com/SpringQL/SpringQL/releases
+[v0.16.1]: https://github.com/SpringQL/SpringQL/compare/v0.16.0...v0.16.1
+[v0.16.0]: https://github.com/SpringQL/SpringQL/compare/v0.15.0...v0.16.0
 [v0.15.0]: https://github.com/SpringQL/SpringQL/compare/v0.14.0...v0.15.0
 [v0.14.0]: https://github.com/SpringQL/SpringQL/compare/v0.13.0...v0.14.0
 [v0.13.0]: https://github.com/SpringQL/SpringQL/compare/v0.12.0...v0.13.0

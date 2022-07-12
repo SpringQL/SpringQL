@@ -19,6 +19,7 @@ use crate::{
                 pump_task::pump_subtask::{InsertSubtask, QuerySubtask},
                 task_context::TaskContext,
                 window::{AggrWindow, JoinWindow},
+                ProcessedRows, TaskRunResult,
             },
             task_graph::TaskId,
         },
@@ -53,9 +54,10 @@ impl PumpTask {
         &self.id
     }
 
-    pub fn run(&self, context: &TaskContext) -> Result<MetricsUpdateByTaskExecution> {
+    pub fn run(&self, context: &TaskContext) -> Result<TaskRunResult> {
         let stopwatch = WallClockStopwatch::start();
-        let (in_queue_metrics, out_queues_metrics) = self.run_query_insert(context)?;
+        let (processed_rows, in_queue_metrics, out_queues_metrics) =
+            self.run_query_insert(context)?;
         let execution_time = stopwatch.stop();
 
         let task_metrics = TaskMetricsUpdateByTask::new(context.task(), execution_time);
@@ -65,27 +67,33 @@ impl PumpTask {
             out_queues_metrics,
         );
 
-        Ok(metrics)
+        Ok(TaskRunResult {
+            processed_rows,
+            metrics,
+        })
     }
 
     fn run_query_insert(
         &self,
         context: &TaskContext,
     ) -> Result<(
+        ProcessedRows,
         Option<InQueueMetricsUpdateByTask>,
         Vec<OutQueueMetricsUpdateByTask>,
     )> {
         if let Some(query_subtask_out) = self.query_subtask.run(context)? {
+            let processed_rows = query_subtask_out.processed_rows();
             let insert_subtask_out = self
                 .insert_subtask
                 .run(query_subtask_out.values_seq, context);
             Ok((
+                processed_rows,
                 Some(query_subtask_out.in_queue_metrics_update),
                 insert_subtask_out.out_queues_metrics_update,
             ))
         } else {
             thread::sleep(WAIT_ON_NO_INPUT);
-            Ok((None, vec![]))
+            Ok((ProcessedRows::default(), None, vec![]))
         }
     }
 
