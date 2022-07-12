@@ -5,7 +5,7 @@
 //! Usage:
 //!
 //! ```bash
-//! cargo run --example cpu_usage
+//! cargo run --example in_memory
 //! ```
 
 use springql::{SpringConfig, SpringPipeline, SpringSourceRowBuilder};
