@@ -20,7 +20,7 @@ use crate::{
             },
             repositories::Repositories,
             row::{SchemalessRow, StreamRow},
-            task::task_context::TaskContext,
+            task::{task_context::TaskContext, ProcessedRows, TaskRunResult},
             task_graph::{QueueId, RowQueueId, TaskId, WindowQueueId},
             AutonomousExecutor,
         },
@@ -49,28 +49,30 @@ impl SourceTask {
         &self.id
     }
 
-    pub fn run(&self, context: &TaskContext) -> Result<MetricsUpdateByTaskExecution> {
+    pub fn run(&self, context: &TaskContext) -> Result<TaskRunResult> {
         let stopwatch = WallClockStopwatch::start();
 
-        let out_queue_metrics_seq = match self.collect_next(context) {
+        let (processed_rows, out_queue_metrics_seq) = match self.collect_next(context) {
             Some(row) => {
-                context
+                let out_queue_metrics_seq = context
                     .output_queues()
                     .into_iter()
                     .map(|out_qid| self.put_row_into(out_qid, row.clone(), context)) // remove None metrics
-                    .collect::<Vec<OutQueueMetricsUpdateByTask>>()
+                    .collect::<Vec<OutQueueMetricsUpdateByTask>>();
+                (ProcessedRows::new(1), out_queue_metrics_seq)
             }
-            None => vec![],
+            None => (ProcessedRows::default(), vec![]),
         };
 
         let execution_time = stopwatch.stop();
 
         let task_metrics = TaskMetricsUpdateByTask::new(context.task(), execution_time);
-        Ok(MetricsUpdateByTaskExecution::new(
-            task_metrics,
-            vec![],
-            out_queue_metrics_seq,
-        ))
+        let metrics =
+            MetricsUpdateByTaskExecution::new(task_metrics, vec![], out_queue_metrics_seq);
+        Ok(TaskRunResult {
+            processed_rows,
+            metrics,
+        })
     }
 
     fn put_row_into(

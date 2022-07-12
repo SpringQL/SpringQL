@@ -31,6 +31,7 @@ use crate::{
                 task_context::TaskContext,
                 tuple::Tuple,
                 window::{AggrWindow, JoinDir, JoinWindow},
+                ProcessedRows,
             },
         },
         command::{JoinOp, LowerOps, QueryPlan},
@@ -105,6 +106,11 @@ impl SqlValues {
 pub struct QuerySubtaskOut {
     pub values_seq: Vec<SqlValues>,
     pub in_queue_metrics_update: InQueueMetricsUpdateByTask,
+}
+impl QuerySubtaskOut {
+    pub fn processed_rows(&self) -> ProcessedRows {
+        ProcessedRows::new(self.values_seq.len() as u64)
+    }
 }
 
 impl QuerySubtask {

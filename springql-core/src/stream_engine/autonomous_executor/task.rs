@@ -8,6 +8,9 @@ mod source_task;
 mod task_context;
 mod window;
 
+mod processed_rows;
+
+pub use processed_rows::ProcessedRows;
 pub use sink_task::SinkWriterRepository;
 pub use source_task::{
     NetClientSourceReader, NetServerSourceReader, SourceReader, SourceReaderRepository, SourceTask,
@@ -33,6 +36,12 @@ pub enum Task {
     Sink(SinkTask),
 }
 
+#[derive(Clone, Eq, PartialEq, Debug)]
+pub struct TaskRunResult {
+    pub processed_rows: ProcessedRows,
+    pub metrics: MetricsUpdateByTaskExecution,
+}
+
 impl Task {
     pub fn new(edge: &Edge, pipeline_graph: &PipelineGraph) -> Self {
         match edge {
@@ -52,7 +61,7 @@ impl Task {
         }
     }
 
-    pub fn run(&self, context: &TaskContext) -> Result<MetricsUpdateByTaskExecution> {
+    pub fn run(&self, context: &TaskContext) -> Result<TaskRunResult> {
         match self {
             Task::Pump(pump_task) => pump_task.run(context),
             Task::Source(source_task) => source_task.run(context),
