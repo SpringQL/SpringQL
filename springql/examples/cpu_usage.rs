@@ -9,6 +9,7 @@
 //! ```
 
 use springql::{SpringConfig, SpringPipeline, SpringSourceRowBuilder};
+use springql_test_logger::setup_test_logger;
 
 fn push_row_to_pipeline(pipeline: &SpringPipeline, queue_name: &str) {
     let row = SpringSourceRowBuilder::default()
@@ -22,6 +23,8 @@ fn push_row_to_pipeline(pipeline: &SpringPipeline, queue_name: &str) {
 }
 
 fn main() {
+    setup_test_logger();
+
     let pipeline = SpringPipeline::new(&SpringConfig::default()).unwrap();
 
     pipeline
