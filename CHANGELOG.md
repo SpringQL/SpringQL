@@ -10,6 +10,16 @@ All other sections are for end-users.
 <!-- markdownlint-disable MD024 -->
 ## [Unreleased]
 
+## [v0.17.0] - 2022-07-13
+
+### Added
+
+- `worker.sleep_msec_no_row` config value ([#229](https://github.com/SpringQL/SpringQL/pull/229))
+
+### Fixed
+
+- Changed the default sleep length from 10ms to 100ms for when a source / a generic worker does not receive any row ([#229](https://github.com/SpringQL/SpringQL/pull/229))
+
 ## [v0.16.1] - 2022-07-13
 
 ### Fixed
