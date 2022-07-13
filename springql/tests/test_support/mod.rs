@@ -19,7 +19,7 @@ pub fn apply_ddls(ddls: &[String], config: SpringConfig) -> SpringPipeline {
 #[allow(dead_code)]
 pub fn drain_from_sink(sink: &ForeignSink) -> Vec<serde_json::Value> {
     let mut received = Vec::new();
-    while let Some(v) = sink.try_receive(Duration::from_secs(1)) {
+    while let Some(v) = sink.try_receive(Duration::from_secs(2)) {
         received.push(v);
     }
     received
