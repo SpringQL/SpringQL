@@ -8,8 +8,6 @@
 //! cargo run --example in_memory
 //! ```
 
-use std::{thread, time::Duration};
-
 use springql::{SpringConfig, SpringPipeline, SpringSourceRowBuilder};
 
 fn push_row_to_pipeline(pipeline: &SpringPipeline, queue_name: &str) {
