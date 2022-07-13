@@ -18,6 +18,10 @@ n_generic_worker_threads = 1
 # Setting this to > 1 may improve throughput but lead to out-of-order stream processing.
 n_source_worker_threads = 1
 
+# How long a generic worker or a source worker sleeps if it does not receive any row from the upstream.
+# Small number will improve the initial row's E2E latency but increase the CPU usage.
+sleep_msec_no_row = 100
+
 [memory]
 # How much memory is allowed to be used in SpringQL streaming runtime.
 upper_limit_bytes = 10_000_000
@@ -136,6 +140,7 @@ impl SpringConfig {
 pub struct SpringWorkerConfig {
     pub n_generic_worker_threads: u16,
     pub n_source_worker_threads: u16,
+    pub sleep_msec_no_row: u64,
 }
 
 /// Config related to memory management.

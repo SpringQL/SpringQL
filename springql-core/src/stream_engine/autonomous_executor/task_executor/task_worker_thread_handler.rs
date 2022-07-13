@@ -35,6 +35,7 @@ pub struct TaskWorkerThreadArg {
     pub worker_id: TaskWorkerId,
     task_executor_lock: Arc<TaskExecutorLock>,
     repos: Arc<Repositories>,
+    sleep_msec_no_row: u64,
 }
 
 #[derive(Debug)]
@@ -93,7 +94,7 @@ impl TaskWorkerThreadHandler {
                     );
                     if processed_rows.is_empty() {
                         // Wait for rows to process
-                        thread::sleep(Duration::from_millis(TASK_WAIT_MSEC));
+                        thread::sleep(Duration::from_millis(thread_arg.sleep_msec_no_row));
                     }
                 } else {
                     // Wait for tasks to execute
