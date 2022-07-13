@@ -4,12 +4,15 @@ mod generic_worker;
 
 use std::{cell::RefCell, sync::Arc};
 
-use crate::stream_engine::autonomous_executor::{
-    args::{Coordinators, EventQueues, Locks},
-    repositories::Repositories,
-    task_executor::{
-        generic_worker_pool::generic_worker::GenericWorker,
-        task_worker_thread_handler::{TaskWorkerId, TaskWorkerThreadArg},
+use crate::{
+    api::SpringWorkerConfig,
+    stream_engine::autonomous_executor::{
+        args::{Coordinators, EventQueues, Locks},
+        repositories::Repositories,
+        task_executor::{
+            generic_worker_pool::generic_worker::GenericWorker,
+            task_worker_thread_handler::{TaskWorkerId, TaskWorkerThreadArg},
+        },
     },
 };
 
@@ -26,18 +29,19 @@ pub struct GenericWorkerPool {
 
 impl GenericWorkerPool {
     pub fn new(
-        n_worker_threads: u16,
+        config: &SpringWorkerConfig,
         locks: Locks,
         event_queues: EventQueues,
         coordinators: Coordinators,
         repos: Arc<Repositories>,
     ) -> Self {
-        let workers = (0..n_worker_threads)
+        let workers = (0..config.n_generic_worker_threads)
             .map(|id| {
                 let arg = TaskWorkerThreadArg::new(
                     TaskWorkerId::new(id as u16),
                     locks.task_executor_lock.clone(),
                     repos.clone(),
+                    config.sleep_msec_no_row,
                 );
                 GenericWorker::new(
                     locks.main_job_lock.clone(),

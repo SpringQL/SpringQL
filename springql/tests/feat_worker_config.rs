@@ -11,8 +11,14 @@ use springql_foreign_service::{
 };
 use springql_test_logger::setup_test_logger;
 
-fn t(worker_config: SpringWorkerConfig) {
+fn t(n_generic_worker_threads: u16, n_source_worker_threads: u16) {
     setup_test_logger();
+
+    let worker_config = SpringWorkerConfig {
+        n_generic_worker_threads,
+        n_source_worker_threads,
+        sleep_msec_no_row: 100,
+    };
 
     let json_oracle = json!({
         "ts": "2021-11-04 23:02:52.123456789",
@@ -100,32 +106,20 @@ fn t(worker_config: SpringWorkerConfig) {
 
 #[test]
 fn test_feat_1generic_1source() {
-    t(SpringWorkerConfig {
-        n_generic_worker_threads: 1,
-        n_source_worker_threads: 1,
-    })
+    t(1, 1)
 }
 
 #[test]
 fn test_feat_5generic_1source() {
-    t(SpringWorkerConfig {
-        n_generic_worker_threads: 5,
-        n_source_worker_threads: 1,
-    })
+    t(5, 1)
 }
 
 #[test]
 fn test_feat_1generic_5source() {
-    t(SpringWorkerConfig {
-        n_generic_worker_threads: 1,
-        n_source_worker_threads: 5,
-    })
+    t(1, 5)
 }
 
 #[test]
 fn test_feat_5generic_5source() {
-    t(SpringWorkerConfig {
-        n_generic_worker_threads: 5,
-        n_source_worker_threads: 5,
-    })
+    t(5, 5)
 }

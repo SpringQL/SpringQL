@@ -50,14 +50,14 @@ impl TaskExecutor {
             repos: repos.clone(),
 
             _generic_worker_pool: GenericWorkerPool::new(
-                config.worker.n_generic_worker_threads,
+                &config.worker,
                 locks.clone(),
                 event_queues.clone(),
                 coordinators.clone(),
                 repos.clone(),
             ),
             _source_worker_pool: SourceWorkerPool::new(
-                config.worker.n_source_worker_threads,
+                &config.worker,
                 locks,
                 event_queues,
                 coordinators,
