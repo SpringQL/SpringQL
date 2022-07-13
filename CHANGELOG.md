@@ -10,6 +10,12 @@ All other sections are for end-users.
 <!-- markdownlint-disable MD024 -->
 ## [Unreleased]
 
+## [v0.17.1] - 2022-07-13
+
+### Fixed
+
+- High CPU usage before issuing any SQL through `SpringPipeline::command()` ([#232](https://github.com/SpringQL/SpringQL/pull/232))
+
 ## [v0.17.0] - 2022-07-13
 
 ### Added
@@ -264,9 +270,10 @@ All other sections are for end-users.
 [Semantic Versioning]: https://semver.org/
 
 <!-- Versions -->
-[Unreleased]: https://github.com/SpringQL/SpringQL/compare/v0.17.0...HEAD
+[Unreleased]: https://github.com/SpringQL/SpringQL/compare/v0.17.1...HEAD
 [Released]: https://github.com/SpringQL/SpringQL/releases
-[v0.16.1]: https://github.com/SpringQL/SpringQL/compare/v0.16.1...v0.17.0
+[v0.17.1]: https://github.com/SpringQL/SpringQL/compare/v0.17.0...v0.17.1
+[v0.17.0]: https://github.com/SpringQL/SpringQL/compare/v0.16.1...v0.17.0
 [v0.16.1]: https://github.com/SpringQL/SpringQL/compare/v0.16.0...v0.16.1
 [v0.16.0]: https://github.com/SpringQL/SpringQL/compare/v0.15.0...v0.16.0
 [v0.15.0]: https://github.com/SpringQL/SpringQL/compare/v0.14.0...v0.15.0
