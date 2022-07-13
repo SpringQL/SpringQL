@@ -26,9 +26,6 @@ fn push_row_to_pipeline(pipeline: &SpringPipeline, queue_name: &str) {
 fn main() {
     let pipeline = SpringPipeline::new(&SpringConfig::default()).unwrap();
 
-    thread::sleep(Duration::from_secs(10));
-    log::debug!("sleeping before accepting SQLs (high cpu usage...)");
-
     pipeline
         .command(
             "
