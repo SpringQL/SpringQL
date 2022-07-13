@@ -16,7 +16,7 @@ use crate::stream_engine::autonomous_executor::{
     AutonomousExecutor,
 };
 
-/// Sleep duration for when no (foreign / input) rows are available for the (source / generic) task.
+/// Sleep duration for when no tasks are available for the (source / generic) worker.
 const TASK_WAIT_MSEC: u64 = 10;
 
 #[derive(Debug)]
