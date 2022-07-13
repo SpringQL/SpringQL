@@ -3,6 +3,7 @@
 use std::{
     sync::{mpsc, Arc},
     thread,
+    time::Duration,
 };
 
 use crate::stream_engine::autonomous_executor::{
@@ -153,6 +154,9 @@ pub trait WorkerThread {
             if let Ok(_lock) = main_job_lock.try_main_job() {
                 if state.is_integral() {
                     state = Self::main_loop_cycle(state, &thread_arg, event_queue.as_ref());
+                } else {
+                    log::debug!("[{}] main_loop(): state is not integral", Self::THREAD_NAME);
+                    thread::sleep(Duration::from_millis(100));
                 }
             }
             state = Self::handle_events(state, &event_polls, &thread_arg, event_queue.clone());
