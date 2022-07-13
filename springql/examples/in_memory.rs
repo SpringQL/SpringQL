@@ -8,6 +8,8 @@
 //! cargo run --example in_memory
 //! ```
 
+use std::{thread, time::Duration};
+
 use springql::{SpringConfig, SpringPipeline, SpringSourceRowBuilder};
 
 fn push_row_to_pipeline(pipeline: &SpringPipeline, queue_name: &str) {
@@ -23,6 +25,9 @@ fn push_row_to_pipeline(pipeline: &SpringPipeline, queue_name: &str) {
 
 fn main() {
     let pipeline = SpringPipeline::new(&SpringConfig::default()).unwrap();
+
+    thread::sleep(Duration::from_secs(10));
+    log::debug!("sleeping before accepting SQLs (high cpu usage...)");
 
     pipeline
         .command(
