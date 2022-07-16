@@ -13,6 +13,7 @@
 //! ```
 
 use springql::{SpringConfig, SpringPipeline};
+use springql_deconfig::SpringConfigExt;
 use std::process::Command;
 
 fn send_data_to_pipeline() {
@@ -26,7 +27,7 @@ fn send_data_to_pipeline() {
 fn main() {
     const SOURCE_PORT: u16 = 54300;
 
-    let pipeline = SpringPipeline::new(&SpringConfig::default()).unwrap();
+    let pipeline = SpringPipeline::new(&SpringConfig::from_toml("").unwrap()).unwrap();
 
     pipeline
         .command(

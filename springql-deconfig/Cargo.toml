@@ -1,0 +1,11 @@
+[package]
+name = "springql-deconfig"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+springql-core = { version = "0.17.1", path = "../springql-core" }
+serde = {version = "1.0", features = ["derive"], default-features = false}
+config = {version = "0.13", features = ["toml"], default-features = false}

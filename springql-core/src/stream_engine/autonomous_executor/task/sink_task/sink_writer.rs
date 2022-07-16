@@ -1,8 +1,8 @@
 // This file is part of https://github.com/SpringQL/SpringQL which is licensed under MIT OR Apache-2.0. See file LICENSE-MIT or LICENSE-APACHE for full license details.
 
+mod http_client;
 mod in_memory_queue;
 mod net;
-mod http_client;
 mod sink_writer_factory;
 mod sink_writer_repository;
 
