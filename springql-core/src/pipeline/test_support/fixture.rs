@@ -3,7 +3,10 @@
 use std::{net::IpAddr, sync::Arc};
 
 use crate::{
-    api::{SpringConfig, SpringSinkWriterConfig, SpringSourceReaderConfig},
+    api::{
+        SpringConfig, SpringMemoryConfig, SpringSinkWriterConfig, SpringSourceReaderConfig,
+        SpringWebConsoleConfig, SpringWorkerConfig,
+    },
     pipeline::{
         field::ColumnReference,
         name::{ColumnName, SinkWriterName, SourceReaderName, StreamName},
@@ -16,10 +19,64 @@ use crate::{
         Pipeline,
     },
 };
+use springql_deconfig::SpringConfigExt;
+
+fn default_config() -> SpringConfig {
+    let deconfig = springql_deconfig::SpringConfig::from_toml("").unwrap();
+
+    /*
+        can not direct return deconfig,
+
+     return deconfig;
+     23 |     return deconfig;
+    |            ^^^^^^^^ expected struct `spring_config::SpringConfig`, found struct `springql_deconfig::SpringConfig`
+
+        because no gurantee for same as SpringConfig defined and springql_deconfig export SpringConfig
+    */
+
+    SpringConfig {
+        worker: SpringWorkerConfig {
+            n_generic_worker_threads: deconfig.worker.n_generic_worker_threads,
+            n_source_worker_threads: deconfig.worker.n_source_worker_threads,
+            sleep_msec_no_row: deconfig.worker.sleep_msec_no_row,
+        },
+        memory: SpringMemoryConfig {
+            upper_limit_bytes: deconfig.memory.upper_limit_bytes,
+            moderate_to_severe_percent: deconfig.memory.moderate_to_severe_percent,
+            severe_to_critical_percent: deconfig.memory.severe_to_critical_percent,
+            critical_to_severe_percent: deconfig.memory.critical_to_severe_percent,
+            severe_to_moderate_percent: deconfig.memory.severe_to_moderate_percent,
+            memory_state_transition_interval_msec: deconfig
+                .memory
+                .memory_state_transition_interval_msec,
+            performance_metrics_summary_report_interval_msec: deconfig
+                .memory
+                .performance_metrics_summary_report_interval_msec,
+        },
+        web_console: SpringWebConsoleConfig {
+            enable_report_post: deconfig.web_console.enable_report_post,
+            report_interval_msec: deconfig.web_console.report_interval_msec,
+            host: deconfig.web_console.host,
+            port: deconfig.web_console.port,
+            timeout_msec: deconfig.web_console.timeout_msec,
+        },
+        source_reader: SpringSourceReaderConfig {
+            net_connect_timeout_msec: deconfig.source_reader.net_connect_timeout_msec,
+            net_read_timeout_msec: deconfig.source_reader.net_read_timeout_msec,
+            can_read_timeout_msec: deconfig.source_reader.can_read_timeout_msec,
+        },
+        sink_writer: SpringSinkWriterConfig {
+            net_connect_timeout_msec: deconfig.sink_writer.net_connect_timeout_msec,
+            net_write_timeout_msec: deconfig.sink_writer.net_write_timeout_msec,
+            http_timeout_msec: deconfig.sink_writer.http_timeout_msec,
+            http_connect_timeout_msec: deconfig.sink_writer.http_connect_timeout_msec,
+        },
+    }
+}
 
 impl SpringConfig {
     pub fn fx_default() -> Self {
-        Self::new("").unwrap()
+        default_config()
     }
 }
 

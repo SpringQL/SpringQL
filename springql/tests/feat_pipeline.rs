@@ -4,11 +4,10 @@ mod test_support;
 
 use pretty_assertions::assert_eq;
 use serde_json::json;
-use springql::*;
 use springql_foreign_service::source::{ForeignSource, ForeignSourceInput};
 use springql_test_logger::setup_test_logger;
 
-use crate::test_support::apply_ddls;
+use crate::test_support::{apply_ddls, default_config};
 
 /// See: <https://github.com/SpringQL/SpringQL/issues/132>
 #[test]
@@ -87,7 +86,7 @@ fn test_feat_split_from_source() {
         ),
     ];
 
-    let pipeline = apply_ddls(&ddls, SpringConfig::default());
+    let pipeline = apply_ddls(&ddls, default_config());
     test_source.start(ForeignSourceInput::new_fifo_batch(source_input));
 
     let row = pipeline.pop("q1").unwrap();

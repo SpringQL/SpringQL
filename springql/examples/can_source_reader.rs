@@ -11,6 +11,7 @@
 use std::env;
 
 use springql_core::api::{SpringConfig, SpringPipeline};
+use springql_deconfig::SpringConfigExt;
 
 fn parse_can_interface_arg() -> String {
     let args: Vec<String> = env::args().collect();
@@ -25,7 +26,7 @@ fn parse_can_interface_arg() -> String {
 fn main() {
     let can_interface = parse_can_interface_arg();
 
-    let pipeline = SpringPipeline::new(&SpringConfig::default()).unwrap();
+    let pipeline = SpringPipeline::new(&SpringConfig::from_toml("").unwrap()).unwrap();
 
     pipeline
         .command(
