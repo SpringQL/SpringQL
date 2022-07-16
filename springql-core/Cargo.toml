@@ -49,3 +49,4 @@ regex = "1.5"
 float-cmp = "0.9"
 tempfile = "3.3"
 serde_derive = "1.0"
+springql-deconfig = { path = "../springql-deconfig" }

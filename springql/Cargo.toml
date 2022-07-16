@@ -16,6 +16,7 @@ repository = "https://github.com/SpringQL/SpringQL"
 
 [dependencies]
 springql-core =  {version="0.17.1", path="../springql-core"}
+springql-deconfig = { version = "0.1.0", path = "../springql-deconfig" }
 
 [dev-dependencies]
 springql-foreign-service = {path = "../foreign-service"}

@@ -4,5 +4,6 @@ members = [
   "springql",
   "springql-core",
   "foreign-service",
+  "springql-deconfig",
   "test-logger",
 ]
