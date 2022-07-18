@@ -87,8 +87,6 @@ jobs:
       - name: git tag
         run: |
           git tag "v${RELEASE_VERSION}"
-          git tag "springql@${RELASE_VERSION}"
-          git tag "springql-core@${RELASE_VERSION}"
 
       - name: Show final git status 
         run: |
@@ -102,8 +100,6 @@ jobs:
           git remote set-url origin https://github-actions:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}
           git push -v origin main
           git push -v origin "v${RELEASE_VERSION}"
-          git push -v origin "springql@${RELEASE_VERSION}"
-          git push -v origin "springql-core@${RELEASE_VERSION}"
 
       - name: cargo publish
         run: |
