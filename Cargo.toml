@@ -2,6 +2,7 @@
 
 members = [
   "springql",
+  "springql-beam",
   "springql-core",
   "foreign-service",
   "test-logger",
