@@ -30,7 +30,8 @@ impl SpringSourceRow {
         Ok(Self(source_row))
     }
 
-    pub(crate) fn into_schemaless_row(self) -> Result<SchemalessRow> {
+    #[allow(missing_docs)]
+    pub fn into_schemaless_row(self) -> Result<SchemalessRow> {
         self.0.try_into()
     }
 }

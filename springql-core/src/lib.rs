@@ -19,6 +19,8 @@ mod time;
 /// public API for SpringQL
 pub mod api;
 
+pub use connection::Connection;
+
 #[cfg(not(feature = "stub_web_console"))]
 mod http_blocking;
 
