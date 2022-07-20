@@ -13,7 +13,8 @@ use crate::{
 pub struct SpringSinkRow(SchemalessRow);
 
 impl SpringSinkRow {
-    pub(crate) fn new(row: SchemalessRow) -> Self {
+    #[allow(missing_docs)]
+    pub fn new(row: SchemalessRow) -> Self {
         SpringSinkRow(row)
     }
 

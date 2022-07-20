@@ -1,3 +1,5 @@
+mod pipeline;
+
 #[cfg(test)]
 mod tests {
     #[test]
