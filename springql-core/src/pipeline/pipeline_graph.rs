@@ -9,6 +9,7 @@
 //! It also has "virtual leaf streams", who has an incoming edge from each sink stream, to keep sink writers.
 
 mod edge;
+mod poc_beam_graph;
 mod stream_node;
 
 pub use edge::Edge;
