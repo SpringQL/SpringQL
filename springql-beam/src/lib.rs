@@ -1,5 +1,8 @@
 mod pipeline;
 
+pub use pipeline::Pipeline;
+pub use springql_core::api::{SpringConfig, SpringSourceRowBuilder};
+
 #[cfg(test)]
 mod tests {
     #[test]
