@@ -17,6 +17,7 @@ jobs:
     env:
       CURRENT_VERSION: ${{ github.event.inputs.current_version }}
       RELEASE_VERSION: ${{ github.event.inputs.release_version }}
+      TARGET_BRANCH: ci/automate-release
     permissions:
       contents: write
     runs-on: ubuntu-latest
@@ -25,7 +26,7 @@ jobs:
       - name: checkout code
         uses: actions/checkout@v2
         with:
-          ref: main
+          ref: ${{ env.TARGET_BRANCH }}
 
       - name: Show initial git status 
         run: |
@@ -98,7 +99,7 @@ jobs:
       - name: git push
         run: |
           git remote set-url origin https://github-actions:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}
-          git push -v origin main
+          git push -v origin ${{ env.TARGET_BRANCH }}
           git push -v origin "v${RELEASE_VERSION}"
 
       - name: cargo publish
