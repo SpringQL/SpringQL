@@ -96,11 +96,25 @@ jobs:
           git status -v >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY
 
+      - name: Turn off enforce admin
+        env: 
+          GITHUB_TOKEN: ${{ secrets.GHPAT_FOR_PUSH_RELEASE }}
+        run: |
+          source .github/workflows/scripts/github-branch-protection.bash
+          enforce_admins_off
+
       - name: git push
         run: |
           git remote set-url origin "https://github-actions:${{ secrets.GHPAT_FOR_PUSH_RELEASE }}@github.com/${GITHUB_REPOSITORY}"
           git push -v --force origin main
           git push -v --force origin "v${RELEASE_VERSION}"
+
+      - name: Turn on enforce admin
+        env: 
+          GITHUB_TOKEN: ${{ secrets.GHPAT_FOR_PUSH_RELEASE }}
+        run: |
+          source .github/workflows/scripts/github-branch-protection.bash
+          enforce_admins_on
 
       - name: cargo publish
         run: |
