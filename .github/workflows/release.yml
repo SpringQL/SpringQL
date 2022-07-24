@@ -99,8 +99,8 @@ jobs:
       - name: git push
         run: |
           git remote set-url origin "https://github-actions:${{ secrets.GHPAT_FOR_PUSH_RELEASE }}@github.com/${GITHUB_REPOSITORY}"
-          git push -v origin main
-          git push -v origin "v${RELEASE_VERSION}"
+          git push -v --force origin main
+          git push -v --force origin "v${RELEASE_VERSION}"
 
       - name: cargo publish
         run: |
