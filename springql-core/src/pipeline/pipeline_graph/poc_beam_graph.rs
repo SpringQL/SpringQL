@@ -46,6 +46,7 @@ impl PartialEq for PCollection {
 }
 impl Debug for PCollection {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        // prevent print-loop from `graph` field
         f.debug_struct("PCollection")
             .field("name", &self.name)
             .finish()
