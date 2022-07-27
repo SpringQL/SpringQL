@@ -1,5 +1,12 @@
 function get_current_branch_protection_setting() {
-    gh api --method GET repos/${OWNER}/${REPO}/branches/${BRANCH}/protection | jq '
+    #
+    # gets branch protections setting, reformats put api body json
+    #
+    # environment variables
+    #
+    # REPO : github repository name for Owner/RepoName syntax
+    # BRANCH:
+    gh api --method GET repos/${REPO}/branches/${BRANCH}/protection | jq '
     {
         required_status_checks: null,
         restrictions: { 
@@ -9,9 +16,9 @@ function get_current_branch_protection_setting() {
         },
         enforce_admins: .enforce_admins.enabled ,
         required_pull_request_reviews: {
-        dismiss_stale_reviews: .required_pull_request_reviews.dismiss_stale_reviews,
-        require_code_owner_reviews: .required_pull_request_reviews.require_code_owner_reviews,
-        required_approving_review_count: .required_pull_request_reviews.required_approving_review_count
+            dismiss_stale_reviews: .required_pull_request_reviews.dismiss_stale_reviews,
+            require_code_owner_reviews: .required_pull_request_reviews.require_code_owner_reviews,
+            required_approving_review_count: .required_pull_request_reviews.required_approving_review_count
         },
         required_linear_history: .required_linear_history.enabled,
         required_signatures: .required_signatures.enabled,
@@ -23,7 +30,7 @@ function get_current_branch_protection_setting() {
 }
 
 function apply_branch_protection_setting() {
-    gh api --method PUT -H "Accept: application/vnd.github+json" --input - repos/${OWNER}/${REPO}/branches/${BRANCH}/protection
+    gh api --method PUT -H "Accept: application/vnd.github+json" --input - repos//${REPO}/branches/${BRANCH}/protection
 }
 
 function enfore_admins_off() {
