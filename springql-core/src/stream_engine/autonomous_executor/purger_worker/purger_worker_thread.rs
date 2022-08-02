@@ -97,31 +97,31 @@ impl WorkerThread for PurgerWorkerThread {
                 // do nothing
             }
             MemoryState::Critical => {
-                log::warn!("[PurgerWorker] Start purging...",);
+                // log::warn!("[PurgerWorker] Start purging...",);
 
-                let task_executor_lock = &thread_arg.task_executor_lock;
-                let _lock = task_executor_lock.task_execution_barrier();
+                // let task_executor_lock = &thread_arg.task_executor_lock;
+                // let _lock = task_executor_lock.task_execution_barrier();
 
-                // purge queues
-                let row_queue_repo = thread_arg.repos.row_queue_repository();
-                let window_queue_repo = thread_arg.repos.window_queue_repository();
-                row_queue_repo.purge();
-                window_queue_repo.purge();
+                // // purge queues
+                // let row_queue_repo = thread_arg.repos.row_queue_repository();
+                // let window_queue_repo = thread_arg.repos.window_queue_repository();
+                // row_queue_repo.purge();
+                // window_queue_repo.purge();
 
-                // purge windows
-                if let Some(pd) = &current_state.pipeline_derivatives {
-                    let task_repo = pd.task_repo();
-                    task_repo.purge_windows()
-                }
+                // // purge windows
+                // if let Some(pd) = &current_state.pipeline_derivatives {
+                //     let task_repo = pd.task_repo();
+                //     task_repo.purge_windows()
+                // }
 
-                // reset metrics
-                event_queue.publish(Event::IncrementalUpdateMetrics {
-                    metrics_update_by_task_execution_or_purge: Arc::new(
-                        MetricsUpdateByTaskExecutionOrPurge::Purge,
-                    ),
-                });
+                // // reset metrics
+                // event_queue.publish(Event::IncrementalUpdateMetrics {
+                //     metrics_update_by_task_execution_or_purge: Arc::new(
+                //         MetricsUpdateByTaskExecutionOrPurge::Purge,
+                //     ),
+                // });
 
-                log::warn!("[PurgerWorker] Finished purging. Sent `MetricsUpdateByTaskExecutionOrPurge::Purge` event.");
+                // log::warn!("[PurgerWorker] Finished purging. Sent `MetricsUpdateByTaskExecutionOrPurge::Purge` event.");
             }
         }
 
