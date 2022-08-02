@@ -2,6 +2,8 @@
 
 use std::{sync::Arc, thread, time::Duration};
 
+use time::OffsetDateTime;
+
 use crate::{
     api::SpringConfig,
     stream_engine::{
@@ -221,9 +223,11 @@ impl PerformanceMonitorWorkerThread {
             state.countdown_metrics_summary_msec = report_interval_msec;
 
             let metrics_summary = Arc::new(PerformanceMetricsSummary::from(metrics));
-            log::trace!(
-                "PerformanceMonitorWorkerThread::report_metrics_summary: metrics_summary={:?}",
-                metrics_summary
+            let now = OffsetDateTime::now_utc();
+            println!(
+                "GRAPH: PerformanceMonitorWorkerThread::report_metrics_summary: ({}, {})",
+                now.unix_timestamp() as f64 + now.unix_timestamp_nanos() as f64 / 1_000_000_000.0,
+                metrics_summary.queue_total_bytes
             );
             event_queue.publish(Event::ReportMetricsSummary { metrics_summary })
         } else {
