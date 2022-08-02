@@ -3,8 +3,9 @@
 mod test_support;
 
 use std::{
-    path::Path,
+    path::{Path, PathBuf},
     process::{Child, Command},
+    str::FromStr,
 };
 
 use springql::*;
@@ -68,9 +69,6 @@ fn spawn_vehicle_control_replayman(vehicle_control_dataset: &Path) -> Child {
 #[test]
 fn test_e2e_replayman_aggr_join_split() {
     setup_test_logger_with_level(log::LevelFilter::Warn);
-
-    let engine_dataset = http_download_file_to_tempdir("https://raw.githubusercontent.com/SpringQL/dataset/main/pseudo-in-vehicle/Engine-30sec-per25usec.tsv");
-    let vehicle_control_dataset = http_download_file_to_tempdir("https://raw.githubusercontent.com/SpringQL/dataset/main/pseudo-in-vehicle/VehicleControl-30sec-per25usec.tsv");
 
     let sink_engine_vehicle_control = ForeignSink::start().unwrap();
     let sink_phy_vehicle_speed = ForeignSink::start().unwrap();
@@ -214,9 +212,15 @@ fn test_e2e_replayman_aggr_join_split() {
     let _pipeline = apply_ddls(&ddls, config());
 
     // start data input
-    let mut engine_replayman = spawn_engine_replayman(engine_dataset.path());
-    let mut vehicle_control_replayman =
-        spawn_vehicle_control_replayman(vehicle_control_dataset.path());
+    let mut engine_replayman = spawn_engine_replayman(
+        &PathBuf::from_str(
+            "/Users/sho.nakatani/.ghq/src/github.com/SpringQL/SpringQL/Engine-30sec-per25usec.tsv",
+        )
+        .unwrap(),
+    );
+    let mut vehicle_control_replayman = spawn_vehicle_control_replayman(
+        &PathBuf::from_str("/Users/sho.nakatani/.ghq/src/github.com/SpringQL/SpringQL/VehicleControl-30sec-per25usec.tsv").unwrap(),
+    );
 
     let ecode_engine = engine_replayman
         .wait()
