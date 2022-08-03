@@ -10,6 +10,12 @@ All other sections are for end-users.
 <!-- markdownlint-disable MD024 -->
 ## [Unreleased]
 
+## [v0.17.2] - 2022-08-03
+
+### Fixed
+
+- GenericWorker almost always got asleep after running a window task ([#235](https://github.com/SpringQL/SpringQL/pull/235))
+
 ## [v0.17.1] - 2022-07-13
 
 ### Fixed
