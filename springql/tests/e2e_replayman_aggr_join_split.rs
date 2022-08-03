@@ -21,14 +21,17 @@ const VEHICLE_CONTROL_REPLAYMAN_PORT: u16 = 19871;
 fn config() -> SpringConfig {
     let mut config = SpringConfig::default();
 
-    config.memory.upper_limit_bytes = 700_000;
+
+    config.memory.upper_limit_bytes = 700_00000;
     config.memory.severe_to_critical_percent = 80;
     config.memory.moderate_to_severe_percent = 50;
     config.memory.critical_to_severe_percent = 70;
     config.memory.severe_to_moderate_percent = 40;
 
-    // config.web_console.enable_report_post = true;
-    // config.web_console.report_interval_msec = 1000;
+    config.web_console.enable_report_post = true;
+    config.web_console.report_interval_msec = 1000;
+
+    config.worker.sleep_msec_no_row = 1;
 
     config
 }
