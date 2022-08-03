@@ -27,8 +27,8 @@ fn config() -> SpringConfig {
     config.memory.critical_to_severe_percent = 70;
     config.memory.severe_to_moderate_percent = 40;
 
-    config.web_console.enable_report_post = true;
-    config.web_console.report_interval_msec = 1000;
+    // config.web_console.enable_report_post = true;
+    // config.web_console.report_interval_msec = 1000;
 
     config
 }
@@ -233,11 +233,11 @@ fn test_e2e_replayman_aggr_join_split() {
     assert!(ecode_vehicle_control.success());
 
     // get outputs
-    let _rows_sink_engine_vehicle_control = drain_from_sink(&sink_engine_vehicle_control);
-    // log::error!("{:#?}", rows_sink_engine_vehicle_control);
-    // log::error!("{}", rows_sink_engine_vehicle_control.len());
+    let rows_sink_engine_vehicle_control = drain_from_sink(&sink_engine_vehicle_control);
+    log::error!("{:#?}", rows_sink_engine_vehicle_control);
+    log::error!("{}", rows_sink_engine_vehicle_control.len());
 
-    let _rows_sink_phy_vehicle_speed = drain_from_sink(&sink_phy_vehicle_speed);
-    // log::error!("{:#?}", rows_sink_phy_vehicle_speed);
-    // log::error!("{}", rows_sink_phy_vehicle_speed.len());
+    let rows_sink_phy_vehicle_speed = drain_from_sink(&sink_phy_vehicle_speed);
+    log::error!("{:#?}", rows_sink_phy_vehicle_speed);
+    log::error!("{}", rows_sink_phy_vehicle_speed.len());
 }
