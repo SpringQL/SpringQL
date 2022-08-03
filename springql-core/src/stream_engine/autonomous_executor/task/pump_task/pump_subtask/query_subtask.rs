@@ -109,7 +109,19 @@ pub struct QuerySubtaskOut {
 }
 impl QuerySubtaskOut {
     pub fn processed_rows(&self) -> ProcessedRows {
-        ProcessedRows::new(self.values_seq.len() as u64)
+        let by_collect = match self.in_queue_metrics_update.by_collect {
+            InQueueMetricsUpdateByCollect::Row { rows_used, .. } => rows_used,
+            InQueueMetricsUpdateByCollect::Window {
+                waiting_rows_dispatched,
+                ..
+            } => waiting_rows_dispatched,
+        };
+        let window_in_flow = self
+            .in_queue_metrics_update
+            .window_in_flow
+            .window_gain_bytes_rows;
+
+        ProcessedRows::new(by_collect + window_in_flow as u64)
     }
 }
 
