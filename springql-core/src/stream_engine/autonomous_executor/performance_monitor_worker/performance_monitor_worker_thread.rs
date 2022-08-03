@@ -226,7 +226,7 @@ impl PerformanceMonitorWorkerThread {
             let now = OffsetDateTime::now_utc();
             println!(
                 "GRAPH: PerformanceMonitorWorkerThread::report_metrics_summary: ({}, {})",
-                now.unix_timestamp() as f64 + now.unix_timestamp_nanos() as f64 / 1_000_000_000.0,
+                now.unix_timestamp_nanos() as f64 / 1_000_000_000.0,
                 metrics_summary.queue_total_bytes
             );
             event_queue.publish(Event::ReportMetricsSummary { metrics_summary })
