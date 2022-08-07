@@ -22,7 +22,7 @@ fn config() -> SpringConfig {
     let mut config = SpringConfig::default();
 
 
-    config.memory.upper_limit_bytes = 700_00000;
+    config.memory.upper_limit_bytes = 700_000;
     config.memory.severe_to_critical_percent = 80;
     config.memory.moderate_to_severe_percent = 50;
     config.memory.critical_to_severe_percent = 70;
@@ -237,10 +237,10 @@ fn test_e2e_replayman_aggr_join_split() {
 
     // get outputs
     let rows_sink_engine_vehicle_control = drain_from_sink(&sink_engine_vehicle_control);
-    log::error!("{:#?}", rows_sink_engine_vehicle_control);
-    log::error!("{}", rows_sink_engine_vehicle_control.len());
+    // log::error!("{:#?}", rows_sink_engine_vehicle_control);
+    // log::error!("{}", rows_sink_engine_vehicle_control.len());
 
     let rows_sink_phy_vehicle_speed = drain_from_sink(&sink_phy_vehicle_speed);
-    log::error!("{:#?}", rows_sink_phy_vehicle_speed);
-    log::error!("{}", rows_sink_phy_vehicle_speed.len());
+    // log::error!("{:#?}", rows_sink_phy_vehicle_speed);
+    // log::error!("{}", rows_sink_phy_vehicle_speed.len());
 }
