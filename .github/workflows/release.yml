@@ -26,6 +26,7 @@ jobs:
         uses: actions/checkout@v2
         with:
           ref: main
+          token: ${{ secrets.GHPAT_FOR_PUSH_RELEASE }}
 
       - name: Show initial git status 
         run: |
@@ -87,8 +88,6 @@ jobs:
       - name: git tag
         run: |
           git tag "v${RELEASE_VERSION}"
-          git tag "springql@${RELASE_VERSION}"
-          git tag "springql-core@${RELASE_VERSION}"
 
       - name: Show final git status 
         run: |
@@ -97,13 +96,25 @@ jobs:
           git status -v >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY
 
+      - name: Turn off enforce admin
+        env: 
+          GITHUB_TOKEN: ${{ secrets.GHPAT_FOR_PUSH_RELEASE }}
+        run: |
+          source .github/workflows/scripts/github-branch-protection.bash
+          enforce_admins_off
+
       - name: git push
         run: |
-          git remote set-url origin https://github-actions:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}
-          git push -v origin main
-          git push -v origin "v${RELEASE_VERSION}"
-          git push -v origin "springql@${RELEASE_VERSION}"
-          git push -v origin "springql-core@${RELEASE_VERSION}"
+          git remote set-url origin "https://github-actions:${{ secrets.GHPAT_FOR_PUSH_RELEASE }}@github.com/${GITHUB_REPOSITORY}"
+          git push -v --force origin main
+          git push -v --force origin "v${RELEASE_VERSION}"
+
+      - name: Turn on enforce admin
+        env: 
+          GITHUB_TOKEN: ${{ secrets.GHPAT_FOR_PUSH_RELEASE }}
+        run: |
+          source .github/workflows/scripts/github-branch-protection.bash
+          enforce_admins_on
 
       - name: cargo publish
         run: |
