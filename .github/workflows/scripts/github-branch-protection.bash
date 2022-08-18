@@ -1,5 +1,5 @@
 function get_current_branch_protection_setting() {
-    gh api --method GET repos/${OWNER}/${REPO}/branches/${BRANCH}/protection | jq '
+    gh api --method GET repos/${REPO}/branches/${BRANCH}/protection | jq '
     {
         required_status_checks: null,
         restrictions: { 
@@ -23,7 +23,7 @@ function get_current_branch_protection_setting() {
 }
 
 function apply_branch_protection_setting() {
-    gh api --method PUT -H "Accept: application/vnd.github+json" --input - repos/${OWNER}/${REPO}/branches/${BRANCH}/protection
+    gh api --method PUT -H "Accept: application/vnd.github+json" --input - repos/${REPO}/branches/${BRANCH}/protection
 }
 
 function enforce_admins_off() {
