@@ -33,14 +33,14 @@ function apply_branch_protection_setting() {
     gh api --method PUT -H "Accept: application/vnd.github+json" --input - repos//${REPO}/branches/${BRANCH}/protection
 }
 
-function enfore_admins_off() {
+function enforce_admins_off() {
     get_current_branch_protection_setting | jq '.enforce_admins = false' | apply_branch_protection_setting
 }
 
-export -f enfore_admins_off
+export -f enforce_admins_off
 
-function enfore_admins_on() {
+function enforce_admins_on() {
     get_current_branch_protection_setting | jq '.enforce_admins = true' | apply_branch_protection_setting
 }
 
-export -f enfore_admins_on
+export -f enforce_admins_on
