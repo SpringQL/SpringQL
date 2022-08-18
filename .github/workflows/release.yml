@@ -99,6 +99,8 @@ jobs:
       - name: Turn off enforce admin
         env: 
           GITHUB_TOKEN: ${{ secrets.GHPAT_FOR_PUSH_RELEASE }}
+          REPO: ${{ github.repository }}
+          BRANCH: main
         run: |
           source .github/workflows/scripts/github-branch-protection.bash
           enforce_admins_off
@@ -112,6 +114,8 @@ jobs:
       - name: Turn on enforce admin
         env: 
           GITHUB_TOKEN: ${{ secrets.GHPAT_FOR_PUSH_RELEASE }}
+          REPO: ${{ github.repository }}
+          BRANCH: main
         run: |
           source .github/workflows/scripts/github-branch-protection.bash
           enforce_admins_on
