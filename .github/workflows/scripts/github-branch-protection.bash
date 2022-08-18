@@ -30,7 +30,7 @@ function get_current_branch_protection_setting() {
 }
 
 function apply_branch_protection_setting() {
-    gh api --method PUT -H "Accept: application/vnd.github+json" --input - repos//${REPO}/branches/${BRANCH}/protection
+    gh api --method PUT -H "Accept: application/vnd.github+json" --input - repos/${REPO}/branches/${BRANCH}/protection
 }
 
 function enforce_admins_off() {
