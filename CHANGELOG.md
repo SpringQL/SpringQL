@@ -10,6 +10,8 @@ All other sections are for end-users.
 <!-- markdownlint-disable MD024 -->
 ## [Unreleased]
 
+## [v1.0.0-a1] - 2022-08-22
+
 ## [v0.17.2] - 2022-08-19
 
 ## [v0.17.2] - 2022-08-03
@@ -280,6 +282,7 @@ All other sections are for end-users.
 <!-- Versions -->
 [Unreleased]: https://github.com/SpringQL/SpringQL/compare/v0.17.2...HEAD
 [Released]: https://github.com/SpringQL/SpringQL/releases
+[v1.0.0-a1]: https://github.com/SpringQL/SpringQL/compare/v0.10.0...v1.0.0-a1
 [v0.17.2]: https://github.com/SpringQL/SpringQL/compare/v0.17.1...v0.17.2
 [v0.17.1]: https://github.com/SpringQL/SpringQL/compare/v0.17.0...v0.17.1
 [v0.17.0]: https://github.com/SpringQL/SpringQL/compare/v0.16.1...v0.17.0

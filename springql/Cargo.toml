@@ -1,6 +1,6 @@
 [package]
 name = "springql"
-version = "0.17.2"
+version = "1.0.0-a1"
 
 authors = ["Sho Nakatani <lay.sakura@gmail.com>"]
 license = "MIT OR Apache-2.0"
@@ -15,7 +15,7 @@ readme = "../README.md"
 repository = "https://github.com/SpringQL/SpringQL"
 
 [dependencies]
-springql-core =  { version = "0.17.2", path="../springql-core"}
+springql-core =  { version = "1.0.0-a1", path="../springql-core"}
 
 [dev-dependencies]
 springql-foreign-service = {path = "../foreign-service"}
