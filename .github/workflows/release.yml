@@ -113,6 +113,7 @@ jobs:
           git push -v --force origin "v${RELEASE_VERSION}"
 
       - name: Turn on enforce admin
+        if: always()
         env: 
           GITHUB_TOKEN: ${{ secrets.GHPAT_FOR_PUSH_RELEASE }}
           REPO: ${{ github.repository }}
