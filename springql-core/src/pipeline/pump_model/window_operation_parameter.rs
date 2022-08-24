@@ -7,7 +7,7 @@ pub use aggregate::{AggregateFunctionParameter, AggregateParameter, GroupByLabel
 pub use join_parameter::{JoinParameter, JoinType};
 
 /// Window operation parameters
-#[derive(Clone, PartialEq, Debug)]
+#[derive(Clone, PartialEq, Eq, Debug)]
 pub enum WindowOperationParameter {
     Aggregate(AggregateParameter),
     Join(JoinParameter),

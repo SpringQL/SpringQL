@@ -53,7 +53,7 @@ pub enum FromItemSyntax {
     },
 }
 
-#[derive(Clone, PartialEq, Debug)]
+#[derive(Clone, PartialEq, Eq, Debug)]
 pub struct SubFromItemSyntax {
     pub stream_name: StreamName,
     pub alias: Option<CorrelationAlias>,
