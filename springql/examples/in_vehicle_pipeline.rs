@@ -8,7 +8,7 @@ use std::{
 };
 
 use springql::{SpringConfig, SpringPipeline};
-use springql_deconfig::SpringConfigExt;
+use springql_configloader::SpringConfigExt;
 use springql_foreign_service::sink::ForeignSink;
 
 use tempfile::NamedTempFile;

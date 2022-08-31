@@ -10,8 +10,8 @@
 
 use std::env;
 
+use springql_configloader::SpringConfigExt;
 use springql_core::api::{SpringConfig, SpringPipeline};
-use springql_deconfig::SpringConfigExt;
 
 fn parse_can_interface_arg() -> String {
     let args: Vec<String> = env::args().collect();

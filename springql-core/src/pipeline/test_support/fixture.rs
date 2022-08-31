@@ -19,10 +19,10 @@ use crate::{
         Pipeline,
     },
 };
-use springql_deconfig::SpringConfigExt;
+use springql_configloader::SpringConfigExt;
 
 fn default_config() -> SpringConfig {
-    let deconfig = springql_deconfig::SpringConfig::from_toml("").unwrap();
+    let deconfig = springql_configloader::SpringConfig::from_toml("").unwrap();
 
     /*
         can not direct return deconfig,

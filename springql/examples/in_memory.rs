@@ -9,7 +9,7 @@
 //! ```
 
 use springql::{SpringConfig, SpringPipeline, SpringSourceRowBuilder};
-use springql_deconfig::SpringConfigExt;
+use springql_configloader::SpringConfigExt;
 
 fn push_row_to_pipeline(pipeline: &SpringPipeline, queue_name: &str) {
     let row = SpringSourceRowBuilder::default()

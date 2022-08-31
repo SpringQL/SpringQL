@@ -25,7 +25,7 @@ use std::{
 };
 
 use springql::{SpringConfig, SpringPipeline};
-use springql_deconfig::SpringConfigExt;
+use springql_configloader::SpringConfigExt;
 
 fn send_data_to_pipeline() {
     fn send_row(json: &str) {

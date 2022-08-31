@@ -15,12 +15,13 @@
 
 ```rust
 use springql::{SpringPipeline, SpringConfig};
+use springql_configloader::SpringConfigExt;
 
 fn main() {
     const SOURCE_PORT: u16 = 54300;
 
     // create pipeline instans
-    let pipeline = SpringPipeline::new(&SpringConfig::default()).unwrap();
+    let pipeline = SpringPipeline::new(&SpringConfig::from_toml("").unwrap()).unwrap();
 
     // execute DDLs for build pipeline
 
@@ -89,12 +90,13 @@ echo '{"ts": "2022-01-01 13:00:00.000000000", "temperature": 5.3}' | nc localhos
 ```rust
 use std::{sync::Arc, thread, time::Duration};
 use springql::{SpringPipeline, SpringConfig};
+use springql_configloader::SpringConfigExt;
 
 fn main() {
     const SOURCE_PORT: u16 = 54300;
 
     // Using Arc to share the reference between threads feeding sink rows.
-    let pipeline = Arc::new(SpringPipeline::new(&SpringConfig::default()).unwrap());
+    let pipeline = Arc::new(SpringPipeline::new(&SpringConfig::from_toml("").unwrap()).unwrap());
 
     pipeline.command(
         "CREATE SOURCE STREAM source_trade (

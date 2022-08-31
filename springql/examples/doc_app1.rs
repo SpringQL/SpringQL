@@ -13,7 +13,7 @@
 //! ```
 
 use springql::{SpringConfig, SpringPipeline};
-use springql_deconfig::SpringConfigExt;
+use springql_configloader::SpringConfigExt;
 use std::process::Command;
 
 fn send_data_to_pipeline() {

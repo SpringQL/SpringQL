@@ -1,5 +1,5 @@
 [package]
-name = "springql-deconfig"
+name = "springql-configloader"
 version = "0.1.0"
 edition = "2021"
 
