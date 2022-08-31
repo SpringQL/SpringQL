@@ -3,7 +3,7 @@
 use crate::expression::ValueExprType;
 
 /// AND, OR, NOT
-#[derive(Clone, PartialEq, Hash, Debug)]
+#[derive(Clone, PartialEq, Eq, Hash, Debug)]
 pub enum LogicalFunction<E>
 where
     E: ValueExprType,

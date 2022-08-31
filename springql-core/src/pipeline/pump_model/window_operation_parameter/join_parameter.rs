@@ -11,7 +11,7 @@ use crate::{expr_resolver::ValueExprLabel, pipeline::field::ColumnReference};
 ///   ON s.c1 = t.c1
 ///   SLIDING WINDOW ...;
 /// ```
-#[derive(Clone, PartialEq, Debug, new)]
+#[derive(Clone, PartialEq, Eq, Debug, new)]
 pub struct JoinParameter {
     pub join_type: JoinType,
 
