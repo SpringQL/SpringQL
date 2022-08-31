@@ -8,7 +8,7 @@ on:
         required: true
         type: string
       release_version:
-        description: 'release version number (example `0.15.1`)'
+        description: 'release version number (example `0.16.0`)'
         required: true
         type: string
 
