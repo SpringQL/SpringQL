@@ -3,7 +3,7 @@
 use crate::expression::ValueExprType;
 
 /// Comparison function and its operands
-#[derive(Clone, PartialEq, Hash, Debug)]
+#[derive(Clone, PartialEq, Eq, Hash, Debug)]
 pub enum ComparisonFunction<E>
 where
     E: ValueExprType,

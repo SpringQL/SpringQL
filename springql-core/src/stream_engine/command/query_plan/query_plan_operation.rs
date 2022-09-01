@@ -5,7 +5,7 @@ use crate::{
     pipeline::{JoinParameter, StreamName, WindowOperationParameter, WindowParameter},
 };
 
-#[derive(Clone, PartialEq, Debug)]
+#[derive(Clone, PartialEq, Eq, Debug)]
 pub struct UpperOps {
     pub projection: ProjectionOp,
     pub group_aggr_window: Option<GroupAggregateWindowOp>,
@@ -16,7 +16,7 @@ impl UpperOps {
     }
 }
 
-#[derive(Clone, PartialEq, Debug)]
+#[derive(Clone, PartialEq, Eq, Debug)]
 pub struct LowerOps {
     pub join: JoinOp,
 }
@@ -26,30 +26,30 @@ impl LowerOps {
     }
 }
 
-#[derive(Clone, PartialEq, Debug)]
+#[derive(Clone, PartialEq, Eq, Debug)]
 pub struct ProjectionOp {
     pub expr_labels: Vec<ExprLabel>,
 }
 
-#[derive(Clone, PartialEq, Debug)]
+#[derive(Clone, PartialEq, Eq, Debug)]
 pub struct GroupAggregateWindowOp {
     pub window_param: WindowParameter,
     pub op_param: WindowOperationParameter,
 }
 
-#[derive(Clone, PartialEq, Debug)]
+#[derive(Clone, PartialEq, Eq, Debug)]
 pub struct CollectOp {
     pub stream: StreamName,
 }
 
 /// TODO recursive join
-#[derive(Clone, PartialEq, Debug)]
+#[derive(Clone, PartialEq, Eq, Debug)]
 pub enum JoinOp {
     Collect(CollectOp),
     JoinWindow(JoinWindowOp),
 }
 
-#[derive(Clone, PartialEq, Debug)]
+#[derive(Clone, PartialEq, Eq, Debug)]
 pub struct JoinWindowOp {
     pub left: CollectOp,
     pub right: CollectOp,

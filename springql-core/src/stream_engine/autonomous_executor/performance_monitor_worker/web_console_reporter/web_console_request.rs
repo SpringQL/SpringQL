@@ -18,18 +18,18 @@ impl WebConsoleRequest {
         let tasks = metrics
             .get_tasks()
             .iter()
-            .map(|(id, metrics)| TaskRequest::from_metrics(id, &*metrics))
+            .map(|(id, metrics)| TaskRequest::from_metrics(id, metrics))
             .collect();
 
         let queues = metrics
             .get_row_queues()
             .iter()
-            .map(|(id, metrics)| QueueRequest::from_row(id, &*metrics, graph))
+            .map(|(id, metrics)| QueueRequest::from_row(id, metrics, graph))
             .chain(
                 metrics
                     .get_window_queues()
                     .iter()
-                    .map(|(id, metrics)| QueueRequest::from_window(id, &*metrics, graph)),
+                    .map(|(id, metrics)| QueueRequest::from_window(id, metrics, graph)),
             )
             .collect();
 

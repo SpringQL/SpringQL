@@ -3,7 +3,7 @@
 use crate::expr_resolver::{AggrExprLabel, ValueExprLabel};
 
 /// [GROUP BY c1, c2, c3...]
-#[derive(Clone, PartialEq, Debug, Default, new)]
+#[derive(Clone, PartialEq, Eq, Debug, Default, new)]
 pub struct GroupByLabels(
     /// Empty when GROUP BY clause is not supplied.
     Vec<ValueExprLabel>,
@@ -22,7 +22,7 @@ impl GroupByLabels {
 ///   [GROUP BY group_by]
 ///   SLIDING WINDOW ...;
 /// ```
-#[derive(Clone, PartialEq, Debug, new)]
+#[derive(Clone, PartialEq, Eq, Debug, new)]
 pub struct AggregateParameter {
     // TODO multiple aggr_expr
     pub aggr_func: AggregateFunctionParameter,

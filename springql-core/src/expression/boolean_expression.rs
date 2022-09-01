@@ -12,7 +12,7 @@ use crate::expression::ValueExprType;
 
 /// Boolean expression.
 #[allow(clippy::enum_variant_names)]
-#[derive(Clone, PartialEq, Hash, Debug)]
+#[derive(Clone, PartialEq, Eq, Hash, Debug)]
 pub enum BinaryExpr<E>
 where
     E: ValueExprType,
