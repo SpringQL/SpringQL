@@ -10,6 +10,10 @@ All other sections are for end-users.
 <!-- markdownlint-disable MD024 -->
 ## [Unreleased]
 
+### Changed
+
+- move Configuration toml support from `springql-core`, into new crate `springql-configloader` ([#234](https://github.com/SpringQL/SpringQL/pull/234))
+
 ## [v0.17.2] - 2022-08-03
 
 ### Fixed
