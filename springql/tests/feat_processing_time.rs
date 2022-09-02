@@ -41,7 +41,7 @@ fn run_and_drain(
     test_source: ForeignSource,
     test_sink: &ForeignSink,
 ) -> Vec<serde_json::Value> {
-    let _pipeline = apply_ddls(ddls, default_config());
+    let _pipeline = apply_ddls(ddls, SpringConfig::default());
     test_source.start(source_input);
     drain_from_sink(test_sink)
 }

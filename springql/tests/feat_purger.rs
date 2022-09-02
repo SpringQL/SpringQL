@@ -7,7 +7,7 @@ use std::time::Duration;
 
 use log::LevelFilter;
 use serde_json::json;
-
+use springql_core::api::*;
 use springql_foreign_service::{
     sink::ForeignSink,
     source::{ForeignSource, ForeignSourceInput},
@@ -117,7 +117,7 @@ fn t(n_in_rows: u64, upper_limit_bytes: u64) {
         ),
     ];
 
-    let mut config = default_config();
+    let mut config = SpringConfig::default();
     config.memory.upper_limit_bytes = upper_limit_bytes;
     config.memory.severe_to_critical_percent = 60;
     config.memory.moderate_to_severe_percent = 30;

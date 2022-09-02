@@ -9,7 +9,6 @@
 //! ```
 
 use springql::{SpringConfig, SpringPipeline, SpringSourceRowBuilder};
-use springql_configloader::SpringConfigExt;
 
 fn push_row_to_pipeline(pipeline: &SpringPipeline, queue_name: &str) {
     let row = SpringSourceRowBuilder::default()
@@ -23,7 +22,7 @@ fn push_row_to_pipeline(pipeline: &SpringPipeline, queue_name: &str) {
 }
 
 fn main() {
-    let pipeline = SpringPipeline::new(&SpringConfig::from_toml("").unwrap()).unwrap();
+    let pipeline = SpringPipeline::new(&SpringConfig::default()).unwrap();
 
     pipeline
         .command(

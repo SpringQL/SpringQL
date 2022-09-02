@@ -4,6 +4,7 @@ mod test_support;
 
 use pretty_assertions::assert_eq;
 use serde_json::json;
+use springql_core::api::*;
 use springql_foreign_service::source::{ForeignSource, ForeignSourceInput};
 use springql_test_logger::setup_test_logger;
 
@@ -90,7 +91,7 @@ fn test_select_list_order_with_aggr() {
         ),
     ];
 
-    let pipeline = apply_ddls(&ddls, default_config());
+    let pipeline = apply_ddls(&ddls, SpringConfig::default());
     test_source.start(ForeignSourceInput::new_fifo_batch(source_input));
 
     let row = pipeline.pop(QUEUE_NAME).unwrap();

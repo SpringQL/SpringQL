@@ -1,44 +1,36 @@
 // This file is part of https://github.com/SpringQL/SpringQL which is licensed under MIT OR Apache-2.0. See file LICENSE-MIT or LICENSE-APACHE for full license details.
 
 use serde::Deserialize;
-pub use springql_core::api::{
-    Result, SpringConfig, SpringError, SpringMemoryConfig, SpringSinkWriterConfig,
-    SpringSourceReaderConfig, SpringWebConsoleConfig, SpringWorkerConfig,
-};
 
 const SPRING_CONFIG_DEFAULT: &str = include_str!(concat!(
     env!("CARGO_MANIFEST_DIR"),
     "/../default_config.toml"
 ));
 
+/// Top-level config.
 #[allow(missing_docs)]
 #[derive(Clone, Eq, PartialEq, Debug, Deserialize)]
-struct SpringConfigDeserialize {
-    #[serde(with = "SpringWorkerConfigDeserialize")]
+pub struct SpringConfig {
     pub worker: SpringWorkerConfig,
-    #[serde(with = "SpringMemoryConfigDeserialize")]
     pub memory: SpringMemoryConfig,
-    #[serde(with = "SpringWebConsoleConfigDeserialize")]
     pub web_console: SpringWebConsoleConfig,
-    #[serde(with = "SpringSourceReaderConfigDeserialize")]
     pub source_reader: SpringSourceReaderConfig,
-    #[serde(with = "SpringSinkWriterConfigDeserialize")]
     pub sink_writer: SpringSinkWriterConfig,
 }
 
+/// Config related to worker threads.
 #[allow(missing_docs)]
 #[derive(Copy, Clone, Eq, PartialEq, Debug, Deserialize)]
-#[serde(remote = "SpringWorkerConfig")]
-struct SpringWorkerConfigDeserialize {
+pub struct SpringWorkerConfig {
     pub n_generic_worker_threads: u16,
     pub n_source_worker_threads: u16,
     pub sleep_msec_no_row: u64,
 }
 
+/// Config related to memory management.
 #[allow(missing_docs)]
 #[derive(Copy, Clone, Eq, PartialEq, Debug, Deserialize)]
-#[serde(remote = "SpringMemoryConfig")]
-struct SpringMemoryConfigDeserialize {
+pub struct SpringMemoryConfig {
     pub upper_limit_bytes: u64,
 
     pub moderate_to_severe_percent: u8,
@@ -54,8 +46,7 @@ struct SpringMemoryConfigDeserialize {
 /// Config related to web console.
 #[allow(missing_docs)]
 #[derive(Clone, Eq, PartialEq, Debug, Deserialize)]
-#[serde(remote = "SpringWebConsoleConfig")]
-struct SpringWebConsoleConfigDeserialize {
+pub struct SpringWebConsoleConfig {
     pub enable_report_post: bool,
 
     pub report_interval_msec: u32,
@@ -66,10 +57,10 @@ struct SpringWebConsoleConfigDeserialize {
     pub timeout_msec: u32,
 }
 
+/// Config related to source reader
 #[allow(missing_docs)]
 #[derive(Copy, Clone, Eq, PartialEq, Debug, Deserialize)]
-#[serde(remote = "SpringSourceReaderConfig")]
-pub struct SpringSourceReaderConfigDeserialize {
+pub struct SpringSourceReaderConfig {
     pub net_connect_timeout_msec: u32,
     pub net_read_timeout_msec: u32,
 
@@ -79,8 +70,7 @@ pub struct SpringSourceReaderConfigDeserialize {
 /// Config related to sink writer.
 #[allow(missing_docs)]
 #[derive(Copy, Clone, Eq, PartialEq, Debug, Deserialize)]
-#[serde(remote = "SpringSinkWriterConfig")]
-pub struct SpringSinkWriterConfigDeserialize {
+pub struct SpringSinkWriterConfig {
     pub net_connect_timeout_msec: u32,
     pub net_write_timeout_msec: u32,
 
@@ -88,7 +78,13 @@ pub struct SpringSinkWriterConfigDeserialize {
     pub http_connect_timeout_msec: u32,
 }
 
-impl SpringConfigDeserialize {
+impl Default for SpringConfig {
+    fn default() -> Self {
+        Self::from_toml("").expect("default configuration must be valid")
+    }
+}
+
+impl SpringConfig {
     /// Configuration by TOML format string.
     ///
     /// # Parameters
@@ -101,7 +97,8 @@ impl SpringConfigDeserialize {
     ///   - `overwrite_config_toml` includes invalid key and/or value.
     /// - [SpringError::InvalidFormat](crate::api::error::SpringError::InvalidFormat) when:
     ///   - `overwrite_config_toml` is not valid as TOML.
-    pub fn from_toml(overwrite_config_toml: &str) -> Result<SpringConfig> {
+    pub fn from_toml(overwrite_config_toml: &str) -> Result<SpringConfig, String> {
+        // TODO Error type in springql-configloader crate
         let default_conf = config::Config::builder()
             .add_source(config::File::from_str(
                 SPRING_CONFIG_DEFAULT,
@@ -117,33 +114,8 @@ impl SpringConfigDeserialize {
                 config::FileFormat::Toml,
             ))
             .build()
-            .map_err(|e| SpringError::InvalidFormat {
-                s: overwrite_config_toml.to_string(),
-                source: e.into(),
-            })?;
+            .map_err(|e| e.to_string())?;
 
-        let de = c
-            .try_deserialize::<'_, Self>()
-            .map_err(|e| SpringError::InvalidConfig { source: e.into() })?;
-
-        Ok(SpringConfig {
-            worker: de.worker,
-            memory: de.memory,
-            web_console: de.web_console,
-            source_reader: de.source_reader,
-            sink_writer: de.sink_writer,
-        })
-    }
-}
-
-/// trait for deserialize configuration from file
-pub trait SpringConfigExt {
-    /// Create StringConfig from toml
-    fn from_toml(toml: &str) -> Result<SpringConfig>;
-}
-
-impl SpringConfigExt for SpringConfig {
-    fn from_toml(toml: &str) -> Result<SpringConfig> {
-        SpringConfigDeserialize::from_toml(toml)
+        c.try_deserialize().map_err(|e| e.to_string())
     }
 }

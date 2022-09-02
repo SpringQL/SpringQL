@@ -94,6 +94,7 @@ impl NetSinkWriter {
 
 #[cfg(test)]
 mod tests {
+    use springql_configloader::SpringConfig;
     use springql_foreign_service::sink::ForeignSink;
 
     use super::*;
@@ -110,7 +111,7 @@ mod tests {
             .build();
 
         let mut sink_writer =
-            NetSinkWriter::start(&options, &SpringSinkWriterConfig::fx_default()).unwrap();
+            NetSinkWriter::start(&options, &SpringConfig::default().sink_writer).unwrap();
 
         sink_writer
             .send_row(SchemalessRow::fx_city_temperature_tokyo())

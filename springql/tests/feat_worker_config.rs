@@ -2,7 +2,7 @@
 
 mod test_support;
 
-use crate::test_support::{apply_ddls, default_config, drain_from_sink};
+use crate::test_support::{apply_ddls, drain_from_sink};
 use serde_json::json;
 use springql::*;
 use springql_foreign_service::{
@@ -89,8 +89,10 @@ fn t(n_generic_worker_threads: u16, n_source_worker_threads: u16) {
         ),
     ];
 
-    let mut config = default_config();
-    config.worker = worker_config;
+    let config = SpringConfig {
+        worker: worker_config,
+        ..Default::default()
+    };
 
     let _pipeline = apply_ddls(&ddls, config);
     test_source.start(ForeignSourceInput::new_fifo_batch(source_input.clone()));

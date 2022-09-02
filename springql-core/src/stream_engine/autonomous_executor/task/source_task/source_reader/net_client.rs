@@ -95,6 +95,7 @@ impl NetClientSourceReader {}
 
 #[cfg(test)]
 mod tests {
+    use springql_configloader::SpringConfig;
     use springql_foreign_service::source::ForeignSource;
     use springql_foreign_service::source::ForeignSourceInput;
 
@@ -124,7 +125,7 @@ mod tests {
         ]));
 
         let mut subtask =
-            NetClientSourceReader::start(&options, &SpringSourceReaderConfig::fx_default())?;
+            NetClientSourceReader::start(&options, &SpringConfig::default().source_reader)?;
 
         assert_eq!(
             subtask.next_row()?,

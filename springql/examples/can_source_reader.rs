@@ -10,7 +10,6 @@
 
 use std::env;
 
-use springql_configloader::SpringConfigExt;
 use springql_core::api::{SpringConfig, SpringPipeline};
 
 fn parse_can_interface_arg() -> String {
@@ -26,7 +25,7 @@ fn parse_can_interface_arg() -> String {
 fn main() {
     let can_interface = parse_can_interface_arg();
 
-    let pipeline = SpringPipeline::new(&SpringConfig::from_toml("").unwrap()).unwrap();
+    let pipeline = SpringPipeline::new(&SpringConfig::default()).unwrap();
 
     pipeline
         .command(

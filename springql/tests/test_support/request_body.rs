@@ -17,7 +17,7 @@ pub struct TaskRequest {
     pub avg_gain_bytes_per_sec: f32,
 }
 
-#[derive(Clone, PartialEq, Eq, Debug, Deserialize)]
+#[derive(Clone, PartialEq, Debug, Deserialize)]
 pub struct QueueRequest {
     pub id: String,
     #[serde(rename = "upstream-task-id")]
@@ -31,7 +31,7 @@ pub struct QueueRequest {
     pub window_queue: Option<WindowQueueRequest>,
 }
 
-#[derive(Clone, PartialEq, Eq, Debug, Deserialize)]
+#[derive(Clone, PartialEq, Debug, Deserialize)]
 pub struct RowQueueRequest {
     #[serde(rename = "num-rows")]
     pub num_rows: u64,
@@ -39,7 +39,7 @@ pub struct RowQueueRequest {
     pub total_bytes: u64,
 }
 
-#[derive(Clone, PartialEq, Eq, Debug, Deserialize)]
+#[derive(Clone, PartialEq, Debug, Deserialize)]
 pub struct WindowQueueRequest {
     #[serde(rename = "num-rows-waiting")]
     pub num_rows_waiting: u64,

@@ -9,7 +9,6 @@
 use std::{env, process::Command, thread, time::Duration};
 
 use springql::SpringSourceRowBuilder;
-use springql_configloader::SpringConfigExt;
 use springql_core::api::{SpringConfig, SpringPipeline};
 use springql_test_logger::setup_test_logger;
 
@@ -39,7 +38,7 @@ fn main() {
 
     launch_http_server(sink_port);
 
-    let pipeline = SpringPipeline::new(&SpringConfig::from_toml("").unwrap()).unwrap();
+    let pipeline = SpringPipeline::new(&SpringConfig::default()).unwrap();
 
     pipeline
         .command(

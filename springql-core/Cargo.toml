@@ -19,6 +19,7 @@ repository = "https://github.com/SpringQL/SpringQL"
 stub_web_console=[]
 
 [dependencies]
+springql-configloader = { version = "0.17.1", path = "../springql-configloader" }
 anyhow = "1.0"
 thiserror = "1.0"
 serde = {version = "1.0", features = ["derive"], default-features = false}

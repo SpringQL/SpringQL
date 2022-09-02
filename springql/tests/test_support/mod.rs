@@ -3,7 +3,6 @@
 use std::time::Duration;
 
 use springql::{SpringConfig, SpringPipeline};
-use springql_configloader::SpringConfigExt;
 use springql_foreign_service::sink::ForeignSink;
 
 pub mod request_body;
@@ -24,9 +23,4 @@ pub fn drain_from_sink(sink: &ForeignSink) -> Vec<serde_json::Value> {
         received.push(v);
     }
     received
-}
-
-#[allow(dead_code)]
-pub fn default_config() -> SpringConfig {
-    SpringConfig::from_toml("").unwrap()
 }

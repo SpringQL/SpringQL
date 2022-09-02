@@ -2,10 +2,10 @@
 
 use std::sync::Arc;
 
+use springql_configloader::SpringConfig;
 use springql_foreign_service::source::{ForeignSource, ForeignSourceInput};
 
 use crate::{
-    api::SpringSourceReaderConfig,
     pipeline::{ColumnName, OptionsBuilder, StreamModel, StreamName, StreamShape},
     stream_engine::{
         autonomous_executor::{
@@ -47,7 +47,7 @@ impl NetClientSourceReader {
             .build();
 
         source.start(input);
-        NetClientSourceReader::start(&options, &SpringSourceReaderConfig::fx_default()).unwrap()
+        NetClientSourceReader::start(&options, &SpringConfig::default().source_reader).unwrap()
     }
 }
 

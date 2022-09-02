@@ -128,9 +128,10 @@ impl NetServerSourceReader {
 
 #[cfg(test)]
 mod tests {
+    use springql_configloader::SpringConfig;
+
     use super::*;
     use crate::{
-        api::SpringSinkWriterConfig,
         pipeline::OptionsBuilder,
         stream_engine::autonomous_executor::{
             task::sink_task::{NetSinkWriter, SinkWriter},
@@ -148,7 +149,7 @@ mod tests {
             .add("REMOTE_HOST", "127.0.0.1")
             .add("REMOTE_PORT", remote_port.to_string())
             .build();
-        NetSinkWriter::start(&options, &SpringSinkWriterConfig::fx_default()).unwrap()
+        NetSinkWriter::start(&options, &SpringConfig::default().sink_writer).unwrap()
     }
 
     #[test]
@@ -159,7 +160,7 @@ mod tests {
             .add("PORT", port.to_string())
             .build();
         let mut reader =
-            NetServerSourceReader::start(&options, &SpringSourceReaderConfig::fx_default())?;
+            NetServerSourceReader::start(&options, &SpringConfig::default().source_reader)?;
 
         let mut writer = tcp_writer(port);
 
