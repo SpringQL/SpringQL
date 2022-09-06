@@ -10,6 +10,10 @@ All other sections are for end-users.
 <!-- markdownlint-disable MD024 -->
 ## [Unreleased]
 
+### Changed
+
+- Bump Minnimum Support Rust Version (MSRV) to 1.63 ([#241](https://github.com/SpringQL/SpringQL/pull/241))
+
 ## [v0.17.2] - 2022-08-03
 
 ### Fixed
