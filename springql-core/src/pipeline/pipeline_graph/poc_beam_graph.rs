@@ -84,7 +84,7 @@ mod tests {
 
     #[test]
     fn test_() {
-        let mut pipeline = Pipeline::default();
+        let pipeline = Pipeline::default();
 
         let pcollection1 = pipeline.apply(ReadTransform::new("1".to_string()));
         let pcollection2 = pcollection1.apply(PTransform::new("2".to_string()));
