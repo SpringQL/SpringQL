@@ -120,12 +120,11 @@ impl WorkerSetupCoordinator {
                 Ok(v_) => {
                     if is_sync(&v_) {
                         break;
-                    } else {
-                        thread::sleep(Self::SYNC_SLEEP);
                     }
                 }
-                Err(_) => thread::sleep(Self::SYNC_SLEEP),
+                Err(_) => {}
             }
+            thread::sleep(Self::SYNC_SLEEP)
         }
     }
 
