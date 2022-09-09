@@ -151,13 +151,19 @@ pub trait WorkerThread {
         let mut state = Self::LoopState::new(&thread_arg);
 
         while stop_receiver.try_recv().is_err() {
-            if let Ok(_lock) = main_job_lock.try_main_job() {
+            let wait = if let Ok(_lock) = main_job_lock.try_main_job() {
                 if state.is_integral() {
                     state = Self::main_loop_cycle(state, &thread_arg, event_queue.as_ref());
+                    false
                 } else {
                     log::debug!("[{}] main_loop(): state is not integral", Self::THREAD_NAME);
-                    thread::sleep(Duration::from_millis(100));
+                    true
                 }
+            } else {
+                false
+            };
+            if wait {
+                thread::sleep(Duration::from_millis(100));
             }
             state = Self::handle_events(state, &event_polls, &thread_arg, event_queue.clone());
         }
