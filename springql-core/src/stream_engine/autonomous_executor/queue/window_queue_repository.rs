@@ -5,7 +5,7 @@ use std::{
     sync::Arc,
 };
 
-use parking_lot::RwLock;
+use std::sync::RwLock;
 
 use crate::stream_engine::autonomous_executor::{
     queue::window_queue::WindowQueue, task_graph::WindowQueueId,
@@ -18,7 +18,7 @@ pub struct WindowQueueRepository {
 
 impl WindowQueueRepository {
     pub fn get(&self, window_queue_id: &WindowQueueId) -> Arc<WindowQueue> {
-        let repo = self.repo.read();
+        let repo = self.repo.read().unwrap();
         repo.get(window_queue_id)
             .unwrap_or_else(|| {
                 panic!(
@@ -31,7 +31,7 @@ impl WindowQueueRepository {
 
     /// Removes all currently existing queues and creates new empty ones.
     pub fn reset(&self, queue_ids: HashSet<WindowQueueId>) {
-        let mut repo = self.repo.write();
+        let mut repo = self.repo.write().unwrap();
         repo.clear();
 
         queue_ids.into_iter().for_each(|queue_id| {
@@ -40,7 +40,7 @@ impl WindowQueueRepository {
     }
 
     pub fn purge(&self) {
-        let mut repo = self.repo.write();
+        let mut repo = self.repo.write().unwrap();
         repo.iter_mut().for_each(|(_, queue)| {
             queue.purge();
         });

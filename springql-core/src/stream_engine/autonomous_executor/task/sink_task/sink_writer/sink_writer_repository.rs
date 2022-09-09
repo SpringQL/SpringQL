@@ -5,7 +5,7 @@ use std::{
     sync::{Arc, Mutex},
 };
 
-use parking_lot::RwLock;
+use std::sync::RwLock;
 
 use crate::{
     api::{error::Result, SpringSinkWriterConfig},
@@ -38,7 +38,7 @@ impl SinkWriterRepository {
     /// - `SpringError::ForeignIo` when:
     ///   - failed to start subtask.
     pub fn register(&self, sink_writer: &SinkWriterModel) -> Result<()> {
-        let mut sinks = self.sinks.write();
+        let mut sinks = self.sinks.write().unwrap();
 
         if sinks.get(sink_writer.name()).is_some() {
             Ok(())
@@ -64,6 +64,7 @@ impl SinkWriterRepository {
     pub fn get_sink_writer(&self, name: &SinkWriterName) -> Arc<Mutex<Box<dyn SinkWriter>>> {
         self.sinks
             .read()
+            .unwrap()
             .get(name)
             .unwrap_or_else(|| panic!("sink name ({}) not registered yet", name))
             .clone()

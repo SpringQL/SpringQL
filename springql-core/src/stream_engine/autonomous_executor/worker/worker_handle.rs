@@ -6,7 +6,7 @@ use std::{
     time::Duration,
 };
 
-use parking_lot::{Mutex, MutexGuard};
+use std::sync::{Mutex, MutexGuard};
 
 use crate::{
     api::SpringConfig,
@@ -117,26 +117,26 @@ impl WorkerSetupCoordinator {
     fn sync<T, F: Fn(&T) -> bool>(&self, v: &Mutex<T>, is_sync: F) {
         loop {
             match v.try_lock() {
-                Some(v_) => {
+                Ok(v_) => {
                     if is_sync(&v_) {
                         break;
                     } else {
                         thread::sleep(Self::SYNC_SLEEP);
                     }
                 }
-                None => thread::sleep(Self::SYNC_SLEEP),
+                Err(_) => thread::sleep(Self::SYNC_SLEEP),
             }
         }
     }
 
     fn ready_i64(&self, n: &Mutex<i64>) {
-        let mut n_ = n.lock();
+        let mut n_ = n.lock().unwrap();
         assert!(*n_ > 0);
         *n_ -= 1;
     }
 
     fn ready_bool(&self, b: &Mutex<bool>) {
-        let mut b_ = b.lock();
+        let mut b_ = b.lock().unwrap();
         assert!(!*b_);
         *b_ = true;
     }
@@ -160,7 +160,7 @@ impl WorkerStopCoordinator {
     }
 
     fn join(&self) {
-        let mut live_worker_count = self.live_worker_count.lock();
+        let mut live_worker_count = self.live_worker_count.lock().unwrap();
         *live_worker_count += 1;
     }
 
@@ -170,6 +170,6 @@ impl WorkerStopCoordinator {
     }
 
     fn locked_count(&self) -> MutexGuard<u16> {
-        self.live_worker_count.lock()
+        self.live_worker_count.lock().unwrap()
     }
 }

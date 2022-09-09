@@ -6,7 +6,7 @@ use anyhow::Context;
 //
 // `std::sync::RwLock` uses `pthread_rwlock_wrlock`, which might cause writer starvation without setting `PTHREAD_RWLOCK_PREFER_WRITER_NONRECURSIVE_NP` attribute.
 // `parking_lot::RwLock` avoids writer starvation.
-use parking_lot::{RwLock, RwLockReadGuard, RwLockWriteGuard};
+use std::sync::{RwLock, RwLockReadGuard, RwLockWriteGuard};
 
 /// Task executor is responsible for queues' cleanup on pipeline update.
 ///
@@ -17,7 +17,7 @@ pub struct TaskExecutorLock(RwLock<TaskExecutorLockToken>);
 
 impl TaskExecutorLock {
     pub fn task_execution_barrier(&self) -> TaskExecutionBarrierGuard {
-        let write_lock = self.0.write();
+        let write_lock = self.0.write().unwrap();
         TaskExecutionBarrierGuard(write_lock)
     }
 
@@ -27,6 +27,7 @@ impl TaskExecutorLock {
     pub fn try_task_execution(&self) -> Result<TaskExecutionLockGuard, anyhow::Error> {
         self.0
             .try_read()
+            .ok()
             .map(TaskExecutionLockGuard)
             .context("write lock may be taken")
     }

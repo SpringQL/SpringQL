@@ -17,7 +17,7 @@ pub use task_metrics::TaskMetrics;
 
 use std::collections::HashMap;
 
-use parking_lot::{RwLock, RwLockReadGuard, RwLockWriteGuard};
+use std::sync::{RwLock, RwLockReadGuard, RwLockWriteGuard};
 
 use crate::{
     pipeline::PipelineVersion,
@@ -150,19 +150,22 @@ impl PerformanceMetrics {
     ) -> Vec<(&WindowQueueId, RwLockReadGuard<'_, WindowQueueMetrics>)> {
         self.window_queues
             .iter()
-            .map(|(id, q)| (id, q.read()))
+            .map(|(id, q)| (id, q.read().unwrap()))
             .collect()
     }
 
     pub fn get_row_queues(&self) -> Vec<(&RowQueueId, RwLockReadGuard<'_, RowQueueMetrics>)> {
         self.row_queues
             .iter()
-            .map(|(id, q)| (id, q.read()))
+            .map(|(id, q)| (id, q.read().unwrap()))
             .collect()
     }
 
     pub fn get_tasks(&self) -> Vec<(&TaskId, RwLockReadGuard<'_, TaskMetrics>)> {
-        self.tasks.iter().map(|(id, t)| (id, t.read())).collect()
+        self.tasks
+            .iter()
+            .map(|(id, t)| (id, t.read().unwrap()))
+            .collect()
     }
 
     fn get_task_read(&self, id: &TaskId) -> RwLockReadGuard<'_, TaskMetrics> {
@@ -170,18 +173,21 @@ impl PerformanceMetrics {
             .get(id)
             .unwrap_or_else(|| panic!("task_id {} not found", id))
             .read()
+            .unwrap()
     }
     fn get_window_queue_read(&self, id: &WindowQueueId) -> RwLockReadGuard<'_, WindowQueueMetrics> {
         self.window_queues
             .get(id)
             .unwrap_or_else(|| panic!("queue_id {} not found", id))
             .read()
+            .unwrap()
     }
     fn get_row_queue_read(&self, id: &RowQueueId) -> RwLockReadGuard<'_, RowQueueMetrics> {
         self.row_queues
             .get(id)
             .unwrap_or_else(|| panic!("queue_id {} not found", id))
             .read()
+            .unwrap()
     }
 
     fn get_task_write(&self, id: &TaskId) -> RwLockWriteGuard<'_, TaskMetrics> {
@@ -189,9 +195,14 @@ impl PerformanceMetrics {
             .get(id)
             .unwrap_or_else(|| panic!("task id {} not found", id))
             .write()
+            .unwrap()
     }
     fn get_row_queue_write(&self, id: &RowQueueId) -> RwLockWriteGuard<'_, RowQueueMetrics> {
-        self.row_queues.get(id).expect("queue_id not found").write()
+        self.row_queues
+            .get(id)
+            .expect("queue_id not found")
+            .write()
+            .unwrap()
     }
     fn get_window_queue_write(
         &self,
@@ -201,5 +212,6 @@ impl PerformanceMetrics {
             .get(id)
             .expect("queue_id not found")
             .write()
+            .unwrap()
     }
 }

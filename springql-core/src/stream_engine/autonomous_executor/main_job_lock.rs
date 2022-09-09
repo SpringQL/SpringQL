@@ -2,7 +2,7 @@
 
 use anyhow::Context;
 
-use parking_lot::{RwLock, RwLockReadGuard, RwLockWriteGuard};
+use std::sync::{RwLock, RwLockReadGuard, RwLockWriteGuard};
 
 /// Lock object to barrier main jobs in worker threads.
 ///
@@ -15,7 +15,7 @@ pub struct MainJobLock(RwLock<MainJobLockToken>);
 
 impl MainJobLock {
     pub fn main_job_barrier(&self) -> MainJobBarrierGuard {
-        let write_lock = self.0.write();
+        let write_lock = self.0.write().unwrap();
         MainJobBarrierGuard(write_lock)
     }
 
@@ -25,6 +25,7 @@ impl MainJobLock {
     pub fn try_main_job(&self) -> Result<MainJobLockGuard, anyhow::Error> {
         self.0
             .try_read()
+            .ok()
             .map(MainJobLockGuard)
             .context("write lock may be taken")
     }

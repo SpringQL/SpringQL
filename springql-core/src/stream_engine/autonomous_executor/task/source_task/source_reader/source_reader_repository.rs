@@ -5,7 +5,7 @@ use std::{
     sync::{Arc, Mutex},
 };
 
-use parking_lot::RwLock;
+use std::sync::RwLock;
 
 use crate::{
     api::{error::Result, SpringSourceReaderConfig},
@@ -38,7 +38,7 @@ impl SourceReaderRepository {
     /// - `SpringError::ForeignIo` when:
     ///   - failed to start subtask.
     pub fn register(&self, source_reader: &SourceReaderModel) -> Result<()> {
-        let mut sources = self.sources.write();
+        let mut sources = self.sources.write().unwrap();
 
         if sources.get(source_reader.name()).is_some() {
             Ok(())
@@ -64,6 +64,7 @@ impl SourceReaderRepository {
     pub fn get_source_reader(&self, name: &SourceReaderName) -> Arc<Mutex<Box<dyn SourceReader>>> {
         self.sources
             .read()
+            .unwrap()
             .get(name)
             .unwrap_or_else(|| panic!("source reader name ({}) not registered yet", name))
             .clone()
