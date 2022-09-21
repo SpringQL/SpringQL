@@ -73,7 +73,6 @@ jobs:
           rm Cargo.toml.org
           cd ..
 
-
       - name: commit changes
         run: |
           git add .
@@ -99,6 +98,11 @@ jobs:
 
       - name: Turn off enforce admin
         env: 
+          # We wanted to use PAT of SpringQL-bot account but could not.
+          # SpringQL organization requires 2FA for each member but
+          # SpringQL-bot does not have an appropriate way to finish 2FA.
+          #
+          # So use a PAT from an account eligible as a release manager.
           GITHUB_TOKEN: ${{ secrets.GHPAT_FOR_PUSH_RELEASE }}
           REPO: ${{ github.repository }}
           BRANCH: ${{ env.TARGET_BRANCH }}
