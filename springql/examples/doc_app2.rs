@@ -24,7 +24,7 @@ use std::{
     time::{Duration, Instant},
 };
 
-use springql::{SpringConfig, SpringPipeline};
+use springql_release_test::{SpringConfig, SpringPipeline};
 
 fn send_data_to_pipeline() {
     fn send_row(json: &str) {

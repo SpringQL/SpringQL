@@ -8,8 +8,8 @@
 
 use std::{env, process::Command, thread, time::Duration};
 
-use springql::SpringSourceRowBuilder;
-use springql_core::api::{SpringConfig, SpringPipeline};
+use springql_core_release_test::api::{SpringConfig, SpringPipeline};
+use springql_release_test::SpringSourceRowBuilder;
 use springql_test_logger::setup_test_logger;
 
 fn parse_remote_args() -> (String, u16) {

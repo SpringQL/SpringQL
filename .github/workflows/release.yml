@@ -64,11 +64,11 @@ jobs:
       
       - name: bump crate versions
         run: |
-          cargo set-version -p springql ${RELEASE_VERSION}
-          cargo set-version -p springql-core ${RELEASE_VERSION}
+          cargo set-version -p springql-release-test ${RELEASE_VERSION}
+          cargo set-version -p springql-core-release-test ${RELEASE_VERSION}
           cd springql
           cp Cargo.toml Cargo.toml.org
-          toml set Cargo.toml.org dependencies.springql-core.version "${RELEASE_VERSION}" > Cargo.toml
+          toml set Cargo.toml.org dependencies.springql-core-release-test.version "${RELEASE_VERSION}" > Cargo.toml
           rm Cargo.toml.org
           cd ..
 
@@ -127,7 +127,7 @@ jobs:
 
           cargo login "${{ secrets.CRATES_IO_TOKEN }}"
 
-          cargo publish -p springql-core
-          wait_published "springql-core" "${RELEASE_VERSION}" 2> /dev/null
-          cargo publish -p springql
-          wait_published "springql" "${RELEASE_VERSION}" 2> /dev/null
+          cargo publish -p springql-core-release-test
+          wait_published "springql-core-release-test" "${RELEASE_VERSION}" 2> /dev/null
+          cargo publish -p springql-release-test
+          wait_published "springql-release-test" "${RELEASE_VERSION}" 2> /dev/null

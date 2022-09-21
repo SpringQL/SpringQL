@@ -8,7 +8,7 @@
 //! cargo run --example in_memory
 //! ```
 
-use springql::{SpringConfig, SpringPipeline, SpringSourceRowBuilder};
+use springql_release_test::{SpringConfig, SpringPipeline, SpringSourceRowBuilder};
 
 fn push_row_to_pipeline(pipeline: &SpringPipeline, queue_name: &str) {
     let row = SpringSourceRowBuilder::default()

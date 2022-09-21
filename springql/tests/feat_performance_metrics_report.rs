@@ -10,15 +10,15 @@ use serde_json::json;
 use time::{macros::format_description, OffsetDateTime, PrimitiveDateTime};
 
 use crate::test_support::{apply_ddls, drain_from_sink};
-use springql::*;
 use springql_foreign_service::{
     sink::ForeignSink,
     source::{ForeignSource, ForeignSourceInput},
 };
+use springql_release_test::*;
 use springql_test_logger::setup_test_logger;
 
 #[cfg(feature = "stub_web_console")]
-use springql_core::stubed_requests;
+use springql_core_release_test::stubed_requests;
 
 /// 1 sec tick data
 #[cfg(feature = "stub_web_console")]

@@ -4,7 +4,7 @@ mod test_support;
 
 use pretty_assertions::assert_eq;
 use serde_json::json;
-use springql_core::api::{error::Result, *};
+use springql_core_release_test::api::{error::Result, *};
 use springql_foreign_service::{
     sink::ForeignSink,
     source::{ForeignSource, ForeignSourceInput},

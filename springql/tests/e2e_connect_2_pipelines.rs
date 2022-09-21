@@ -3,11 +3,11 @@
 mod test_support;
 
 use serde_json::json;
-use springql::{SpringConfig, SpringPipeline};
 use springql_foreign_service::{
     sink::ForeignSink,
     source::{ForeignSource, ForeignSourceInput},
 };
+use springql_release_test::{SpringConfig, SpringPipeline};
 
 use crate::test_support::*;
 

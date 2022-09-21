@@ -1,5 +1,5 @@
 [package]
-name = "springql-core"
+name = "springql-core-release-test"
 version = "1.0.0-a1"
 
 authors = ["Sho Nakatani <lay.sakura@gmail.com>"]

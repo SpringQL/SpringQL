@@ -7,7 +7,7 @@ use std::time::Duration;
 
 use log::LevelFilter;
 use serde_json::json;
-use springql_core::api::*;
+use springql_core_release_test::api::*;
 use springql_foreign_service::{
     sink::ForeignSink,
     source::{ForeignSource, ForeignSourceInput},

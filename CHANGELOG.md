@@ -131,7 +131,7 @@ All other sections are for end-users.
 
 - re organize public API ([#169](https://github.com/SpringQL/SpringQL/pull/169))
   - public mod `api` and hide `high_level_rs`
-    - high level APIs are exported from `springql_core::api`
+    - high level APIs are exported from `springql_core_release_test::api`
   - remove low level API
   - rename `SpringPipelineHL` to `SpringPipeline`
   - rename `SpringRowHL` to `SpringRow`
@@ -281,7 +281,6 @@ All other sections are for end-users.
 
 <!-- Versions -->
 [Unreleased]: https://github.com/SpringQL/SpringQL/compare/v0.17.2...HEAD
-[Released]: https://github.com/SpringQL/SpringQL/releases
 [v1.0.0-a1]: https://github.com/SpringQL/SpringQL/compare/v0.10.0...v1.0.0-a1
 [v0.17.2]: https://github.com/SpringQL/SpringQL/compare/v0.17.1...v0.17.2
 [v0.17.1]: https://github.com/SpringQL/SpringQL/compare/v0.17.0...v0.17.1

@@ -4,11 +4,11 @@ mod test_support;
 
 use crate::test_support::{apply_ddls, drain_from_sink};
 use serde_json::json;
-use springql::*;
 use springql_foreign_service::{
     sink::ForeignSink,
     source::{ForeignSource, ForeignSourceInput},
 };
+use springql_release_test::*;
 use springql_test_logger::setup_test_logger;
 
 fn t(n_generic_worker_threads: u16, n_source_worker_threads: u16) {

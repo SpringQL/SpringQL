@@ -4,7 +4,7 @@
 #![deny(missing_debug_implementations, missing_docs)]
 #![deny(rustdoc::broken_intra_doc_links)]
 
-pub use springql_core::api::*;
+pub use springql_core_release_test::api::*;
 
 #[cfg(test)]
 mod tests {}

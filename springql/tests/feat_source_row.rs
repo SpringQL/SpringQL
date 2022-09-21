@@ -4,7 +4,7 @@ mod test_support;
 
 use std::str::FromStr;
 
-use springql::{
+use springql_release_test::{
     SpringConfig, SpringError, SpringPipeline, SpringSourceRow, SpringSourceRowBuilder,
     SpringTimestamp,
 };

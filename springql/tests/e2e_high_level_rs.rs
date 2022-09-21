@@ -5,11 +5,11 @@ mod test_support;
 use pretty_assertions::assert_eq;
 use serde_json::json;
 
-use springql::{Result, SpringConfig};
 use springql_foreign_service::{
     sink::ForeignSink,
     source::{ForeignSource, ForeignSourceInput},
 };
+use springql_release_test::{Result, SpringConfig};
 use springql_test_logger::setup_test_logger;
 
 use crate::test_support::*;

@@ -7,8 +7,8 @@ use std::{
     time::Duration,
 };
 
-use springql::{SpringConfig, SpringPipeline};
 use springql_foreign_service::sink::ForeignSink;
+use springql_release_test::{SpringConfig, SpringPipeline};
 
 use tempfile::NamedTempFile;
 
