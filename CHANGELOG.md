@@ -10,6 +10,10 @@ All other sections are for end-users.
 <!-- markdownlint-disable MD024 -->
 ## [Unreleased]
 
+### For developers
+
+- Introduced automated release ([#215](https://github.com/SpringQL/SpringQL/pull/215), [#226](https://github.com/SpringQL/SpringQL/pull/226), [#238](https://github.com/SpringQL/SpringQL/pull/238))
+
 ## [v0.17.2] - 2022-08-03
 
 ### Fixed
