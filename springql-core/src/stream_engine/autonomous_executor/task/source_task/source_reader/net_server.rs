@@ -130,8 +130,10 @@ impl NetServerSourceReader {
 mod tests {
     use super::*;
     use crate::{
-        api::SpringSinkWriterConfig,
-        pipeline::OptionsBuilder,
+        pipeline::{
+            test_support::fixture::{default_sink_writer_config, default_source_reader_config},
+            OptionsBuilder,
+        },
         stream_engine::autonomous_executor::{
             task::sink_task::{NetSinkWriter, SinkWriter},
             SchemalessRow,
@@ -148,7 +150,7 @@ mod tests {
             .add("REMOTE_HOST", "127.0.0.1")
             .add("REMOTE_PORT", remote_port.to_string())
             .build();
-        NetSinkWriter::start(&options, &SpringSinkWriterConfig::fx_default()).unwrap()
+        NetSinkWriter::start(&options, &default_sink_writer_config()).unwrap()
     }
 
     #[test]
@@ -158,8 +160,7 @@ mod tests {
             .add("PROTOCOL", "TCP")
             .add("PORT", port.to_string())
             .build();
-        let mut reader =
-            NetServerSourceReader::start(&options, &SpringSourceReaderConfig::fx_default())?;
+        let mut reader = NetServerSourceReader::start(&options, &default_source_reader_config())?;
 
         let mut writer = tcp_writer(port);
 

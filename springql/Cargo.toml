@@ -15,6 +15,7 @@ readme = "../README.md"
 repository = "https://github.com/SpringQL/SpringQL"
 
 [dependencies]
+springql-config = {version="0.18.0", features= ["toml"], path="../springql-config"}
 springql-core =  { version = "0.18.0", path="../springql-core"}
 
 [dev-dependencies]

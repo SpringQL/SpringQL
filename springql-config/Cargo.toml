@@ -1,0 +1,25 @@
+[package]
+name = "springql-config"
+version = "0.18.0"
+
+authors = ["Sho Nakatani <lay.sakura@gmail.com>"]
+license = "MIT OR Apache-2.0"
+
+edition = "2021"
+rust-version = "1.57.0"
+
+categories = ["embedded"]
+description = "SpringQL-config: configuration for SpringQL"
+documentation = "https://springql.github.io/"
+keywords = ["springql", "stream-processing"] # up to 5 keywords, each keyword should have <= 20 chars
+readme = "../README.md"
+repository = "https://github.com/SpringQL/SpringQL"
+
+[dependencies]
+serde = {version = "1.0", features = ["derive"], default-features = false, optional = true }
+config = {version = "0.13", features = ["toml"], default-features = false, optional = true}
+thiserror = "1.0"
+
+[features]
+default=[]
+toml=[ "serde", "config" ]

@@ -99,6 +99,7 @@ mod tests {
     use springql_foreign_service::source::ForeignSourceInput;
 
     use super::*;
+    use crate::pipeline::test_support::fixture::default_source_reader_config;
     use crate::pipeline::OptionsBuilder;
     use crate::stream_engine::autonomous_executor::row::JsonObject;
     use crate::stream_engine::autonomous_executor::row::JsonSourceRow;
@@ -123,8 +124,7 @@ mod tests {
             serde_json::Value::from(j1.clone()),
         ]));
 
-        let mut subtask =
-            NetClientSourceReader::start(&options, &SpringSourceReaderConfig::fx_default())?;
+        let mut subtask = NetClientSourceReader::start(&options, &default_source_reader_config())?;
 
         assert_eq!(
             subtask.next_row()?,
