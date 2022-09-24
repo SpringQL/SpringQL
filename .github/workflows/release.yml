@@ -135,5 +135,7 @@ jobs:
 
           cargo publish -p springql-core
           wait_published "springql-core" "${RELEASE_VERSION}" 2> /dev/null
+          
+          try_publish_dryrun 10 -p springql
           cargo publish -p springql
           wait_published "springql" "${RELEASE_VERSION}" 2> /dev/null

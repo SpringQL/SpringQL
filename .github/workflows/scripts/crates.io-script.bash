@@ -28,3 +28,34 @@ function wait_published() {
 }
 
 export -f wait_published
+
+# function: try_dryrun_publish
+# arg#1: max retry
+# arg#2.. : pass to `cargo publish --dry-run` args
+#
+# return code:
+# 3 : leached max retry 
+# other: exit code from cargo publish
+function try_publish_dryrun() {
+    MAX_RETRY=$1
+    NUM_RETRY=0
+    echo 'executing first try'
+    cargo publish --dry-run ${@:2}
+    PUBLISH_DRYRUN_EXITCODE=$?
+    while [ ${PUBLISH_DRYRUN_EXITCODE} -eq 101 ];
+    do
+        NUM_RETRY=`expr ${NUM_RETRY} + 1`
+        if [ ${NUM_RETRY} -gt ${MAX_RETRY} ];
+        then
+          return 3
+        fi
+        echo 'waiting for retry'
+        sleep 30
+        echo 'Retrying'
+        cargo publish --dry-run ${@:2}
+        PUBLISH_DRYRUN_EXITCODE=$?
+    done
+    retrn ${PUBLISH_DRYRUN_EXITCODE}
+}
+
+export -f try_publish_dryrun
