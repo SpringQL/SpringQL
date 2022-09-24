@@ -8,7 +8,7 @@ on:
         required: true
         type: string
       release_version:
-        description: 'release version number (example `0.15.1`)'
+        description: 'release version number (example `0.16.0`)'
         required: true
         type: string
 
@@ -17,6 +17,7 @@ jobs:
     env:
       CURRENT_VERSION: ${{ github.event.inputs.current_version }}
       RELEASE_VERSION: ${{ github.event.inputs.release_version }}
+      TARGET_BRANCH: main
     permissions:
       contents: write
     runs-on: ubuntu-latest
@@ -25,7 +26,8 @@ jobs:
       - name: checkout code
         uses: actions/checkout@v2
         with:
-          ref: main
+          ref: ${{ env.TARGET_BRANCH }}
+          token: ${{ secrets.GHPAT_FOR_PUSH_RELEASE }}
 
       - name: Show initial git status 
         run: |
@@ -71,7 +73,6 @@ jobs:
           rm Cargo.toml.org
           cd ..
 
-
       - name: commit changes
         run: |
           git add .
@@ -87,8 +88,6 @@ jobs:
       - name: git tag
         run: |
           git tag "v${RELEASE_VERSION}"
-          git tag "springql@${RELASE_VERSION}"
-          git tag "springql-core@${RELASE_VERSION}"
 
       - name: Show final git status 
         run: |
@@ -97,13 +96,35 @@ jobs:
           git status -v >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY
 
+      - name: Turn off enforce admin
+        env: 
+          # We wanted to use PAT of SpringQL-bot account but could not.
+          # SpringQL organization requires 2FA for each member but
+          # SpringQL-bot does not have an appropriate way to finish 2FA.
+          #
+          # So use a PAT from an account eligible as a release manager.
+          GITHUB_TOKEN: ${{ secrets.GHPAT_FOR_PUSH_RELEASE }}
+          REPO: ${{ github.repository }}
+          BRANCH: ${{ env.TARGET_BRANCH }}
+        run: |
+          source .github/workflows/scripts/github-branch-protection.bash
+          enforce_admins_off
+
       - name: git push
         run: |
-          git remote set-url origin https://github-actions:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}
-          git push -v origin main
-          git push -v origin "v${RELEASE_VERSION}"
-          git push -v origin "springql@${RELEASE_VERSION}"
-          git push -v origin "springql-core@${RELEASE_VERSION}"
+          git remote set-url origin "https://github-actions:${{ secrets.GHPAT_FOR_PUSH_RELEASE }}@github.com/${GITHUB_REPOSITORY}"
+          git push -v --force origin ${{ env.TARGET_BRANCH }}
+          git push -v --force origin "v${RELEASE_VERSION}"
+
+      - name: Turn on enforce admin
+        if: always()
+        env: 
+          GITHUB_TOKEN: ${{ secrets.GHPAT_FOR_PUSH_RELEASE }}
+          REPO: ${{ github.repository }}
+          BRANCH: ${{ env.TARGET_BRANCH }}
+        run: |
+          source .github/workflows/scripts/github-branch-protection.bash
+          enforce_admins_on
 
       - name: cargo publish
         run: |
