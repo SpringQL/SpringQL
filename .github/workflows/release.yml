@@ -47,7 +47,7 @@ jobs:
       - name: Install release tools
         if: ${{ steps.cache_tools.outputs.cache-hit==false }}
         run: |
-          cargo install cargo-edit toml-cli
+          cargo install cargo-edit cargo-workspaces toml-cli
 
       - name: git config
         run: |
