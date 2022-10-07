@@ -118,14 +118,6 @@ done
 ''',
 ]
 
-[tasks.publish]
-script = [
-  '''
-#!/usr/bin/env bash -eux
-cargo workspaces publish
-''',
-]
-
 [tasks.actionlint]
 description="lint github actions with actionlint"
 script = [
