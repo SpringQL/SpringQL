@@ -10,9 +10,14 @@ All other sections are for end-users.
 <!-- markdownlint-disable MD024 -->
 ## [Unreleased]
 
+### For developers
+
+- Fix publish job in automated release ([#248](https://github.com/SpringQL/SpringQL/pull/248)
+
 ### Changed
 
-- Bump Minnimum Support Rust Version (MSRV) to 1.63 ([#241](https://github.com/SpringQL/SpringQL/pull/241))
+- Bump Minimum Support Rust Version (MSRV) to 1.63 ([#241](https://github.com/SpringQL/SpringQL/pull/241))
+
 
 ## [v0.18.0] - 2022-09-21
 

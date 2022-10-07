@@ -128,12 +128,5 @@ jobs:
 
       - name: cargo publish
         run: |
-          # load helper script
-          source .github/workflows/scripts/crates.io-script.bash
-
           cargo login "${{ secrets.CRATES_IO_TOKEN }}"
-
-          cargo publish -p springql-core
-          wait_published "springql-core" "${RELEASE_VERSION}" 2> /dev/null
-          cargo publish -p springql
-          wait_published "springql" "${RELEASE_VERSION}" 2> /dev/null
+          cargo workspaces publish --from-git

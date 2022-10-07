@@ -11,20 +11,3 @@ function get_crate_latest_version() {
 }
 
 export -f get_crate_latest_version
-
-# function: wait_published
-# arg#1: crate name
-# arg#2: expect version
-function wait_published() {
-    echo "Waiting $1@$2"
-    CURRENT_VERSION=$(get_crate_latest_version $1)
-    echo "CURRENT_VERSION=$CURRENT_VERSION"
-    while [ $CURRENT_VERSION != "$2" ]
-    do
-        sleep 5
-        CURRENT_VERSION=$(get_crate_latest_version $1)
-        echo "CURRENT_VERSION=$CURRENT_VERSION"
-    done
-}
-
-export -f wait_published
