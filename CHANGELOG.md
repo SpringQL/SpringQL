@@ -10,6 +10,8 @@ All other sections are for end-users.
 <!-- markdownlint-disable MD024 -->
 ## [Unreleased]
 
+## [v0.18.1] - 2022-10-07
+
 ### For developers
 
 - Fix publish job in automated release ([#248](https://github.com/SpringQL/SpringQL/pull/248)
@@ -293,6 +295,7 @@ All other sections are for end-users.
 <!-- Versions -->
 [Unreleased]: https://github.com/SpringQL/SpringQL/compare/v0.17.1...HEAD
 [Released]: https://github.com/SpringQL/SpringQL/releases
+[v0.18.1]: https://github.com/SpringQL/SpringQL/compare/v0.18.0...v0.18.1
 [v0.18.0]: https://github.com/SpringQL/SpringQL/compare/v0.17.2...v0.18.0
 [v0.17.1]: https://github.com/SpringQL/SpringQL/compare/v0.17.0...v0.17.1
 [v0.17.0]: https://github.com/SpringQL/SpringQL/compare/v0.16.1...v0.17.0
