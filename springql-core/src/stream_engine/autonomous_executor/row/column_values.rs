@@ -68,7 +68,7 @@ impl ColumnValues {
         self.0
             .iter()
             .enumerate()
-            .find_map(|(i, (col, _))| (col == column_name).then(|| i))
+            .find_map(|(i, (col, _))| (col == column_name).then_some(i))
             .with_context(|| {
                 format!(
                     r#"column "{}" not found from this ColumnValues"#,
