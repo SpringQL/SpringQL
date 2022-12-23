@@ -80,15 +80,6 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: Check versions on crates.io
-        id: dep-versions
-        run: |
-          # load helper script
-          source .github/workflows/scripts/crates.io-script.bash
-          # get latest version from crates.io
-          echo "::set-output name=cargo-deny_version::$(get_crate_latest_version cargo-deny)"
-          # add other dependencies versions here
-
       - name: Install Rust ${{ matrix.rust }}
         if: ${{ ! matrix.make.rust-free }}
         uses: actions-rs/toolchain@v1
@@ -98,32 +89,34 @@ jobs:
           components: rustfmt, clippy, llvm-tools-preview
           override: true
 
-      - name: Cache cargo registry
-        if: ${{ ! matrix.make.rust-free }}
-        uses: actions/cache@v2
-        continue-on-error: false
+      - uses: Swatinem/rust-cache@v2
         with:
-          path: |
-            ~/.cargo/registry
-            ~/.cargo/git
-          key: ${{ env.CACHE_RESET_KEY }}-${{ runner.os }}-${{ matrix.rust }}-cargo-${{ matrix.make.task }}-${{ hashFiles('**/Cargo.lock') }}
-          restore-keys: |
-            ${{ env.CACHE_RESET_KEY }}-${{ runner.os }}-${{ matrix.rust }}-cargo-${{ matrix.make.task }}-
-            ${{ env.CACHE_RESET_KEY }}-${{ runner.os }}-${{ matrix.rust }}-cargo-
+          key: ${{ matrix.make.task }}
 
-      - name: Cache install cargo-deny
-        id: cache-cargo-deny
+      - name: Check versions on crates.io
+        if: ${{ matrix.make.task == 'check-dependencies' }}
+        id: dep-versions
+        run: |
+          # load helper script
+          source .github/workflows/scripts/crates.io-script.bash
+          # get latest version from crates.io
+          echo "CARGO_DENY_VERSION=$(get_crate_latest_version cargo-deny)" >> $GITHUB_ENV
+          # add other dependencies versions here
+
+      - name: Cache cargo-deny
+        if: ${{ matrix.make.task == 'check-dependencies' }}
         uses: actions/cache@v2
-        continue-on-error: false
         with:
           path: |
             ~/.cargo/bin/cargo-deny
-          key: ${{env.CACHE_RESET_KEY}}-${{ runner.os }}-${{ matrix.rust }}-cargo-deny-${{ steps.dep-versions.outputs.cargo-deny_version }}
+          key: ${{ env.CACHE_RESET_KEY }}-${{ runner.os }}-${{ matrix.rust }}-cargo-deny-${{ env.CARGO_DENY_VERSION }}
 
       - name: Install cargo-deny
-        if:  ${{ steps.cache-cargo-deny.outputs.cache-hit == false && matrix.rust == 'stable'}}
+        if: ${{ matrix.make.task == 'check-dependencies' }}
         run: |
-          cargo install cargo-deny
+          if ! test -f "$HOME/.cargo/bin/cargo-deny"; then
+            cargo install cargo-deny
+          fi
 
       - name: Install cargo-make
         env:
