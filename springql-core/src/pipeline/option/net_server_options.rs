@@ -20,7 +20,7 @@ impl TryFrom<&Options> for NetServerOptions {
         Ok(Self {
             protocol: options.get("PROTOCOL", |protocol_str| {
                 (protocol_str == "TCP")
-                    .then(|| NetProtocol::Tcp)
+                    .then_some(NetProtocol::Tcp)
                     .context("unsupported protocol")
             })?,
             port: options.get("PORT", |remote_port_str| {

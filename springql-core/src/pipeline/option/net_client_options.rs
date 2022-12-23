@@ -23,7 +23,7 @@ impl TryFrom<&Options> for NetClientOptions {
         Ok(Self {
             protocol: options.get("PROTOCOL", |protocol_str| {
                 (protocol_str == "TCP")
-                    .then(|| NetProtocol::Tcp)
+                    .then_some(NetProtocol::Tcp)
                     .context("unsupported protocol")
             })?,
             remote_host: options.get("REMOTE_HOST", |remote_host_str| {

@@ -38,7 +38,7 @@ impl SourceWorkerPool {
         let workers = (0..config.n_source_worker_threads)
             .map(|id| {
                 let arg = TaskWorkerThreadArg::new(
-                    TaskWorkerId::new(id as u16),
+                    TaskWorkerId::new(id),
                     locks.task_executor_lock.clone(),
                     repos.clone(),
                     config.sleep_msec_no_row,

@@ -128,7 +128,7 @@ impl MetricsUpdateByTaskExecution {
                     queue_id,
                     rows_used,
                     ..
-                } => (queue_id == id).then(|| rows_used),
+                } => (queue_id == id).then_some(rows_used),
                 InQueueMetricsUpdateByCollect::Window { .. } => None,
             })
             .sum()
@@ -141,7 +141,7 @@ impl MetricsUpdateByTaskExecution {
                     queue_id,
                     bytes_used,
                     ..
-                } => (queue_id == id).then(|| bytes_used),
+                } => (queue_id == id).then_some(bytes_used),
                 InQueueMetricsUpdateByCollect::Window { .. } => None,
             })
             .sum()
@@ -155,7 +155,7 @@ impl MetricsUpdateByTaskExecution {
                     queue_id,
                     waiting_rows_dispatched,
                     ..
-                } => (queue_id == id).then(|| waiting_rows_dispatched),
+                } => (queue_id == id).then_some(waiting_rows_dispatched),
             })
             .sum()
     }
@@ -168,7 +168,7 @@ impl MetricsUpdateByTaskExecution {
                     queue_id,
                     waiting_bytes_dispatched,
                     ..
-                } => (queue_id == id).then(|| waiting_bytes_dispatched),
+                } => (queue_id == id).then_some(waiting_bytes_dispatched),
             })
             .sum()
     }
@@ -186,7 +186,7 @@ impl MetricsUpdateByTaskExecution {
             .filter_map(|in_q| match &in_q.by_collect {
                 InQueueMetricsUpdateByCollect::Row { .. } => None,
                 InQueueMetricsUpdateByCollect::Window { queue_id, .. } => {
-                    (queue_id == id).then(|| in_q.window_in_flow.window_gain_bytes_states)
+                    (queue_id == id).then_some(in_q.window_in_flow.window_gain_bytes_states)
                 }
             })
             .sum()
@@ -197,7 +197,7 @@ impl MetricsUpdateByTaskExecution {
             .filter_map(|in_q| match &in_q.by_collect {
                 InQueueMetricsUpdateByCollect::Row { .. } => None,
                 InQueueMetricsUpdateByCollect::Window { queue_id, .. } => {
-                    (queue_id == id).then(|| in_q.window_in_flow.window_gain_bytes_rows)
+                    (queue_id == id).then_some(in_q.window_in_flow.window_gain_bytes_rows)
                 }
             })
             .sum()

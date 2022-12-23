@@ -326,13 +326,10 @@ fn test_e2e_pop_non_blocking_from_in_memory_queue() {
 
     for _ in 0..trade_times {
         loop {
-            match pipeline.pop_non_blocking(queue_name).unwrap() {
-                Some(row) => {
-                    assert_eq!(row.get_not_null_by_index::<String>(0).unwrap(), ts);
-                    assert_eq!(row.get_not_null_by_index::<i32>(1).unwrap(), amount);
-                    break;
-                }
-                None => {}
+            if let Some(row) = pipeline.pop_non_blocking(queue_name).unwrap() {
+                assert_eq!(row.get_not_null_by_index::<String>(0).unwrap(), ts);
+                assert_eq!(row.get_not_null_by_index::<i32>(1).unwrap(), amount);
+                break;
             }
         }
     }

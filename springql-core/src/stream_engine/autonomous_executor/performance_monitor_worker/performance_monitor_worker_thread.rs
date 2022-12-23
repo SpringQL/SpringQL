@@ -243,7 +243,7 @@ impl PerformanceMonitorWorkerThread {
         let mut state = state;
 
         if state.countdown_web_console_msec <= 0 {
-            state.countdown_web_console_msec = report_interval_msec as i32;
+            state.countdown_web_console_msec = report_interval_msec;
 
             web_console_reporter.report(metrics, pipeline_derivatives.task_graph());
         } else {

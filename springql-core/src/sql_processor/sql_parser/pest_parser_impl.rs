@@ -358,8 +358,8 @@ impl PestParserImpl {
         let option_syntaxes = try_parse_child(
             &mut params,
             Rule::option_specifications,
-            &Self::parse_option_specifications,
-            &identity,
+            Self::parse_option_specifications,
+            identity,
         )?;
 
         let mut options = OptionsBuilder::default();
@@ -460,8 +460,8 @@ impl PestParserImpl {
         let option_syntaxes = try_parse_child(
             &mut params,
             Rule::option_specifications,
-            &Self::parse_option_specifications,
-            &identity,
+            Self::parse_option_specifications,
+            identity,
         )?;
 
         let mut options = OptionsBuilder::default();
@@ -498,8 +498,8 @@ impl PestParserImpl {
         let into_stream = parse_child(
             &mut params,
             Rule::stream_name,
-            &Self::parse_stream_name,
-            &identity,
+            Self::parse_stream_name,
+            identity,
         )?;
         let insert_column_names = parse_child_seq(
             &mut params,
@@ -1017,8 +1017,8 @@ impl PestParserImpl {
         let aggregated = parse_child(
             &mut params,
             Rule::value_expr,
-            &Self::parse_value_expr,
-            &identity,
+            Self::parse_value_expr,
+            identity,
         )?;
         Ok(AggrExpr { func, aggregated })
     }
