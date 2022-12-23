@@ -85,7 +85,11 @@ cargo d
 [tasks.deadlink]
 script = ['''
 #!/usr/bin/env bash -eux
-cargo deadlinks --check-http --ignore-fragments
+cargo doc
+cargo deadlinks --check-http --ignore-fragments --dir target/doc/springql
+cargo deadlinks --check-http --ignore-fragments --dir target/doc/springql_core
+cargo deadlinks --check-http --ignore-fragments --dir target/doc/springql_foreign_service
+cargo deadlinks --check-http --ignore-fragments --dir target/doc/springql_test_logger
 mlc --ignore-path target --throttle 15
 ''']
 
