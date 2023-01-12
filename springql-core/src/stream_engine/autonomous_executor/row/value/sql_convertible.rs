@@ -95,7 +95,7 @@ pub trait SpringValue: ToNnSqlValue + Sized {
     /// # Failures
     ///
     /// - `SpringError::Sql` when:
-    ///   - the type implementing SqlConvertible is not convertible from Vec<u8>
+    ///   - the type implementing SqlConvertible is not convertible from `Vec<u8>`
     fn try_from_blob(_: &[u8]) -> Result<Self> {
         Self::default_err("Vec<u8>")
     }

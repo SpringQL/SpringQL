@@ -85,19 +85,11 @@ cargo d
 [tasks.deadlink]
 script = ['''
 #!/usr/bin/env bash -eux
-mkdir -p target
-set +e
-# create deadlinks log file
-cargo deadlinks --check-http --ignore-fragments | tee target/cargo-deadlinks.out
-set -e
-# sort uniq for `cargo-deadlinks` output
-cat target/cargo-deadlinks.out | sort | uniq > target/cargo-deadlinks.sort
-# check diff for `deadlinks.expected`
-cat deadlinks.expected | sort | uniq > target/cargo-deadlinks.expected.sort
-diff -u target/cargo-deadlinks.expected.sort target/cargo-deadlinks.sort
-
+cargo doc
+for crate in $( cargo metadata --format-version=1 --no-deps | jq -r '.packages | map(.name) | .[]' | tr '-' '_' ); do
+  cargo deadlinks --check-http --ignore-fragments --dir target/doc/${crate}
+done
 mlc --ignore-path target --throttle 15
-
 ''']
 
 [tasks.deadlink-expect]
