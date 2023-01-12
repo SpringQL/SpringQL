@@ -86,7 +86,7 @@ cargo d
 script = ['''
 #!/usr/bin/env bash -eux
 cargo doc
-for crate in $( ls target/doc | grep springql ); do
+for crate in $( cargo metadata --format-version=1 --no-deps | jq -r '.packages | map(.name) | .[]' | tr '-' '_' ); do
   cargo deadlinks --check-http --ignore-fragments --dir target/doc/${crate}
 done
 mlc --ignore-path target --throttle 15
