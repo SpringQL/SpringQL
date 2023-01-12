@@ -86,10 +86,9 @@ cargo d
 script = ['''
 #!/usr/bin/env bash -eux
 cargo doc
-cargo deadlinks --check-http --ignore-fragments --dir target/doc/springql
-cargo deadlinks --check-http --ignore-fragments --dir target/doc/springql_core
-cargo deadlinks --check-http --ignore-fragments --dir target/doc/springql_foreign_service
-cargo deadlinks --check-http --ignore-fragments --dir target/doc/springql_test_logger
+for crate in $( ls target/doc | grep springql ); do
+  cargo deadlinks --check-http --ignore-fragments --dir target/doc/${crate}
+done
 mlc --ignore-path target --throttle 15
 ''']
 
