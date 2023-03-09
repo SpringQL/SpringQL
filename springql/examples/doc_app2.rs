@@ -34,6 +34,8 @@ fn send_data_to_pipeline() {
             .arg(cmd_text)
             .spawn()
             .expect("send failed");
+        // yield s.t. the os can execute the command and the order of the messages is upheld
+        thread::sleep(Duration::from_millis(50));
     }
 
     send_row(r#"{"ts": "2022-01-01 13:00:00.000000000", "symbol": "ORCL", "amount": 10}"#);
