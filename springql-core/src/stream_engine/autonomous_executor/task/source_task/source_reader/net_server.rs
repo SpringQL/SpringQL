@@ -40,7 +40,7 @@ impl SourceReader for NetServerSourceReader {
             "unsupported protocol"
         );
 
-        let listener = TcpListener::bind(("127.0.0.1", options.port)).unwrap();
+        let listener = TcpListener::bind((config.net_address.clone(), options.port)).unwrap();
         let my_addr = listener.local_addr().unwrap();
 
         let (tx, rx) = mpsc::channel();
@@ -94,10 +94,10 @@ impl NetServerSourceReader {
     }
 
     fn stream_handler(stream: TcpStream, tx: mpsc::Sender<serde_json::Value>) {
-        log::info!(
-            "[NetServerSourceReader] Connection from {}",
-            stream.peer_addr().unwrap()
-        );
+        // log::info!(
+        //     "[NetServerSourceReader] Connection from {}",
+        //     stream.peer_addr().unwrap()
+        // );
 
         let mut tcp_reader = BufReader::new(stream);
 
