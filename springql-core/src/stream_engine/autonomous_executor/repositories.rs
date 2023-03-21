@@ -22,7 +22,7 @@ impl Repositories {
         Self {
             row_queue_repository: RowQueueRepository::default(),
             window_queue_repository: WindowQueueRepository::default(),
-            source_reader_repository: SourceReaderRepository::new(config.source_reader),
+            source_reader_repository: SourceReaderRepository::new(config.source_reader.clone()),
             sink_writer_repository: SinkWriterRepository::new(config.sink_writer),
         }
     }

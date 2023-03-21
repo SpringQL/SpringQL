@@ -176,7 +176,7 @@ pub struct SpringWebConsoleConfig {
 
 /// Config related to source reader
 #[allow(missing_docs)]
-#[derive(Copy, Clone, Eq, PartialEq, Debug, Deserialize)]
+#[derive(Clone, Eq, PartialEq, Debug, Deserialize)]
 pub struct SpringSourceReaderConfig {
     pub net_connect_timeout_msec: u32,
     pub net_read_timeout_msec: u32,
