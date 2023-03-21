@@ -57,6 +57,7 @@ timeout_msec = 3_000
 [source_reader]
 net_connect_timeout_msec = 1_000
 net_read_timeout_msec = 100
+net_address = "0.0.0.0"
 
 can_read_timeout_msec = 100
 
@@ -175,10 +176,11 @@ pub struct SpringWebConsoleConfig {
 
 /// Config related to source reader
 #[allow(missing_docs)]
-#[derive(Copy, Clone, Eq, PartialEq, Debug, Deserialize)]
+#[derive(Clone, Eq, PartialEq, Debug, Deserialize)]
 pub struct SpringSourceReaderConfig {
     pub net_connect_timeout_msec: u32,
     pub net_read_timeout_msec: u32,
+    pub net_address: String,
 
     pub can_read_timeout_msec: u32,
 }

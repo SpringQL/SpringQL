@@ -40,7 +40,7 @@ impl SourceReader for NetServerSourceReader {
             "unsupported protocol"
         );
 
-        let listener = TcpListener::bind(("127.0.0.1", options.port)).unwrap();
+        let listener = TcpListener::bind((config.net_address.clone(), options.port)).unwrap();
         let my_addr = listener.local_addr().unwrap();
 
         let (tx, rx) = mpsc::channel();
@@ -96,7 +96,10 @@ impl NetServerSourceReader {
     fn stream_handler(stream: TcpStream, tx: mpsc::Sender<serde_json::Value>) {
         log::info!(
             "[NetServerSourceReader] Connection from {}",
-            stream.peer_addr().unwrap()
+            stream
+                .peer_addr()
+                .map(|peer_addr| peer_addr.to_string())
+                .unwrap_or("unknown".to_string())
         );
 
         let mut tcp_reader = BufReader::new(stream);
@@ -128,7 +131,6 @@ impl NetServerSourceReader {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use crate::{
         api::SpringSinkWriterConfig,
         pipeline::OptionsBuilder,
@@ -137,6 +139,9 @@ mod tests {
             SchemalessRow,
         },
     };
+
+    use super::*;
+
     fn ephemeral_port() -> u16 {
         let addr = TcpListener::bind("127.0.0.1:0").unwrap();
         addr.local_addr().unwrap().port()

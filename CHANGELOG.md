@@ -14,6 +14,9 @@ All other sections are for end-users.
 
 - (Breaking Change) Remove `TimedStream` from foreign-service ([#250](https://github.com/SpringQL/SpringQL/pull/250)
 
+### Fixed
+- Make TCP server source address configurable, set it to "0.0.0.0" per default ([#260](https://github.com/SpringQL/SpringQL/pull/260))
+
 ## [v0.18.1] - 2022-10-07
 
 ### For developers
