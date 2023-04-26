@@ -1,6 +1,6 @@
 // This file is part of https://github.com/SpringQL/SpringQL which is licensed under MIT OR Apache-2.0. See file LICENSE-MIT or LICENSE-APACHE for full license details.
 
-use socketcan::CANFrame;
+use socketcan::CanFrame;
 
 use crate::{
     api::error::Result,
@@ -15,7 +15,7 @@ use crate::{
 ///
 /// Immediately converted into `Row` on stream-engine boundary.
 #[derive(Clone, Debug, new)]
-pub struct CANFrameSourceRow(CANFrame);
+pub struct CANFrameSourceRow(CanFrame);
 
 impl CANFrameSourceRow {
     /// # Failure
