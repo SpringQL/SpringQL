@@ -3,7 +3,7 @@
 use std::time::Duration;
 
 use anyhow::{anyhow, Context};
-use socketcan::{CanFrame, CanSocket, ShouldRetry};
+use socketcan::{CanFrame, CanSocket, EmbeddedFrame, Frame, ShouldRetry, Socket};
 
 use crate::{
     api::{
@@ -97,7 +97,7 @@ impl CANSourceReader {
             unimplemented!("RTR (remote transmission request) frames are not supported");
         } else if frame.is_extended() {
             unimplemented!("Extended frame format is not supported");
-        } else if frame.is_error() {
+        } else if frame.is_error_frame() {
             Err(SpringError::ForeignIo {
                 source: anyhow!("got a error CAN frame (CAN ID: {})", frame.id()),
                 foreign_info: ForeignInfo::SocketCAN(self.interface.clone()),
@@ -124,7 +124,7 @@ mod tests {
         let can_id = 1;
         let can_data = &[0x00u8, 0x01];
 
-        let frame = CANFrame::new(can_id, can_data, false, false).unwrap();
+        let frame = CanFrame::new(can_id, can_data).unwrap();
         let source_row = CANSourceReader::_can_frame_into_row(frame);
         let row = SchemalessRow::try_from(source_row).unwrap();
 
