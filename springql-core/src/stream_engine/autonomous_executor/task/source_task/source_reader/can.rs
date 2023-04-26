@@ -93,13 +93,13 @@ impl SourceReader for CANSourceReader {
 
 impl CANSourceReader {
     fn can_frame_into_row(&self, frame: CanFrame) -> Result<SourceRow> {
-        if frame.is_rtr() {
+        if frame.is_remote_frame() {
             unimplemented!("RTR (remote transmission request) frames are not supported");
         } else if frame.is_extended() {
             unimplemented!("Extended frame format is not supported");
         } else if frame.is_error_frame() {
             Err(SpringError::ForeignIo {
-                source: anyhow!("got a error CAN frame (CAN ID: {})", frame.id()),
+                source: anyhow!("got a error CAN frame (CAN ID: {:?})", frame.id()),
                 foreign_info: ForeignInfo::SocketCAN(self.interface.clone()),
             })
         } else {
