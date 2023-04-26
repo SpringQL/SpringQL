@@ -116,6 +116,7 @@ impl CANSourceReader {
 mod tests {
 
     use crate::stream_engine::{autonomous_executor::row::SchemalessRow, SqlValue};
+    use socketcan::ExtendedId;
 
     use super::*;
 
@@ -124,7 +125,7 @@ mod tests {
         let can_id = 1;
         let can_data = &[0x00u8, 0x01];
 
-        let frame = CanFrame::new(can_id, can_data).unwrap();
+        let frame = CanFrame::new(ExtendedId::new(can_id).unwrap(), can_data).unwrap();
         let source_row = CANSourceReader::_can_frame_into_row(frame);
         let row = SchemalessRow::try_from(source_row).unwrap();
 
