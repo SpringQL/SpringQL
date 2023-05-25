@@ -240,10 +240,7 @@ fn test_e2e_pop_from_in_memory_queue() {
 
     let pipeline = apply_ddls(&ddls, SpringConfig::default());
     test_source.start(ForeignSourceInput::new_fifo_batch(
-        (0..trade_times)
-            .into_iter()
-            .map(|_| json_oracle.clone())
-            .collect(),
+        (0..trade_times).map(|_| json_oracle.clone()).collect(),
     ));
 
     for _ in 0..trade_times {
@@ -318,10 +315,7 @@ fn test_e2e_pop_non_blocking_from_in_memory_queue() {
 
     let pipeline = apply_ddls(&ddls, SpringConfig::default());
     test_source.start(ForeignSourceInput::new_fifo_batch(
-        (0..trade_times)
-            .into_iter()
-            .map(|_| json_oracle.clone())
-            .collect(),
+        (0..trade_times).map(|_| json_oracle.clone()).collect(),
     ));
 
     for _ in 0..trade_times {
