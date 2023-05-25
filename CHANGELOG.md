@@ -14,6 +14,9 @@ All other sections are for end-users.
 
 - (Breaking Change) Remove `TimedStream` from foreign-service ([#250](https://github.com/SpringQL/SpringQL/pull/250)
 
+
+- Bump up Minimum Support Rust Version (MSRV) to 1.65 ([#262](https://github.com/SpringQL/SpringQL/pull/262))
+
 ## [v0.18.1] - 2022-10-07
 
 ### For developers
