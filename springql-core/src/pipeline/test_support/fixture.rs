@@ -17,24 +17,16 @@ use crate::{
     },
 };
 
-impl SpringConfig {
-    pub fn fx_default() -> Self {
-        Self::new("").unwrap()
-    }
+pub fn default_root_config() -> SpringConfig {
+    SpringConfig::default()
 }
 
-impl SpringSourceReaderConfig {
-    pub fn fx_default() -> Self {
-        let c = SpringConfig::fx_default();
-        c.source_reader
-    }
+pub fn default_source_reader_config() -> SpringSourceReaderConfig {
+    default_root_config().source_reader
 }
 
-impl SpringSinkWriterConfig {
-    pub fn fx_default() -> Self {
-        let c = SpringConfig::fx_default();
-        c.sink_writer
-    }
+pub fn default_sink_writer_config() -> SpringSinkWriterConfig {
+    default_root_config().sink_writer
 }
 
 impl Pipeline {

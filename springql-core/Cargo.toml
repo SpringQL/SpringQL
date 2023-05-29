@@ -6,7 +6,7 @@ authors = ["Sho Nakatani <lay.sakura@gmail.com>"]
 license = "MIT OR Apache-2.0"
 
 edition = "2021"
-rust-version = "1.63.0"
+rust-version = "1.65.0"
 
 categories = ["embedded"]
 description = "SpringQL: Open-source stream processor for IoT devices and in-vehicle computers"
@@ -19,11 +19,11 @@ repository = "https://github.com/SpringQL/SpringQL"
 stub_web_console=[]
 
 [dependencies]
+springql-config = {version="0.18.0", features= ["default"], path="../springql-config"}
 anyhow = "1.0"
 thiserror = "1.0"
 serde = {version = "1.0", features = ["derive"], default-features = false}
 serde_json = "1.0"
-config = {version = "0.13", features = ["toml"], default-features = false}
 derive-new = "0.5"
 ordered-float = "3.0"
 fastrand = "1.5"
@@ -38,10 +38,10 @@ reqwest = {version = "0.11", features = ["json", "blocking"], default-features =
 once_cell = "1.8"
 parking_lot = "0.12"
 time = {version="0.3.9", features = ["formatting", "parsing", "macros"]}
-
 socketcan = "1.7"
 
 [dev-dependencies]
+springql-config = {version="0.18.0", features= ["toml"], path="../springql-config"}
 springql-foreign-service = {path = "../foreign-service"}
 springql-test-logger = {path = "../test-logger"}
 pretty_assertions = "1.0"

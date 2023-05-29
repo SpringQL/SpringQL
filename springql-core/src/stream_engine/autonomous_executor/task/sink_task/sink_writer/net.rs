@@ -97,7 +97,10 @@ mod tests {
     use springql_foreign_service::sink::ForeignSink;
 
     use super::*;
-    use crate::{pipeline::OptionsBuilder, stream_engine::autonomous_executor::row::JsonObject};
+    use crate::{
+        pipeline::{test_support::fixture::default_sink_writer_config, OptionsBuilder},
+        stream_engine::autonomous_executor::row::JsonObject,
+    };
 
     #[test]
     fn test_sink_writer_tcp() {
@@ -110,7 +113,7 @@ mod tests {
             .build();
 
         let mut sink_writer =
-            NetSinkWriter::start(&options, &SpringSinkWriterConfig::fx_default()).unwrap();
+            NetSinkWriter::start(&options, &default_sink_writer_config()).unwrap();
 
         sink_writer
             .send_row(SchemalessRow::fx_city_temperature_tokyo())

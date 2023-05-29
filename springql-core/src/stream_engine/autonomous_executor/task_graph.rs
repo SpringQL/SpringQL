@@ -78,7 +78,6 @@ impl TaskGraph {
         let i = self.find_node(task_id);
         self.g
             .edges_directed(i, petgraph::EdgeDirection::Incoming)
-            .into_iter()
             .map(|e| &e.weight().queue_id)
             .cloned()
             .collect()
@@ -87,7 +86,6 @@ impl TaskGraph {
         let i = self.find_node(task_id);
         self.g
             .edges_directed(i, petgraph::EdgeDirection::Outgoing)
-            .into_iter()
             .map(|e| &e.weight().queue_id)
             .cloned()
             .collect()
@@ -101,7 +99,6 @@ impl TaskGraph {
         let i = self.find_node(task_id);
         self.g
             .edges_directed(i, petgraph::EdgeDirection::Incoming)
-            .into_iter()
             .find_map(|e| {
                 let queue_id_with_upstream = e.weight();
                 (&queue_id_with_upstream.upstream == upstream)
