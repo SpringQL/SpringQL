@@ -15,7 +15,6 @@ use std::{
 };
 
 use anyhow::anyhow;
-use ordered_float::OrderedFloat;
 
 use crate::{
     api::error::{Result, SpringError},
@@ -187,7 +186,7 @@ impl TryFrom<&serde_json::Value> for SqlValue {
 
             serde_json::Value::Number(n) => {
                 if let Some(f) = n.as_f64() {
-                    Ok(SqlValue::NotNull(NnSqlValue::Float(OrderedFloat(f as f32))))
+                    Ok(SqlValue::NotNull(NnSqlValue::Float(f as f32)))
                 } else if let Some(i) = n.as_i64() {
                     Ok(SqlValue::NotNull(NnSqlValue::BigInt(i)))
                 } else {

@@ -4,8 +4,6 @@ mod aggregate_state;
 
 use std::collections::HashMap;
 
-use ordered_float::OrderedFloat;
-
 use crate::{
     api::error::Result,
     expr_resolver::ExprResolver,
@@ -127,8 +125,7 @@ impl Pane for AggrPane {
                 let aggregated_and_grouping_values_seq = states
                     .into_iter()
                     .map(|(group_by_values, state)| {
-                        let aggr_value =
-                            SqlValue::NotNull(NnSqlValue::Float(OrderedFloat(state.finalize())));
+                        let aggr_value = SqlValue::NotNull(NnSqlValue::Float(state.finalize()));
 
                         let group_bys = group_by_labels
                             .as_labels()

@@ -6,7 +6,6 @@ mod helper;
 use std::convert::identity;
 
 use anyhow::{anyhow, Context};
-use ordered_float::OrderedFloat;
 use pest::{iterators::Pairs, Parser};
 
 use crate::{
@@ -151,7 +150,7 @@ impl PestParserImpl {
         let s = self_as_str(&mut params);
 
         s.parse::<f32>()
-            .map(|f| SqlValue::NotNull(NnSqlValue::Float(OrderedFloat(f))))
+            .map(|f| SqlValue::NotNull(NnSqlValue::Float(f)))
             .map_err(|_e| {
                 SpringError::Sql(anyhow!(
                     "float value `{}` could not be parsed as f32 (max supported size)",
