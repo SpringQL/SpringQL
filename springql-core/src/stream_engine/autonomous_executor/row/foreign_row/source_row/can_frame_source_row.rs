@@ -1,6 +1,6 @@
 // This file is part of https://github.com/SpringQL/SpringQL which is licensed under MIT OR Apache-2.0. See file LICENSE-MIT or LICENSE-APACHE for full license details.
 
-use socketcan::CANFrame;
+use socketcan::{CanFrame, EmbeddedFrame, Frame};
 
 use crate::{
     api::error::Result,
@@ -15,7 +15,7 @@ use crate::{
 ///
 /// Immediately converted into `Row` on stream-engine boundary.
 #[derive(Clone, Debug, new)]
-pub struct CANFrameSourceRow(CANFrame);
+pub struct CANFrameSourceRow(CanFrame);
 
 impl CANFrameSourceRow {
     /// # Failure
@@ -31,7 +31,7 @@ impl CANFrameSourceRow {
         let can_frame = self.0;
         let mut column_values = ColumnValues::default();
 
-        let can_id_value = SqlValue::NotNull(NnSqlValue::UnsignedInteger(can_frame.id()));
+        let can_id_value = SqlValue::NotNull(NnSqlValue::UnsignedInteger(can_frame.raw_id()));
         column_values
             .insert(ColumnName::new("can_id".to_string()), can_id_value)
             .expect("can_id must not duplicate");

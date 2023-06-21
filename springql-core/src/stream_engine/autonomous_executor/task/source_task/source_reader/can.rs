@@ -3,7 +3,7 @@
 use std::time::Duration;
 
 use anyhow::{anyhow, Context};
-use socketcan::{CANFrame, CANSocket, ShouldRetry};
+use socketcan::{CanFrame, CanSocket, EmbeddedFrame, Frame, ShouldRetry, Socket};
 
 use crate::{
     api::{
@@ -23,7 +23,7 @@ use crate::{
 #[derive(Debug)]
 pub(in crate::stream_engine) struct CANSourceReader {
     interface: String,
-    can_socket: CANSocket,
+    can_socket: CanSocket,
 }
 
 impl SourceReader for CANSourceReader {
@@ -36,7 +36,7 @@ impl SourceReader for CANSourceReader {
 
         let interface = &options.interface;
 
-        let can_socket = CANSocket::open(interface)
+        let can_socket = CanSocket::open(interface)
             .context(format!(
                 "failed to open socket CAN interface {}",
                 &interface
@@ -92,14 +92,14 @@ impl SourceReader for CANSourceReader {
 }
 
 impl CANSourceReader {
-    fn can_frame_into_row(&self, frame: CANFrame) -> Result<SourceRow> {
-        if frame.is_rtr() {
+    fn can_frame_into_row(&self, frame: CanFrame) -> Result<SourceRow> {
+        if frame.is_remote_frame() {
             unimplemented!("RTR (remote transmission request) frames are not supported");
         } else if frame.is_extended() {
             unimplemented!("Extended frame format is not supported");
-        } else if frame.is_error() {
+        } else if frame.is_error_frame() {
             Err(SpringError::ForeignIo {
-                source: anyhow!("got a error CAN frame (CAN ID: {})", frame.id()),
+                source: anyhow!("got a error CAN frame (CAN ID: {:?})", frame.id()),
                 foreign_info: ForeignInfo::SocketCAN(self.interface.clone()),
             })
         } else {
@@ -107,7 +107,7 @@ impl CANSourceReader {
         }
     }
 
-    fn _can_frame_into_row(frame: CANFrame) -> SourceRow {
+    fn _can_frame_into_row(frame: CanFrame) -> SourceRow {
         SourceRow::CANFrame(CANFrameSourceRow::new(frame))
     }
 }
@@ -116,6 +116,7 @@ impl CANSourceReader {
 mod tests {
 
     use crate::stream_engine::{autonomous_executor::row::SchemalessRow, SqlValue};
+    use socketcan::ExtendedId;
 
     use super::*;
 
@@ -124,7 +125,7 @@ mod tests {
         let can_id = 1;
         let can_data = &[0x00u8, 0x01];
 
-        let frame = CANFrame::new(can_id, can_data, false, false).unwrap();
+        let frame = CanFrame::new(ExtendedId::new(can_id).unwrap(), can_data).unwrap();
         let source_row = CANSourceReader::_can_frame_into_row(frame);
         let row = SchemalessRow::try_from(source_row).unwrap();
 
