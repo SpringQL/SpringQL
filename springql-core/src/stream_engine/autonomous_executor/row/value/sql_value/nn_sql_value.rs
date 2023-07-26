@@ -8,7 +8,6 @@ use std::{
 };
 
 use anyhow::anyhow;
-use ordered_float::OrderedFloat;
 
 use crate::{
     api::error::{Result, SpringError},
@@ -42,10 +41,7 @@ pub enum NnSqlValue {
     UnsignedBigInt(u64),
 
     /// FLOAT
-    Float(
-        // to implement Hash
-        OrderedFloat<f32>,
-    ),
+    Float(f32),
 
     /// TEXT
     Text(String),
@@ -114,7 +110,7 @@ macro_rules! for_all_loose_types {
             }
             NnSqlValue::Float(_) => {
                 let v = $nn_sql_value.unpack::<f32>().unwrap();
-                $closure_ordered_float(OrderedFloat(v))
+                $closure_ordered_float(v)
             }
             NnSqlValue::Text(s) => $closure_string(s.to_string()),
             NnSqlValue::Blob(v) => $closure_blob(v.to_owned()),
@@ -132,6 +128,24 @@ impl PartialEq for NnSqlValue {
 }
 impl Eq for NnSqlValue {}
 
+use std::hash::{Hash, Hasher};
+
+impl Hash for f32 {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        let bits = if self.is_nan() {
+            CANONICAL_NAN_BITS
+        } else if self.is_zero() {
+            CANONICAL_ZERO_BITS
+        } else {
+            raw_double_bits(&self.0)
+        };
+
+        bits.hash(state)
+    }
+}
+
+use ordered_float::OrderedFloat;
+
 impl Hash for NnSqlValue {
     /// Although raw format are different between two NnSqlValue, this hash function must return the same value if loosely typed values are the same.
     /// E.g. `42 SMALLINT`'s hash value must be equal to that of `42 INTEGER`.
@@ -144,7 +158,7 @@ impl Hash for NnSqlValue {
             |u: u64| {
                 u.hash(state);
             },
-            |f: OrderedFloat<f32>| {
+            |f: f32| {
                 f.hash(state);
             },
             |s: String| {
@@ -166,7 +180,7 @@ impl Display for NnSqlValue {
             self,
             |i: i64| i.to_string(),
             |u: u64| u.to_string(),
-            |f: OrderedFloat<f32>| f.to_string(),
+            |f: f32| f.to_string(),
             |s: String| format!(r#""{}""#, s),
             |v: Vec<u8>| format!("{:?}", v),
             |b: bool| (if b { "TRUE" } else { "FALSE" }).to_string(),
@@ -379,7 +393,7 @@ impl Add for NnSqlValue {
                     }
                     (NumericComparableType::F32Loose(_), NumericComparableType::F32Loose(_)) => {
                         let (self_f32, rhs_f32) = (self.unpack::<f32>()?, rhs.unpack::<f32>()?);
-                        Ok(Self::Float(OrderedFloat(self_f32 + rhs_f32)))
+                        Ok(Self::Float(self_f32 + rhs_f32))
                     }
                     _ => Err(SpringError::Sql(anyhow!(
                         "Cannot add {:?} and {:?}",
@@ -413,7 +427,7 @@ impl Mul for NnSqlValue {
                     }
                     (NumericComparableType::F32Loose(_), NumericComparableType::F32Loose(_)) => {
                         let (self_f32, rhs_f32) = (self.unpack::<f32>()?, rhs.unpack::<f32>()?);
-                        Ok(Self::Float(OrderedFloat(self_f32 * rhs_f32)))
+                        Ok(Self::Float(self_f32 * rhs_f32))
                     }
                     _ => Err(SpringError::Sql(anyhow!(
                         "Cannot multiply {:?} by {:?}",
